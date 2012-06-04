@@ -1,0 +1,20 @@
+{
+  "name": "Shortkeys",
+  "description": "Easily customizable keyboard shortcuts for Chrome",
+  "version": "1.0",
+  "permissions": [
+    "history",
+    "tabs"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["keymaster.js", "shortkeys.js"]
+    }
+  ],
+  "icons": {
+    "16"  : "icon_16.png",
+    "48"  : "icon_48.png",
+    "128" : "icon_128.png"
+  }
+}
