@@ -1,1 +1,2 @@
-key('a', function(){ alert('you pressed a!') });
+key('shift+h', function(){ history.back(); });
+key('shift+l', function(){ history.forward(); });
