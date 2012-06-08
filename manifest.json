@@ -4,8 +4,10 @@
   "version": "1.0",
   "permissions": [
     "history",
-    "tabs"
+    "tabs",
+    "storage"
   ],
+  "options_page": "options.html",
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
