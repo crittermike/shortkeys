@@ -51,6 +51,16 @@
       return inputs;
     }
 
+    function toggle_help() {
+      $('.help').toggle();
+    }
+
+    $('.showhelp').click(function() {
+      alert('what');
+      $('.help').show();
+      return false;
+    });
+
 
 
   </script>
@@ -76,7 +86,7 @@
     input, select {
       width: 247px;
     }
-    .hide{
+    .hide {
       display: none;
     }
     #status {
@@ -134,6 +144,16 @@
       -moz-box-shadow: inset 0 0 5px 2px #aaaaaa, 0 1px 0 0 #eeeeee;
       box-shadow: inset 0 0 5px 2px #aaaaaa, 0 1px 0 0 #eeeeee; 
     }
+    .showhelp {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #555;
+      display: block;
+    }
+    .help {
+      display: none;
+      font-size: 12px;
+    }
 
 
   </style>
@@ -170,6 +190,24 @@
       <button onclick="add_options()">+ Add</button>
       <button class="save" onclick="save_options()"><span>&#x2713;</span> Save</button>
     </div> 
+
+    <a href="#" onclick="toggle_help(); return false;" class="showhelp">Show help</a>
+    <div class="help">
+      <p>Key combos are zero or more modifiers (<code>ctrl</code>, <code>shift</code>, etc.) plus one regular key (letter keys, number keys, arrow keys, etc), all joined with <code>+</code> signs. Here are a couple examples:</p>
+      <ul>
+      	<li><code>ctrl+l</code></li>
+      	<li><code>shift+h</code></li>
+        <li><code>r</code></li>
+      	<li><code>ctrl+shift+&#x21d1;+pageup</code></li>
+      	<li><code>alt+f7</code></li>
+      </ul>
+      <p>The following modifiers are available:
+      <code>&#x21d1;</code>, <code>shift</code>, <code>option</code>, <code>&#x2325;</code>, <code>alt</code>, <code>ctrl</code>, <code>control</code>, <code>command</code>, and <code>&#x2318;</code>.</p>
+      <p>In addition to regular letters, numbers, and punctuation, the following special keys can be used for shortcuts:
+      <code>backspace</code>, <code>tab</code>, <code>clear</code>, <code>enter</code>, <code>return</code>, <code>esc</code>, <code>escape</code>, <code>space</code>,
+      <code>up</code>, <code>down</code>, <code>left</code>, <code>right</code>, <code>home</code>, <code>end</code>, <code>pageup</code>, <code>pagedown</code>, <code>del</code>, <code>delete</code> and <code>f1</code> through <code>f19</code>.</p>
+      <p>Note: key combos are ignored if you're currently focused on a form field. This makes it possible to have shortcuts such as "<code>h</code>" but still be able to type "<code>h</code>" in a form without it triggering the shortcut.</p>
+    </div>
   </div>
 
 </body>
