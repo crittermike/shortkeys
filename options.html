@@ -15,17 +15,16 @@
             action: $(this).next().val()
           }
           keys["key" + i] = key;
+          i++;
         }
-        i++;
       })
       console.log(keys);
       localStorage["shortkeys"] = JSON.stringify(keys);
       // Update status to let user know options were saved.
-      var status = document.getElementById("status");
-      status.innerHTML = "Options Saved.";
+      $('#status').css('opacity', '1');
       setTimeout(function() {
-        status.innerHTML = "";
-      }, 3000);
+          $('#status').animate({opacity: 0, complete: function() { $('#status').hide(); }})
+      }, 1000);
     }
 
     // Restores select box state to saved value from localStorage.
@@ -33,43 +32,145 @@
       var oldkeys = localStorage["shortkeys"];
       oldkeys = JSON.parse(oldkeys);
       if (!oldkeys) {
+        add_options();
         return;
       }
-      i = 1;
+      i = 0;
       while (oldkeys["key" + i] !== undefined) {
         key = oldkeys["key" + i];
-        console.log(oldkeys["key" + i]);
-        newinputs = $('.hide').clone();
-        newinputs.removeClass('hide').insertBefore('button');
+        newinputs = add_options();
         newinputs.children('input').val(key.key);
         newinputs.children('select').val(key.action);
         i++;
       }
     }
 
+    function add_options() {
+      inputs = $('.hide').clone();
+      inputs.removeClass('hide').insertBefore('.buttons');
+      return inputs;
+    }
+
+
+
   </script>
 
   <style type="text/css">
-    .hide {
+    body {
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 120%;
+    }
+    h1 {
+      text-align: center;
+      font-weight: normal;
+      margin: 0;
+    }
+    .buttons {
+      margin-top: 20px;
+    }
+    input, select, button {
+      font-size: 18px;
+      padding: 4px;
+      border: 1px solid #ccc;
+    }
+    input, select {
+      width: 247px;
+    }
+    .hide{
       display: none;
     }
+    #status {
+      opacity: 0;
+      background:#008000;
+      color:#FFFFFF;
+      font-weight:bold;
+      padding:4px;
+      text-align:center;
+      font-size: 16px;
+      margin: 5px 0;
+    }
+    .save {
+      float: right;
+    }
+    .container {
+      width: 500px;
+      margin: 100px auto 0;
+    }
+    button {
+      background-color: #EEE;
+      background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #EEE), color-stop(100%, #CCC));
+      background-image: -webkit-linear-gradient(top, #EEE, #CCC); background-image: -moz-linear-gradient(top, #EEE, #CCC);
+      background-image: -ms-linear-gradient(top, #EEE, #CCC);
+      background-image: -o-linear-gradient(top, #EEE, #CCC);
+      background-image: linear-gradient(top, #EEE, #CCC);
+      border: 1px solid #CCC;
+      border-bottom: 1px solid #BBB;
+      -webkit-border-radius: 3px;
+      -moz-border-radius: 3px;
+      border-radius: 3px; color: #333;
+      line-height: 1;
+      padding: 8px 0;
+      text-align: center;
+      text-shadow: 0 1px 0 #EEE;
+      width: 150px;
+    }
+    button:hover {
+      background-color: #dddddd;
+      background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #dddddd), color-stop(100%, #bbbbbb));
+      background-image: -webkit-linear-gradient(top, #dddddd, #bbbbbb);
+      background-image: -moz-linear-gradient(top, #dddddd, #bbbbbb);
+      background-image: -ms-linear-gradient(top, #dddddd, #bbbbbb);
+      background-image: -o-linear-gradient(top, #dddddd, #bbbbbb);
+      background-image: linear-gradient(top, #dddddd, #bbbbbb);
+      border: 1px solid #bbb;
+      border-bottom: 1px solid #999;
+      cursor: pointer;
+      text-shadow: 0 1px 0 #ddd; 
+    }
+    button:active {
+      border: 1px solid #aaa;
+      border-bottom: 1px solid #888;
+      -webkit-box-shadow: inset 0 0 5px 2px #aaaaaa, 0 1px 0 0 #eeeeee;
+      -moz-box-shadow: inset 0 0 5px 2px #aaaaaa, 0 1px 0 0 #eeeeee;
+      box-shadow: inset 0 0 5px 2px #aaaaaa, 0 1px 0 0 #eeeeee; 
+    }
+
+
   </style>
 </head>
 
 <body onload="restore_options()">
-  <div id="status"></div>
+  <div class="container">
+    <h1>Shortkeys for Chrome</h1>
+    <p id="status">Options saved.</p>
 
-  <div class="hide">
-    <input class="key" placeholder="Key combo" type="text" />
-    <select class="action">
-      <option value="topofpage">Scroll to top</option>
-      <option value="bottomofpage">Scroll to bottom</option>
-      <option value="back">Go back</option>
-      <option value="forward">Go forward</option>
-    </select>
+    <div class="hide">
+      <input class="key" placeholder="Key combo" type="text" />
+      <select class="action">
+        <optgroup label="Scrolling">
+          <option value="top">Scroll to top</option>
+          <option value="bottom">Scroll to bottom</option>
+          <option value="scrolldown">Scroll down</option>
+          <option value="scrolldownmore">Scroll down more</option>
+          <option value="scrollup">Scroll up</option>
+          <option value="scrollupmore">Scroll up more</option>
+        </optgroup>
+        <optgroup label="History">
+          <option value="back">Go back</option>
+          <option value="forward">Go forward</option>
+        </optgroup>
+        <optgroup label="Tabs">
+          <option value="nexttab">Next tab</option>
+          <option value="prevtab">Previous tab</option>
+        </optgroup>
+      </select>
+    </div>
+
+    <div class="buttons">
+      <button onclick="add_options()">+ Add</button>
+      <button class="save" onclick="save_options()"><span>&#x2713;</span> Save</button>
+    </div> 
   </div>
-
-  <button onclick="save_options()">Save</button>
 
 </body>
 </html>
