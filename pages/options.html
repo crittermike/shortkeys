@@ -1,69 +1,8 @@
 <html>
 <head>
   <title>Shortkeys Options</title>
-  <script src="zepto.min.js" type="text/javascript"></script>
-  <script type="text/javascript">
-
-    // Saves options to localStorage.
-    function save_options() {
-      var keys = {};
-      var i = 0;
-      $('input.key').each(function() {
-        if ($(this).val() != "") {
-          var key = {
-            key: $(this).val(),
-            action: $(this).next().val()
-          }
-          keys["key" + i] = key;
-          i++;
-        }
-      })
-      console.log(keys);
-      localStorage["shortkeys"] = JSON.stringify(keys);
-      // Update status to let user know options were saved.
-      $('#status').css('opacity', '1');
-      setTimeout(function() {
-          $('#status').animate({opacity: 0, complete: function() { $('#status').hide(); }})
-      }, 1000);
-    }
-
-    // Restores select box state to saved value from localStorage.
-    function restore_options() {
-      var oldkeys = localStorage["shortkeys"];
-      oldkeys = JSON.parse(oldkeys);
-      if (!oldkeys) {
-        add_options();
-        return;
-      }
-      i = 0;
-      while (oldkeys["key" + i] !== undefined) {
-        key = oldkeys["key" + i];
-        newinputs = add_options();
-        newinputs.children('input').val(key.key);
-        newinputs.children('select').val(key.action);
-        i++;
-      }
-    }
-
-    function add_options() {
-      inputs = $('.hide').clone();
-      inputs.removeClass('hide').insertBefore('.buttons');
-      return inputs;
-    }
-
-    function toggle_help() {
-      $('.help').toggle();
-    }
-
-    $('.showhelp').click(function() {
-      alert('what');
-      $('.help').show();
-      return false;
-    });
-
-
-
-  </script>
+  <script src="../js/zepto.min.js" type="text/javascript"></script>
+  <script src="../js/options.js" type="text/javascript"></script>
 
   <style type="text/css">
     body {
@@ -154,12 +93,10 @@
       display: none;
       font-size: 12px;
     }
-
-
   </style>
 </head>
 
-<body onload="restore_options()">
+<body>
   <div class="container">
     <h1>Shortkeys for Chrome</h1>
     <p id="status">Options saved.</p>
@@ -187,11 +124,11 @@
     </div>
 
     <div class="buttons">
-      <button onclick="add_options()">+ Add</button>
-      <button class="save" onclick="save_options()"><span>&#x2713;</span> Save</button>
+      <button class="add">+ Add</button>
+      <button class="save"><span>&#x2713;</span> Save</button>
     </div> 
 
-    <a href="#" onclick="toggle_help(); return false;" class="showhelp">Show help</a>
+    <a href="#" class="showhelp">Show help</a>
     <div class="help">
       <p>Key combos are zero or more modifiers (<code>ctrl</code>, <code>shift</code>, etc.) plus one regular key (letter keys, number keys, arrow keys, etc), all joined with <code>+</code> signs. Here are a couple examples:</p>
       <ul>
