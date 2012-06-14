@@ -6,7 +6,7 @@ function save_options() {
     if ($(this).val() != "") {
       var key = {
         key: $(this).val(),
-    action: $(this).next().val()
+        action: $(this).next().val()
       }
       keys["key" + i] = key;
       i++;

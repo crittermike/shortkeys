@@ -30,12 +30,21 @@ chrome.extension.sendRequest({method: "getKeys"}, function(response) {
       return function(){ history.back(); };
     } else if (shortname == 'forward') {
       return function(){ history.forward(); };
+    } else if (shortname == 'reload') {
+      return function(){ window.location.reload(); };
 
     } else if (shortname == 'nexttab') {
       return function(){ chrome.extension.sendRequest({method: "nextTab"}) };
     } else if (shortname == 'prevtab') {
       return function(){ chrome.extension.sendRequest({method: "prevTab"}) };
+    } else if (shortname == 'closetab') {
+      return function(){ chrome.extension.sendRequest({method: "closeTab"}) };
+    } else if (shortname == 'newtab') {
+      return function(){ chrome.extension.sendRequest({method: "newTab"}) };
+    } else if (shortname == 'firsttab') {
+      return function(){ chrome.extension.sendRequest({method: "firstTab"}) };
+    } else if (shortname == 'lasttab') {
+      return function(){ chrome.extension.sendRequest({method: "lastTab"}) };
     }
-
   }
 });
