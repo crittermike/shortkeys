@@ -4,9 +4,15 @@ function save_options() {
   var i = 0;
   $('input.key').each(function() {
     if ($(this).val() != "") {
+      keyval = $(this).val();
+      actionval = $(this).parents('td').next().children('select').val();
+      blacklistval = $(this).parents('td').next().next().children('select').val();
+      blacklistsites = $(this).parents('tr').next().find('textarea').val();
       var key = {
-        key: $(this).val(),
-        action: $(this).next().val()
+        key: keyval,
+        action: actionval,
+        blacklist: blacklistval,
+        sites: blacklistsites
       }
       keys["key" + i] = key;
       i++;
@@ -33,8 +39,13 @@ function restore_options() {
   while (oldkeys["key" + i] !== undefined) {
     key = oldkeys["key" + i];
     newinputs = add_options();
-    newinputs.children('input').val(key.key);
-    newinputs.children('select').val(key.action);
+    newinputs.find('input.key').val(key.key);
+    newinputs.find('select.action').val(key.action);
+    newinputs.find('select.blacklist').val(key.blacklist);
+    newinputs.find('textarea.sites').val(key.sites);
+    if (key.blacklist != "0") {
+      newinputs.find('.blacklist-cont').show();
+    }
     i++;
   }
 }
@@ -59,5 +70,12 @@ Zepto(function($){
   $('.save').click(function() {
     save_options();
     return false;
+  });
+  $('.blacklist').live('change', function() {
+    if ($(this).val() === "1") {
+      $(this).parents('tr').next().show();
+    } else {
+      $(this).parents('tr').next().hide();
+    }
   });
 });
