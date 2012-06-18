@@ -1,23 +1,23 @@
 // Saves options to localStorage.
-function save_options() {
+function saveOptions() {
   var keys = {};
   var i = 0;
-  $('input.key').each(function() {
-    if ($(this).val() != "") {
-      keyval = $(this).val();
-      actionval = $(this).parents('td').next().children('select').val();
-      blacklistval = $(this).parents('td').next().next().children('select').val();
-      blacklistsites = $(this).parents('tr').next().find('textarea').val();
+  $('.keycont').each(function() {
+    if ($(this).find('input.key').val() != "") {
+      keyval = $(this).find('.key').val();
+      actionval = $(this).find('.action').val();
+      blacklistval = $(this).find('.blacklist').val();
+      sitesval = $(this).find('.sites').val().split('\n');
       var key = {
         key: keyval,
         action: actionval,
         blacklist: blacklistval,
-        sites: blacklistsites
+        sites: sitesval
       }
       keys["key" + i] = key;
       i++;
     }
-  })
+  });
   console.log(keys);
   localStorage["shortkeys"] = JSON.stringify(keys);
   // Update status to let user know options were saved.
@@ -28,47 +28,49 @@ function save_options() {
 }
 
 // Restores select box state to saved value from localStorage.
-function restore_options() {
+function restoreOptions() {
   var oldkeys = localStorage["shortkeys"];
   if (!oldkeys) {
-    add_options();
+    addOptions();
     return;
   }
   oldkeys = JSON.parse(oldkeys);
   i = 0;
   while (oldkeys["key" + i] !== undefined) {
     key = oldkeys["key" + i];
-    newinputs = add_options();
+    newinputs = addOptions();
     newinputs.find('input.key').val(key.key);
     newinputs.find('select.action').val(key.action);
-    newinputs.find('select.blacklist').val(key.blacklist);
-    newinputs.find('textarea.sites').val(key.sites);
-    if (key.blacklist != "0") {
-      newinputs.find('.blacklist-cont').show();
+    if (key.blacklist) {
+      newinputs.find('select.blacklist').val(key.blacklist);
+      newinputs.find('textarea.sites').val(key.sites.join('\n'));
+      if (key.blacklist != "0") {
+        newinputs.find('.blacklist-cont').show();
+      }
     }
     i++;
   }
 }
 
-function add_options() {
+function addOptions() {
   inputs = $('.hide').clone();
   inputs.removeClass('hide').insertBefore('.buttons');
   return inputs;
 }
 
 Zepto(function($){
-  restore_options();
+  restoreOptions();
 
   $('.showhelp').click(function() {
     $('.help').toggle();
     return false;
   });
   $('.add').click(function() {
-    add_options();
+    addOptions();
     return false;
   });
   $('.save').click(function() {
-    save_options();
+    saveOptions();
     return false;
   });
   $('.blacklist').live('change', function() {

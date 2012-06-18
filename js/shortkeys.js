@@ -1,11 +1,42 @@
+function globToRegex(glob) {
+  var specialChars = "\\^$*+?.()|{}[]";
+  var regexChars = ["^"];
+  for (var i = 0; i < glob.length; ++i) {
+    var c = glob.charAt(i);
+    if (c == '*') {
+      regexChars.push(".*");
+    } else {
+      if (specialChars.indexOf(c) >= 0) {
+        regexChars.push("\\");
+      }
+      regexChars.push(c);
+    }
+  }
+  regexChars.push("$");
+  return new RegExp(regexChars.join(""));
+}
+
+
 chrome.extension.sendRequest({method: "getKeys"}, function(response) {
   var keys = response.keys;
+  var url = document.URL;
   if (keys) {
     keys = JSON.parse(keys);
     i = 0;
     while (keys["key" + i] !== undefined) {
-      curkey = keys["key" + i];
-      key(curkey.key, find_action(curkey.action));
+      var useKey = true;
+      var curkey = keys["key" + i];
+      if (curkey.blacklist && curkey.sites && curkey.blacklist == "1") {
+        curkey.sites;
+        for (var j = 0; j < curkey.sites.length; j++) {
+          if (url.match(globToRegex(curkey.sites[j]))) {
+            useKey = false;
+          } 
+        }
+      }
+      if (useKey) {
+        key(curkey.key, find_action(curkey.action));
+      }
       i++;
     }
   }
