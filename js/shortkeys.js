@@ -22,26 +22,35 @@ chrome.extension.sendRequest({method: "getKeys"}, function(response) {
   var url = document.URL;
   if (keys) {
     keys = JSON.parse(keys);
-    i = 0;
-    while (keys["key" + i] !== undefined) {
-      var useKey = true;
-      var curkey = keys["key" + i];
-      if (curkey.blacklist && curkey.sites && curkey.blacklist == "1") {
-        curkey.sites;
-        for (var j = 0; j < curkey.sites.length; j++) {
-          if (url.match(globToRegex(curkey.sites[j]))) {
-            useKey = false;
-          } 
-        }
+    if (keys["key0"] !== undefined) {
+      i = 0;
+      while (keys["key" + i] !== undefined) {
+        activateKey(keys["key" + i]);
+        i++;
       }
-      if (useKey) {
-        key(curkey.key, find_action(curkey.action));
+    } else if (keys.length > 0) {
+      for (var key in keys) {
+        activateKey(key);
       }
-      i++;
     }
   }
 
-  function find_action(shortname) {
+  function activateKey(key) {
+    var useKey = true;
+    if (curkey.blacklist && curkey.sites && curkey.blacklist == "1") {
+      curkey.sites;
+      for (var j = 0; j < curkey.sites.length; j++) {
+        if (url.match(globToRegex(curkey.sites[j]))) {
+          useKey = false;
+        } 
+      }
+    }
+    if (useKey) {
+      key(curkey.key, findAction(curkey.action));
+    }
+  }
+
+  function findAction(shortname) {
 
     if (shortname == "top") {
       return function(){ window.scrollTo(0, 0); }
@@ -64,18 +73,8 @@ chrome.extension.sendRequest({method: "getKeys"}, function(response) {
     } else if (shortname == 'reload') {
       return function(){ window.location.reload(); };
 
-    } else if (shortname == 'nexttab') {
-      return function(){ chrome.extension.sendRequest({method: "nextTab"}) };
-    } else if (shortname == 'prevtab') {
-      return function(){ chrome.extension.sendRequest({method: "prevTab"}) };
-    } else if (shortname == 'closetab') {
-      return function(){ chrome.extension.sendRequest({method: "closeTab"}) };
-    } else if (shortname == 'newtab') {
-      return function(){ chrome.extension.sendRequest({method: "newTab"}) };
-    } else if (shortname == 'firsttab') {
-      return function(){ chrome.extension.sendRequest({method: "firstTab"}) };
-    } else if (shortname == 'lasttab') {
-      return function(){ chrome.extension.sendRequest({method: "lastTab"}) };
+    } else {
+      return function(){ chrome.extension.sendRequest({method: shortname}) };
     }
   }
 });

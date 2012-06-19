@@ -2,22 +2,22 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
   if (request.method == "getKeys") {
     sendResponse({keys: localStorage['shortkeys']});
   }
-  else if (request.method == "nextTab") {
+  else if (request.method == "nexttab") {
     selectTab("next");
   }
-  else if (request.method == "prevTab") {
+  else if (request.method == "prevtab") {
     selectTab("previous");
   }
-  else if (request.method == "firstTab") {
+  else if (request.method == "firsttab") {
     selectTab("first");
   }
-  else if (request.method == "lastTab") {
+  else if (request.method == "lasttab") {
     selectTab("last");
   }
-  else if (request.method == "newTab") {
+  else if (request.method == "newtab") {
     chrome.tabs.create({});
   }
-  else if (request.method == "closeTab") {
+  else if (request.method == "closetab") {
     chrome.tabs.getSelected(null, function(tab){ 
       chrome.tabs.remove(tab.id);
     });

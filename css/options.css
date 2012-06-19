@@ -1,0 +1,95 @@
+body {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 120%;
+}
+table {
+  width: 100%;
+}
+textarea {
+  width: 740px;
+}
+h1 {
+  text-align: center;
+  font-weight: normal;
+  margin: 0;
+}
+.buttons {
+  margin-top: 20px;
+}
+input, select, button, textarea {
+  font-size: 18px;
+  padding: 4px;
+  border: 1px solid #ccc;
+}
+th, input, select {
+  width: 240px;
+}
+.hide, .blacklist-cont {
+  display: none;
+}
+#status {
+  opacity: 0;
+  background:#008000;
+  color:#FFFFFF;
+  font-weight:bold;
+  padding:4px;
+  text-align:center;
+  font-size: 16px;
+  margin: 5px 0;
+}
+.save {
+  float: right;
+}
+.container {
+  width: 750px;
+  margin: 100px auto 0;
+}
+button {
+  background-color: #EEE;
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #EEE), color-stop(100%, #CCC));
+  background-image: -webkit-linear-gradient(top, #EEE, #CCC); background-image: -moz-linear-gradient(top, #EEE, #CCC);
+  background-image: -ms-linear-gradient(top, #EEE, #CCC);
+  background-image: -o-linear-gradient(top, #EEE, #CCC);
+  background-image: linear-gradient(top, #EEE, #CCC);
+  border: 1px solid #CCC;
+  border-bottom: 1px solid #BBB;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px; color: #333;
+  line-height: 1;
+  padding: 8px 0;
+  text-align: center;
+  text-shadow: 0 1px 0 #EEE;
+  width: 150px;
+}
+button:hover {
+  background-color: #dddddd;
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #dddddd), color-stop(100%, #bbbbbb));
+  background-image: -webkit-linear-gradient(top, #dddddd, #bbbbbb);
+  background-image: -moz-linear-gradient(top, #dddddd, #bbbbbb);
+  background-image: -ms-linear-gradient(top, #dddddd, #bbbbbb);
+  background-image: -o-linear-gradient(top, #dddddd, #bbbbbb);
+  background-image: linear-gradient(top, #dddddd, #bbbbbb);
+  border: 1px solid #bbb;
+  border-bottom: 1px solid #999;
+  cursor: pointer;
+  text-shadow: 0 1px 0 #ddd; 
+}
+button:active {
+  border: 1px solid #aaa;
+  border-bottom: 1px solid #888;
+  -webkit-box-shadow: inset 0 0 5px 2px #aaaaaa, 0 1px 0 0 #eeeeee;
+  -moz-box-shadow: inset 0 0 5px 2px #aaaaaa, 0 1px 0 0 #eeeeee;
+  box-shadow: inset 0 0 5px 2px #aaaaaa, 0 1px 0 0 #eeeeee; 
+}
+.showhelp {
+  margin-top: 20px;
+  font-size: 12px;
+  color: #555;
+  display: block;
+}
+.help {
+  display: none;
+  font-size: 12px;
+}
+
