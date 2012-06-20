@@ -5,32 +5,34 @@
   <script src="../js/jquery.min.js" type="text/javascript"></script>
   <script src="../js/angular.min.js" type="text/javascript"></script>
   <script src="../js/options.js" type="text/javascript"></script>
+  <link rel="stylesheet" href="../css/bootstrap.min.css" />
   <link rel="stylesheet" href="../css/options.css" />
 </head>
 
 <body>
   <div class="container">
-    <h1>Shortkeys for Chrome</h1>
-    <p id="status">Options saved.</p>
+    <div class="page-header">
+      <h1>Shortkeys for Chrome <small>Enter your shortcuts, click save, and you're done!</small></h1>
+    </div>
 
-    <div ng-controller="OptionsCtrl">
+    <div class="row">
+      <div class="span8">
+        <p class="alert alert-success" style="display: none;">Options saved.</p>
 
-      <table>
-        <tr>
-          <th>Key binding</th>
-          <th>Action</th>
-          <th>Active on</th>
-        </tr>
-      </table>
+        <form class="well form-inline" ng-controller="OptionsCtrl">
 
-      <table ng-repeat="key in keys">
-        <tr>
+          <table>
+            <tr>
+              <th>Key binding</th>
+              <th>Action</th>
+              <th>Active on</th>
+            </tr>
+          </table>
+          
 
-          <td>
+          <div class="key-container" ng-repeat="key in keys">
+            <hr />
             <input ng-model="key.key" class="key" placeholder="Key combo" type="text" />
-          </td>
-
-          <td>
             <select ng-model="key.action" class="action">
               <optgroup label="Scrolling">
                 <option value="top">Scroll to top</option>
@@ -54,49 +56,39 @@
                 <option value="lasttab">Last tab</option>
               </optgroup>
             </select>
-          </td>
-
-          <td>
             <select ng-model="key.blacklist" class="blacklist">
               <option value="false">All sites</option>
               <option value="true">Blacklist some sites</option>
             </select>
-          </td>
+            <textarea ng-show="key.blacklist" ng-model="key.sites" class="sites"></textarea>
+            
+          </div>
 
-        </tr>
+          <div class="form-actions">
+            <button ng-click="addEmpty()" class="btn "><i class="icon-plus"></i> Add</button>
+            <button ng-click="saveKeys()" class="btn btn-success pull-right"><i class="icon-ok icon-white"></i> Save</button>
+          </div> 
 
-        <tr>
-          <td colspan="3"><textarea ng-show="key.blacklist" ng-model="key.sites" class="sites"></textarea></td>
-        </tr>
-      </table>
-
-      <div class="buttons">
-        <button ng-click="addEmpty()" class="add">+ Add</button>
-        <button ng-click="saveKeys()" class="save"><span>&#x2713;</span> Save</button>
-      </div> 
+        </form>
+      </div>
+      <div class="span4">
+        <p>Key combos are zero or more modifiers (<code>ctrl</code>, <code>shift</code>, etc.) plus one regular key (letter keys, number keys, arrow keys, etc), all joined with <code>+</code> signs. Here are a couple examples:</p>
+        <ul>
+          <li><code>ctrl+l</code></li>
+          <li><code>shift+h</code></li>
+          <li><code>r</code></li>
+          <li><code>ctrl+shift+&#x21d1;+pageup</code></li>
+          <li><code>alt+f7</code></li>
+        </ul>
+        <p>The following modifiers are available:
+        <code>&#x21d1;</code>, <code>shift</code>, <code>option</code>, <code>&#x2325;</code>, <code>alt</code>, <code>ctrl</code>, <code>control</code>, <code>command</code>, and <code>&#x2318;</code>.</p>
+        <p>In addition to regular letters, numbers, and punctuation, the following special keys can be used for shortcuts:
+        <code>backspace</code>, <code>tab</code>, <code>clear</code>, <code>enter</code>, <code>return</code>, <code>esc</code>, <code>escape</code>, <code>space</code>,
+        <code>up</code>, <code>down</code>, <code>left</code>, <code>right</code>, <code>home</code>, <code>end</code>, <code>pageup</code>, <code>pagedown</code>, <code>del</code>, <code>delete</code> and <code>f1</code> through <code>f19</code>.</p>
+        <p>Note: key combos are ignored if you're currently focused on a form field. This makes it possible to have shortcuts such as "<code>h</code>" but still be able to type "<code>h</code>" in a form without it triggering the shortcut.</p>
+      </div>
     </div>
 
-    <table class="hide keycont">
-    </table>
-
-
-    <a href="#" class="showhelp">Show help</a>
-    <div class="help">
-      <p>Key combos are zero or more modifiers (<code>ctrl</code>, <code>shift</code>, etc.) plus one regular key (letter keys, number keys, arrow keys, etc), all joined with <code>+</code> signs. Here are a couple examples:</p>
-      <ul>
-      	<li><code>ctrl+l</code></li>
-      	<li><code>shift+h</code></li>
-        <li><code>r</code></li>
-      	<li><code>ctrl+shift+&#x21d1;+pageup</code></li>
-      	<li><code>alt+f7</code></li>
-      </ul>
-      <p>The following modifiers are available:
-      <code>&#x21d1;</code>, <code>shift</code>, <code>option</code>, <code>&#x2325;</code>, <code>alt</code>, <code>ctrl</code>, <code>control</code>, <code>command</code>, and <code>&#x2318;</code>.</p>
-      <p>In addition to regular letters, numbers, and punctuation, the following special keys can be used for shortcuts:
-      <code>backspace</code>, <code>tab</code>, <code>clear</code>, <code>enter</code>, <code>return</code>, <code>esc</code>, <code>escape</code>, <code>space</code>,
-      <code>up</code>, <code>down</code>, <code>left</code>, <code>right</code>, <code>home</code>, <code>end</code>, <code>pageup</code>, <code>pagedown</code>, <code>del</code>, <code>delete</code> and <code>f1</code> through <code>f19</code>.</p>
-      <p>Note: key combos are ignored if you're currently focused on a form field. This makes it possible to have shortcuts such as "<code>h</code>" but still be able to type "<code>h</code>" in a form without it triggering the shortcut.</p>
-    </div>
   </div>
 
 </body>

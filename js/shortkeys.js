@@ -22,32 +22,22 @@ chrome.extension.sendRequest({method: "getKeys"}, function(response) {
   var url = document.URL;
   if (keys) {
     keys = JSON.parse(keys);
-    if (keys["key0"] !== undefined) {
-      i = 0;
-      while (keys["key" + i] !== undefined) {
-        activateKey(keys["key" + i]);
-        i++;
-      }
-    } else if (keys.length > 0) {
-      for (var key in keys) {
-        activateKey(key);
+    if (keys.length > 0) {
+      for (var i = 0; i < keys.length; i++) {
+        activateKey(keys[i]);
       }
     }
   }
 
-  function activateKey(key) {
-    var useKey = true;
-    if (curkey.blacklist && curkey.sites && curkey.blacklist == "1") {
-      curkey.sites;
-      for (var j = 0; j < curkey.sites.length; j++) {
-        if (url.match(globToRegex(curkey.sites[j]))) {
-          useKey = false;
+  function activateKey(keyobj) {
+    if (keyobj.blacklist && keyobj.sitesArray && keyobj.blacklist == "true") {
+      for (var j = 0; j < keyobj.sitesArray.length; j++) {
+        if (url.match(globToRegex(keyobj.sitesArray[j]))) {
+          return;
         } 
       }
     }
-    if (useKey) {
-      key(curkey.key, findAction(curkey.action));
-    }
+    key(keyobj.key, findAction(keyobj.action));
   }
 
   function findAction(shortname) {
