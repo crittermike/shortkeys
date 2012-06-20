@@ -16,6 +16,11 @@ function globToRegex(glob) {
   return new RegExp(regexChars.join(""));
 }
 
+key.filter = function(event) {
+  var tagName = (event.target || event.srcElement).tagName;
+  var editable = (event.target || event.srcElement).getAttribute('contenteditable');
+  return !(tagName == 'INPUT' || tagName == 'SELECT' || tagName == 'TEXTAREA' || editable);
+}
 
 chrome.extension.sendRequest({method: "getKeys"}, function(response) {
   var keys = response.keys;
