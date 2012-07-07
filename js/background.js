@@ -22,6 +22,23 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
       chrome.tabs.remove(tab.id);
     });
   }
+  else if (request.method == "togglepin") {
+    chrome.tabs.getSelected(null, function(tab){ 
+      var toggle = !tab.pinned;
+      chrome.tabs.update(tab.id, { pinned: toggle });
+    });
+  }
+  else if (request.method == "copyurl") {
+    var copyDiv = document.createElement('div');
+    copyDiv.contentEditable = true;
+    document.body.appendChild(copyDiv);
+    copyDiv.innerHTML = request.text;
+    copyDiv.unselectable = "off";
+    copyDiv.focus();
+    document.execCommand('SelectAll');
+    document.execCommand("Copy", false, null);
+    document.body.removeChild(copyDiv);
+  }
   else {
     sendResponse({});
   }

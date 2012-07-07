@@ -61,6 +61,20 @@ chrome.extension.sendRequest({method: "getKeys"}, function(response) {
       return function(){ history.forward(); };
     } else if (shortname == 'reload') {
       return function(){ window.location.reload(); };
+    } else if (shortname == 'copyurl') {
+      return function(){ chrome.extension.sendRequest({method: shortname, text: document.URL}) };
+    } else if (shortname == 'zoomin') {
+      return function() { 
+        var curZoom = document.body.style.zoom || 1;
+        document.body.style.zoom = (parseFloat(curZoom) + 0.1).toFixed(1);
+      }
+    } else if (shortname == 'zoomout') {
+      return function() { 
+        var curZoom = document.body.style.zoom || 1;
+        document.body.style.zoom = (parseFloat(curZoom) - 0.1).toFixed(1);
+      }
+    } else if (shortname == 'zoomreset') {
+      return function(){ document.body.style.zoom = 1; };
 
     } else {
       return function(){ chrome.extension.sendRequest({method: shortname}) };
