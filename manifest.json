@@ -13,7 +13,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["js/keymaster.js", "js/shortkeys.js"],
+      "js": ["js/mousetrap.js", "js/shortkeys.js"],
       "all_frames": true
     }
   ],

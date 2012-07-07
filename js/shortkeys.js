@@ -16,18 +16,12 @@ function globToRegex(glob) {
   return new RegExp(regexChars.join(""));
 }
 
-key.filter = function(event) {
-  var tagName = (event.target || event.srcElement).tagName;
-  var editable = (event.target || event.srcElement).getAttribute('contenteditable');
-  return !(tagName == 'INPUT' || tagName == 'SELECT' || tagName == 'TEXTAREA' || editable);
-}
-
 chrome.extension.sendRequest({method: "getKeys"}, function(response) {
   var keys = response.keys;
   var url = document.URL;
   if (keys) {
     keys = JSON.parse(keys);
-    if (keys.length > 0) {
+    if (keys.length > 0) {key
       for (var i = 0; i < keys.length; i++) {
         activateKey(keys[i]);
       }
@@ -42,7 +36,7 @@ chrome.extension.sendRequest({method: "getKeys"}, function(response) {
         } 
       }
     }
-    key(keyobj.key, findAction(keyobj.action));
+    Mousetrap.bind(keyobj.key, findAction(keyobj.action));
   }
 
   function findAction(shortname) {
