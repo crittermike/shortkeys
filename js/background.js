@@ -22,6 +22,15 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
       chrome.tabs.remove(tab.id);
     });
   }
+  else if (request.method == "onlytab") {
+    chrome.tabs.query({ windowId: chrome.windows.WINDOW_ID_CURRENT, pinned: false, active: false }, function(tabs){
+      var ids = new Array();
+      tabs.forEach(function(tab) {
+        ids.push(tab.id);
+      });
+      chrome.tabs.remove(ids);
+    });
+  }
   else if (request.method == "togglepin") {
     chrome.tabs.getSelected(null, function(tab){ 
       var toggle = !tab.pinned;
