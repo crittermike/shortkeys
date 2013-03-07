@@ -18,8 +18,13 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
     chrome.tabs.create({});
   }
   else if (request.method == "closetab") {
-    chrome.tabs.getSelected(null, function(tab){ 
+    chrome.tabs.getSelected(null, function(tab){
       chrome.tabs.remove(tab.id);
+    });
+  }
+  else if (request.method == "clonetab") {
+    chrome.tabs.getSelected(null, function(tab){
+      chrome.tabs.duplicate(tab.id);
     });
   }
   else if (request.method == "onlytab") {
@@ -32,7 +37,7 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
     });
   }
   else if (request.method == "togglepin") {
-    chrome.tabs.getSelected(null, function(tab){ 
+    chrome.tabs.getSelected(null, function(tab){
       var toggle = !tab.pinned;
       chrome.tabs.update(tab.id, { pinned: toggle });
     });
