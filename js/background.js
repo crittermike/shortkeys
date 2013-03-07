@@ -2,6 +2,9 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
   if (request.method == "getKeys") {
     sendResponse({keys: localStorage['shortkeys']});
   }
+  else if (request.method == "cleardownloads") {
+    chrome.browsingData.remove({"since": 0}, {"downloads": true});
+  }
   else if (request.method == "nexttab") {
     selectTab("next");
   }

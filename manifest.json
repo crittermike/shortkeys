@@ -5,7 +5,8 @@
   "version": "1.5.3",
   "permissions": [
     "tabs",
-    "clipboardWrite"
+    "clipboardWrite",
+    "browsingData"
   ],
   "options_page": "pages/options.html",
   "background": {

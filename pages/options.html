@@ -28,7 +28,7 @@
               <th>Active on</th>
             </tr>
           </table>
-          
+
 
           <div class="key-container" ng-repeat="key in keys">
             <hr />
@@ -64,19 +64,22 @@
                 <option value="zoomout">Zoom Out</option>
                 <option value="zoomreset">Reset Zoom</option>
               </optgroup>
+              <optgroup label="Downloads">
+                <option value="cleardownloads">Clear downloads</option>
+              </optgroup>
             </select>
             <select ng-model="key.blacklist" class="blacklist">
               <option value="false">All sites</option>
               <option value="true">Blacklist some sites</option>
             </select>
             <textarea ng-show="key.blacklist" ng-model="key.sites" class="sites"></textarea>
-            
+
           </div>
 
           <div class="form-actions">
             <button ng-click="addEmpty()" class="btn "><i class="icon-plus"></i> Add</button>
             <button ng-click="saveKeys()" class="btn btn-success pull-right"><i class="icon-ok icon-white"></i> Save</button>
-          </div> 
+          </div>
 
         </form>
       </div>
