@@ -56,6 +56,14 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
     document.execCommand("Copy", false, null);
     document.body.removeChild(copyDiv);
   }
+  else if (request.method == "movetableft") {
+    if  (sender.tab.index > 0) {
+      chrome.tabs.move(sender.tab.id, {'index': sender.tab.index -1});
+    }
+  }
+  else if (request.method == "movetabright") {
+    chrome.tabs.move(sender.tab.id, {'index': sender.tab.index +1});
+  }
   else {
     sendResponse({});
   }
