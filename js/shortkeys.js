@@ -21,7 +21,7 @@ chrome.extension.sendRequest({method: "getKeys"}, function(response) {
   var url = document.URL;
   if (keys) {
     keys = JSON.parse(keys);
-    if (keys.length > 0) {key
+    if (keys.length > 0) {
       for (var i = 0; i < keys.length; i++) {
         activateKey(keys[i]);
       }
