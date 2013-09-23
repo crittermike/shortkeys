@@ -28,21 +28,6 @@ function OptionsCtrl($scope) {
   $scope.keysStr = localStorage["shortkeys"];
   if ($scope.keysStr) {
     $scope.keys = JSON.parse($scope.keysStr);
-
-    // TODO: Remove this block later.
-    if ($scope.keys.key0) {
-      $scope.newKeys = [];
-      for (keyname in $scope.keys) {
-        curkey = $scope.keys[keyname];
-        if (curkey.blacklist == "1") {
-          curkey.blacklist = true;
-        } else {
-          curkey.blacklist = false;
-        }
-        $scope.newKeys.push(curkey);
-      }
-      $scope.keys = $scope.newKeys;
-    }
   } else {
     $scope.addEmpty();
   }

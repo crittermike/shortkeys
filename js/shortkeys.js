@@ -29,11 +29,20 @@ chrome.extension.sendRequest({method: "getKeys"}, function(response) {
   }
 
   function activateKey(keyobj) {
-    if (keyobj.blacklist && keyobj.sitesArray && keyobj.blacklist == "true") {
+    if (keyobj.blacklist && keyobj.sitesArray && keyobj.blacklist != "false") {
+      if (keyobj.blacklist == "whitelist") {
+        var kill = true;
+      }
       for (var j = 0; j < keyobj.sitesArray.length; j++) {
-        if (url.match(globToRegex(keyobj.sitesArray[j]))) {
+        isMatch = url.match(globToRegex(keyobj.sitesArray[j]))
+        if (keyobj.blacklist == "true" && isMatch) {
           return;
-        } 
+        } else if (keyobj.blacklist == "whitelist" && isMatch) {
+          kill = false;
+        }
+      }
+      if (kill) {
+        return;
       }
     }
     Mousetrap.bind(keyobj.key, findAction(keyobj.action));
@@ -64,12 +73,12 @@ chrome.extension.sendRequest({method: "getKeys"}, function(response) {
     } else if (shortname == 'copyurl') {
       return function(){ chrome.extension.sendRequest({method: shortname, text: document.URL}) };
     } else if (shortname == 'zoomin') {
-      return function() { 
+      return function() {
         var curZoom = document.body.style.zoom || 1;
         document.body.style.zoom = (parseFloat(curZoom) + 0.1).toFixed(1);
       }
     } else if (shortname == 'zoomout') {
-      return function() { 
+      return function() {
         var curZoom = document.body.style.zoom || 1;
         document.body.style.zoom = (parseFloat(curZoom) - 0.1).toFixed(1);
       }

@@ -72,7 +72,8 @@
             </select>
             <select ng-model="key.blacklist" class="blacklist">
               <option value="false">All sites</option>
-              <option value="true">Blacklist some sites</option>
+              <option value="true">All sites except...</option>
+              <option value="whitelist">Only on specific sites</option>
             </select>
             <textarea ng-show="key.blacklist" ng-model="key.sites" class="sites"></textarea>
 
