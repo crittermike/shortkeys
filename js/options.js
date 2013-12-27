@@ -1,5 +1,12 @@
 function OptionsCtrl($scope) {
   $scope.keys = [];
+  $scope.chromesync = false;
+
+  var addBlankIfEmpty = function() { 
+    if ($scope.keys.length == 0) {
+      $scope.addEmpty();
+    }
+  }
 
   $scope.addEmpty = function() {
     $scope.keys.push({key:'', action:'top', blacklist:false, sites:'*mail.google.com*'});
@@ -17,18 +24,84 @@ function OptionsCtrl($scope) {
         $scope.keys[i].sitesArray = $scope.keys[i].sites;
       }
     }
-    localStorage["shortkeys"] = JSON.stringify($scope.keys);
+    var settings = {keys: $scope.keys, chromesync: $scope.chromesync}
+    if ($scope.chromesync) {
+      chrome.storage.sync.set(settings, function() {
+        $('.chromesyncsuccess').slideDown('fast');
+        setTimeout(function() {
+          $('.chromesyncsuccess').slideUp('fast');
+        }, 3000);
+        
+      });
+    }
+    localStorage["shortkeys"] = JSON.stringify(settings);
 
-    $('.alert').slideDown('fast');
+    $('.settingssaved').slideDown('fast');
     setTimeout(function() {
-      $('.alert').slideUp('fast');
+      $('.settingssaved').slideUp('fast');
     }, 3000);
+    addBlankIfEmpty();
+  }
+  
+  $scope.mergeInKeys = function(newKeys, noReplace) {
+    var keyIndexMap = {};
+    for (var i=0; i<$scope.keys.length; i++) {
+      var key = $scope.keys[i];
+      keyIndexMap[key.key] = i;
+    }
+    for (var i=0; i<newKeys.length; i++) {
+      var newKey = newKeys[i];
+      var index = keyIndexMap[newKey.key];
+      if (index === undefined) {
+        $scope.keys.push(newKey);
+      } else {
+        if (!noReplace) {
+          $scope.keys[index] = newKey;
+        }
+      }
+    }
   }
 
-  $scope.keysStr = localStorage["shortkeys"];
-  if ($scope.keysStr) {
-    $scope.keys = JSON.parse($scope.keysStr);
+  $scope.exportSettings = function() {
+    chrome.runtime.sendMessage({action: "exportSettingsToClipboard", keys: $scope.keys});
+  }
+  
+  $scope.importSettings = function() {
+    chrome.runtime.sendMessage({action: "importSettingsFromClipboard"}, function(keys_str) {
+      var keys = JSON.parse(keys_str);
+      if (keys) {
+        $scope.$apply(function() {
+          $scope.mergeInKeys(keys);
+        });
+      }
+    });
+  }
+  
+  $scope.settingsStr = localStorage["shortkeys"];
+  if ($scope.settingsStr) {
+    var settings = JSON.parse($scope.settingsStr);
+    if (settings.keys != undefined) {
+      $scope.keys = settings.keys || [];
+    } else {
+      $scope.keys = settings || [];  // This allows for conversion of the previous data format
+    }
+    $scope.chromesync = settings.chromesync || false;
+  }
+  if ($scope.chromesync) {
+    chrome.storage.sync.get(null, function(response) {
+      if (!response) {
+        $('.chromesyncfailure').slideDown('fast');
+        setTimeout(function() {
+          $('.chromesyncfailure').slideUp('fast');
+        }, 3000);
+      } else {
+        $scope.$apply(function() {
+          $scope.mergeInKeys(response.keys);
+          addBlankIfEmpty();
+        });
+      }
+    });
   } else {
-    $scope.addEmpty();
+    addBlankIfEmpty();
   }
 }

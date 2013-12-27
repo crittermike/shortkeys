@@ -1,36 +1,71 @@
-chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
-  if (request.method == "getKeys") {
-    sendResponse({keys: localStorage['shortkeys']});
+function copyToClipboard(text) {
+  var copyDiv = document.createElement('div');
+  copyDiv.contentEditable = true;
+  document.body.appendChild(copyDiv);
+  copyDiv.innerHTML = text;
+  copyDiv.unselectable = "off";
+  copyDiv.focus();
+  document.execCommand('SelectAll');
+  document.execCommand("Copy", false, null);
+  document.body.removeChild(copyDiv);
+}
+
+function copyFromClipboard() {
+  var copyDiv = document.createElement('div');
+  copyDiv.contentEditable = true;
+  document.body.appendChild(copyDiv);
+  copyDiv.innerHTML = text;
+  copyDiv.unselectable = "off";
+  copyDiv.focus();
+  document.execCommand('SelectAll');
+  document.execCommand("Paste", false, null);
+  var text = copyDiv.innerHTML;
+  document.body.removeChild(copyDiv);
+  return text;
+}
+
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  var action = request.action;
+  if (action == "getKeys") {
+    sendResponse(localStorage['shortkeys']);
   }
-  else if (request.method == "cleardownloads") {
+  else if (action == "importSettingsFromClipboard") {
+    var keys_str = copyFromClipboard();
+    sendResponse(keys_str);
+  }
+  else if (action == "exportSettingsToClipboard") {
+    var keys_str = JSON.stringify(request.keys);
+    copyToClipboard(keys_str);
+  }
+  else if (action == "cleardownloads") {
     chrome.browsingData.remove({"since": 0}, {"downloads": true});
   }
-  else if (request.method == "nexttab") {
+  else if (action == "nexttab") {
     selectTab("next");
   }
-  else if (request.method == "prevtab") {
+  else if (action == "prevtab") {
     selectTab("previous");
   }
-  else if (request.method == "firsttab") {
+  else if (action == "firsttab") {
     selectTab("first");
   }
-  else if (request.method == "lasttab") {
+  else if (action == "lasttab") {
     selectTab("last");
   }
-  else if (request.method == "newtab") {
+  else if (action == "newtab") {
     chrome.tabs.create({});
   }
-  else if (request.method == "closetab") {
+  else if (action == "closetab") {
     chrome.tabs.getSelected(null, function(tab){
       chrome.tabs.remove(tab.id);
     });
   }
-  else if (request.method == "clonetab") {
+  else if (action == "clonetab") {
     chrome.tabs.getSelected(null, function(tab){
       chrome.tabs.duplicate(tab.id);
     });
   }
-  else if (request.method == "onlytab") {
+  else if (action == "onlytab") {
     chrome.tabs.query({ windowId: chrome.windows.WINDOW_ID_CURRENT, pinned: false, active: false }, function(tabs){
       var ids = new Array();
       tabs.forEach(function(tab) {
@@ -39,30 +74,38 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
       chrome.tabs.remove(ids);
     });
   }
-  else if (request.method == "togglepin") {
+  else if (action == "togglepin") {
     chrome.tabs.getSelected(null, function(tab){
       var toggle = !tab.pinned;
       chrome.tabs.update(tab.id, { pinned: toggle });
     });
   }
-  else if (request.method == "copyurl") {
-    var copyDiv = document.createElement('div');
-    copyDiv.contentEditable = true;
-    document.body.appendChild(copyDiv);
-    copyDiv.innerHTML = request.text;
-    copyDiv.unselectable = "off";
-    copyDiv.focus();
-    document.execCommand('SelectAll');
-    document.execCommand("Copy", false, null);
-    document.body.removeChild(copyDiv);
+  else if (action == "copyurl") {
+    copyToClipboard(request.text);
   }
-  else if (request.method == "movetableft") {
+  else if (action == "movetableft") {
     if  (sender.tab.index > 0) {
       chrome.tabs.move(sender.tab.id, {'index': sender.tab.index -1});
     }
   }
-  else if (request.method == "movetabright") {
+  else if (action == "movetabright") {
     chrome.tabs.move(sender.tab.id, {'index': sender.tab.index +1});
+  }
+  else if (action == 'gototab') {
+    var createNewTab = function() {
+      chrome.tabs.create({url: request.openurl});
+    }
+    if (request.matchurl) {
+      chrome.tabs.query({url: request.matchurl, currentWindow: true}, function (tabs) {
+        if (tabs.length > 0) {
+          chrome.tabs.update(tabs[0].id, {selected: true});
+        } else {
+          createNewTab();
+        }
+      });
+    } else {
+      createNewTab();
+    }
   }
   else {
     sendResponse({});

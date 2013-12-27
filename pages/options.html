@@ -17,7 +17,9 @@
 
     <div class="row">
       <div class="span8">
-        <p class="alert alert-success" style="display: none;">Options saved.</p>
+        <p class="settingssaved alert alert-success" style="display: none;">Options saved.</p>
+        <p class="chromesyncsuccess alert alert-success" style="display: none;">Options synced to cloud.</p>
+        <p class="chromesyncfailure alert alert-failure" style="display: none;">Sync to cloud failed.</p>
 
         <form class="well form-inline" ng-controller="OptionsCtrl">
 
@@ -49,17 +51,18 @@
                 <option value="copyurl">Copy URL</option>
               </optgroup>
               <optgroup label="Tabs">
+                <option value="gototab">Jump to tab or URL</option>
                 <option value="newtab">New tab</option>
                 <option value="closetab">Close tab</option>
                 <option value="onlytab">Close other tabs</option>
-                <option value="clonetab">Clone tab</option>
+                <option value="clonetab">Duplicate tab</option>
                 <option value="nexttab">Next tab</option>
                 <option value="prevtab">Previous tab</option>
                 <option value="firsttab">First tab</option>
                 <option value="lasttab">Last tab</option>
-                <option value="togglepin">Pin/Unpin Tab</option>
-                <option value="movetableft">Move Tab Left</option>
-                <option value="movetabright">Move Tab Right</option>
+                <option value="togglepin">Pin/unpin tab</option>
+                <option value="movetableft">Move tab left</option>
+                <option value="movetabright">Move tab right</option>
               </optgroup>
               <optgroup label="Zooming">
                 <option value="zoomin">Zoom In</option>
@@ -75,13 +78,35 @@
               <option value="true">All sites except...</option>
               <option value="whitelist">Only on specific sites</option>
             </select>
+            <div ng-show="key.blacklist" class="textarealabel">Blacklisted sites</div>
             <textarea ng-show="key.blacklist" ng-model="key.sites" class="sites"></textarea>
-
+            <div class="gototabconfig">
+              <div class="gototabmatchurl">
+                <div ng-show="key.action == 'gototab'" class="textarealabel">URL to match (ex: <code>*://*.amazon.com/*</code>)</div>
+                <textarea ng-show="key.action == 'gototab'" ng-model="key.matchurl" class="taburl"></textarea>
+              </div>
+              <div class="gototabopenurl">
+                <div ng-show="key.action == 'gototab'" class="textarealabel">URL to open if no matching tab found</div>
+                <textarea ng-show="key.action == 'gototab'" ng-model="key.openurl" class="taburl"></textarea>
+              </div>
+            </div>
           </div>
 
           <div class="form-actions">
-            <button ng-click="addEmpty()" class="btn "><i class="icon-plus"></i> Add</button>
-            <button ng-click="saveKeys()" class="btn btn-success pull-right"><i class="icon-ok icon-white"></i> Save</button>
+            <button ng-click="addEmpty()" class="btn pull-left"><i class="icon-plus"></i> Add</button>
+            <div class="pull-right">
+              <button ng-click="saveKeys()" class="btn btn-success"><i class="icon-ok icon-white"></i> Save</button>
+            </div>
+          </div>
+          <div class="form-actions">
+            <div class="pull-right">
+              <input type="checkbox" ng-model="chromesync"> Sync settings to cloud with Chrome Sync </input>
+            </div><br /></br />
+            <div class="pull-right">
+              Export/import settings to/from clipboard:
+              <button ng-click="exportSettings()" class="btn"><i class="icon-upload"></i> Export</button>
+              <button ng-click="importSettings()" class="btn"><i class="icon-download"></i> Import</a>
+            </div>
           </div>
 
         </form>

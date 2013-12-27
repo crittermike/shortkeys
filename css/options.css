@@ -7,9 +7,31 @@ textarea {
   margin-top: 5px;
 }
 
+div.gototabconfig {
+  width: 100%;
+  overflow: hidden;
+}
+
+div.gototabmatchurl {
+  width: 48%;
+  float: left;
+}
+
+div.gototabopenurl {
+  width: 48%;
+  float: right;
+  margin-right: 5px;
+}
+
+div.textarealabel {
+  margin-top: 5px;
+  margin-bottom: 0px;
+}
+
 table {
   width: 100%;
 }
+
 th {
   width: 33%;
 }
