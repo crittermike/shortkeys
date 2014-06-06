@@ -72,6 +72,9 @@
               <optgroup label="Downloads">
                 <option value="cleardownloads">Clear downloads</option>
               </optgroup>
+              <optgroup label="Javascript">
+                <option value="javascript">Run JavaScript</option>
+              </optgroup>
             </select>
             <select ng-model="key.blacklist" class="blacklist">
               <option value="false">All sites</option>
@@ -80,6 +83,12 @@
             </select>
             <div ng-show="key.blacklist" class="textarealabel">Blacklisted sites</div>
             <textarea ng-show="key.blacklist" ng-model="key.sites" class="sites"></textarea>
+            <div class="javascriptconfig">
+              <div class="javascriptconfigcode">
+                <div ng-show="key.action == 'javascript'" class="textarealabel">Javascript code to run</div>
+                <textarea ng-show="key.action == 'javascript'" ng-model="key.code" class="code"></textarea>
+              </div>
+            </div>
             <div class="gototabconfig">
               <div class="gototabmatchurl">
                 <div ng-show="key.action == 'gototab'" class="textarealabel">URL to match (ex: <code>*://*.amazon.com/*</code>)</div>

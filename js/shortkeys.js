@@ -87,7 +87,11 @@ chrome.runtime.sendMessage({action: "getKeys"}, function(response) {
       document.body.style.zoom = (parseFloat(curZoom) - 0.1).toFixed(1);
     } else if (action == 'zoomreset') {
       document.body.style.zoom = 1;
-
+    } else if (action == 'javascript') {
+      var script = document.createElement('script');
+      script.textContent = keyobj.code.replace(/^\s*javascript:/, '');
+      document.body.appendChild(script);
+      document.body.removeChild(script);
     } else {
       for (var attribute in keyobj) {
         message[attribute] = keyobj[attribute];
