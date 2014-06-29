@@ -107,6 +107,19 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       createNewTab();
     }
   }
+  else if (action == 'openbookmark') {
+    chrome.bookmarks.search({title: request.bookmark}, function (nodes) {
+      var openNode;
+      for (var i = nodes.length; i-- > 0;) {
+        var node = nodes[i];
+        if (node.url && node.title == request.bookmark) {
+          openNode = node;
+          break;
+        }
+      }
+      chrome.tabs.update(sender.tab.id, {url: unescape(openNode.url)});
+    });
+  }
   else {
     sendResponse({});
   }
