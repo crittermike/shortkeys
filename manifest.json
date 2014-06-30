@@ -8,7 +8,9 @@
     "clipboardWrite",
     "clipboardRead",
     "browsingData",
-    "storage"
+    "storage",
+    "bookmarks",
+    "<all_urls>"
   ],
   "options_page": "pages/options.html",
   "background": {

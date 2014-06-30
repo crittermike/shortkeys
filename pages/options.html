@@ -49,6 +49,7 @@
                 <option value="forward">Go forward</option>
                 <option value="reload">Reload page</option>
                 <option value="copyurl">Copy URL</option>
+                <option value="openbookmark">Open Bookmark/Bookmarklet</option>
               </optgroup>
               <optgroup label="Tabs">
                 <option value="gototab">Jump to tab or URL</option>
@@ -83,6 +84,10 @@
             </select>
             <div ng-show="key.blacklist" class="textarealabel">Blacklisted sites</div>
             <textarea ng-show="key.blacklist" ng-model="key.sites" class="sites"></textarea>
+            <div ng-show="key.action == 'openbookmark'">
+              <div class="textarealabel">Full title of bookmark to open</div>
+              <input type="text" ng-model="key.bookmark" class="code">
+            </div>
             <div class="javascriptconfig">
               <div class="javascriptconfigcode">
                 <div ng-show="key.action == 'javascript'" class="textarealabel">Javascript code to run</div>
