@@ -40,7 +40,19 @@ th {
   margin: 10px 0;
 }
 
+.key-container:after {
+  content: ' ';
+  display: block;
+  visibility: none;
+  clear: both;
+}
+
 .form-actions {
   padding-left: 0;
   padding-right: 0;
+}
+
+.del-btn {
+  float: right;
+  margin-top: 6px;
 }
