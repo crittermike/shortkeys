@@ -14,6 +14,10 @@ function OptionsCtrl($scope) {
   $scope.isEmpty = function(element, index, array) {
     return element && element.key != "";
   }
+
+  $scope.deleteKey = function(index) {
+    $scope.keys.splice(index, 1);
+  }
  
   $scope.saveKeys = function() {
     $scope.keys = $scope.keys.filter($scope.isEmpty); // Remove empty keys
