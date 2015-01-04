@@ -2,25 +2,30 @@ function OptionsCtrl($scope) {
   $scope.keys = [];
   $scope.chromesync = false;
 
-  var addBlankIfEmpty = function() {
+  var addBlankIfEmpty = function () {
     if ($scope.keys.length == 0) {
       $scope.addEmpty();
     }
   };
 
-  $scope.addEmpty = function() {
-    $scope.keys.push({key:'', action:'top', blacklist:false, sites:'*mail.google.com*'});
+  $scope.addEmpty = function () {
+    $scope.keys.push({
+      key: '',
+      action: 'top',
+      blacklist: false,
+      sites: '*mail.google.com*'
+    });
   };
 
-  $scope.isEmpty = function(element, index, array) {
+  $scope.isEmpty = function (element, index, array) {
     return element && element.key != "";
   };
 
-  $scope.deleteKey = function(index) {
+  $scope.deleteKey = function (index) {
     $scope.keys.splice(index, 1);
   };
 
-  $scope.saveKeys = function() {
+  $scope.saveKeys = function () {
     $scope.keys = $scope.keys.filter($scope.isEmpty); // Remove empty keys
     for (i = 0; i < $scope.keys.length; i++) {
       if (typeof $scope.keys[i].sites === 'string') {
@@ -31,9 +36,9 @@ function OptionsCtrl($scope) {
     }
     var settings = {keys: $scope.keys, chromesync: $scope.chromesync}
     if ($scope.chromesync) {
-      chrome.storage.sync.set(settings, function() {
+      chrome.storage.sync.set(settings, function () {
         $('.chromesyncsuccess').slideDown('fast');
-        setTimeout(function() {
+        setTimeout(function () {
           $('.chromesyncsuccess').slideUp('fast');
         }, 3000);
 
@@ -42,20 +47,20 @@ function OptionsCtrl($scope) {
     localStorage["shortkeys"] = JSON.stringify(settings);
 
     $('.settingssaved').slideDown('fast');
-    setTimeout(function() {
+    setTimeout(function () {
       $('.settingssaved').slideUp('fast');
     }, 5000);
     addBlankIfEmpty();
     window.scroll(0, 0);
   };
 
-  $scope.mergeInKeys = function(newKeys, noReplace) {
+  $scope.mergeInKeys = function (newKeys, noReplace) {
     var keyIndexMap = {};
-    for (var i=0; i<$scope.keys.length; i++) {
+    for (var i = 0; i < $scope.keys.length; i++) {
       var key = $scope.keys[i];
       keyIndexMap[key.key] = i;
     }
-    for (var i=0; i<newKeys.length; i++) {
+    for (var i = 0; i < newKeys.length; i++) {
       var newKey = newKeys[i];
       var index = keyIndexMap[newKey.key];
       if (index === undefined) {
@@ -68,15 +73,18 @@ function OptionsCtrl($scope) {
     }
   };
 
-  $scope.exportSettings = function() {
-    chrome.runtime.sendMessage({action: "exportSettingsToClipboard", keys: $scope.keys});
+  $scope.exportSettings = function () {
+    chrome.runtime.sendMessage({
+      action: "exportSettingsToClipboard",
+      keys: $scope.keys
+    });
   };
 
-  $scope.importSettings = function() {
-    chrome.runtime.sendMessage({action: "importSettingsFromClipboard"}, function(keys_str) {
+  $scope.importSettings = function () {
+    chrome.runtime.sendMessage({action: "importSettingsFromClipboard"}, function (keys_str) {
       try {
         var keys = JSON.parse(keys_str);
-      } catch(e) {
+      } catch (e) {
         alert("Your clipboard contains invalid JSON. Try clicking 'Export' again, or paste it into " +
         "a plain text editor and copying it back out again, to remove any formatting you might have picked up.");
         return;
@@ -100,14 +108,14 @@ function OptionsCtrl($scope) {
     $scope.chromesync = settings.chromesync || false;
   }
   if ($scope.chromesync) {
-    chrome.storage.sync.get(null, function(response) {
+    chrome.storage.sync.get(null, function (response) {
       if (!response) {
         $('.chromesyncfailure').slideDown('fast');
-        setTimeout(function() {
+        setTimeout(function () {
           $('.chromesyncfailure').slideUp('fast');
         }, 3000);
       } else {
-        $scope.$apply(function() {
+        $scope.$apply(function () {
           $scope.mergeInKeys(response.keys);
           addBlankIfEmpty();
         });
