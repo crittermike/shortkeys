@@ -44,8 +44,9 @@ function OptionsCtrl($scope) {
     $('.settingssaved').slideDown('fast');
     setTimeout(function() {
       $('.settingssaved').slideUp('fast');
-    }, 3000);
+    }, 5000);
     addBlankIfEmpty();
+    window.scroll(0, 0);
   };
 
   $scope.mergeInKeys = function(newKeys, noReplace) {
