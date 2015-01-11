@@ -3,8 +3,8 @@
 <head>
     <!-- build:css styles/vendor.css -->
     <!-- bower:css -->
-    <link rel="stylesheet"
-          href="bower_components/bootstrap/dist/css/bootstrap.css"/>
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="bower_components/fontawesome/css/font-awesome.css" />
     <!-- endbower -->
     <!-- endbuild -->
     <!-- build:css styles/main.css -->
@@ -28,7 +28,7 @@
 <body ng-controller="ShortkeysOptionsCtrl">
     <div class="container">
         <div class="page-header">
-            <h1>{{test}} Shortkeys for Chrome</h1>
+            <h1>Shortkeys for Chrome</h1>
         </div>
 
         <div class="row">
@@ -41,128 +41,89 @@
                 <p class="chromesyncfailure alert alert-failure"
                    style="display: none;">Sync to cloud failed.</p>
 
-                <form class="well form-inline">
-
-                    <table>
-                        <tr>
-                            <th>Key binding</th>
-                            <th>Action</th>
-                            <th>Active on</th>
-                        </tr>
-                    </table>
-
-
-                    <div class="key-container" ng-repeat="key in keys">
-                        <hr/>
-                        <input ng-model="key.key" class="key"
-                               placeholder="Key combo" type="text"/>
-                        <select ng-model="key.action" class="action">
-                            <optgroup label="Scrolling">
-                                <option value="top">Scroll to top</option>
-                                <option value="bottom">Scroll to bottom</option>
-                                <option value="scrolldown">Scroll down</option>
-                                <option value="scrolldownmore">Scroll down more
-                                </option>
-                                <option value="scrollup">Scroll up</option>
-                                <option value="scrollupmore">Scroll up more</option>
-                            </optgroup>
-                            <optgroup label="Location">
-                                <option value="back">Go back</option>
-                                <option value="forward">Go forward</option>
-                                <option value="reload">Reload page</option>
-                                <option value="copyurl">Copy URL</option>
-                                <option value="openbookmark">Open
-                                    Bookmark/Bookmarklet
-                                </option>
-                            </optgroup>
-                            <optgroup label="Tabs">
-                                <option value="gototab">Jump to tab or URL</option>
-                                <option value="newtab">New tab</option>
-                                <option value="closetab">Close tab</option>
-                                <option value="onlytab">Close other tabs</option>
-                                <option value="clonetab">Duplicate tab</option>
-                                <option value="nexttab">Next tab</option>
-                                <option value="prevtab">Previous tab</option>
-                                <option value="firsttab">First tab</option>
-                                <option value="lasttab">Last tab</option>
-                                <option value="togglepin">Pin/unpin tab</option>
-                                <option value="movetableft">Move tab left</option>
-                                <option value="movetabright">Move tab right</option>
-                            </optgroup>
-                            <optgroup label="Zooming">
-                                <option value="zoomin">Zoom In</option>
-                                <option value="zoomout">Zoom Out</option>
-                                <option value="zoomreset">Reset Zoom</option>
-                            </optgroup>
-                            <optgroup label="Downloads">
-                                <option value="cleardownloads">Clear downloads
-                                </option>
-                            </optgroup>
-                            <optgroup label="Javascript">
-                                <option value="javascript">Run JavaScript</option>
-                            </optgroup>
-                        </select>
-                        <select ng-model="key.blacklist" class="blacklist">
-                            <option value="false">All sites</option>
-                            <option value="true">All sites except...</option>
-                            <option value="whitelist">Only on specific sites
-                            </option>
-                        </select>
-
-                        <div ng-show="key.blacklist" class="textarealabel">
-                            Blacklisted sites
-                        </div>
-                        <textarea ng-show="key.blacklist" ng-model="key.sites"
-                                  class="sites"></textarea>
-
-                        <div ng-show="key.action == 'openbookmark'">
-                            <div class="textarealabel">Full title of bookmark to
-                                open
-                            </div>
-                            <input type="text" ng-model="key.bookmark" class="code">
-                        </div>
-                        <div class="javascriptconfig">
-                            <div class="javascriptconfigcode">
-                                <div ng-show="key.action == 'javascript'"
-                                     class="textarealabel">Javascript code to run
-                                </div>
-                                <textarea ng-show="key.action == 'javascript'"
-                                          ng-model="key.code"
-                                          class="code"></textarea>
-                            </div>
-                        </div>
-                        <div class="gototabconfig">
-                            <div class="gototabmatchurl">
-                                <div ng-show="key.action == 'gototab'"
-                                     class="textarealabel">URL to match (ex: <code>*://*.amazon.com/*</code>)
-                                </div>
-                                <textarea ng-show="key.action == 'gototab'"
-                                          ng-model="key.matchurl"
-                                          class="taburl"></textarea>
-                            </div>
-                            <div class="gototabopenurl">
-                                <div ng-show="key.action == 'gototab'"
-                                     class="textarealabel">URL to open if no
-                                    matching tab found
-                                </div>
-                                <textarea ng-show="key.action == 'gototab'"
-                                          ng-model="key.openurl"
-                                          class="taburl"></textarea>
-                            </div>
-                        </div>
-                        <button ng-click="deleteKey($index)"
-                                class="del-btn btn btn-danger"><i
-                                class="icon-remove icon-white"></i> Delete
-                        </button>
-                    </div>
-
+                <form class="form-inline">
                     <div class="form-actions">
                         <button ng-click="addEmpty()" class="btn btn-primary"><i
-                                class="icon-plus"></i> Add
+                                class="fa fa-plus"></i> Add
                         </button>
                         <div class="pull-right">
                             <button ng-click="saveKeys()" class="btn btn-success"><i
-                                    class="icon-ok icon-white"></i> Save
+                                    class="fa fa-save"></i> Save
+                            </button>
+                        </div>
+                    </div>
+                    <br />
+                    <accordion close-others="oneAtATime">
+
+                        <accordion-group ng-repeat="key in keys">
+                            <accordion-heading>
+                                <span class="badge">{{key.key}}</span> {{actionToLabel(key.action)}}
+                            </accordion-heading>
+                            <input ng-model="key.key" class="key"
+                                   placeholder="Key combo" type="text"/>
+                            <select ng-model="key.action" ng-options="option.value as option.label group by option.group for option in actionOptions"></select>
+                            <select ng-model="key.blacklist" class="blacklist">
+                                <option value="false">All sites</option>
+                                <option value="true">All sites except...</option>
+                                <option value="whitelist">Only on specific sites
+                                </option>
+                            </select>
+
+                            <div ng-show="key.blacklist" class="textarealabel">
+                                Blacklisted sites
+                            </div>
+                            <textarea ng-show="key.blacklist" ng-model="key.sites"
+                                      class="sites"></textarea>
+
+                            <div ng-show="key.action == 'openbookmark'">
+                                <div class="textarealabel">Full title of bookmark to
+                                    open
+                                </div>
+                                <input type="text" ng-model="key.bookmark" class="code">
+                            </div>
+                            <div class="javascriptconfig">
+                                <div class="javascriptconfigcode">
+                                    <div ng-show="key.action == 'javascript'"
+                                         class="textarealabel">Javascript code to run
+                                    </div>
+                                    <textarea ng-show="key.action == 'javascript'"
+                                              ng-model="key.code"
+                                              class="code"></textarea>
+                                </div>
+                            </div>
+                            <div class="gototabconfig">
+                                <div class="gototabmatchurl">
+                                    <div ng-show="key.action == 'gototab'"
+                                         class="textarealabel">URL to match (ex: <code>*://*.amazon.com/*</code>)
+                                    </div>
+                                    <textarea ng-show="key.action == 'gototab'"
+                                              ng-model="key.matchurl"
+                                              class="taburl"></textarea>
+                                </div>
+                                <div class="gototabopenurl">
+                                    <div ng-show="key.action == 'gototab'"
+                                         class="textarealabel">URL to open if no
+                                        matching tab found
+                                    </div>
+                                    <textarea ng-show="key.action == 'gototab'"
+                                              ng-model="key.openurl"
+                                              class="taburl"></textarea>
+                                </div>
+                            </div>
+                            <button ng-click="deleteKey($index)"
+                                    class="del-btn btn btn-danger"><i
+                                    class="icon-remove icon-white"></i> Delete
+                            </button>
+                        </accordion-group>
+                    </accordion>
+
+                    <div class="form-actions">
+                        <button ng-click="addEmpty()" class="btn btn-primary"><i
+                                class="fa fa-plus"></i> Add
+                        </button>
+                        <div class="pull-right">
+                            <button ng-click="saveKeys()" class="btn btn-success"><i
+                                    class="fa fa-save"></i> Save
                             </button>
                         </div>
                     </div>
@@ -175,10 +136,10 @@
                         <div class="pull-right">
                             Export/import settings to/from clipboard:
                             <button ng-click="exportSettings()" class="btn btn-default"><i
-                                    class="icon-upload"></i> Export
+                                    class="fa fa-upload"></i> Export
                             </button>
                             <button ng-click="importSettings()" class="btn btn-default"><i
-                                    class="icon-download"></i> Import</a>
+                                    class="fa fa-download"></i> Import</a>
                             </button>
                         </div>
                     </div>
