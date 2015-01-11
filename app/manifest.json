@@ -1,11 +1,12 @@
 {
   "name": "__MSG_appName__",
-  "version": "0.0.1",
+  "version": "2.0.1",
   "manifest_version": 2,
   "description": "__MSG_appDescription__",
   "icons": {
-    "16": "images/icon-16.png",
-    "128": "images/icon-128.png"
+    "16": "images/icon_16.png",
+    "48": "images/icon_48.png",
+    "128": "images/icon_128.png"
   },
   "default_locale": "en",
   "background": {
@@ -21,19 +22,20 @@
         "http://*/*",
         "https://*/*"
       ],
-      "css": [
-        "styles/main.css"
-      ],
       "js": [
-        "scripts/contentscript.js"
+        "js/mousetrap.js",
+        "js/shortkeys.js"
       ],
-      "run_at": "document_end",
-      "all_frames": false
+      "all_frames": true
     }
   ],
   "permissions": [
     "tabs",
-    "http://*/*",
-    "https://*/*"
+    "clipboardWrite",
+    "clipboardRead",
+    "browsingData",
+    "storage",
+    "bookmarks",
+    "<all_urls>"
   ]
 }
