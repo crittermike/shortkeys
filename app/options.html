@@ -1,29 +1,237 @@
 <!doctype html>
-<html>
-    <head>
-        <!-- build:css styles/vendor.css -->
-        <!-- bower:css -->
-        <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
-        <!-- endbower -->
-        <!-- endbuild -->
-        <!-- build:css styles/main.css -->
-        <link href="styles/main.css" rel="stylesheet">
-        <!-- endbuild -->
-    </head>
-    <body>
-        <h1>'Allo, 'Allo!</h1>
-                
-        <!-- build:js scripts/vendor.js -->
-        <!-- bower:js -->
-        <script src="bower_components/jquery/dist/jquery.js"></script>
-        <script src="bower_components/angular/angular.js"></script>
-        <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
-        <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
-        <!-- endbower -->
-        <!-- endbuild -->
+<html ng-app="ShortkeysOptions" ng-csp>
+<head>
+    <!-- build:css styles/vendor.css -->
+    <!-- bower:css -->
+    <link rel="stylesheet"
+          href="bower_components/bootstrap/dist/css/bootstrap.css"/>
+    <!-- endbower -->
+    <!-- endbuild -->
+    <!-- build:css styles/main.css -->
+    <link href="styles/main.css" rel="stylesheet">
+    <!-- endbuild -->
 
-        <!-- build:js scripts/options.js -->
-        <script src="scripts/options.js"></script>
-        <!-- endbuild -->
-    </body>
+    <!-- build:js scripts/vendor.js -->
+    <!-- bower:js -->
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="bower_components/mousetrap/mousetrap.js"></script>
+    <!-- endbower -->
+    <!-- endbuild -->
+
+    <!-- build:js scripts/options.js -->
+    <script src="scripts/options.js"></script>
+    <!-- endbuild -->
+</head>
+<body ng-controller="ShortkeysOptionsCtrl">
+    <div class="container">
+        <div class="page-header">
+            <h1>{{test}} Shortkeys for Chrome</h1>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
+
+                <p class="chromesyncsuccess alert alert-success"
+                   style="display: none;">Options synced to cloud.</p>
+
+                <p class="chromesyncfailure alert alert-failure"
+                   style="display: none;">Sync to cloud failed.</p>
+
+                <form class="well form-inline">
+
+                    <table>
+                        <tr>
+                            <th>Key binding</th>
+                            <th>Action</th>
+                            <th>Active on</th>
+                        </tr>
+                    </table>
+
+
+                    <div class="key-container" ng-repeat="key in keys">
+                        <hr/>
+                        <input ng-model="key.key" class="key"
+                               placeholder="Key combo" type="text"/>
+                        <select ng-model="key.action" class="action">
+                            <optgroup label="Scrolling">
+                                <option value="top">Scroll to top</option>
+                                <option value="bottom">Scroll to bottom</option>
+                                <option value="scrolldown">Scroll down</option>
+                                <option value="scrolldownmore">Scroll down more
+                                </option>
+                                <option value="scrollup">Scroll up</option>
+                                <option value="scrollupmore">Scroll up more</option>
+                            </optgroup>
+                            <optgroup label="Location">
+                                <option value="back">Go back</option>
+                                <option value="forward">Go forward</option>
+                                <option value="reload">Reload page</option>
+                                <option value="copyurl">Copy URL</option>
+                                <option value="openbookmark">Open
+                                    Bookmark/Bookmarklet
+                                </option>
+                            </optgroup>
+                            <optgroup label="Tabs">
+                                <option value="gototab">Jump to tab or URL</option>
+                                <option value="newtab">New tab</option>
+                                <option value="closetab">Close tab</option>
+                                <option value="onlytab">Close other tabs</option>
+                                <option value="clonetab">Duplicate tab</option>
+                                <option value="nexttab">Next tab</option>
+                                <option value="prevtab">Previous tab</option>
+                                <option value="firsttab">First tab</option>
+                                <option value="lasttab">Last tab</option>
+                                <option value="togglepin">Pin/unpin tab</option>
+                                <option value="movetableft">Move tab left</option>
+                                <option value="movetabright">Move tab right</option>
+                            </optgroup>
+                            <optgroup label="Zooming">
+                                <option value="zoomin">Zoom In</option>
+                                <option value="zoomout">Zoom Out</option>
+                                <option value="zoomreset">Reset Zoom</option>
+                            </optgroup>
+                            <optgroup label="Downloads">
+                                <option value="cleardownloads">Clear downloads
+                                </option>
+                            </optgroup>
+                            <optgroup label="Javascript">
+                                <option value="javascript">Run JavaScript</option>
+                            </optgroup>
+                        </select>
+                        <select ng-model="key.blacklist" class="blacklist">
+                            <option value="false">All sites</option>
+                            <option value="true">All sites except...</option>
+                            <option value="whitelist">Only on specific sites
+                            </option>
+                        </select>
+
+                        <div ng-show="key.blacklist" class="textarealabel">
+                            Blacklisted sites
+                        </div>
+                        <textarea ng-show="key.blacklist" ng-model="key.sites"
+                                  class="sites"></textarea>
+
+                        <div ng-show="key.action == 'openbookmark'">
+                            <div class="textarealabel">Full title of bookmark to
+                                open
+                            </div>
+                            <input type="text" ng-model="key.bookmark" class="code">
+                        </div>
+                        <div class="javascriptconfig">
+                            <div class="javascriptconfigcode">
+                                <div ng-show="key.action == 'javascript'"
+                                     class="textarealabel">Javascript code to run
+                                </div>
+                                <textarea ng-show="key.action == 'javascript'"
+                                          ng-model="key.code"
+                                          class="code"></textarea>
+                            </div>
+                        </div>
+                        <div class="gototabconfig">
+                            <div class="gototabmatchurl">
+                                <div ng-show="key.action == 'gototab'"
+                                     class="textarealabel">URL to match (ex: <code>*://*.amazon.com/*</code>)
+                                </div>
+                                <textarea ng-show="key.action == 'gototab'"
+                                          ng-model="key.matchurl"
+                                          class="taburl"></textarea>
+                            </div>
+                            <div class="gototabopenurl">
+                                <div ng-show="key.action == 'gototab'"
+                                     class="textarealabel">URL to open if no
+                                    matching tab found
+                                </div>
+                                <textarea ng-show="key.action == 'gototab'"
+                                          ng-model="key.openurl"
+                                          class="taburl"></textarea>
+                            </div>
+                        </div>
+                        <button ng-click="deleteKey($index)"
+                                class="del-btn btn btn-danger"><i
+                                class="icon-remove icon-white"></i> Delete
+                        </button>
+                    </div>
+
+                    <div class="form-actions">
+                        <button ng-click="addEmpty()" class="btn btn-primary"><i
+                                class="icon-plus"></i> Add
+                        </button>
+                        <div class="pull-right">
+                            <button ng-click="saveKeys()" class="btn btn-success"><i
+                                    class="icon-ok icon-white"></i> Save
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <div class="pull-right">
+                            <input type="checkbox" ng-model="chromesync"> Sync
+                            settings to cloud with Chrome Sync </input>
+                        </div>
+                        <br/></br />
+                        <div class="pull-right">
+                            Export/import settings to/from clipboard:
+                            <button ng-click="exportSettings()" class="btn btn-default"><i
+                                    class="icon-upload"></i> Export
+                            </button>
+                            <button ng-click="importSettings()" class="btn btn-default"><i
+                                    class="icon-download"></i> Import</a>
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+            <div class="col-md-4">
+                <p>Key combos are zero or more modifiers (<code>ctrl</code>,
+                    <code>shift</code>,
+                    etc.) plus one regular key (letter keys, number keys, arrow
+                    keys, etc), all joined with <code>+</code> signs.</p>
+
+                <p>You can also string combos together to create key sequences,
+                    separated by spaces.</p>
+
+                <p>Here are a couple examples:</p>
+                <ul>
+                    <li><code>t</code></li>
+                    <li><code>ctrl+l</code> (hold ctrl and hit l)</li>
+                    <li><code>t g</code> (hit t then g)</li>
+                    <li><code>shift+h</code></li>
+                    <li><code>ctrl+shift+&#x21d1;+pageup</code></li>
+                    <li><code>alt+f7 r</code> (hold alt and hit F7, then release and
+                        hit r)
+                    </li>
+                </ul>
+                <p>The following modifiers are available:
+                    <code>&#x21d1;</code>, <code>shift</code>, <code>option</code>,
+                    <code>&#x2325;</code>, <code>alt</code>, <code>ctrl</code>,
+                    <code>control</code>, <code>command</code>, and <code>
+                        &#x2318;</code>.</p>
+
+                <p>In addition to regular letters, numbers, and punctuation, the
+                    following special keys can be used for shortcuts:
+                    <code>backspace</code>, <code>tab</code>, <code>clear</code>,
+                    <code>enter</code>, <code>return</code>, <code>esc</code>,
+                    <code>escape</code>, <code>space</code>,
+                    <code>up</code>, <code>down</code>, <code>left</code>,
+                    <code>right</code>,
+                    <code>home</code>, <code>end</code>, <code>pageup</code>,
+                    <code>pagedown</code>,
+                    <code>del</code>, <code>delete</code> and <code>f1</code>
+                    through <code>f19</code>.</p>
+
+                <p>Note: key combos are ignored if you're currently focused on a
+                    form field. This makes it possible to have shortcuts such as
+                    "<code>h</code>" but still be able to type "<code>h</code>" in a
+                    form without it triggering the shortcut.</p>
+
+                <p>Questions or comments or bugs? <a
+                        href="mailto:mikecrittenden@gmail.com">Email me</a>.</p>
+            </div>
+        </div>
+    </div>
+</body>
 </html>

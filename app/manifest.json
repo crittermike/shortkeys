@@ -23,8 +23,8 @@
         "https://*/*"
       ],
       "js": [
-        "js/mousetrap.js",
-        "js/shortkeys.js"
+        "bower_components/mousetrap/mousetrap.min.js",
+        "scripts/contentscript.js"
       ],
       "all_frames": true
     }
