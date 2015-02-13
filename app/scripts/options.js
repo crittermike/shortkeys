@@ -1,43 +1,44 @@
 'use strict';
+/* jshint undef: true, unused: true */
 
 var app = angular.module('ShortkeysOptions', ['ui.bootstrap']);
 app.controller('ShortkeysOptionsCtrl', function($scope) {
 
   $scope.whatever = 'WHAT';
   $scope.actionOptions = [
-    {value:"top", label: "Scroll to top", group: "Scrolling"},
-    {value:"bottom", label: "Scroll to bottom", group: "Scrolling"},
-    {value:"scrolldown", label: "Scroll down", group: "Scrolling"},
-    {value:"scrolldownmore", label: "Scroll down more", group: "Scrolling"},
-    {value:"scrollup", label: "Scroll up", group: "Scrolling"},
-    {value:"scrollupmore", label: "Scroll up more", group: "Scrolling"},
-    {value:"back", label: "Go back", group: "Location"},
-    {value:"forward", label: "Go forward", group: "Location"},
-    {value:"reload", label: "Reload page", group: "Location"},
-    {value:"copyurl", label: "Copy URL", group: "Location"},
-    {value:"openbookmark", label: "Open Bookmark/Bookmarklet", group: "Location"},
-    {value:"gototab", label: "Jump to tab or URL", group: "Tabs"},
-    {value:"newtab", label: "New tab", group: "Tabs"},
-    {value:"closetab", label: "Close tab", group: "Tabs"},
-    {value:"onlytab", label: "Close other tabs", group: "Tabs"},
-    {value:"clonetab", label: "Duplicate tab", group: "Tabs"},
-    {value:"nexttab", label: "Next tab", group: "Tabs"},
-    {value:"prevtab", label: "Previous tab", group: "Tabs"},
-    {value:"firsttab", label: "First tab", group: "Tabs"},
-    {value:"lasttab", label: "Last tab", group: "Tabs"},
-    {value:"togglepin", label: "Pin/unpin tab", group: "Tabs"},
-    {value:"movetableft", label: "Move tab left", group: "Tabs"},
-    {value:"movetabright", label: "Move tab right", group: "Tabs"},
-    {value:"zoomin", label: "Zoom In", group: "Zooming"},
-    {value:"zoomout", label: "Zoom Out", group: "Zooming"},
-    {value:"zoomreset", label: "Reset Zoom", group: "Zooming"},
-    {value:"cleardownloads", label: "Clear downloads", group: "Downloads"},
-    {value:"javascript", label: "Run JavaScript", group: "JavaScript"}
+    {value:'top', label: 'Scroll to top', group: 'Scrolling'},
+    {value:'bottom', label: 'Scroll to bottom', group: 'Scrolling'},
+    {value:'scrolldown', label: 'Scroll down', group: 'Scrolling'},
+    {value:'scrolldownmore', label: 'Scroll down more', group: 'Scrolling'},
+    {value:'scrollup', label: 'Scroll up', group: 'Scrolling'},
+    {value:'scrollupmore', label: 'Scroll up more', group: 'Scrolling'},
+    {value:'back', label: 'Go back', group: 'Location'},
+    {value:'forward', label: 'Go forward', group: 'Location'},
+    {value:'reload', label: 'Reload page', group: 'Location'},
+    {value:'copyurl', label: 'Copy URL', group: 'Location'},
+    {value:'openbookmark', label: 'Open Bookmark/Bookmarklet', group: 'Location'},
+    {value:'gototab', label: 'Jump to tab or URL', group: 'Tabs'},
+    {value:'newtab', label: 'New tab', group: 'Tabs'},
+    {value:'closetab', label: 'Close tab', group: 'Tabs'},
+    {value:'onlytab', label: 'Close other tabs', group: 'Tabs'},
+    {value:'clonetab', label: 'Duplicate tab', group: 'Tabs'},
+    {value:'nexttab', label: 'Next tab', group: 'Tabs'},
+    {value:'prevtab', label: 'Previous tab', group: 'Tabs'},
+    {value:'firsttab', label: 'First tab', group: 'Tabs'},
+    {value:'lasttab', label: 'Last tab', group: 'Tabs'},
+    {value:'togglepin', label: 'Pin/unpin tab', group: 'Tabs'},
+    {value:'movetableft', label: 'Move tab left', group: 'Tabs'},
+    {value:'movetabright', label: 'Move tab right', group: 'Tabs'},
+    {value:'zoomin', label: 'Zoom In', group: 'Zooming'},
+    {value:'zoomout', label: 'Zoom Out', group: 'Zooming'},
+    {value:'zoomreset', label: 'Reset Zoom', group: 'Zooming'},
+    {value:'cleardownloads', label: 'Clear downloads', group: 'Downloads'},
+    {value:'javascript', label: 'Run JavaScript', group: 'JavaScript'}
   ];
 
   $scope.actionToLabel = function(action) {
     for (var i = 0, len = $scope.actionOptions.length; i < len; i++) {
-      if ($scope.actionOptions[i].value == action) {
+      if ($scope.actionOptions[i].value === action) {
         return $scope.actionOptions[i].label;
       }
     }
@@ -47,7 +48,7 @@ app.controller('ShortkeysOptionsCtrl', function($scope) {
   $scope.chromesync = false;
 
   $scope.addBlankIfEmpty = function () {
-    if ($scope.keys.length == 0) {
+    if ($scope.keys.length === 0) {
       $scope.addEmpty();
     }
   };
@@ -62,7 +63,7 @@ app.controller('ShortkeysOptionsCtrl', function($scope) {
   };
 
   $scope.isEmpty = function (element, index, array) {
-    return element && element.key != "";
+    return element && element.key !== '';
   };
 
   $scope.deleteKey = function (index) {
@@ -71,14 +72,14 @@ app.controller('ShortkeysOptionsCtrl', function($scope) {
 
   $scope.saveKeys = function () {
     $scope.keys = $scope.keys.filter($scope.isEmpty); // Remove empty keys
-    for (i = 0; i < $scope.keys.length; i++) {
+    for (var i = 0; i < $scope.keys.length; i++) {
       if (typeof $scope.keys[i].sites === 'string') {
-        $scope.keys[i].sitesArray = $scope.keys[i].sites.split("\n");
+        $scope.keys[i].sitesArray = $scope.keys[i].sites.split('\n');
       } else {
         $scope.keys[i].sitesArray = $scope.keys[i].sites;
       }
     }
-    var settings = {keys: $scope.keys, chromesync: $scope.chromesync}
+    var settings = {keys: $scope.keys, chromesync: $scope.chromesync};
     if ($scope.chromesync) {
       chrome.storage.sync.set(settings, function () {
         $('.chromesyncsuccess').slideDown('fast');
@@ -88,7 +89,7 @@ app.controller('ShortkeysOptionsCtrl', function($scope) {
 
       });
     }
-    localStorage["shortkeys"] = JSON.stringify(settings);
+    localStorage.shortkeys = JSON.stringify(settings);
 
     $scope.alerts = [{ type: 'success', msg: 'Your settings were saved! Remember to reload the window or individual tabs to pick up the changes.'}];
     $scope.addBlankIfEmpty();
@@ -101,7 +102,7 @@ app.controller('ShortkeysOptionsCtrl', function($scope) {
       var key = $scope.keys[i];
       keyIndexMap[key.key] = i;
     }
-    for (var i = 0; i < newKeys.length; i++) {
+    for (i = 0; i < newKeys.length; i++) {
       var newKey = newKeys[i];
       var index = keyIndexMap[newKey.key];
       if (index === undefined) {
@@ -116,18 +117,19 @@ app.controller('ShortkeysOptionsCtrl', function($scope) {
 
   $scope.exportSettings = function () {
     chrome.runtime.sendMessage({
-      action: "exportSettingsToClipboard",
+      action: 'exportSettingsToClipboard',
       keys: $scope.keys
     });
   };
 
   $scope.importSettings = function () {
-    chrome.runtime.sendMessage({action: "importSettingsFromClipboard"}, function (keys_str) {
+    chrome.runtime.sendMessage({action: 'importSettingsFromClipboard'}, function (keysStr) {
+      var keys;
       try {
-        var keys = JSON.parse(keys_str);
+        keys = JSON.parse(keysStr);
       } catch (e) {
-        alert("Your clipboard contains invalid JSON. Try clicking 'Export' again, or paste it into " +
-        "a plain text editor and copying it back out again, to remove any formatting you might have picked up.");
+        alert('Your clipboard contains invalid JSON. Try clicking "Export" again, or paste it into ' +
+        'a plain text editor and copying it back out again, to remove any formatting you might have picked up.');
         return;
       }
 
@@ -138,10 +140,10 @@ app.controller('ShortkeysOptionsCtrl', function($scope) {
     });
   };
 
-  $scope.settingsStr = localStorage["shortkeys"];
+  $scope.settingsStr = localStorage.shortkeys;
   if ($scope.settingsStr) {
     var settings = JSON.parse($scope.settingsStr);
-    if (settings.keys != undefined) {
+    if (settings.keys !== undefined) {
       $scope.keys = settings.keys || [];
     } else {
       $scope.keys = settings || [];  // This allows for conversion of the previous data format
@@ -151,10 +153,10 @@ app.controller('ShortkeysOptionsCtrl', function($scope) {
   if ($scope.chromesync) {
     chrome.storage.sync.get(null, function (response) {
       if (!response) {
-        $('.chromesyncfailure').slideDown('fast');
-        setTimeout(function () {
-          $('.chromesyncfailure').slideUp('fast');
-        }, 3000);
+        //$('.chromesyncfailure').slideDown('fast');
+        //setTimeout(function () {
+        //  $('.chromesyncfailure').slideUp('fast');
+        //}, 3000);
       } else {
         $scope.$apply(function () {
           $scope.mergeInKeys(response.keys);
