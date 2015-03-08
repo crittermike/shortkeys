@@ -48,7 +48,20 @@ chrome.runtime.sendMessage({action: "getKeys"}, function(response) {
     var action = function() {
       doAction(keyobj);
       return false;
-    }
+    };
+
+    var _oldStopCallback = Mousetrap.stopCallback;
+    Mousetrap.stopCallback = function(e, element, combo) {
+      if (element.classList.contains('mousetrap')) {
+        // We're not using the "mousetrap" class functionality, which allows
+        // you to whitelist elements, so if we come across elements with that class
+        // then we can assume that they are provided by the site itself, not by
+        // us, so we just treat them like normal inputs.
+        return true;
+      }
+      return _oldStopCallback(e, element, combo);
+    };
+
     Mousetrap.bind(keyobj.key, action);
   }
 
