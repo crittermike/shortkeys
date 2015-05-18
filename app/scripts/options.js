@@ -1,11 +1,12 @@
 'use strict';
-/* jshint undef: true, unused: true */
+/* jshint undef: false, unused: false */
 
 var app = angular.module('ShortkeysOptions', ['ui.bootstrap']);
+
 app.controller('ShortkeysOptionsCtrl', function($scope) {
 
-  $scope.whatever = 'WHAT';
   $scope.actionOptions = [
+    {value:'none', label: 'Select an action...', group: ''},
     {value:'top', label: 'Scroll to top', group: 'Scrolling'},
     {value:'bottom', label: 'Scroll to bottom', group: 'Scrolling'},
     {value:'scrolldown', label: 'Scroll down', group: 'Scrolling'},
@@ -37,6 +38,9 @@ app.controller('ShortkeysOptionsCtrl', function($scope) {
   ];
 
   $scope.actionToLabel = function(action) {
+    if (action === 'none') {
+      return 'New keyboard shortcut';
+    }
     for (var i = 0, len = $scope.actionOptions.length; i < len; i++) {
       if ($scope.actionOptions[i].value === action) {
         return $scope.actionOptions[i].label;
@@ -45,7 +49,6 @@ app.controller('ShortkeysOptionsCtrl', function($scope) {
   };
 
   $scope.keys = [];
-  $scope.chromesync = false;
 
   $scope.addBlankIfEmpty = function () {
     if ($scope.keys.length === 0) {
@@ -56,9 +59,10 @@ app.controller('ShortkeysOptionsCtrl', function($scope) {
   $scope.addEmpty = function () {
     $scope.keys.push({
       key: '',
-      action: 'top',
+      action: 'none',
       blacklist: false,
-      sites: '*mail.google.com*'
+      sites: '*mail.google.com*',
+      open: true
     });
   };
 
@@ -79,16 +83,8 @@ app.controller('ShortkeysOptionsCtrl', function($scope) {
         $scope.keys[i].sitesArray = $scope.keys[i].sites;
       }
     }
-    var settings = {keys: $scope.keys, chromesync: $scope.chromesync};
-    if ($scope.chromesync) {
-      chrome.storage.sync.set(settings, function () {
-        $('.chromesyncsuccess').slideDown('fast');
-        setTimeout(function () {
-          $('.chromesyncsuccess').slideUp('fast');
-        }, 3000);
-
-      });
-    }
+    var settings = {keys: $scope.keys};
+    chrome.storage.sync.set(settings, function () {});
     localStorage.shortkeys = JSON.stringify(settings);
 
     $scope.alerts = [{ type: 'success', msg: 'Your settings were saved! Remember to reload the window or individual tabs to pick up the changes.'}];
@@ -97,6 +93,9 @@ app.controller('ShortkeysOptionsCtrl', function($scope) {
   };
 
   $scope.mergeInKeys = function (newKeys, noReplace) {
+    if (!newKeys) {
+      return;
+    }
     var keyIndexMap = {};
     for (var i = 0; i < $scope.keys.length; i++) {
       var key = $scope.keys[i];
@@ -148,25 +147,17 @@ app.controller('ShortkeysOptionsCtrl', function($scope) {
     } else {
       $scope.keys = settings || [];  // This allows for conversion of the previous data format
     }
-    $scope.chromesync = settings.chromesync || false;
   }
-  if ($scope.chromesync) {
-    chrome.storage.sync.get(null, function (response) {
-      if (!response) {
-        //$('.chromesyncfailure').slideDown('fast');
-        //setTimeout(function () {
-        //  $('.chromesyncfailure').slideUp('fast');
-        //}, 3000);
-      } else {
-        $scope.$apply(function () {
-          $scope.mergeInKeys(response.keys);
-          $scope.addBlankIfEmpty();
-        });
-      }
-    });
-  } else {
-    $scope.addBlankIfEmpty();
-  }
+  chrome.storage.sync.get(null, function (response) {
+    if (!response) {
+      $scope.addBlankIfEmpty();
+    } else {
+      $scope.$apply(function () {
+        $scope.mergeInKeys(response.keys);
+        $scope.addBlankIfEmpty();
+      });
+    }
+  });
 
   $scope.alerts = [{ type: 'warning', msg: 'You MUST reload your browser or tabs after making changes here!'}];
 

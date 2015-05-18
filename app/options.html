@@ -4,6 +4,7 @@
     <!-- build:css styles/vendor.css -->
     <!-- bower:css -->
     <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="bower_components/angular/angular-csp.css" />
     <link rel="stylesheet" href="bower_components/fontawesome/css/font-awesome.css" />
     <!-- endbower -->
     <!-- endbuild -->
@@ -35,85 +36,59 @@
             <div class="col-md-8">
                 <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
 
-                <p class="chromesyncsuccess alert alert-success"
-                   style="display: none;">Options synced to cloud.</p>
-
-                <p class="chromesyncfailure alert alert-failure"
-                   style="display: none;">Sync to cloud failed.</p>
-
-                <form class="form-inline">
-                    <div class="form-actions">
-                        <button ng-click="addEmpty()" class="btn btn-primary"><i
-                                class="fa fa-plus"></i> Add
-                        </button>
-                        <div class="pull-right">
-                            <button ng-click="saveKeys()" class="btn btn-success"><i
-                                    class="fa fa-save"></i> Save
-                            </button>
-                        </div>
-                    </div>
-                    <br />
+                <form>
                     <accordion close-others="oneAtATime">
 
-                        <accordion-group ng-repeat="key in keys">
+                        <accordion-group ng-repeat="key in keys" is-open="key.open">
                             <accordion-heading>
-                                <span class="badge">{{key.key}}</span> {{actionToLabel(key.action)}}
+                                <kbd ng-show="key.key" class="light">{{key.key}}</kbd><span class="shortcut-label">{{actionToLabel(key.action)}}</span>
+                                <a ng-click="deleteKey($index)" class="pull-right delete-link"><i class="fa fa-trash"></i> Delete </a>
                             </accordion-heading>
-                            <input ng-model="key.key" class="key"
-                                   placeholder="Key combo" type="text"/>
-                            <select ng-model="key.action" ng-options="option.value as option.label group by option.group for option in actionOptions"></select>
+                            <div class="row form-group">
+                                <div class="col-md-3">
+                                    <label>Keyboard shortcut</label>
+                                    <input ng-model="key.key" class="form-control" placeholder="Key combo" type="text"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label>Behavior</label>
+                                    <select class="form-control" ng-model="key.action" ng-options="option.value as option.label group by option.group for option in actionOptions"></select>
+                                </div>
+                                <div class="col-md-3">
+                                    <a>Advanced...</a>
+                                </div>
+                            </div>
+
                             <select ng-model="key.blacklist" class="blacklist">
                                 <option value="false">All sites</option>
                                 <option value="true">All sites except...</option>
-                                <option value="whitelist">Only on specific sites
-                                </option>
+                                <option value="whitelist">Only on specific sites</option>
                             </select>
 
-                            <div ng-show="key.blacklist" class="textarealabel">
-                                Blacklisted sites
+                            <div ng-show="key.blacklist" class="form-group">
+                                <label> Blacklisted sites</label>
+                                <textarea ng-model="key.sites" class="form-control"></textarea>
                             </div>
-                            <textarea ng-show="key.blacklist" ng-model="key.sites"
-                                      class="sites"></textarea>
 
-                            <div ng-show="key.action == 'openbookmark'">
-                                <div class="textarealabel">Full title of bookmark to
-                                    open
-                                </div>
-                                <input type="text" ng-model="key.bookmark" class="code">
+                            <div ng-show="key.action == 'openbookmark'" class="form-group">
+                                <label>Full title of bookmark to open</label>
+                                <input type="text" ng-model="key.bookmark" class="form-control">
                             </div>
-                            <div class="javascriptconfig">
-                                <div class="javascriptconfigcode">
-                                    <div ng-show="key.action == 'javascript'"
-                                         class="textarealabel">Javascript code to run
-                                    </div>
-                                    <textarea ng-show="key.action == 'javascript'"
-                                              ng-model="key.code"
-                                              class="code"></textarea>
-                                </div>
+
+                            <div ng-show="key.action == 'javascript'" class="form-group javascriptconfig">
+                                <label>Javascript code to run</label>
+                                <textarea ng-model="key.code" class="form-control"></textarea>
                             </div>
-                            <div class="gototabconfig">
-                                <div class="gototabmatchurl">
-                                    <div ng-show="key.action == 'gototab'"
-                                         class="textarealabel">URL to match (ex: <code>*://*.amazon.com/*</code>)
-                                    </div>
-                                    <textarea ng-show="key.action == 'gototab'"
-                                              ng-model="key.matchurl"
-                                              class="taburl"></textarea>
+
+                            <div ng-show="key.action == 'gototab'" class="gototabconfig">
+                                <div class="form-group gototabmatchurl">
+                                    <label>URL to match (ex: <code>*://*.amazon.com/*</code>) </label>
+                                    <textarea ng-model="key.matchurl" class="form-control"></textarea>
                                 </div>
-                                <div class="gototabopenurl">
-                                    <div ng-show="key.action == 'gototab'"
-                                         class="textarealabel">URL to open if no
-                                        matching tab found
-                                    </div>
-                                    <textarea ng-show="key.action == 'gototab'"
-                                              ng-model="key.openurl"
-                                              class="taburl"></textarea>
+                                <div class="form-group gototabopenurl">
+                                    <label>URL to open if no matching tab found</label>
+                                    <textarea ng-model="key.openurl" class="form-control"></textarea>
                                 </div>
                             </div>
-                            <button ng-click="deleteKey($index)"
-                                    class="del-btn btn btn-danger"><i
-                                    class="icon-remove icon-white"></i> Delete
-                            </button>
                         </accordion-group>
                     </accordion>
 
@@ -127,23 +102,6 @@
                             </button>
                         </div>
                     </div>
-                    <div class="form-actions">
-                        <div class="pull-right">
-                            <input type="checkbox" ng-model="chromesync"> Sync
-                            settings to cloud with Chrome Sync </input>
-                        </div>
-                        <br/></br />
-                        <div class="pull-right">
-                            Export/import settings to/from clipboard:
-                            <button ng-click="exportSettings()" class="btn btn-default"><i
-                                    class="fa fa-upload"></i> Export
-                            </button>
-                            <button ng-click="importSettings()" class="btn btn-default"><i
-                                    class="fa fa-download"></i> Import</a>
-                            </button>
-                        </div>
-                    </div>
-
                 </form>
             </div>
             <div class="col-md-4">

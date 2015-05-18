@@ -1,11 +1,26 @@
 
+textarea {
+  width: 100%;
+  font-family: monospace;
+  padding: 5px;
+  font-size: 13px;
+}
+
+.panel-heading {
+  kbd {
+    margin-right: 9px;
+  }
+  a.delete-link {
+    color: #d9534f;
+    text-decoration: none;
+  }
+}
 
 /**
  * KEYS.css
  *
  * A simple stylesheet for rendering beautiful keyboard-style elements.
  *
- * Author:  Michael Hüneburg
  * Website: http://michaelhue.com/keyscss
  * License: MIT License (see LICENSE.txt)
  */

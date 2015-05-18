@@ -1,48 +1,76 @@
-/*
-Syntax error: Invalid US-ASCII character "\xC3"
-        on line 8 of /Users/mcrittenden/Documents/Code/chrome-shortkeys/app/styles/main.scss
-
-3: /**
-4:  * KEYS.css
-5:  *
-6:  * A simple stylesheet for rendering beautiful keyboard-style elements.
-7:  *
-8:  * Author:  Michael Hüneburg
-9:  * Website: http://michaelhue.com/keyscss
-10:  * License: MIT License (see LICENSE.txt)
-11:  *\/
-12: 
-13: /* Base style, essential for every key. *\/
-
-Backtrace:
-/Users/mcrittenden/Documents/Code/chrome-shortkeys/app/styles/main.scss:8
-/Library/Ruby/Gems/2.0.0/gems/sass-3.3.14/lib/sass/engine.rb:440:in `block in check_encoding!'
-/Library/Ruby/Gems/2.0.0/gems/sass-3.3.14/lib/sass/util.rb:782:in `rescue in block in check_encoding'
-/Library/Ruby/Gems/2.0.0/gems/sass-3.3.14/lib/sass/util.rb:779:in `block in check_encoding'
-/Library/Ruby/Gems/2.0.0/gems/sass-3.3.14/lib/sass/util.rb:778:in `each'
-/Library/Ruby/Gems/2.0.0/gems/sass-3.3.14/lib/sass/util.rb:778:in `each_with_index'
-/Library/Ruby/Gems/2.0.0/gems/sass-3.3.14/lib/sass/util.rb:778:in `check_encoding'
-/Library/Ruby/Gems/2.0.0/gems/sass-3.3.14/lib/sass/util.rb:832:in `check_sass_encoding'
-/Library/Ruby/Gems/2.0.0/gems/sass-3.3.14/lib/sass/engine.rb:439:in `check_encoding!'
-/Library/Ruby/Gems/2.0.0/gems/sass-3.3.14/lib/sass/engine.rb:406:in `_to_tree'
-/Library/Ruby/Gems/2.0.0/gems/sass-3.3.14/lib/sass/engine.rb:274:in `render'
-/Library/Ruby/Gems/2.0.0/gems/sass-3.3.14/lib/sass/plugin/compiler.rb:484:in `update_stylesheet'
-/Library/Ruby/Gems/2.0.0/gems/sass-3.3.14/lib/sass/plugin/compiler.rb:214:in `block in update_stylesheets'
-/Library/Ruby/Gems/2.0.0/gems/sass-3.3.14/lib/sass/plugin/compiler.rb:208:in `each'
-/Library/Ruby/Gems/2.0.0/gems/sass-3.3.14/lib/sass/plugin/compiler.rb:208:in `update_stylesheets'
-/Library/Ruby/Gems/2.0.0/gems/compass-1.0.1/lib/compass/sass_compiler.rb:40:in `compile!'
-/Library/Ruby/Gems/2.0.0/gems/compass-1.0.1/lib/compass/commands/update_project.rb:49:in `perform'
-/Library/Ruby/Gems/2.0.0/gems/compass-1.0.1/lib/compass/commands/base.rb:18:in `execute'
-/Library/Ruby/Gems/2.0.0/gems/compass-1.0.1/lib/compass/commands/project_base.rb:19:in `execute'
-/Library/Ruby/Gems/2.0.0/gems/compass-1.0.1/lib/compass/exec/sub_command_ui.rb:43:in `perform!'
-/Library/Ruby/Gems/2.0.0/gems/compass-1.0.1/lib/compass/exec/sub_command_ui.rb:15:in `run!'
-/Library/Ruby/Gems/2.0.0/gems/compass-1.0.1/bin/compass:30:in `block in <top (required)>'
-/Library/Ruby/Gems/2.0.0/gems/compass-1.0.1/bin/compass:44:in `call'
-/Library/Ruby/Gems/2.0.0/gems/compass-1.0.1/bin/compass:44:in `<top (required)>'
-/usr/bin/compass:23:in `load'
-/usr/bin/compass:23:in `<main>'
-*/
-body:before {
-  white-space: pre;
+@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/mcrittenden\/Documents\/Code\/chrome-shortkeys\/app\/styles\/main\.scss}line{font-family:\000032}}
+textarea {
+  width: 100%;
   font-family: monospace;
-  content: "Syntax error: Invalid US-ASCII character \"\xC3\"\A         on line 8 of /Users/mcrittenden/Documents/Code/chrome-shortkeys/app/styles/main.scss\A \A 3: /**\A 4:  * KEYS.css\A 5:  *\A 6:  * A simple stylesheet for rendering beautiful keyboard-style elements.\A 7:  *\A 8:  * Author:  Michael Hüneburg\A 9:  * Website: http://michaelhue.com/keyscss\A 10:  * License: MIT License (see LICENSE.txt)\A 11:  */\A 12: \A 13: /* Base style, essential for every key. */"; }
+  padding: 5px;
+  font-size: 13px;
+}
+
+@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/mcrittenden\/Documents\/Code\/chrome-shortkeys\/app\/styles\/main\.scss}line{font-family:\0000310}}
+.panel-heading kbd {
+  margin-right: 9px;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/mcrittenden\/Documents\/Code\/chrome-shortkeys\/app\/styles\/main\.scss}line{font-family:\0000313}}
+.panel-heading a.delete-link {
+  color: #d9534f;
+  text-decoration: none;
+}
+
+/**
+ * KEYS.css
+ *
+ * A simple stylesheet for rendering beautiful keyboard-style elements.
+ *
+ * Website: http://michaelhue.com/keyscss
+ * License: MIT License (see LICENSE.txt)
+ */
+/* Base style, essential for every key. */
+@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/mcrittenden\/Documents\/Code\/chrome-shortkeys\/app\/styles\/main\.scss}line{font-family:\0000329}}
+kbd, .key {
+  display: inline;
+  display: inline-block;
+  min-width: 1em;
+  padding: .2em .3em;
+  font: normal .85em/1 "Lucida Grande", Lucida, Arial, sans-serif;
+  text-align: center;
+  text-decoration: none;
+  -moz-border-radius: .3em;
+  -webkit-border-radius: .3em;
+  border-radius: .3em;
+  border: none;
+  cursor: default;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/mcrittenden\/Documents\/Code\/chrome-shortkeys\/app\/styles\/main\.scss}line{font-family:\0000346}}
+kbd[title], .key[title] {
+  cursor: help;
+}
+
+/* Dark style for display on light background. This is the default style. */
+@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/mcrittenden\/Documents\/Code\/chrome-shortkeys\/app\/styles\/main\.scss}line{font-family:\0000351}}
+kbd, kbd.dark, .dark-keys kbd, .key, .key.dark, .dark-keys .key {
+  background: #505050;
+  background: -moz-linear-gradient(top, #3c3c3c, #505050);
+  background: -webkit-gradient(linear, left top, left bottom, from(#3c3c3c), to(#505050));
+  color: #fafafa;
+  text-shadow: -1px -1px 0 #464646;
+  -moz-box-shadow: inset 0 0 1px #969696, inset 0 -0.05em 0.4em #505050, 0 0.1em 0 #1e1e1e, 0 0.1em 0.1em rgba(0, 0, 0, 0.3);
+  -webkit-box-shadow: inset 0 0 1px #969696, inset 0 -0.05em 0.4em #505050, 0 0.1em 0 #1e1e1e, 0 0.1em 0.1em rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 0 1px #969696, inset 0 -0.05em 0.4em #505050, 0 0.1em 0 #1e1e1e, 0 0.1em 0.1em rgba(0, 0, 0, 0.3);
+}
+
+/* Light style for display on dark background. */
+@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/mcrittenden\/Documents\/Code\/chrome-shortkeys\/app\/styles\/main\.scss}line{font-family:\0000363}}
+kbd.light, .light-keys kbd, .key.light, .light-keys .key {
+  background: #fafafa;
+  background: -moz-linear-gradient(top, #d2d2d2, white);
+  background: -webkit-gradient(linear, left top, left bottom, from(#d2d2d2), to(white));
+  color: #323232;
+  text-shadow: 0 0 2px white;
+  -moz-box-shadow: inset 0 0 1px white, inset 0 0 0.4em #c8c8c8, 0 0.1em 0 #828282, 0 0.11em 0 rgba(0, 0, 0, 0.4), 0 0.1em 0.11em rgba(0, 0, 0, 0.9);
+  -webkit-box-shadow: inset 0 0 1px white, inset 0 0 0.4em #c8c8c8, 0 0.1em 0 #828282, 0 0.11em 0 rgba(0, 0, 0, 0.4), 0 0.1em 0.11em rgba(0, 0, 0, 0.9);
+  box-shadow: inset 0 0 1px white, inset 0 0 0.4em #c8c8c8, 0 0.1em 0 #828282, 0 0.11em 0 rgba(0, 0, 0, 0.4), 0 0.1em 0.11em rgba(0, 0, 0, 0.9);
+}
