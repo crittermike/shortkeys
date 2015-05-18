@@ -6,7 +6,6 @@ var app = angular.module('ShortkeysOptions', ['ui.bootstrap']);
 app.controller('ShortkeysOptionsCtrl', function($scope) {
 
   $scope.actionOptions = [
-    {value:'none', label: 'Select an action...', group: ''},
     {value:'top', label: 'Scroll to top', group: 'Scrolling'},
     {value:'bottom', label: 'Scroll to bottom', group: 'Scrolling'},
     {value:'scrolldown', label: 'Scroll down', group: 'Scrolling'},
@@ -36,6 +35,24 @@ app.controller('ShortkeysOptionsCtrl', function($scope) {
     {value:'cleardownloads', label: 'Clear downloads', group: 'Downloads'},
     {value:'javascript', label: 'Run JavaScript', group: 'JavaScript'}
   ];
+
+  $scope.bookmarks = [];
+  var traverseBookmarks = function(bookmarkTreeNodes) {
+    for(var i = 0; i < bookmarkTreeNodes.length; i++) {
+      $scope.bookmarks.push(bookmarkTreeNodes[i].title);
+      if(bookmarkTreeNodes[i].children) {
+        traverseBookmarks(bookmarkTreeNodes[i].children);
+      }
+    }
+  };
+
+  chrome.bookmarks.getTree(function(results) {
+    traverseBookmarks(results);
+    $scope.bookmarks.sort();
+    $scope.bookmarks = $scope.bookmarks.filter(function(n) {
+      return n !== "";
+    });
+  });
 
   $scope.actionToLabel = function(action) {
     if (action === 'none') {
@@ -77,6 +94,7 @@ app.controller('ShortkeysOptionsCtrl', function($scope) {
   $scope.saveKeys = function () {
     $scope.keys = $scope.keys.filter($scope.isEmpty); // Remove empty keys
     for (var i = 0; i < $scope.keys.length; i++) {
+      $scope.keys[i].open = false; // Close up the open accordions.
       if (typeof $scope.keys[i].sites === 'string') {
         $scope.keys[i].sitesArray = $scope.keys[i].sites.split('\n');
       } else {

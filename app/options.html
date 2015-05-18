@@ -25,6 +25,8 @@
     <!-- build:js scripts/options.js -->
     <script src="scripts/options.js"></script>
     <!-- endbuild -->
+
+    <title>Shortkeys Options</title>
 </head>
 <body ng-controller="ShortkeysOptionsCtrl">
     <div class="container">
@@ -46,37 +48,27 @@
                             </accordion-heading>
                             <div class="row form-group">
                                 <div class="col-md-3">
-                                    <label>Keyboard shortcut</label>
-                                    <input ng-model="key.key" class="form-control" placeholder="Key combo" type="text"/>
+                                    <label>Keyboard Shortcut</label>
+                                    <input ng-model="key.key" class="kbd-input form-control" placeholder="Example: ctrl+b" type="text"/>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-9">
                                     <label>Behavior</label>
-                                    <select class="form-control" ng-model="key.action" ng-options="option.value as option.label group by option.group for option in actionOptions"></select>
+                                    <select class="form-control" ng-model="key.action" ng-options="option.value as option.label group by option.group for option in actionOptions">
+                                        <option value="none">Select behavior...</option>
+                                    </select>
                                 </div>
-                                <div class="col-md-3">
-                                    <a>Advanced...</a>
-                                </div>
-                            </div>
-
-                            <select ng-model="key.blacklist" class="blacklist">
-                                <option value="false">All sites</option>
-                                <option value="true">All sites except...</option>
-                                <option value="whitelist">Only on specific sites</option>
-                            </select>
-
-                            <div ng-show="key.blacklist" class="form-group">
-                                <label> Blacklisted sites</label>
-                                <textarea ng-model="key.sites" class="form-control"></textarea>
                             </div>
 
                             <div ng-show="key.action == 'openbookmark'" class="form-group">
-                                <label>Full title of bookmark to open</label>
-                                <input type="text" ng-model="key.bookmark" class="form-control">
+                                <label>Bookmark</label>
+                                <select ng-model="key.bookmark" ng-options="bookmark for bookmark in bookmarks track by bookmark" class="form-control">
+                                    <option value="">Select bookmark...</option>
+                                </select>
                             </div>
 
                             <div ng-show="key.action == 'javascript'" class="form-group javascriptconfig">
                                 <label>Javascript code to run</label>
-                                <textarea ng-model="key.code" class="form-control"></textarea>
+                                <textarea rows="20" ng-model="key.code" class="form-control"></textarea>
                             </div>
 
                             <div ng-show="key.action == 'gototab'" class="gototabconfig">
@@ -89,10 +81,32 @@
                                     <textarea ng-model="key.openurl" class="form-control"></textarea>
                                 </div>
                             </div>
+
+                            <tabset>
+                                <tab heading="Websites">
+                                    <div class="form-group">
+                                        <label>Websites</label>
+                                        <select ng-model="key.blacklist" class="form-control">
+                                            <option value="false">All sites</option>
+                                            <option value="true">All sites except...</option>
+                                            <option value="whitelist">Only on specific sites</option>
+                                        </select>
+                                    </div>
+                                    <div ng-show="key.blacklist" class="form-group">
+                                        <label>URLs (one per line)</label>
+                                        <textarea ng-model="key.sites" class="form-control"></textarea>
+                                    </div>
+                                </tab>
+                                <tab heading="Form Inputs">
+                                    <div class="form-group">
+                                        <label><input type="checkbox" ng-model="key.formfields"/> Active while in form fields</label>
+                                    </div>
+                                </tab>
+                            </tabset>
                         </accordion-group>
                     </accordion>
 
-                    <div class="form-actions">
+                    <div class="form-actions form-group">
                         <button ng-click="addEmpty()" class="btn btn-primary"><i
                                 class="fa fa-plus"></i> Add
                         </button>
@@ -120,7 +134,7 @@
                     <li><code>t g</code> (hit t then g)</li>
                     <li><code>shift+h</code></li>
                     <li><code>ctrl+shift+&#x21d1;+pageup</code></li>
-                    <li><code>alt+f7 r</code> (hold alt and hit F7, then release and
+                    <li><code>alt+f7 r</code> (hold alt and hit F7, release, then
                         hit r)
                     </li>
                 </ul>
