@@ -3,7 +3,7 @@ function OptionsCtrl($scope) {
   $scope.chromesync = false;
 
   var addBlankIfEmpty = function () {
-    if ($scope.keys.length == 0) {
+    if ($scope.keys.length === 0) {
       $scope.addEmpty();
     }
   };
@@ -18,7 +18,7 @@ function OptionsCtrl($scope) {
   };
 
   $scope.isEmpty = function (element, index, array) {
-    return element && element.key != "";
+    return element && element.key !== "";
   };
 
   $scope.deleteKey = function (index) {
@@ -125,3 +125,4 @@ function OptionsCtrl($scope) {
     addBlankIfEmpty();
   }
 }
+
