@@ -92,14 +92,6 @@ chrome.runtime.sendMessage({action: "getKeys"}, function(response) {
       history.forward();
     } else if (action == 'reload') {
       window.location.reload();
-    } else if (action == 'zoomin') {
-      var curZoom = document.body.style.zoom || 1;
-      document.body.style.zoom = (parseFloat(curZoom) + 0.1).toFixed(1);
-    } else if (action == 'zoomout') {
-      var curZoom = document.body.style.zoom || 1;
-      document.body.style.zoom = (parseFloat(curZoom) - 0.1).toFixed(1);
-    } else if (action == 'zoomreset') {
-      document.body.style.zoom = 1;
     } else if (action == 'javascript') {
       var script = document.createElement('script');
       script.textContent = keyobj.code.replace(/^\s*javascript:/, '');

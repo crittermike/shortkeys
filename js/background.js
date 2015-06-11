@@ -120,10 +120,36 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       chrome.tabs.update(sender.tab.id, {url: unescape(openNode.url)});
     });
   }
+  else if (action == 'zoomreset') {
+    setZoom(function() {
+      return 100;
+    });
+  }
+  else if (action == 'zoomin') {
+    setZoom(function(zoomSteps, zoomLevel) {
+      return zoomSteps.reduce(function(prev, cur) { return (zoomLevel < prev) ? prev : cur; });
+    });
+  }
+  else if (action == 'zoomout') {
+    setZoom(function(zoomSteps, zoomLevel) {
+      return zoomSteps.reduce(function(prev, cur) { return (zoomLevel > cur) ? cur : prev; });
+    });
+  }
   else {
     sendResponse({});
   }
 });
+
+function setZoom(computeZoom) {
+  var zoomSteps = [25, 33, 50, 67, 75, 90, 100, 110, 125, 150, 175, 200, 250, 300, 400, 500];
+
+  chrome.tabs.getZoom(null, function(zoomLevel) {
+    zoomLevel = Math.round(zoomLevel * 100);
+    newZoomLevel = computeZoom(zoomSteps, zoomLevel);
+    if (newZoomLevel !== zoomLevel)
+      chrome.tabs.setZoom(null, newZoomLevel / 100);
+  });
+}
 
 function selectTab(direction) {
   chrome.tabs.getAllInWindow(null, function(tabs) {
