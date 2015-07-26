@@ -1,7 +1,7 @@
 'use strict';
 /* jshint undef: false, unused: false */
 
-var app = angular.module('ShortkeysOptions', ['ui.bootstrap']);
+var app = angular.module('ShortkeysOptions', ['ui.bootstrap', 'localytics.directives']);
 
 app.controller('ShortkeysOptionsCtrl', function($scope) {
 
@@ -50,7 +50,7 @@ app.controller('ShortkeysOptionsCtrl', function($scope) {
     traverseBookmarks(results);
     $scope.bookmarks.sort();
     $scope.bookmarks = $scope.bookmarks.filter(function(n) {
-      return n !== "";
+      return n !== '';
     });
   });
 

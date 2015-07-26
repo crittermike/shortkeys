@@ -6,6 +6,8 @@
     <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
     <link rel="stylesheet" href="bower_components/angular/angular-csp.css" />
     <link rel="stylesheet" href="bower_components/fontawesome/css/font-awesome.css" />
+    <link rel="stylesheet" href="bower_components/chosen/chosen.min.css" />
+    <link rel="stylesheet" href="bower_components/angular-chosen-localytics/chosen-spinner.css" />
     <!-- endbower -->
     <!-- endbuild -->
     <!-- build:css styles/main.css -->
@@ -19,6 +21,8 @@
     <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
     <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
     <script src="bower_components/mousetrap/mousetrap.js"></script>
+    <script src="bower_components/chosen/chosen.jquery.min.js"></script>
+    <script src="bower_components/angular-chosen-localytics/chosen.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
 
@@ -53,7 +57,7 @@
                                 </div>
                                 <div class="col-md-9">
                                     <label>Behavior</label>
-                                    <select class="form-control" ng-model="key.action" ng-options="option.value as option.label group by option.group for option in actionOptions">
+                                    <select width="'100%'" chosen class="form-control" ng-model="key.action" ng-options="option.value as option.label group by option.group for option in actionOptions">
                                         <option value="none">Select behavior...</option>
                                     </select>
                                 </div>
@@ -61,7 +65,7 @@
 
                             <div ng-show="key.action == 'openbookmark'" class="form-group">
                                 <label>Bookmark</label>
-                                <select ng-model="key.bookmark" ng-options="bookmark for bookmark in bookmarks track by bookmark" class="form-control">
+                                <select width="'100%'" chosen ng-model="key.bookmark" ng-options="bookmark for bookmark in bookmarks track by bookmark" class="form-control">
                                     <option value="">Select bookmark...</option>
                                 </select>
                             </div>

@@ -23,12 +23,24 @@ a.settings-expander {
   margin: 19px auto 0;
 }
 
+label {
+  display: block;
+}
+
 .nav-tabs {
   margin-bottom: 15px;
 }
 
 .kbd-input {
   font-family: monospace;
+}
+
+.chosen-single {
+  height: 32px !important;
+  padding-top: 3px !important;
+  div {
+    top: 2px !important;
+  }
 }
 
 /**
