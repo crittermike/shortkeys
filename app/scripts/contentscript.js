@@ -182,7 +182,7 @@ Mousetrap.stopCallback = function(e, element, combo) {
     // This fixes the chat box in Twitch.tv for example.
     return true;
 
-  } else if (keySetting.allowInInputs) {
+  } else if (!keySetting.activeInInputs) {
     // If the user has not checked "Also allow in form inputs" for this shortcut,
     // then we cut out of the user is in a form input.
     return element.tagName === 'INPUT' ||
@@ -203,6 +203,7 @@ Mousetrap.stopCallback = function(e, element, combo) {
 chrome.runtime.sendMessage({action: 'getKeys'}, function(response) {
   if (response) {
     keySettings = JSON.parse(response);
+    console.log(keySettings);
     var keys = keySettings.keys;
     if (keys.length > 0) {
       for (var i = 0; i < keys.length; i++) {
