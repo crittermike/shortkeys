@@ -12,19 +12,6 @@ function copyToClipboard(text) {
   document.body.removeChild(copyDiv);
 }
 
-function copyFromClipboard() {
-  var copyDiv = document.createElement('div');
-  copyDiv.contentEditable = true;
-  document.body.appendChild(copyDiv);
-  copyDiv.unselectable = 'off';
-  copyDiv.focus();
-  document.execCommand('SelectAll');
-  document.execCommand('Paste', false, null);
-  var text = copyDiv.innerHTML;
-  document.body.removeChild(copyDiv);
-  return text;
-}
-
 function selectTab(direction) {
   chrome.tabs.getAllInWindow(null, function(tabs) {
     if (tabs.length <= 1) {
