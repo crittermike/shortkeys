@@ -101,7 +101,7 @@
                                             <option value="whitelist">Only on specific sites</option>
                                         </select>
                                     </div>
-                                    <div ng-show="key.blacklist" class="form-group">
+                                    <div ng-show="key.blacklist && key.blacklist !== 'false'" class="form-group">
                                         <label>URLs (one per line)</label>
                                         <textarea ng-model="key.sites" class="form-control"></textarea>
                                     </div>

@@ -5,12 +5,14 @@ var app = angular.module('ShortkeysOptions', ['ui.bootstrap', 'ui.codemirror', '
 
 app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
 
+  // Set some options for CodeMirror.
   $scope.editorOptions = {
     lineWrapping : true,
     autoCloseBrackets: true,
     mode: 'javascript'
   };
 
+  // Create the possible list of actions.
   $scope.actionOptions = [
     {value:'top', label: 'Scroll to top', group: 'Scrolling'},
     {value:'bottom', label: 'Scroll to bottom', group: 'Scrolling'},
@@ -42,7 +44,23 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
     {value:'javascript', label: 'Run JavaScript', group: 'JavaScript'}
   ];
 
-  $scope.bookmarks = [];
+  // Create a default alert.
+  $scope.alerts = [{ type: 'warning', msg: 'You MUST reload your browser or tabs after making changes here!'}];
+
+  /**
+   * Close/remove an alert at a given index.
+   *
+   * @param index
+   */
+  $scope.closeAlert = function(index) {
+    $scope.alerts.splice(index, 1);
+  };
+
+  /**
+   * Create a flat list of bookmarks from a tree.
+   *
+   * @param bookmarkTreeNodes
+   */
   var traverseBookmarks = function(bookmarkTreeNodes) {
     for(var i = 0; i < bookmarkTreeNodes.length; i++) {
       $scope.bookmarks.push(bookmarkTreeNodes[i].title);
@@ -52,6 +70,8 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
     }
   };
 
+  // Create the list of bookmarks for selection as an action.
+  $scope.bookmarks = [];
   chrome.bookmarks.getTree(function(results) {
     traverseBookmarks(results);
     $scope.bookmarks.sort();
@@ -60,6 +80,11 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
     });
   });
 
+  /**
+   * Given an action machine name, return the readable label for the given action.
+   *
+   * @param action
+   */
   $scope.actionToLabel = function(action) {
     if (action === 'none') {
       return 'New keyboard shortcut';
@@ -73,12 +98,18 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
 
   $scope.keys = [];
 
+  /**
+   * If we don't have any shortcuts configured, add an empty one.
+   */
   $scope.addBlankIfEmpty = function () {
     if ($scope.keys.length === 0) {
       $scope.addEmpty();
     }
   };
 
+  /**
+   * Add an empty shortcut config so that the user has something to start from.
+   */
   $scope.addEmpty = function () {
     $scope.keys.push({
       key: '',
@@ -89,16 +120,26 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
     });
   };
 
-  $scope.isEmpty = function (element, index, array) {
-    return element && element.key !== '';
-  };
-
+  /**
+   * Delete a shortcut at a given index. Used by the "Delete" buttons/links.
+   *
+   * @param index
+   */
   $scope.deleteKey = function (index) {
     $scope.keys.splice(index, 1);
   };
 
+  /**
+   * Save the config form to Chrome sync and localStorage.
+   */
   $scope.saveKeys = function () {
-    $scope.keys = $scope.keys.filter($scope.isEmpty); // Remove empty keys
+
+    // Remove empty keys
+    $scope.keys = $scope.keys.filter(function(element) {
+      return element && element.key !== '';
+    });
+
+    // Convert the "sites" textarea for each shortcut into an array separated by newlines.
     for (var i = 0; i < $scope.keys.length; i++) {
       $scope.keys[i].open = false; // Close up the open accordions.
       if (typeof $scope.keys[i].sites === 'string') {
@@ -107,60 +148,31 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
         $scope.keys[i].sitesArray = $scope.keys[i].sites;
       }
     }
+
+    // Save the settings to Chrome storage sync and localStorage.
     var settings = {keys: $scope.keys};
     chrome.storage.sync.set(settings, function () {});
     localStorage.shortkeys = JSON.stringify(settings);
 
+    // Add a success messsage, an empty config if needed, and scroll up.
     $scope.alerts = [{ type: 'success', msg: 'Your settings were saved! Remember to reload the window or individual tabs to pick up the changes.'}];
     $scope.addBlankIfEmpty();
     window.scroll(0, 0);
   };
 
-  $scope.mergeInKeys = function (newKeys, noReplace) {
-    if (!newKeys) {
-      return;
-    }
-    var keyIndexMap = {};
-    for (var i = 0; i < $scope.keys.length; i++) {
-      var key = $scope.keys[i];
-      keyIndexMap[key.key] = i;
-    }
-    for (i = 0; i < newKeys.length; i++) {
-      var newKey = newKeys[i];
-      var index = keyIndexMap[newKey.key];
-      if (index === undefined) {
-        $scope.keys.push(newKey);
-      } else {
-        if (!noReplace) {
-          $scope.keys[index] = newKey;
-        }
+  // Attempt to fetch config from Chrome storage sync, and fall back to localStorage
+  // if not found (i.e., if the user never enabled sync in version 1.
+  chrome.storage.sync.get(null, function (response) {
+    if (response && response.keys) {
+      $scope.keys = response.keys;
+    } else {
+      var settingsStr = localStorage.shortkeys;
+      if (settingsStr) {
+        var settings = JSON.parse(settingsStr);
+        $scope.keys = settings.keys || [];
       }
     }
-  };
-
-  $scope.settingsStr = localStorage.shortkeys;
-  if ($scope.settingsStr) {
-    var settings = JSON.parse($scope.settingsStr);
-    if (settings.keys !== undefined) {
-      $scope.keys = settings.keys || [];
-    } else {
-      $scope.keys = settings || [];  // This allows for conversion of the previous data format
-    }
-  }
-  chrome.storage.sync.get(null, function (response) {
-    if (!response) {
-      $scope.addBlankIfEmpty();
-    } else {
-      $scope.$apply(function () {
-        $scope.mergeInKeys(response.keys);
-        $scope.addBlankIfEmpty();
-      });
-    }
+    $scope.addBlankIfEmpty();
+    $scope.$apply();
   });
-
-  $scope.alerts = [{ type: 'warning', msg: 'You MUST reload your browser or tabs after making changes here!'}];
-
-  $scope.closeAlert = function(index) {
-    $scope.alerts.splice(index, 1);
-  };
 }]);
