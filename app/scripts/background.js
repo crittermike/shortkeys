@@ -53,17 +53,8 @@ function selectTab(direction) {
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   var action = request.action;
-  var keysStr;
   if (action === 'getKeys') {
     sendResponse(localStorage.shortkeys);
-  }
-  else if (action === 'importSettingsFromClipboard') {
-    keysStr = copyFromClipboard();
-    sendResponse(keysStr);
-  }
-  else if (action === 'exportSettingsToClipboard') {
-    keysStr = JSON.stringify(request.keys);
-    copyToClipboard(keysStr);
   }
   else if (action === 'cleardownloads') {
     chrome.browsingData.remove({'since': 0}, {'downloads': true});

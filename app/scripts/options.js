@@ -132,31 +132,6 @@ app.controller('ShortkeysOptionsCtrl', function($scope) {
     }
   };
 
-  $scope.exportSettings = function () {
-    chrome.runtime.sendMessage({
-      action: 'exportSettingsToClipboard',
-      keys: $scope.keys
-    });
-  };
-
-  $scope.importSettings = function () {
-    chrome.runtime.sendMessage({action: 'importSettingsFromClipboard'}, function (keysStr) {
-      var keys;
-      try {
-        keys = JSON.parse(keysStr);
-      } catch (e) {
-        alert('Your clipboard contains invalid JSON. Try clicking "Export" again, or paste it into ' +
-        'a plain text editor and copying it back out again, to remove any formatting you might have picked up.');
-        return;
-      }
-
-      if (keys) {
-        $scope.mergeInKeys(keys);
-        $scope.$apply();
-      }
-    });
-  };
-
   $scope.settingsStr = localStorage.shortkeys;
   if ($scope.settingsStr) {
     var settings = JSON.parse($scope.settingsStr);
