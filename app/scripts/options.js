@@ -1,9 +1,15 @@
 'use strict';
 /* jshint undef: false, unused: false */
 
-var app = angular.module('ShortkeysOptions', ['ui.bootstrap', 'localytics.directives']);
+var app = angular.module('ShortkeysOptions', ['ui.bootstrap', 'ui.codemirror', 'localytics.directives']);
 
-app.controller('ShortkeysOptionsCtrl', function($scope) {
+app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
+
+  $scope.editorOptions = {
+    lineWrapping : true,
+    autoCloseBrackets: true,
+    mode: 'javascript'
+  };
 
   $scope.actionOptions = [
     {value:'top', label: 'Scroll to top', group: 'Scrolling'},
@@ -157,4 +163,4 @@ app.controller('ShortkeysOptionsCtrl', function($scope) {
   $scope.closeAlert = function(index) {
     $scope.alerts.splice(index, 1);
   };
-});
+}]);

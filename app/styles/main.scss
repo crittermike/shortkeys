@@ -16,6 +16,12 @@ textarea {
   }
 }
 
+.CodeMirror-wrap {
+  border: 1px solid #ccc;
+  padding: 3px 5px;
+  border-radius: 5px;
+}
+
 a.settings-expander {
   font-size: 30px;
   cursor: pointer;

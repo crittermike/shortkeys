@@ -3,12 +3,13 @@
 <head>
     <!-- build:css styles/vendor.css -->
     <!-- bower:css -->
+    <link rel="stylesheet" href="bower_components/fontawesome/css/font-awesome.css" />
+    <link rel="stylesheet" href="bower_components/codemirror/lib/codemirror.css" />
+    <!-- endbower -->
     <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
     <link rel="stylesheet" href="bower_components/angular/angular-csp.css" />
-    <link rel="stylesheet" href="bower_components/fontawesome/css/font-awesome.css" />
     <link rel="stylesheet" href="bower_components/chosen/chosen.min.css" />
     <link rel="stylesheet" href="bower_components/angular-chosen-localytics/chosen-spinner.css" />
-    <!-- endbower -->
     <!-- endbuild -->
     <!-- build:css styles/main.css -->
     <link href="styles/main.css" rel="stylesheet">
@@ -21,9 +22,13 @@
     <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
     <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
     <script src="bower_components/mousetrap/mousetrap.js"></script>
-    <script src="bower_components/chosen/chosen.jquery.min.js"></script>
     <script src="bower_components/angular-chosen-localytics/chosen.js"></script>
+    <script src="bower_components/codemirror/lib/codemirror.js"></script>
+    <script src="bower_components/angular-ui-codemirror/ui-codemirror.js"></script>
     <!-- endbower -->
+    <script src="bower_components/chosen/chosen.jquery.min.js"></script>
+    <script src="bower_components/codemirror/mode/javascript/javascript.js"></script>
+    <script src="bower_components/codemirror/addon/edit/closebrackets.js"></script>
     <!-- endbuild -->
 
     <!-- build:js scripts/options.js -->
@@ -72,7 +77,7 @@
 
                             <div ng-show="key.action == 'javascript'" class="form-group javascriptconfig">
                                 <label>Javascript code to run</label>
-                                <textarea rows="20" ng-model="key.code" class="form-control"></textarea>
+                                <textarea ui-codemirror ui-codemirror-opts="editorOptions" rows="20" ng-model="key.code" class="form-control"></textarea>
                             </div>
 
                             <div ng-show="key.action == 'gototab'" class="gototabconfig">

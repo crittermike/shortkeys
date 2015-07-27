@@ -32,7 +32,6 @@
   "permissions": [
     "tabs",
     "clipboardWrite",
-    "clipboardRead",
     "browsingData",
     "storage",
     "bookmarks",
