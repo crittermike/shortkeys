@@ -55,6 +55,7 @@
                                 <kbd ng-show="key.key" class="light">{{key.key}}</kbd><span class="shortcut-label">{{actionToLabel(key.action)}}</span>
                                 <a ng-click="deleteKey($index)" class="pull-right delete-link"><i class="fa fa-trash"></i> Delete </a>
                             </accordion-heading>
+
                             <div class="row form-group">
                                 <div class="col-md-3">
                                     <label>Keyboard Shortcut</label>
@@ -91,8 +92,11 @@
                                 </div>
                             </div>
 
-                            <tabset>
-                                <tab heading="Websites">
+                            <accordion close-others="oneAtATime">
+                                <accordion-group heading="Activation Settings...">
+                                    <div class="form-group">
+                                        <label><input type="checkbox" ng-model="key.activeInInputs"/> Active while in form fields</label>
+                                    </div>
                                     <div class="form-group">
                                         <label>Websites</label>
                                         <select ng-model="key.blacklist" class="form-control">
@@ -105,13 +109,8 @@
                                         <label>URLs (one per line)</label>
                                         <textarea ng-model="key.sites" class="form-control"></textarea>
                                     </div>
-                                </tab>
-                                <tab heading="Form Inputs">
-                                    <div class="form-group">
-                                        <label><input type="checkbox" ng-model="key.activeInInputs"/> Active while in form fields</label>
-                                    </div>
-                                </tab>
-                            </tabset>
+                                </accordion-group>
+                            </accordion>
                         </accordion-group>
                     </accordion>
 
