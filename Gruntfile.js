@@ -276,8 +276,23 @@ module.exports = function (grunt) {
             '{,*/}*.html',
             'styles/{,*/}*.css',
             'styles/fonts/{,*/}*.*',
-            '_locales/{,*/}*.json',
+            '_locales/{,*/}*.json'
           ]
+        },
+        {
+          expand: true,
+          cwd: '.tmp/concat',
+          dest: '<%= config.dist %>',
+          src: ['styles/*']
+        }]
+      },
+      fonts: {
+        files: [{
+          expand: true,
+          dot: true,
+          cwd: '<%= config.app %>/bower_components/fontawesome',
+          dest: '<%= config.dist %>',
+          src: ['fonts/*']
         }]
       }
     },
@@ -285,7 +300,7 @@ module.exports = function (grunt) {
     // Run some tasks in parallel to speed up build process
     concurrent: {
       chrome: [
-        'compass:chrome',
+        'compass:chrome'
       ],
       dist: [
         'compass:dist',
@@ -293,7 +308,7 @@ module.exports = function (grunt) {
         'svgmin'
       ],
       test: [
-        'compass:test',
+        'compass:test'
       ]
     },
 
