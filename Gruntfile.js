@@ -278,21 +278,22 @@ module.exports = function (grunt) {
             'styles/fonts/{,*/}*.*',
             '_locales/{,*/}*.json'
           ]
-        },
-        {
+        }, {
           expand: true,
           cwd: '.tmp/concat',
           dest: '<%= config.dist %>',
           src: ['styles/*']
-        }]
-      },
-      fonts: {
-        files: [{
+        }, {
           expand: true,
           dot: true,
           cwd: '<%= config.app %>/bower_components/fontawesome',
           dest: '<%= config.dist %>',
           src: ['fonts/*']
+        }, {
+          expand: true,
+          cwd: '<%= config.app %>/bower_components/chosen',
+          dest: '<%= config.dist %>/styles',
+          src: ['chosen-sprite*.png']
         }]
       }
     },
