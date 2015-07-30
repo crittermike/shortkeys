@@ -203,7 +203,6 @@ Mousetrap.stopCallback = function(e, element, combo) {
 chrome.runtime.sendMessage({action: 'getKeys'}, function(response) {
   if (response) {
     keySettings = JSON.parse(response);
-    console.log(keySettings);
     var keys = keySettings.keys;
     if (keys.length > 0) {
       for (var i = 0; i < keys.length; i++) {
