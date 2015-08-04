@@ -138,6 +138,8 @@ var doAction = function(keySetting) {
       document.body.appendChild(script);
       document.body.removeChild(script);
       break;
+    case 'NOTA':
+      // intentionally fall through -> None Of The Above (NOTA)
     default:
       for (var attribute in keySetting) {
         message[attribute] = keySetting[attribute];
