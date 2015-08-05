@@ -14,6 +14,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
 
   // Create the possible list of actions.
   $scope.actionOptions = [
+    {value:'NOTA', label: 'Disable shortcut', group: 'Disable'},
     {value:'top', label: 'Scroll to top', group: 'Scrolling'},
     {value:'bottom', label: 'Scroll to bottom', group: 'Scrolling'},
     {value:'scrolldown', label: 'Scroll down', group: 'Scrolling'},
