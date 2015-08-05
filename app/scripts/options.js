@@ -14,7 +14,6 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
 
   // Create the possible list of actions.
   $scope.actionOptions = [
-    {value:'NOTA', label: 'Disable shortcut', group: 'Disable'},
     {value:'top', label: 'Scroll to top', group: 'Scrolling'},
     {value:'bottom', label: 'Scroll to bottom', group: 'Scrolling'},
     {value:'scrolldown', label: 'Scroll down', group: 'Scrolling'},
@@ -41,8 +40,9 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
     {value:'zoomin', label: 'Zoom In', group: 'Zooming'},
     {value:'zoomout', label: 'Zoom Out', group: 'Zooming'},
     {value:'zoomreset', label: 'Reset Zoom', group: 'Zooming'},
-    {value:'cleardownloads', label: 'Clear downloads', group: 'Downloads'},
-    {value:'javascript', label: 'Run JavaScript', group: 'JavaScript'}
+    {value:'javascript', label: 'Run JavaScript', group: 'Other'},
+    {value:'cleardownloads', label: 'Clear downloads', group: 'Other'},
+    {value:'disable', label: 'Do nothing (disable Chrome shortcut)', group: 'Other'}
   ];
 
   // Create a default alert.
