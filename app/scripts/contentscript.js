@@ -138,6 +138,13 @@ var doAction = function(keySetting) {
       document.body.appendChild(script);
       document.body.removeChild(script);
       break;
+    case 'buttonnexttab':
+      if (keySetting.button) {
+        document.querySelector(keySetting.button).click();
+      }
+      message['action'] = 'nexttab';
+      chrome.runtime.sendMessage(message);
+      break;
     case 'disable':
       break;
     default:
