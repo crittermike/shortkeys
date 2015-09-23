@@ -112,6 +112,18 @@ var doAction = function(keySetting) {
     case 'scrolldownmore':
       window.scrollBy(0,500);
       break;
+    case 'scrollleft':
+      window.scrollBy(-50,0);
+      break;
+    case 'scrollleftmore':
+      window.scrollBy(-500,0);
+      break;
+    case 'scrollright':
+      window.scrollBy(50,0);
+      break;
+    case 'scrollrightmore':
+      window.scrollBy(500,0);
+      break;
     case 'back':
       history.back();
       break;
