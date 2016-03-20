@@ -63,11 +63,15 @@
                                     <label>Keyboard Shortcut</label>
                                     <input ng-model="key.key" class="kbd-input form-control" placeholder="Example: ctrl+b" type="text"/>
                                 </div>
-                                <div class="col-md-9">
+                                <div class="col-md-5">
                                     <label>Behavior</label>
                                     <select width="'100%'" chosen class="form-control" ng-model="key.action" ng-options="option.value as option.label group by option.group for option in actionOptions">
                                         <option value="none">Select behavior...</option>
                                     </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label>Label as</label>
+                                    <input ng-model="key.customName" class="custom-name form-control" placeholder="{{keyLabel(key)}}" type="text"/>
                                 </div>
                             </div>
 
