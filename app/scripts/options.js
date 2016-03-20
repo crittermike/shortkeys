@@ -91,7 +91,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
    *
    * @param action
    */
-  $scope.actionToLabel = function(action) {
+  var actionToLabel = function(action) {
     if (action === 'none') {
       return 'New keyboard shortcut';
     }
@@ -99,6 +99,14 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
       if ($scope.actionOptions[i].value === action) {
         return $scope.actionOptions[i].label;
       }
+    }
+  };
+
+  $scope.keyLabel = function(key) {
+    if (key.customName) {
+      return key.customName;
+    } else {
+      return actionToLabel(key.action);
     }
   };
 

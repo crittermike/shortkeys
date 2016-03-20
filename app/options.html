@@ -54,7 +54,7 @@
 
                         <accordion-group ng-repeat="key in keys track by $index" is-open="key.open">
                             <accordion-heading>
-                                <kbd ng-show="key.key" class="light">{{key.key}}</kbd><span class="shortcut-label">{{actionToLabel(key.action)}}</span>
+                                <kbd ng-show="key.key" class="light">{{key.key}}</kbd><span class="shortcut-label">{{keyLabel(key)}}</span>
                                 <a ng-click="deleteKey($index)" class="pull-right delete-link"><i class="fa fa-trash"></i> Delete </a>
                             </accordion-heading>
 
