@@ -154,7 +154,7 @@ var doAction = function(keySetting) {
       if (keySetting.button) {
         document.querySelector(keySetting.button).click();
       }
-      message['action'] = 'nexttab';
+      message.action = 'nexttab';
       chrome.runtime.sendMessage(message);
       break;
     case 'disable':
