@@ -26,7 +26,7 @@
                 "bower_components/mousetrap/mousetrap.min.js",
                 "scripts/contentscript.js"
             ],
-            "all_frames": true
+            "all_frames": false
         }
     ],
     "permissions": [

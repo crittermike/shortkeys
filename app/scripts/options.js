@@ -47,7 +47,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
     {value:'javascript', label: 'Run JavaScript', group: 'Other'},
     {value:'cleardownloads', label: 'Clear downloads', group: 'Other'},
     {value:'disable', label: 'Do nothing (disable Chrome shortcut)', group: 'Other'},
-    {value:'buttonnexttab', label: 'Click button and switch to next tab (for Tribal Wars players)', group: 'Other'}
+    {value:'buttonnexttab', label: 'Click button and switch to next tab (for Tribal Wars players)', group: 'Other'},
   ];
 
   // Create a default alert.

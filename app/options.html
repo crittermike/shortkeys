@@ -36,13 +36,18 @@
     <!-- build:js scripts/options.js -->
     <script src="scripts/options.js"></script>
     <!-- endbuild -->
+    <link href="https://afeld.github.io/emoji-css/emoji.css" rel="stylesheet">
 
-    <title>Shortkeys Options</title>
+    <title>Flame Configuration</title>
 </head>
 <body ng-controller="ShortkeysOptionsCtrl">
     <div class="container">
         <div class="page-header">
-            <h1>Shortkeys for Chrome</h1>
+            <h1>
+              Flame
+              <i class="em em-fire"></i>
+            </h1>
+            <h3>Custom hotkeys and scripts for any webpage</h3>
         </div>
 
         <div class="row">
@@ -183,8 +188,18 @@
                     "<code>h</code>" but still be able to type "<code>h</code>" in a
                     form without it triggering the shortcut.</p>
 
+                <p>Additionally, <code>pageload</code> can be supplied as the
+                  keyboard shortcut. This will execute the provided behavior
+                  once the page is loaded. <code>pageload</code> should not
+                  be used with any modifiers.</p>
+
+                <p>Forked from <a href="http://drupalcheck.com/">Mike Crittenden</a>'s
+                  <a href="http://bit.ly/22fVCKA">Chrome Shortkeys</a>.
+                </p>
+
+                <p> Modified by <a href="http://www.elliotplant.com/">Elliot Plant</a>.</p>
                 <p>Questions or comments or bugs? <a
-                        href="mailto:mikecrittenden@gmail.com">Email me</a>.</p>
+                        href="mailto:elliotaplant@gmail.com">Email me</a>.</p>
             </div>
         </div>
     </div>

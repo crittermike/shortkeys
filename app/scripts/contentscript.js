@@ -175,11 +175,15 @@ var doAction = function(keySetting) {
  */
 var activateKey = function(keySetting) {
   if (isAllowedSite(keySetting)) {
-    var action = function() {
+    if (keySetting.key === 'pageload') {
       doAction(keySetting);
-      return false;
-    };
-    Mousetrap.bind(keySetting.key, action);
+    } else {
+      var action = function() {
+        doAction(keySetting);
+        return false;
+      };
+      Mousetrap.bind(keySetting.key, action);
+    }
   }
 };
 
