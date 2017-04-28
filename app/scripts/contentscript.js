@@ -177,13 +177,12 @@ var doAction = function(keySetting) {
  * @param keySetting
  */
 var activateKey = function(keySetting) {
-  if (isAllowedSite(keySetting)) {
-    var action = function() {
-      doAction(keySetting);
-      return false;
-    };
-    Mousetrap.bind(keySetting.key, action);
-  }
+  var action = function() {
+    if (!isAllowedSite(keySetting)) return false;
+    doAction(keySetting);
+    return false;
+  };
+  Mousetrap.bind(keySetting.key, action);
 };
 
 /**
