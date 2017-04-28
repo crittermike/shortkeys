@@ -10,6 +10,9 @@ var keySettings;
  * @returns {RegExp}
  */
 var globToRegex = function(glob) {
+  // Use a regexp if the url starts and ends with a slash `/`
+  if (/^\/.*\/$/, '$1'.test(glob)) return new RegExp(glob.replace(/^\/(.*)\/$/, '$1'))
+
   var specialChars = '\\^$*+?.()|{}[]';
   var regexChars = ['^'];
   for (var i = 0; i < glob.length; ++i) {
