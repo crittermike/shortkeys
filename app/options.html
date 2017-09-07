@@ -104,6 +104,9 @@
                                     <label>URL to open if no matching tab found</label>
                                     <textarea ng-model="key.openurl" class="form-control"></textarea>
                                 </div>
+                                <div class="form-group gototabglobal">
+                                    <label><input type="checkbox" ng-model="key.currentWindow"/> Search in focused window only</label>
+                                </div>
                             </div>
 
                             <accordion close-others="oneAtATime">

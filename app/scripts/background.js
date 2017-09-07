@@ -102,9 +102,14 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       chrome.tabs.create({url: request.openurl});
     };
     if (request.matchurl) {
-      chrome.tabs.query({url: request.matchurl, currentWindow: true}, function (tabs) {
+      var queryOption = {url: request.matchurl}
+      if (request.currentWindow) {
+        queryOption.currentWindow = true
+      }
+      chrome.tabs.query(queryOption, function (tabs) {
         if (tabs.length > 0) {
           chrome.tabs.update(tabs[0].id, {selected: true});
+          chrome.windows.update(tabs[0].windowId, {focused: true});
         } else {
           createNewTab();
         }
@@ -130,4 +135,5 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     sendResponse({});
   }
 });
+
 
