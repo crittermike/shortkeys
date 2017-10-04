@@ -64,12 +64,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     chrome.tabs.create({});
   }
   else if (action === 'closetab') {
-    chrome.tabs.query({active: true}, (tab) => {
+    chrome.tabs.query({active: true, currentWindow: true}, (tab) => {
       chrome.tabs.remove(tab[0].id);
     });
   }
   else if (action === 'clonetab') {
-    chrome.tabs.query({active: true}, (tab) => {
+    chrome.tabs.query({active: true, currentWindow: true}, (tab) => {
       chrome.tabs.duplicate(tab[0].id);
     });
   }
@@ -83,7 +83,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     });
   }
   else if (action === 'togglepin') {
-    chrome.tabs.query({active: true}, (tab) => {
+    chrome.tabs.query({active: true, currentWindow: true}, (tab) => {
       var toggle = !tab[0].pinned;
       chrome.tabs.update(tab[0].id, { pinned: toggle });
     });
