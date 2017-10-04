@@ -13,11 +13,11 @@ function copyToClipboard(text) {
 }
 
 function selectTab(direction) {
-  chrome.tabs.query( {currentWindow: true}, (tabs) => {
+  chrome.tabs.query({currentWindow: true}, (tabs) => {
     if (tabs.length <= 1) {
       return;
     }
-    chrome.tabs.query( {currentWindow: true, active: true}, (currentTabInArray) => {
+    chrome.tabs.query({currentWindow: true, active: true}, (currentTabInArray) => {
       var currentTab = currentTabInArray[0];
       var toSelect;
       switch (direction) {
@@ -64,7 +64,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     chrome.tabs.create({});
   }
   else if (action === 'closetab') {
-    chrome.tabs.query( {currentWindow: true, active: true}, (tab) => {
+    chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
       chrome.tabs.remove(tab[0].id);
     });
   }
@@ -74,7 +74,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     });
   }
   else if (action === 'onlytab') {
-    chrome.tabs.query( {currentWindow: true, pinned: false, active: false}, (tabs) => {
+    chrome.tabs.query({currentWindow: true, pinned: false, active: false}, (tabs) => {
       var ids = [];
       tabs.forEach(function(tab) {
         ids.push(tab.id);
@@ -83,7 +83,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     });
   }
   else if (action === 'togglepin') {
-    chrome.tabs.query( {active: true, currentWindow: true}, (tab) => {
+    chrome.tabs.query({active: true, currentWindow: true}, (tab) => {
       var toggle = !tab[0].pinned;
       chrome.tabs.update(tab[0].id, { pinned: toggle });
     });
