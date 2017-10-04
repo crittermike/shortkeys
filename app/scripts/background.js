@@ -13,7 +13,7 @@ function copyToClipboard(text) {
 }
 
 function selectTab(direction) {
-  chrome.tabs.query({windowId: chrome.windows.WINDOW_ID_CURRENT}, (tabs) => {
+  chrome.tabs.query({currentWindow: true}, (tabs) => {
     if (tabs.length <= 1) {
       return;
     }
@@ -34,7 +34,8 @@ function selectTab(direction) {
           toSelect = tabs[tabs.length - 1];
           break;
       }
-      chrome.tabs.update(toSelect.id, { highlighted: true });
+      chrome.tabs.update(toSelect.id, {highlighted: true});
+      chrome.tabs.update(currentTab.id, {highlighted: false});
     });
   });
 }
