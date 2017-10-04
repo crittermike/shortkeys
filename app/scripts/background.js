@@ -110,7 +110,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       }
       chrome.tabs.query(queryOption, function (tabs) {
         if (tabs.length > 0) {
-          chrome.tabs.update(tabs[0].id, {highlighted: true});
+          chrome.tabs.update(tabs[0].id, {selected: true});
           chrome.windows.update(tabs[0].windowId, {focused: true});
         } else {
           createNewTab();
