@@ -13,11 +13,12 @@ function copyToClipboard(text) {
 }
 
 function selectTab(direction) {
-  chrome.tabs.getAllInWindow(null, function(tabs) {
+  chrome.tabs.query({windowId: chrome.windows.WINDOW_ID_CURRENT}, (tabs) => {
     if (tabs.length <= 1) {
       return;
     }
-    chrome.tabs.getSelected(null, function(currentTab) {
+    chrome.tabs.query({active: true, currentWindow: true}, (currentTabInArray) => {
+      var currentTab = currentTabInArray[0];
       var toSelect;
       switch (direction) {
         case 'next':
@@ -33,7 +34,7 @@ function selectTab(direction) {
           toSelect = tabs[tabs.length - 1];
           break;
       }
-      chrome.tabs.update(toSelect.id, { selected: true });
+      chrome.tabs.update(toSelect.id, { highlighted: true });
     });
   });
 }
@@ -62,12 +63,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     chrome.tabs.create({});
   }
   else if (action === 'closetab') {
-    chrome.tabs.getSelected(null, function(tab){
+    chrome.tabs.query({active: true}, (tab) => {
       chrome.tabs.remove(tab.id);
     });
   }
   else if (action === 'clonetab') {
-    chrome.tabs.getSelected(null, function(tab){
+    chrome.tabs.query({active: true}, (tab) => {
       chrome.tabs.duplicate(tab.id);
     });
   }
@@ -81,7 +82,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     });
   }
   else if (action === 'togglepin') {
-    chrome.tabs.getSelected(null, function(tab){
+    chrome.tabs.query({active: true}, (tab) => {
       var toggle = !tab.pinned;
       chrome.tabs.update(tab.id, { pinned: toggle });
     });
@@ -108,7 +109,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       }
       chrome.tabs.query(queryOption, function (tabs) {
         if (tabs.length > 0) {
-          chrome.tabs.update(tabs[0].id, {selected: true});
+          chrome.tabs.update(tabs[0].id, {highlighted: true});
           chrome.windows.update(tabs[0].windowId, {focused: true});
         } else {
           createNewTab();
