@@ -65,12 +65,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   }
   else if (action === 'closetab') {
     chrome.tabs.query({active: true}, (tab) => {
-      chrome.tabs.remove(tab.id);
+      chrome.tabs.remove(tab[0].id);
     });
   }
   else if (action === 'clonetab') {
     chrome.tabs.query({active: true}, (tab) => {
-      chrome.tabs.duplicate(tab.id);
+      chrome.tabs.duplicate(tab[0].id);
     });
   }
   else if (action === 'onlytab') {
@@ -84,8 +84,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   }
   else if (action === 'togglepin') {
     chrome.tabs.query({active: true}, (tab) => {
-      var toggle = !tab.pinned;
-      chrome.tabs.update(tab.id, { pinned: toggle });
+      var toggle = !tab[0].pinned;
+      chrome.tabs.update(tab[0].id, { pinned: toggle });
     });
   }
   else if (action === 'copyurl') {
