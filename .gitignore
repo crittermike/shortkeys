@@ -9,3 +9,4 @@ app/styles
 test/bower_components
 package
 .idea
+npm-debug.log
