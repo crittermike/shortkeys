@@ -2,194 +2,196 @@
 <html ng-app="ShortkeysOptions" ng-csp>
 <meta charset="UTF-8">
 <head>
-    <!-- build:css styles/vendor.css -->
-    <!-- bower:css -->
-    <link rel="stylesheet" href="bower_components/fontawesome/css/font-awesome.css" />
-    <link rel="stylesheet" href="bower_components/codemirror/lib/codemirror.css" />
-    <!-- endbower -->
-    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
-    <link rel="stylesheet" href="bower_components/angular/angular-csp.css" />
-    <link rel="stylesheet" href="bower_components/chosen/chosen.min.css" />
-    <link rel="stylesheet" href="bower_components/angular-chosen-localytics/chosen-spinner.css" />
-    <!-- endbuild -->
+  <!-- build:css styles/vendor.css -->
+  <!-- bower:css -->
+  <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.css" />
+  <link rel="stylesheet" href="bower_components/chosen/chosen.css" />
+  <link rel="stylesheet" href="bower_components/codemirror/lib/codemirror.css" />
+  <!-- endbower -->
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
+  <link rel="stylesheet" href="bower_components/angular/angular-csp.css" />
+  <link rel="stylesheet" href="bower_components/chosen/chosen.min.css" />
+  <link rel="stylesheet" href="bower_components/angular-chosen-localytics/chosen-spinner.css" />
+  <!-- endbuild -->
 
-    <!-- build:css styles/main.css -->
-    <link href="styles/main.css" rel="stylesheet">
-    <!-- endbuild -->
+  <!-- build:css styles/main.css -->
+  <link href="styles/main.css" rel="stylesheet">
+  <!-- endbuild -->
 
-    <!-- build:js scripts/vendor.js -->
-    <!-- bower:js -->
-    <script src="bower_components/jquery/dist/jquery.js"></script>
-    <script src="bower_components/angular/angular.js"></script>
-    <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
-    <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
-    <script src="bower_components/mousetrap/mousetrap.js"></script>
-    <script src="bower_components/angular-chosen-localytics/chosen.js"></script>
-    <script src="bower_components/codemirror/lib/codemirror.js"></script>
-    <script src="bower_components/angular-ui-codemirror/ui-codemirror.js"></script>
-    <!-- endbower -->
-    <script src="bower_components/chosen/chosen.jquery.min.js"></script>
-    <script src="bower_components/codemirror/mode/javascript/javascript.js"></script>
-    <script src="bower_components/codemirror/addon/edit/closebrackets.js"></script>
-    <!-- endbuild -->
+  <!-- build:js scripts/vendor.js -->
+  <!-- bower:js -->
+  <script src="bower_components/mousetrap/mousetrap.js"></script>
+  <script src="bower_components/angular/angular.js"></script>
+  <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+  <script src="bower_components/jquery/dist/jquery.js"></script>
+  <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+  <script src="bower_components/chosen/chosen.jquery.js"></script>
+  <script src="bower_components/angular-chosen-localytics/dist/angular-chosen.js"></script>
+  <script src="bower_components/codemirror/lib/codemirror.js"></script>
+  <script src="bower_components/angular-ui-codemirror/ui-codemirror.js"></script>
+  <!-- endbower -->
+  <script src="bower_components/chosen/chosen.jquery.min.js"></script>
+  <script src="bower_components/codemirror/mode/javascript/javascript.js"></script>
+  <script src="bower_components/codemirror/addon/edit/closebrackets.js"></script>
+  <!-- endbuild -->
 
-    <!-- build:js scripts/options.js -->
-    <script src="scripts/options.js"></script>
-    <!-- endbuild -->
+  <!-- build:js scripts/options.js -->
+  <script src="scripts/options.js"></script>
+  <!-- endbuild -->
 
-    <title>Shortkeys Options</title>
+  <title>Shortkeys Options</title>
 </head>
 <body ng-controller="ShortkeysOptionsCtrl">
-    <div class="container">
-        <div class="page-header">
-            <h1>Shortkeys for Chrome</h1>
-        </div>
+<div class="container">
+  <div class="page-header">
+    <h1>Shortkeys for Chrome</h1>
+  </div>
 
-        <div class="row">
-            <div class="col-md-8">
-                <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
+  <div class="row">
+    <div class="col-md-8">
+      <div uib-alert ng-repeat="alert in alerts" type="{{alert.type}}" ng-class="'alert-' + (alert.type || 'warning')" close="closeAlert($index)">{{alert.msg}}</div>
 
-                <form>
-                    <accordion close-others="oneAtATime">
+      <form>
+        <uib-accordion close-others="oneAtATime">
 
-                        <accordion-group ng-repeat="key in keys track by $index" is-open="key.open">
-                            <accordion-heading>
-                                <kbd ng-show="key.key" class="light">{{key.key}}</kbd><span class="shortcut-label">{{keyLabel(key)}}</span>
-                                <a ng-click="deleteKey($index)" class="pull-right delete-link"><i class="fa fa-trash"></i> Delete </a>
-                            </accordion-heading>
+          <div uib-accordion-group ng-repeat="key in keys track by $index" is-open="key.open">
+            <uib-accordion-heading>
+              <kbd ng-show="key.key" class="light">{{key.key}}</kbd><span class="shortcut-label">{{keyLabel(key)}}</span>
+              <a ng-click="deleteKey($index)" class="pull-right delete-link"><i class="fa fa-trash"></i> Delete </a>
+            </uib-accordion-heading>
 
-                            <div class="row form-group">
-                                <div class="col-md-3">
-                                    <label>Keyboard Shortcut</label>
-                                    <input ng-model="key.key" class="kbd-input form-control" placeholder="Example: ctrl+b" type="text"/>
-                                </div>
-                                <div class="col-md-5">
-                                    <label>Behavior</label>
-                                    <select width="'100%'" chosen class="form-control" ng-model="key.action" ng-options="option.value as option.label group by option.group for option in actionOptions">
-                                        <option value="none">Select behavior...</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label>Label as</label>
-                                    <input ng-model="key.customName" class="form-control" placeholder="{{keyLabel(key)}}" type="text"/>
-                                </div>
-                            </div>
-
-                            <div ng-show="key.action == 'openbookmark'" class="form-group">
-                                <label>Bookmark</label>
-                                <select width="'100%'" chosen ng-model="key.bookmark" ng-options="bookmark for bookmark in bookmarks track by bookmark" class="form-control">
-                                    <option value="">Select bookmark...</option>
-                                </select>
-                            </div>
-
-                            <div ng-show="key.action == 'javascript'" class="form-group javascriptconfig">
-                                <label>Javascript code to run</label>
-                                <textarea ui-codemirror ui-codemirror-opts="editorOptions" rows="20" ng-model="key.code" class="form-control"></textarea>
-                            </div>
-
-                            <div ng-show="key.action == 'buttonnexttab'" class="form-group">
-                                <p>This action will click the button chosen by the selector below and then switch to the next tab.</p>
-                                <p>Note that this action will likely only be helpful for players of <a href="https://www.tribalwars.net/">Tribal Wars</a>.</p>
-                                <label>Button selector (example: <code>#troop_confirm_go</code> or <code>.button_class_123</code>.
-                                    (<a href="https://learn.jquery.com/using-jquery-core/selecting-elements/">Help</a>)</label>
-                                <input type="text" ng-model="key.button" class="form-control" />
-                            </div>
-
-                            <div ng-show="key.action == 'gototab'" class="gototabconfig">
-                                <div class="form-group gototabmatchurl">
-                                    <label>URL to match (<a target="_blank" href="https://developer.chrome.com/extensions/match_patterns">Examples</a>) </label>
-                                    <textarea ng-model="key.matchurl" class="form-control"></textarea>
-                                </div>
-                                <div class="form-group gototabopenurl">
-                                    <label>URL to open if no matching tab found</label>
-                                    <textarea ng-model="key.openurl" class="form-control"></textarea>
-                                </div>
-                                <div class="form-group gototabglobal">
-                                    <label><input type="checkbox" ng-model="key.currentWindow"/> Search in focused window only</label>
-                                </div>
-                            </div>
-
-                            <accordion close-others="oneAtATime">
-                                <accordion-group heading="Activation Settings...">
-                                    <div class="form-group">
-                                        <label><input type="checkbox" ng-model="key.activeInInputs"/> Active while in form fields</label>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Websites</label>
-                                        <select ng-model="key.blacklist" class="form-control">
-                                            <option value="false">All sites</option>
-                                            <option value="true">All sites except...</option>
-                                            <option value="whitelist">Only on specific sites</option>
-                                        </select>
-                                    </div>
-                                    <div ng-show="key.blacklist && key.blacklist !== 'false'" class="form-group">
-                                        <label>URLs (one per line)</label>
-                                        <textarea ng-model="key.sites" class="form-control"></textarea>
-                                    </div>
-                                </accordion-group>
-                            </accordion>
-                        </accordion-group>
-                    </accordion>
-
-                    <div class="form-actions form-group">
-                        <button ng-click="addEmpty()" class="btn btn-primary"><i
-                                class="fa fa-plus"></i> Add
-                        </button>
-                        <div class="pull-right">
-                            <button ng-click="saveKeys()" class="btn btn-success"><i
-                                    class="fa fa-save"></i> Save
-                            </button>
-                        </div>
-                    </div>
-                </form>
+            <div class="row form-group">
+              <div class="col-md-3">
+                <label>Keyboard Shortcut</label>
+                <input ng-model="key.key" class="kbd-input form-control" placeholder="Example: ctrl+b" type="text"/>
+              </div>
+              <div class="col-md-5">
+                <label>Behavior</label>
+                <select width="'100%'" chosen class="form-control" ng-model="key.action" ng-options="option.value as option.label group by option.group for option in actionOptions">
+                  <option value="none">Select behavior...</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label>Label as</label>
+                <input ng-model="key.customName" class="form-control" placeholder="{{keyLabel(key)}}" type="text"/>
+              </div>
             </div>
-            <div class="col-md-4">
-                <p>Key combos are zero or more modifiers (<code>ctrl</code>,
-                    <code>shift</code>,
-                    etc.) plus one regular key (letter keys, number keys, arrow
-                    keys, etc), all joined with <code>+</code> signs.</p>
 
-                <p>You can also string combos together to create key sequences,
-                    separated by spaces.</p>
-
-                <p>Here are a couple examples:</p>
-                <ul>
-                    <li><code>t</code></li>
-                    <li><code>ctrl+l</code> (hold ctrl and hit l)</li>
-                    <li><code>t g</code> (hit t then g)</li>
-                    <li><code>shift+h</code></li>
-                    <li><code>ctrl+shift+&#x21d1;+pageup</code></li>
-                    <li><code>alt+f7 r</code> (hold alt and hit F7, release, then
-                        hit r)
-                    </li>
-                </ul>
-                <p>The following modifiers are available:
-                    <code>&#x21d1;</code>, <code>shift</code>, <code>option</code>,
-                    <code>&#x2325;</code>, <code>alt</code>, <code>ctrl</code>,
-                    <code>control</code>, <code>command</code>, and <code>
-                        &#x2318;</code>.</p>
-
-                <p>In addition to regular letters, numbers, and punctuation, the
-                    following special keys can be used for shortcuts:
-                    <code>backspace</code>, <code>tab</code>, <code>clear</code>,
-                    <code>enter</code>, <code>return</code>, <code>esc</code>,
-                    <code>escape</code>, <code>space</code>,
-                    <code>up</code>, <code>down</code>, <code>left</code>,
-                    <code>right</code>,
-                    <code>home</code>, <code>end</code>, <code>pageup</code>,
-                    <code>pagedown</code>,
-                    <code>del</code>, <code>delete</code> and <code>f1</code>
-                    through <code>f19</code>.</p>
-
-                <p>Note: key combos are ignored if you're currently focused on a
-                    form field. This makes it possible to have shortcuts such as
-                    "<code>h</code>" but still be able to type "<code>h</code>" in a
-                    form without it triggering the shortcut.</p>
-
-                <p>Questions or comments or bugs? <a
-                        href="mailto:mikecrittenden@gmail.com">Email me</a>.</p>
+            <div ng-show="key.action == 'openbookmark'" class="form-group">
+              <label>Bookmark</label>
+              <select width="'100%'" chosen ng-model="key.bookmark" ng-options="bookmark for bookmark in bookmarks track by bookmark" class="form-control">
+                <option value="">Select bookmark...</option>
+              </select>
             </div>
+
+            <div ng-show="key.action == 'javascript'" class="form-group javascriptconfig">
+              <label>Javascript code to run</label>
+              <textarea ui-codemirror ui-codemirror-opts="editorOptions" rows="20" ng-model="key.code" class="form-control"></textarea>
+            </div>
+
+            <div ng-show="key.action == 'buttonnexttab'" class="form-group">
+              <p>This action will click the button chosen by the selector below and then switch to the next tab.</p>
+              <p>Note that this action will likely only be helpful for players of <a href="https://www.tribalwars.net/">Tribal Wars</a>.</p>
+              <label>Button selector (example: <code>#troop_confirm_go</code> or <code>.button_class_123</code>.
+                (<a href="https://learn.jquery.com/using-jquery-core/selecting-elements/">Help</a>)</label>
+              <input type="text" ng-model="key.button" class="form-control" />
+            </div>
+
+            <div ng-show="key.action == 'gototab'" class="gototabconfig">
+              <div class="form-group gototabmatchurl">
+                <label>URL to match (<a target="_blank" href="https://developer.chrome.com/extensions/match_patterns">Examples</a>) </label>
+                <textarea ng-model="key.matchurl" class="form-control"></textarea>
+              </div>
+              <div class="form-group gototabopenurl">
+                <label>URL to open if no matching tab found</label>
+                <textarea ng-model="key.openurl" class="form-control"></textarea>
+              </div>
+              <div class="form-group gototabglobal">
+                <label><input type="checkbox" ng-model="key.currentWindow"/> Search in focused window only</label>
+              </div>
+            </div>
+
+            <uib-accordion close-others="oneAtATime">
+              <div uib-accordion-group heading="Activation Settings...">
+                <div class="form-group">
+                  <label><input type="checkbox" ng-model="key.activeInInputs"/> Active while in form fields</label>
+                </div>
+                <div class="form-group">
+                  <label>Websites</label>
+                  <select ng-model="key.blacklist" class="form-control">
+                    <option value="false">All sites</option>
+                    <option value="true">All sites except...</option>
+                    <option value="whitelist">Only on specific sites</option>
+                  </select>
+                </div>
+                <div ng-show="key.blacklist && key.blacklist !== 'false'" class="form-group">
+                  <label>URLs (one per line)</label>
+                  <textarea ng-model="key.sites" class="form-control"></textarea>
+                </div>
+              </div>
+            </uib-accordion>
+          </div>
+        </uib-accordion>
+
+        <div class="form-actions form-group">
+          <button ng-click="addEmpty()" class="btn btn-primary"><i
+                  class="fa fa-plus"></i> Add
+          </button>
+          <div class="pull-right">
+            <button ng-click="saveKeys()" class="btn btn-success"><i
+                    class="fa fa-save"></i> Save
+            </button>
+          </div>
         </div>
+      </form>
     </div>
+    <div class="col-md-4">
+      <p>Key combos are zero or more modifiers (<code>ctrl</code>,
+        <code>shift</code>,
+        etc.) plus one regular key (letter keys, number keys, arrow
+        keys, etc), all joined with <code>+</code> signs.</p>
+
+      <p>You can also string combos together to create key sequences,
+        separated by spaces.</p>
+
+      <p>Here are a couple examples:</p>
+      <ul>
+        <li><code>t</code></li>
+        <li><code>ctrl+l</code> (hold ctrl and hit l)</li>
+        <li><code>t g</code> (hit t then g)</li>
+        <li><code>shift+h</code></li>
+        <li><code>ctrl+shift+&#x21d1;+pageup</code></li>
+        <li><code>alt+f7 r</code> (hold alt and hit F7, release, then
+          hit r)
+        </li>
+      </ul>
+      <p>The following modifiers are available:
+        <code>&#x21d1;</code>, <code>shift</code>, <code>option</code>,
+        <code>&#x2325;</code>, <code>alt</code>, <code>ctrl</code>,
+        <code>control</code>, <code>command</code>, and <code>
+          &#x2318;</code>.</p>
+
+      <p>In addition to regular letters, numbers, and punctuation, the
+        following special keys can be used for shortcuts:
+        <code>backspace</code>, <code>tab</code>, <code>clear</code>,
+        <code>enter</code>, <code>return</code>, <code>esc</code>,
+        <code>escape</code>, <code>space</code>,
+        <code>up</code>, <code>down</code>, <code>left</code>,
+        <code>right</code>,
+        <code>home</code>, <code>end</code>, <code>pageup</code>,
+        <code>pagedown</code>,
+        <code>del</code>, <code>delete</code> and <code>f1</code>
+        through <code>f19</code>.</p>
+
+      <p>Note: key combos are ignored if you're currently focused on a
+        form field. This makes it possible to have shortcuts such as
+        "<code>h</code>" but still be able to type "<code>h</code>" in a
+        form without it triggering the shortcut.</p>
+
+      <p>Questions or comments or bugs? <a
+              href="mailto:mikecrittenden@gmail.com">Email me</a>.</p>
+    </div>
+  </div>
+</div>
 </body>
 </html>

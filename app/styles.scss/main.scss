@@ -6,7 +6,14 @@ textarea {
   font-size: 13px;
 }
 
+.panel {
+  border: 1px solid #ddd;
+}
+
 .panel-heading {
+  color: #333;
+  background-color: #f5f5f5;
+  border-color: #ddd;
   kbd {
     margin-right: 9px;
   }
