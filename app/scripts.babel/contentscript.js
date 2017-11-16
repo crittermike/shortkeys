@@ -9,9 +9,9 @@ var keySettings;
  * @param glob
  * @returns {RegExp}
  */
-var globToRegex = function globToRegex(glob) {
+var globToRegex = function(glob) {
     // Use a regexp if the url starts and ends with a slash `/`
-    if (/^\/.*\/$/, '$1'.test(glob)) return new RegExp(glob.replace(/^\/(.*)\/$/, '$1'));
+    if (/^\/.*\/$/, '$1'.test(glob)) return new RegExp(glob.replace(/^\/(.*)\/$/, '$1'))
 
     var specialChars = '\\^$*+?.()|{}[]';
     var regexChars = ['^'];
@@ -36,7 +36,7 @@ var globToRegex = function globToRegex(glob) {
  * @param keySetting
  * @returns {boolean}
  */
-var isAllowedSite = function isAllowedSite(keySetting) {
+var isAllowedSite = function(keySetting) {
     var url = document.URL;
     var allowed = true;
     if (keySetting.blacklist === 'true') {
@@ -69,7 +69,7 @@ var isAllowedSite = function isAllowedSite(keySetting) {
  *
  * @param keyCombo
  */
-var fetchConfig = function fetchConfig(keyCombo) {
+var fetchConfig = function(keyCombo) {
     var keys = keySettings.keys;
     if (keys.length > 0) {
         for (var i = 0; i < keys.length; i++) {
@@ -87,7 +87,7 @@ var fetchConfig = function fetchConfig(keyCombo) {
  *
  * @param keySetting
  */
-var doAction = function doAction(keySetting) {
+var doAction = function(keySetting) {
     var action = keySetting.action;
     var message = {};
     var curZoom;
@@ -96,7 +96,7 @@ var doAction = function doAction(keySetting) {
         message.text = document.URL;
     }
 
-    switch (action) {
+    switch(action) {
         case 'top':
             window.scrollTo(0, 0);
             break;
@@ -104,28 +104,28 @@ var doAction = function doAction(keySetting) {
             window.scrollTo(0, document.body.scrollHeight);
             break;
         case 'scrollup':
-            window.scrollBy(0, -50);
+            window.scrollBy(0,-50);
             break;
         case 'scrollupmore':
-            window.scrollBy(0, -500);
+            window.scrollBy(0,-500);
             break;
         case 'scrolldown':
-            window.scrollBy(0, 50);
+            window.scrollBy(0,50);
             break;
         case 'scrolldownmore':
-            window.scrollBy(0, 500);
+            window.scrollBy(0,500);
             break;
         case 'scrollleft':
-            window.scrollBy(-50, 0);
+            window.scrollBy(-50,0);
             break;
         case 'scrollleftmore':
-            window.scrollBy(-500, 0);
+            window.scrollBy(-500,0);
             break;
         case 'scrollright':
-            window.scrollBy(50, 0);
+            window.scrollBy(50,0);
             break;
         case 'scrollrightmore':
-            window.scrollBy(500, 0);
+            window.scrollBy(500,0);
             break;
         case 'back':
             history.back();
@@ -176,8 +176,8 @@ var doAction = function doAction(keySetting) {
  *
  * @param keySetting
  */
-var activateKey = function activateKey(keySetting) {
-    var action = function action() {
+var activateKey = function(keySetting) {
+    var action = function() {
         if (!isAllowedSite(keySetting)) return false;
         doAction(keySetting);
         return false;
@@ -194,7 +194,7 @@ var activateKey = function activateKey(keySetting) {
  * @param element
  * @param combo
  */
-Mousetrap.stopCallback = function (e, element, combo) {
+Mousetrap.stopCallback = function(e, element, combo) {
     var keySetting = fetchConfig(combo);
 
     if (element.classList.contains('mousetrap')) {
@@ -204,10 +204,15 @@ Mousetrap.stopCallback = function (e, element, combo) {
         // us, so we don't activate Shortkeys in that case, to prevent conflicts.
         // This fixes the chat box in Twitch.tv for example.
         return true;
+
     } else if (!keySetting.activeInInputs) {
         // If the user has not checked "Also allow in form inputs" for this shortcut,
         // then we cut out of the user is in a form input.
-        return element.tagName === 'INPUT' || element.tagName === 'SELECT' || element.tagName === 'TEXTAREA' || element.isContentEditable;
+        return element.tagName === 'INPUT' ||
+            element.tagName === 'SELECT' ||
+            element.tagName === 'TEXTAREA' ||
+            element.isContentEditable;
+
     } else {
         // The user HAS checked "Also allow in form inputs" for this shortcut so we
         // have no reason to stop it from triggering.
@@ -218,7 +223,7 @@ Mousetrap.stopCallback = function (e, element, combo) {
 /**
  * Fetches the Shortkeys configuration object and wires up each configured shortcut.
  */
-chrome.runtime.sendMessage({ action: 'getKeys' }, function (response) {
+chrome.runtime.sendMessage({action: 'getKeys'}, function(response) {
     if (response) {
         keySettings = JSON.parse(response);
         var keys = keySettings.keys;

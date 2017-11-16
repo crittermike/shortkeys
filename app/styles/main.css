@@ -1,4 +1,3 @@
-@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/mcrittenden\/Documents\/Code\/chrome-shortkeys\/app\/styles\/main\.scss}line{font-family:\000032}}
 textarea {
   width: 100%;
   font-family: monospace;
@@ -6,24 +5,31 @@ textarea {
   font-size: 13px;
 }
 
-@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/mcrittenden\/Documents\/Code\/chrome-shortkeys\/app\/styles\/main\.scss}line{font-family:\0000310}}
+.panel {
+  border: 1px solid #ddd;
+}
+
+.panel-heading {
+  color: #333;
+  background-color: #f5f5f5;
+  border-color: #ddd;
+}
+
 .panel-heading kbd {
   margin-right: 9px;
 }
-@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/mcrittenden\/Documents\/Code\/chrome-shortkeys\/app\/styles\/main\.scss}line{font-family:\0000313}}
+
 .panel-heading a.delete-link {
   color: #d9534f;
   text-decoration: none;
 }
 
-@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/mcrittenden\/Documents\/Code\/chrome-shortkeys\/app\/styles\/main\.scss}line{font-family:\0000319}}
 .CodeMirror-wrap {
   border: 1px solid #ccc;
   padding: 3px 5px;
   border-radius: 5px;
 }
 
-@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/mcrittenden\/Documents\/Code\/chrome-shortkeys\/app\/styles\/main\.scss}line{font-family:\0000325}}
 a.settings-expander {
   font-size: 30px;
   cursor: pointer;
@@ -31,27 +37,23 @@ a.settings-expander {
   margin: 19px auto 0;
 }
 
-@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/mcrittenden\/Documents\/Code\/chrome-shortkeys\/app\/styles\/main\.scss}line{font-family:\0000332}}
 label {
   display: block;
 }
 
-@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/mcrittenden\/Documents\/Code\/chrome-shortkeys\/app\/styles\/main\.scss}line{font-family:\0000336}}
 .nav-tabs {
   margin-bottom: 15px;
 }
 
-@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/mcrittenden\/Documents\/Code\/chrome-shortkeys\/app\/styles\/main\.scss}line{font-family:\0000340}}
 .kbd-input {
   font-family: monospace;
 }
 
-@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/mcrittenden\/Documents\/Code\/chrome-shortkeys\/app\/styles\/main\.scss}line{font-family:\0000344}}
 .chosen-single {
   height: 32px !important;
   padding-top: 3px !important;
 }
-@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/mcrittenden\/Documents\/Code\/chrome-shortkeys\/app\/styles\/main\.scss}line{font-family:\0000347}}
+
 .chosen-single div {
   top: 2px !important;
 }
@@ -65,7 +67,6 @@ label {
  * License: MIT License (see LICENSE.txt)
  */
 /* Base style, essential for every key. */
-@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/mcrittenden\/Documents\/Code\/chrome-shortkeys\/app\/styles\/main\.scss}line{font-family:\0000362}}
 kbd, .key {
   display: inline;
   display: inline-block;
@@ -84,13 +85,11 @@ kbd, .key {
   user-select: none;
 }
 
-@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/mcrittenden\/Documents\/Code\/chrome-shortkeys\/app\/styles\/main\.scss}line{font-family:\0000379}}
 kbd[title], .key[title] {
   cursor: help;
 }
 
 /* Dark style for display on light background. This is the default style. */
-@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/mcrittenden\/Documents\/Code\/chrome-shortkeys\/app\/styles\/main\.scss}line{font-family:\0000384}}
 kbd, kbd.dark, .dark-keys kbd, .key, .key.dark, .dark-keys .key {
   background: #505050;
   background: -moz-linear-gradient(top, #3c3c3c, #505050);
@@ -103,7 +102,6 @@ kbd, kbd.dark, .dark-keys kbd, .key, .key.dark, .dark-keys .key {
 }
 
 /* Light style for display on dark background. */
-@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/mcrittenden\/Documents\/Code\/chrome-shortkeys\/app\/styles\/main\.scss}line{font-family:\0000396}}
 kbd.light, .light-keys kbd, .key.light, .light-keys .key {
   background: #fafafa;
   background: -moz-linear-gradient(top, #d2d2d2, white);

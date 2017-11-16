@@ -3,27 +3,62 @@
 
 var app = angular.module('ShortkeysOptions', ['ui.bootstrap', 'ui.codemirror', 'localytics.directives']);
 
-app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
+app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
 
     // Set some options for CodeMirror.
     $scope.editorOptions = {
-        lineWrapping: true,
+        lineWrapping : true,
         autoCloseBrackets: true,
         mode: 'javascript'
     };
 
     // Create the possible list of actions.
-    $scope.actionOptions = [{ value: 'top', label: 'Scroll to top', group: 'Scrolling' }, { value: 'bottom', label: 'Scroll to bottom', group: 'Scrolling' }, { value: 'scrolldown', label: 'Scroll down', group: 'Scrolling' }, { value: 'scrolldownmore', label: 'Scroll down more', group: 'Scrolling' }, { value: 'scrollup', label: 'Scroll up', group: 'Scrolling' }, { value: 'scrollupmore', label: 'Scroll up more', group: 'Scrolling' }, { value: 'scrollright', label: 'Scroll right', group: 'Scrolling' }, { value: 'scrollrightmore', label: 'Scroll right more', group: 'Scrolling' }, { value: 'scrollleft', label: 'Scroll left', group: 'Scrolling' }, { value: 'scrollleftmore', label: 'Scroll left more', group: 'Scrolling' }, { value: 'back', label: 'Go back', group: 'Location' }, { value: 'forward', label: 'Go forward', group: 'Location' }, { value: 'reload', label: 'Reload page', group: 'Location' }, { value: 'copyurl', label: 'Copy URL', group: 'Location' }, { value: 'openbookmark', label: 'Open Bookmark/Bookmarklet', group: 'Location' }, { value: 'gototab', label: 'Jump to tab or URL', group: 'Tabs' }, { value: 'newtab', label: 'New tab', group: 'Tabs' }, { value: 'closetab', label: 'Close tab', group: 'Tabs' }, { value: 'onlytab', label: 'Close other tabs', group: 'Tabs' }, { value: 'clonetab', label: 'Duplicate tab', group: 'Tabs' }, { value: 'nexttab', label: 'Next tab', group: 'Tabs' }, { value: 'prevtab', label: 'Previous tab', group: 'Tabs' }, { value: 'firsttab', label: 'First tab', group: 'Tabs' }, { value: 'lasttab', label: 'Last tab', group: 'Tabs' }, { value: 'togglepin', label: 'Pin/unpin tab', group: 'Tabs' }, { value: 'movetableft', label: 'Move tab left', group: 'Tabs' }, { value: 'movetabright', label: 'Move tab right', group: 'Tabs' }, { value: 'zoomin', label: 'Zoom In', group: 'Zooming' }, { value: 'zoomout', label: 'Zoom Out', group: 'Zooming' }, { value: 'zoomreset', label: 'Reset Zoom', group: 'Zooming' }, { value: 'javascript', label: 'Run JavaScript', group: 'Other' }, { value: 'cleardownloads', label: 'Clear downloads', group: 'Other' }, { value: 'disable', label: 'Do nothing (disable Chrome shortcut)', group: 'Other' }, { value: 'buttonnexttab', label: 'Click button and switch to next tab (for Tribal Wars players)', group: 'Other' }];
+    $scope.actionOptions = [
+        {value:'top', label: 'Scroll to top', group: 'Scrolling'},
+        {value:'bottom', label: 'Scroll to bottom', group: 'Scrolling'},
+        {value:'scrolldown', label: 'Scroll down', group: 'Scrolling'},
+        {value:'scrolldownmore', label: 'Scroll down more', group: 'Scrolling'},
+        {value:'scrollup', label: 'Scroll up', group: 'Scrolling'},
+        {value:'scrollupmore', label: 'Scroll up more', group: 'Scrolling'},
+        {value:'scrollright', label: 'Scroll right', group: 'Scrolling'},
+        {value:'scrollrightmore', label: 'Scroll right more', group: 'Scrolling'},
+        {value:'scrollleft', label: 'Scroll left', group: 'Scrolling'},
+        {value:'scrollleftmore', label: 'Scroll left more', group: 'Scrolling'},
+        {value:'back', label: 'Go back', group: 'Location'},
+        {value:'forward', label: 'Go forward', group: 'Location'},
+        {value:'reload', label: 'Reload page', group: 'Location'},
+        {value:'copyurl', label: 'Copy URL', group: 'Location'},
+        {value:'openbookmark', label: 'Open Bookmark/Bookmarklet', group: 'Location'},
+        {value:'gototab', label: 'Jump to tab or URL', group: 'Tabs'},
+        {value:'newtab', label: 'New tab', group: 'Tabs'},
+        {value:'closetab', label: 'Close tab', group: 'Tabs'},
+        {value:'onlytab', label: 'Close other tabs', group: 'Tabs'},
+        {value:'clonetab', label: 'Duplicate tab', group: 'Tabs'},
+        {value:'nexttab', label: 'Next tab', group: 'Tabs'},
+        {value:'prevtab', label: 'Previous tab', group: 'Tabs'},
+        {value:'firsttab', label: 'First tab', group: 'Tabs'},
+        {value:'lasttab', label: 'Last tab', group: 'Tabs'},
+        {value:'togglepin', label: 'Pin/unpin tab', group: 'Tabs'},
+        {value:'movetableft', label: 'Move tab left', group: 'Tabs'},
+        {value:'movetabright', label: 'Move tab right', group: 'Tabs'},
+        {value:'zoomin', label: 'Zoom In', group: 'Zooming'},
+        {value:'zoomout', label: 'Zoom Out', group: 'Zooming'},
+        {value:'zoomreset', label: 'Reset Zoom', group: 'Zooming'},
+        {value:'javascript', label: 'Run JavaScript', group: 'Other'},
+        {value:'cleardownloads', label: 'Clear downloads', group: 'Other'},
+        {value:'disable', label: 'Do nothing (disable Chrome shortcut)', group: 'Other'},
+        {value:'buttonnexttab', label: 'Click button and switch to next tab (for Tribal Wars players)', group: 'Other'}
+    ];
 
     // Create a default alert.
-    $scope.alerts = [{ type: 'warning', msg: 'You MUST reload your browser or tabs after making changes here!' }];
+    $scope.alerts = [{ type: 'warning', msg: 'You MUST reload your browser or tabs after making changes here!'}];
 
     /**
      * Close/remove an alert at a given index.
      *
      * @param index
      */
-    $scope.closeAlert = function (index) {
+    $scope.closeAlert = function(index) {
         $scope.alerts.splice(index, 1);
     };
 
@@ -32,10 +67,10 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
      *
      * @param bookmarkTreeNodes
      */
-    var traverseBookmarks = function traverseBookmarks(bookmarkTreeNodes) {
-        for (var i = 0; i < bookmarkTreeNodes.length; i++) {
+    var traverseBookmarks = function(bookmarkTreeNodes) {
+        for(var i = 0; i < bookmarkTreeNodes.length; i++) {
             $scope.bookmarks.push(bookmarkTreeNodes[i].title);
-            if (bookmarkTreeNodes[i].children) {
+            if(bookmarkTreeNodes[i].children) {
                 traverseBookmarks(bookmarkTreeNodes[i].children);
             }
         }
@@ -43,10 +78,10 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
 
     // Create the list of bookmarks for selection as an action.
     $scope.bookmarks = [];
-    chrome.bookmarks.getTree(function (results) {
+    chrome.bookmarks.getTree(function(results) {
         traverseBookmarks(results);
         $scope.bookmarks.sort();
-        $scope.bookmarks = $scope.bookmarks.filter(function (n) {
+        $scope.bookmarks = $scope.bookmarks.filter(function(n) {
             return n !== '';
         });
     });
@@ -56,7 +91,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
      *
      * @param action
      */
-    var actionToLabel = function actionToLabel(action) {
+    var actionToLabel = function(action) {
         if (action === 'none') {
             return 'New keyboard shortcut';
         }
@@ -67,7 +102,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
         }
     };
 
-    $scope.keyLabel = function (key) {
+    $scope.keyLabel = function(key) {
         if (key.customName) {
             return key.customName;
         } else {
@@ -114,7 +149,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
     $scope.saveKeys = function () {
 
         // Remove empty keys
-        $scope.keys = $scope.keys.filter(function (element) {
+        $scope.keys = $scope.keys.filter(function(element) {
             return element && element.key !== '';
         });
 
@@ -129,12 +164,12 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
         }
 
         // Save the settings to Chrome storage sync and localStorage.
-        var settings = { keys: $scope.keys };
+        var settings = {keys: $scope.keys};
         chrome.storage.sync.set(settings, function () {});
         localStorage.shortkeys = JSON.stringify(settings);
 
         // Add a success messsage, an empty config if needed, and scroll up.
-        $scope.alerts = [{ type: 'success', msg: 'Your settings were saved! Remember to reload the window or individual tabs to pick up the changes.' }];
+        $scope.alerts = [{ type: 'success', msg: 'Your settings were saved! Remember to reload the window or individual tabs to pick up the changes.'}];
         $scope.addBlankIfEmpty();
         window.scroll(0, 0);
     };
