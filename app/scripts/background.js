@@ -13,11 +13,12 @@ function copyToClipboard(text) {
 }
 
 function selectTab(direction) {
-    chrome.tabs.getAllInWindow(null, function (tabs) {
+    chrome.tabs.query({ currentWindow: true }, function (tabs) {
         if (tabs.length <= 1) {
             return;
         }
-        chrome.tabs.getSelected(null, function (currentTab) {
+        chrome.tabs.query({ currentWindow: true, active: true }, function (currentTabInArray) {
+            var currentTab = currentTabInArray[0];
             var toSelect;
             switch (direction) {
                 case 'next':
@@ -33,7 +34,8 @@ function selectTab(direction) {
                     toSelect = tabs[tabs.length - 1];
                     break;
             }
-            chrome.tabs.update(toSelect.id, { selected: true });
+            chrome.tabs.update(toSelect.id, { highlighted: true });
+            chrome.tabs.update(currentTab.id, { highlighted: false });
         });
     });
 }
@@ -55,15 +57,15 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     } else if (action === 'newtab') {
         chrome.tabs.create({});
     } else if (action === 'closetab') {
-        chrome.tabs.getSelected(null, function (tab) {
-            chrome.tabs.remove(tab.id);
+        chrome.tabs.query({ currentWindow: true, active: true }, function (tab) {
+            chrome.tabs.remove(tab[0].id);
         });
     } else if (action === 'clonetab') {
-        chrome.tabs.getSelected(null, function (tab) {
-            chrome.tabs.duplicate(tab.id);
+        chrome.tabs.query({ currentWindow: true, active: true }, function (tab) {
+            chrome.tabs.duplicate(tab[0].id);
         });
     } else if (action === 'onlytab') {
-        chrome.tabs.query({ windowId: chrome.windows.WINDOW_ID_CURRENT, pinned: false, active: false }, function (tabs) {
+        chrome.tabs.query({ currentWindow: true, pinned: false, active: false }, function (tabs) {
             var ids = [];
             tabs.forEach(function (tab) {
                 ids.push(tab.id);
@@ -71,9 +73,9 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             chrome.tabs.remove(ids);
         });
     } else if (action === 'togglepin') {
-        chrome.tabs.getSelected(null, function (tab) {
-            var toggle = !tab.pinned;
-            chrome.tabs.update(tab.id, { pinned: toggle });
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tab) {
+            var toggle = !tab[0].pinned;
+            chrome.tabs.update(tab[0].id, { pinned: toggle });
         });
     } else if (action === 'copyurl') {
         copyToClipboard(request.text);
@@ -103,6 +105,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         } else {
             createNewTab();
         }
+    } else if (action === 'newwindow') {
+        browser.windows.create({});
+    } else if (action === 'newprivatewindow') {
+        browser.windows.create({ incognito: true });
     } else if (action === 'openbookmark') {
         chrome.bookmarks.search({ title: request.bookmark }, function (nodes) {
             var openNode;

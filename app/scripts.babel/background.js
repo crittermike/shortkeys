@@ -120,6 +120,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             createNewTab();
         }
     }
+    else if (action === 'newwindow') {
+      browser.windows.create({});
+    }
+    else if (action === 'newprivatewindow') {
+      browser.windows.create({incognito: true});
+    }
     else if (action === 'openbookmark') {
         chrome.bookmarks.search({title: request.bookmark}, function (nodes) {
             var openNode;
