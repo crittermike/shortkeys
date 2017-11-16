@@ -4,7 +4,6 @@
 <head>
   <!-- build:css styles/vendor.css -->
   <!-- bower:css -->
-  <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.css" />
   <link rel="stylesheet" href="bower_components/chosen/chosen.css" />
   <link rel="stylesheet" href="bower_components/codemirror/lib/codemirror.css" />
   <!-- endbower -->
@@ -57,7 +56,7 @@
           <div uib-accordion-group ng-repeat="key in keys track by $index" is-open="key.open">
             <uib-accordion-heading>
               <kbd ng-show="key.key" class="light">{{key.key}}</kbd><span class="shortcut-label">{{keyLabel(key)}}</span>
-              <a ng-click="deleteKey($index)" class="pull-right delete-link"><i class="fa fa-trash"></i> Delete </a>
+              <a ng-click="deleteKey($index)" class="pull-right delete-link">Delete </a>
             </uib-accordion-heading>
 
             <div class="row form-group">
@@ -134,13 +133,9 @@
         </uib-accordion>
 
         <div class="form-actions form-group">
-          <button ng-click="addEmpty()" class="btn btn-primary"><i
-                  class="fa fa-plus"></i> Add
-          </button>
+          <button ng-click="addEmpty()" class="btn btn-primary">Add</button>
           <div class="pull-right">
-            <button ng-click="saveKeys()" class="btn btn-success"><i
-                    class="fa fa-save"></i> Save
-            </button>
+            <button ng-click="saveKeys()" class="btn btn-success">Save</button>
           </div>
         </div>
       </form>
