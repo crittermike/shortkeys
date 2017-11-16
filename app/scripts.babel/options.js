@@ -1,7 +1,7 @@
 'use strict';
 /* jshint undef: false, unused: false */
 
-var app = angular.module('ShortkeysOptions', ['ui.bootstrap', 'ui.codemirror', 'localytics.directives']);
+var app = angular.module('ShortkeysOptions', ['ui.bootstrap', 'ui.codemirror']);
 
 app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
 
@@ -171,7 +171,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
         localStorage.shortkeys = JSON.stringify(settings);
 
         // Add a success messsage, an empty config if needed, and scroll up.
-        $scope.alerts = [{ type: 'success', msg: 'Your settings were saved! Remember to reload the window or individual tabs to pick up the changes.'}];
+        $scope.alerts = [{ type: 'success', msg: 'Your settings were saved!'}];
         $scope.addBlankIfEmpty();
         window.scroll(0, 0);
     };

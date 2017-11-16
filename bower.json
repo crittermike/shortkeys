@@ -6,7 +6,6 @@
     "mousetrap": "^1.6.1",
     "angular-bootstrap": "^2.5.0",
     "bootstrap": "^3.3.7",
-    "angular-chosen-localytics": "^1.8.0",
     "angular-ui-codemirror": "^0.3.0"
   },
   "devDependencies": {

@@ -25,7 +25,7 @@
   ],
   "options_ui": {
     "page": "options.html",
-    "chrome_style": false,
+    "chrome_style": true,
     "open_in_tab": false
   },
   "content_scripts": [

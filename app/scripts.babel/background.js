@@ -121,10 +121,10 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         }
     }
     else if (action === 'newwindow') {
-      browser.windows.create({});
+      chrome.windows.create();
     }
     else if (action === 'newprivatewindow') {
-      browser.windows.create({incognito: true});
+      chrome.windows.create({incognito: true});
     }
     else if (action === 'openbookmark') {
         chrome.bookmarks.search({title: request.bookmark}, function (nodes) {
