@@ -173,7 +173,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
         localStorage.shortkeys = JSON.stringify(settings);
 
         // Add a success messsage, an empty config if needed, and scroll up.
-        $scope.alerts = [{ type: 'success', msg: 'Your settings were saved!'}];
+        $scope.alerts = [{ type: 'success', msg: 'Your settings were saved! Reload your tabs to use your new shortcuts.'}];
         $scope.addBlankIfEmpty();
         window.scroll(0, 0);
     };
