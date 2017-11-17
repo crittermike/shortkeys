@@ -44,6 +44,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
         {value:'movetabright', label: 'Move tab right', group: 'Tabs'},
         {value:'newwindow', label: 'New window', group: 'Windows'},
         {value:'newprivatewindow', label: 'New private window', group: 'Windows'},
+        {value:'closewindow', label: 'Close window', group: 'Windows'},
         {value:'zoomin', label: 'Zoom In', group: 'Zooming'},
         {value:'zoomout', label: 'Zoom Out', group: 'Zooming'},
         {value:'zoomreset', label: 'Reset Zoom', group: 'Zooming'},

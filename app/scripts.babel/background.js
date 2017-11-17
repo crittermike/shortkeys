@@ -132,6 +132,11 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     else if (action === 'newprivatewindow') {
       chrome.windows.create({incognito: true});
     }
+    else if (action === 'closewindow') {
+        chrome.tabs.query( {currentWindow: true, active: true}, (tab) => {
+            chrome.windows.remove(tab[0].windowId);
+        });
+    }
     else if (action === 'openbookmark') {
         chrome.bookmarks.search({title: request.bookmark}, function (nodes) {
             var openNode;
