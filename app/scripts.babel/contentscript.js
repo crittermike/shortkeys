@@ -182,7 +182,7 @@ var activateKey = function(keySetting) {
  * @param element
  * @param combo
  */
-Mousetrap.stopCallback = function(e, element, combo) {
+Mousetrap.prototype.stopCallback = function(e, element, combo) {
     var keySetting = fetchConfig(combo);
 
     if (element.classList.contains('mousetrap')) {
