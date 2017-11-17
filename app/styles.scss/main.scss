@@ -6,8 +6,9 @@ textarea {
   font-size: 13px;
 }
 
-.panel {
-  border: 1px solid #ddd;
+.panel-group .panel {
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 1px;
 }
 
 .panel-heading {

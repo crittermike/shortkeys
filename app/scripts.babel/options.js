@@ -55,7 +55,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
     ];
 
     // Create a default alert.
-    $scope.alerts = [{ type: 'warning', msg: 'You MUST reload your browser or tabs after making changes here!'}];
+    $scope.alerts = [];
 
     /**
      * Close/remove an alert at a given index.

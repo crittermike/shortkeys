@@ -85,7 +85,7 @@
     </div>
   </uib-accordion>
 
-  <div uib-alert ng-repeat="alert in alerts" type="{{alert.type}}" ng-class="'alert-' + (alert.type || 'warning')" close="closeAlert($index)">{{alert.msg}}</div>
+  <div uib-alert ng-repeat="alert in alerts" type="{{alert.type}}" ng-class="'alert-' + (alert.type || 'warning')">{{alert.msg}}</div>
 
   <form>
     <uib-accordion close-others="oneAtATime">
