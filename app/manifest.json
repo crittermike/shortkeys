@@ -21,6 +21,7 @@
     "browsingData",
     "storage",
     "bookmarks",
+    "sessions",
     "<all_urls>"
   ],
   "options_ui": {
@@ -39,7 +40,8 @@
         "scripts/contentscript.js"
       ],
       "run_at": "document_end",
-      "all_frames": false
+      "all_frames": false,
+      "match_about_blank": true
     }
   ]
 }

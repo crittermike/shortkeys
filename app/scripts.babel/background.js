@@ -63,6 +63,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     else if (action === 'newtab') {
         chrome.tabs.create({});
     }
+    else if (action === 'reopentab') {
+        chrome.sessions.getRecentlyClosed({maxResults: 1}, function(sessions) {
+            let closedTab = sessions[0];
+            chrome.sessions.restore(closedTab.sessionsId);
+        });
+    }
     else if (action === 'closetab') {
         chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
             chrome.tabs.remove(tab[0].id);
