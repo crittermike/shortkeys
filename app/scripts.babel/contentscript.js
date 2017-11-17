@@ -11,7 +11,7 @@ var keySettings;
  */
 var globToRegex = function(glob) {
     // Use a regexp if the url starts and ends with a slash `/`
-    if (/^\/.*\/$/, '$1'.test(glob)) return new RegExp(glob.replace(/^\/(.*)\/$/, '$1'))
+    if (/^\/.*\/$/.test(glob)) return new RegExp(glob.replace(/^\/(.*)\/$/, '$1'));
 
     var specialChars = '\\^$*+?.()|{}[]';
     var regexChars = ['^'];
@@ -36,29 +36,17 @@ var globToRegex = function(glob) {
  * @param keySetting
  * @returns {boolean}
  */
-var isAllowedSite = function(keySetting) {
-    var url = document.URL;
-    var allowed = true;
-    if (keySetting.blacklist === 'true') {
-        // The setting for this shortcut is "Blacklist blocked sites" so we cycle
-        // through the sites to see if any match the current site, and only return
-        // false if that's the case.
-        for (var i = 0; i < keySetting.sitesArray.length; i++) {
-            if (url.match(globToRegex(keySetting.sitesArray[i]))) {
-                allowed = false;
-                break;
-            }
-        }
-    } else if (keySetting.blacklist === 'whitelist') {
-        // The setting for this shortcut is "Whitelist allowed sites" so we cycle
-        // through the sites to see if any match the current site, and only return
-        // true if that's the case.
-        allowed = false;
-        for (var j = 0; j < keySetting.sitesArray.length; j++) {
-            if (url.match(globToRegex(keySetting.sitesArray[j]))) {
-                allowed = true;
-                break;
-            }
+let isAllowedSite = function(keySetting) {
+    if (keySetting.blacklist !== 'true' && keySetting.blacklist !== 'whitelist') {
+        // This shortcut is allowed on all sites (not blacklisted or whitelisted).
+        return true;
+    }
+    let url = document.URL;
+    let allowed = keySetting.blacklist === 'true';
+    for (let i = 0; i < keySetting.sitesArray.length; i++) {
+        if (url.match(globToRegex(keySetting.sitesArray[i]))) {
+            allowed = !allowed;
+            break;
         }
     }
     return allowed;
