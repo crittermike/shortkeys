@@ -88,6 +88,21 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             chrome.tabs.remove(ids);
         });
     }
+    else if (action === 'closelefttabs' || action === 'closerighttabs') {
+        chrome.tabs.query({currentWindow: true, active: true}, function(tabs) {
+            let currentTabIndex = tabs[0].index;
+            chrome.tabs.query({currentWindow: true, pinned: false, active: false}, (tabs) => {
+                let ids = [];
+                tabs.forEach(function(tab) {
+                    if ((action === 'closelefttabs' && tab.index < currentTabIndex) ||
+                        (action === 'closerighttabs' && tab.index > currentTabIndex)) {
+                        ids.push(tab.id);
+                    }
+                });
+                chrome.tabs.remove(ids);
+            });
+        });
+    }
     else if (action === 'togglepin') {
         chrome.tabs.query({active: true, currentWindow: true}, (tab) => {
             var toggle = !tab[0].pinned;
