@@ -24,6 +24,65 @@
     "sessions",
     "<all_urls>"
   ],
+  "commands": {
+    "newtab": {
+      "description": "New tab"
+    },
+    "closetab": {
+      "description": "Close tab"
+    },
+    "nexttab": {
+      "description": "Next tab"
+    },
+    "prevtab": {
+      "description": "Previous tab"
+    },
+    "togglepin": {
+      "description": "Pin/unpin tab"
+    },
+    "closelefttabs": {
+      "description": "Close tabs to the left"
+    },
+    "closerighttabs": {
+      "description": "Close tabs to the right"
+    },
+    "clonetab": {
+      "description": "Duplicate tab"
+    },
+    "reopentab": {
+      "description": "Reopen closed tab"
+    },
+    "firsttab": {
+      "description": "First tab"
+    },
+    "lasttab": {
+      "description": "Last tab"
+    },
+    "movetableft": {
+      "description": "Move tab to the left"
+    },
+    "movetabright": {
+      "description": "Move tab to the right"
+    },
+    "newwindow": {
+      "description": "New window"
+    },
+    "newprivatewindow": {
+      "description": "New private window"
+    },
+    "closewindow": {
+      "description": "Close window"
+    },
+    "cleardownloads": {
+      "description": "Clear downloads"
+    },
+    "copyurl": {
+      "description": "Copy URL to clipboard"
+    },
+    "disable": {
+      "description": "Do nothing (disable Chrome shortcut - experimental)"
+    }
+  },
   "options_ui": {
     "page": "options.html",
     "chrome_style": true,

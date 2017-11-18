@@ -27,34 +27,42 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
         {value:'back', label: 'Go back', group: 'Location'},
         {value:'forward', label: 'Go forward', group: 'Location'},
         {value:'reload', label: 'Reload page', group: 'Location'},
-        {value:'copyurl', label: 'Copy URL', group: 'Location'},
+        {value:'copyurl', label: 'Copy URL', group: 'Location', builtin: true},
         {value:'openbookmark', label: 'Open Bookmark/Bookmarklet', group: 'Location'},
         {value:'gototab', label: 'Jump to tab or URL', group: 'Tabs'},
-        {value:'newtab', label: 'New tab', group: 'Tabs'},
-        {value:'closetab', label: 'Close tab', group: 'Tabs'},
-        {value:'onlytab', label: 'Close other tabs', group: 'Tabs'},
-        {value:'closelefttabs', label: 'Close tabs to the left', group: 'Tabs'},
-        {value:'closerighttabs', label: 'Close tabs to the right', group: 'Tabs'},
-        {value:'clonetab', label: 'Duplicate tab', group: 'Tabs'},
-        {value:'reopentab', label: 'Reopen last closed tab', group: 'Tabs'},
-        {value:'nexttab', label: 'Next tab', group: 'Tabs'},
-        {value:'prevtab', label: 'Previous tab', group: 'Tabs'},
-        {value:'firsttab', label: 'First tab', group: 'Tabs'},
-        {value:'lasttab', label: 'Last tab', group: 'Tabs'},
-        {value:'togglepin', label: 'Pin/unpin tab', group: 'Tabs'},
-        {value:'movetableft', label: 'Move tab left', group: 'Tabs'},
-        {value:'movetabright', label: 'Move tab right', group: 'Tabs'},
-        {value:'newwindow', label: 'New window', group: 'Windows'},
-        {value:'newprivatewindow', label: 'New private window', group: 'Windows'},
-        {value:'closewindow', label: 'Close window', group: 'Windows'},
+        {value:'newtab', label: 'New tab', group: 'Tabs', builtin: true},
+        {value:'closetab', label: 'Close tab', group: 'Tabs', builtin: true},
+        {value:'onlytab', label: 'Close other tabs', group: 'Tabs', builtin: true},
+        {value:'closelefttabs', label: 'Close tabs to the left', group: 'Tabs', builtin: true},
+        {value:'closerighttabs', label: 'Close tabs to the right', group: 'Tabs', builtin: true},
+        {value:'clonetab', label: 'Duplicate tab', group: 'Tabs', builtin: true},
+        {value:'reopentab', label: 'Reopen last closed tab', group: 'Tabs', builtin: true},
+        {value:'nexttab', label: 'Next tab', group: 'Tabs', builtin: true},
+        {value:'prevtab', label: 'Previous tab', group: 'Tabs', builtin: true},
+        {value:'firsttab', label: 'First tab', group: 'Tabs', builtin: true},
+        {value:'lasttab', label: 'Last tab', group: 'Tabs', builtin: true},
+        {value:'togglepin', label: 'Pin/unpin tab', group: 'Tabs', builtin: true},
+        {value:'movetableft', label: 'Move tab left', group: 'Tabs', builtin: true},
+        {value:'movetabright', label: 'Move tab right', group: 'Tabs', builtin: true},
+        {value:'newwindow', label: 'New window', group: 'Windows', builtin: true},
+        {value:'newprivatewindow', label: 'New private window', group: 'Windows', builtin: true},
+        {value:'closewindow', label: 'Close window', group: 'Windows', builtin: true},
         {value:'zoomin', label: 'Zoom In', group: 'Zooming'},
         {value:'zoomout', label: 'Zoom Out', group: 'Zooming'},
         {value:'zoomreset', label: 'Reset Zoom', group: 'Zooming'},
         {value:'javascript', label: 'Run JavaScript', group: 'Other'},
-        {value:'cleardownloads', label: 'Clear downloads', group: 'Other'},
-        {value:'disable', label: 'Do nothing (disable Chrome shortcut)', group: 'Other'},
+        {value:'cleardownloads', label: 'Clear downloads', group: 'Other', builtin: true},
+        {value:'disable', label: 'Do nothing (disable Chrome shortcut)', group: 'Other', builtin: true},
         {value:'buttonnexttab', label: 'Click button and switch to next tab (for Tribal Wars players)', group: 'Other'}
     ];
+
+    $scope.isBuiltIn = function(action) {
+        for (let i = 0, len = $scope.actionOptions.length; i < len; i++) {
+            if ($scope.actionOptions[i].value === action) {
+                return $scope.actionOptions[i].builtin || false;
+            }
+        }
+    };
 
     // Create a default alert.
     $scope.alerts = [];

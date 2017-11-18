@@ -1,7 +1,7 @@
 'use strict';
 
-function copyToClipboard(text) {
-    var copyDiv = document.createElement('div');
+let copyToClipboard = (text) => {
+    let copyDiv = document.createElement('div');
     copyDiv.contentEditable = true;
     document.body.appendChild(copyDiv);
     copyDiv.innerHTML = text;
@@ -10,9 +10,9 @@ function copyToClipboard(text) {
     document.execCommand('SelectAll');
     document.execCommand('Copy', false, null);
     document.body.removeChild(copyDiv);
-}
+};
 
-function selectTab(direction) {
+let selectTab = (direction) => {
     chrome.tabs.query({currentWindow: true}, (tabs) => {
         if (tabs.length <= 1) {
             return;
@@ -38,14 +38,10 @@ function selectTab(direction) {
             chrome.tabs.update(currentTab.id, {highlighted: false});
         });
     });
-}
+};
 
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    var action = request.action;
-    if (action === 'getKeys') {
-        sendResponse(localStorage.shortkeys);
-    }
-    else if (action === 'cleardownloads') {
+let handleAction = (action, request = {}) => {
+    if (action === 'cleardownloads') {
         chrome.browsingData.remove({'since': 0}, {'downloads': true});
     }
     else if (action === 'nexttab') {
@@ -81,7 +77,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     }
     else if (action === 'onlytab') {
         chrome.tabs.query({currentWindow: true, pinned: false, active: false}, (tabs) => {
-            var ids = [];
+            let ids = [];
             tabs.forEach(function(tab) {
                 ids.push(tab.id);
             });
@@ -105,27 +101,33 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     }
     else if (action === 'togglepin') {
         chrome.tabs.query({active: true, currentWindow: true}, (tab) => {
-            var toggle = !tab[0].pinned;
+            let toggle = !tab[0].pinned;
             chrome.tabs.update(tab[0].id, { pinned: toggle });
         });
     }
     else if (action === 'copyurl') {
-        copyToClipboard(request.text);
+        chrome.tabs.query( {currentWindow: true, active: true}, (tab) => {
+             copyToClipboard(tab[0].url);
+        });
     }
     else if (action === 'movetableft') {
-        if  (sender.tab.index > 0) {
-            chrome.tabs.move(sender.tab.id, {'index': sender.tab.index -1});
-        }
+        chrome.tabs.query( {currentWindow: true, active: true}, (tab) => {
+            if  (tab[0].index > 0) {
+                chrome.tabs.move(tab[0].id, {'index': tab[0].index -1});
+            }
+        });
     }
     else if (action === 'movetabright') {
-        chrome.tabs.move(sender.tab.id, {'index': sender.tab.index +1});
+        chrome.tabs.query( {currentWindow: true, active: true}, (tab) => {
+            chrome.tabs.move(tab[0].id, {'index': tab[0].index +1});
+        });
     }
     else if (action === 'gototab') {
-        var createNewTab = function() {
+        let createNewTab = () => {
             chrome.tabs.create({url: request.openurl});
         };
         if (request.matchurl) {
-            var queryOption = {url: request.matchurl}
+            let queryOption = {url: request.matchurl};
             if (request.currentWindow) {
                 queryOption.currentWindow = true
             }
@@ -142,10 +144,10 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         }
     }
     else if (action === 'newwindow') {
-      chrome.windows.create();
+        chrome.windows.create();
     }
     else if (action === 'newprivatewindow') {
-      chrome.windows.create({incognito: true});
+        chrome.windows.create({incognito: true});
     }
     else if (action === 'closewindow') {
         chrome.tabs.query( {currentWindow: true, active: true}, (tab) => {
@@ -154,19 +156,33 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     }
     else if (action === 'openbookmark') {
         chrome.bookmarks.search({title: request.bookmark}, function (nodes) {
-            var openNode;
-            for (var i = nodes.length; i-- > 0;) {
-                var node = nodes[i];
+            let openNode;
+            for (let i = nodes.length; i-- > 0;) {
+                let node = nodes[i];
                 if (node.url && node.title === request.bookmark) {
                     openNode = node;
                     break;
                 }
             }
-            chrome.tabs.update(sender.tab.id, {url: decodeURI(openNode.url)});
+            chrome.tabs.query( {currentWindow: true, active: true}, (tab) => {
+                chrome.tabs.update(tab[0].id, {url: decodeURI(openNode.url)});
+            });
         });
+    } else {
+        return false;
     }
-    else {
-        sendResponse({});
+    return true;
+};
+
+chrome.commands.onCommand.addListener(function(command) {
+    handleAction(command);
+});
+
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    const action = request.action;
+    if (action === 'getKeys') {
+        sendResponse(localStorage.shortkeys);
     }
+    handleAction(action, request);
 });
 
