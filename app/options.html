@@ -36,54 +36,12 @@
 </head>
 <body ng-controller="ShortkeysOptionsCtrl">
 <div class="container"><br />
-  <uib-accordion close-others="oneAtATime">
-    <div uib-accordion-group heading="View instructions...">
-      <p>Key combos are zero or more modifiers (<code>ctrl</code>,
-        <code>shift</code>,
-        etc.) plus one regular key (letter keys, number keys, arrow
-        keys, etc), all joined with <code>+</code> signs.</p>
-
-      <p>You can also string combos together to create key sequences,
-        separated by spaces.</p>
-
-      <p>Here are a couple examples:</p>
-      <ul>
-        <li><code>t</code></li>
-        <li><code>ctrl+l</code> (hold ctrl and hit l)</li>
-        <li><code>t g</code> (hit t then g)</li>
-        <li><code>shift+h</code></li>
-        <li><code>ctrl+shift+&#x21d1;+pageup</code></li>
-        <li><code>alt+f7 r</code> (hold alt and hit F7, release, then
-          hit r)
-        </li>
-      </ul>
-      <p>The following modifiers are available:
-        <code>&#x21d1;</code>, <code>shift</code>, <code>option</code>,
-        <code>&#x2325;</code>, <code>alt</code>, <code>ctrl</code>,
-        <code>control</code>, <code>command</code>, and <code>
-          &#x2318;</code>.</p>
-
-      <p>In addition to regular letters, numbers, and punctuation, the
-        following special keys can be used for shortcuts:
-        <code>backspace</code>, <code>tab</code>, <code>clear</code>,
-        <code>enter</code>, <code>return</code>, <code>esc</code>,
-        <code>escape</code>, <code>space</code>,
-        <code>up</code>, <code>down</code>, <code>left</code>,
-        <code>right</code>,
-        <code>home</code>, <code>end</code>, <code>pageup</code>,
-        <code>pagedown</code>,
-        <code>del</code>, <code>delete</code> and <code>f1</code>
-        through <code>f19</code>.</p>
-
-      <p>Note: key combos are ignored if you're currently focused on a
-        form field. This makes it possible to have shortcuts such as
-        "<code>h</code>" but still be able to type "<code>h</code>" in a
-        form without it triggering the shortcut.</p>
-
-      <p>Questions or comments or bugs? <a
-              href="https://github.com/mikecrittenden/chrome-shortkeys/issues">Post them here</a>.</p>
-    </div>
-  </uib-accordion>
+  <p style="text-align: center;">
+    <a href="https://github.com/mikecrittenden/chrome-shortkeys/wiki/How-To-Use-Shortkeys">Documentation</a> |
+    <a href="https://github.com/mikecrittenden/chrome-shortkeys/issues">Support</a> |
+    <a href="https://github.com/mikecrittenden/chrome-shortkeys/">Code</a> |
+    <a href="https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck?hl=en-US&gl=US">Webstore</a>
+  </p>
 
   <div uib-alert ng-repeat="alert in alerts" type="{{alert.type}}" ng-class="'alert-' + (alert.type || 'warning')">{{alert.msg}}</div>
 
