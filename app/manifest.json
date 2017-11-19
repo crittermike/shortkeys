@@ -97,6 +97,36 @@
     "copyurl": {
       "description": "Copy URL to clipboard"
     },
+    "top": {
+      "description": "Scroll to top"
+    },
+    "bottom": {
+      "description": "Scroll to bottom"
+    },
+    "scrolldown": {
+      "description": "Scroll down"
+    },
+    "scrolldownmore": {
+      "description": "Scroll down more"
+    },
+    "scrollup": {
+      "description": "Scroll up"
+    },
+    "scrollupmore": {
+      "description": "Scroll up more"
+    },
+    "scrollright": {
+      "description": "Scroll right"
+    },
+    "scrollrightmore": {
+      "description": "Scroll right more"
+    },
+    "scrollleft": {
+      "description": "Scroll left"
+    },
+    "scrollleftmore": {
+      "description": "Scroll left more"
+    },
     "disable": {
       "description": "Do nothing (disable Chrome shortcut - experimental)"
     }

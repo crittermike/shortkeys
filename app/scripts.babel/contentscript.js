@@ -84,36 +84,6 @@ var doAction = function(keySetting) {
     }
 
     switch(action) {
-        case 'top':
-            window.scrollTo(0, 0);
-            break;
-        case 'bottom':
-            window.scrollTo(0, document.body.scrollHeight);
-            break;
-        case 'scrollup':
-            window.scrollBy(0,-50);
-            break;
-        case 'scrollupmore':
-            window.scrollBy(0,-500);
-            break;
-        case 'scrolldown':
-            window.scrollBy(0,50);
-            break;
-        case 'scrolldownmore':
-            window.scrollBy(0,500);
-            break;
-        case 'scrollleft':
-            window.scrollBy(-50,0);
-            break;
-        case 'scrollleftmore':
-            window.scrollBy(-500,0);
-            break;
-        case 'scrollright':
-            window.scrollBy(50,0);
-            break;
-        case 'scrollrightmore':
-            window.scrollBy(500,0);
-            break;
         case 'javascript':
             var script = document.createElement('script');
             script.textContent = keySetting.code.replace(/^\s*javascript:/, '');
@@ -126,8 +96,6 @@ var doAction = function(keySetting) {
             }
             message.action = 'nexttab';
             chrome.runtime.sendMessage(message);
-            break;
-        case 'disable':
             break;
         default:
             for (var attribute in keySetting) {

@@ -183,6 +183,36 @@ let handleAction = (action, request = {}) => {
     else if (action === 'reload') {
         chrome.tabs.executeScript(null, {'code': 'window.location.reload()'});
     }
+    else if (action === 'top') {
+        chrome.tabs.executeScript(null, {'code': 'window.scrollTo(0, 0)'});
+    }
+    else if (action === 'bottom') {
+        chrome.tabs.executeScript(null, {'code': 'window.scrollTo(0, document.body.scrollHeight)'});
+    }
+    else if (action === 'scrollup') {
+        chrome.tabs.executeScript(null, {'code': 'window.scrollBy(0,-50)'});
+    }
+    else if (action === 'scrollupmore') {
+        chrome.tabs.executeScript(null, {'code': 'window.scrollBy(0,-500)'});
+    }
+    else if (action === 'scrolldown') {
+        chrome.tabs.executeScript(null, {'code': 'window.scrollBy(0,50)'});
+    }
+    else if (action === 'scrolldownmore') {
+        chrome.tabs.executeScript(null, {'code': 'window.scrollBy(0,500)'});
+    }
+    else if (action === 'scrollleft') {
+        chrome.tabs.executeScript(null, {'code': 'window.scrollBy(-50,0)'});
+    }
+    else if (action === 'scrollleftmore') {
+        chrome.tabs.executeScript(null, {'code': 'window.scrollBy(-500,0)'});
+    }
+    else if (action === 'scrollright') {
+        chrome.tabs.executeScript(null, {'code': 'window.scrollBy(50,0)'});
+    }
+    else if (action === 'scrollrightmore') {
+        chrome.tabs.executeScript(null, {'code': 'window.scrollBy(500,0)'});
+    }
     else if (action === 'openbookmark') {
         chrome.bookmarks.search({title: request.bookmark}, function (nodes) {
             let openNode;
