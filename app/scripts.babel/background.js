@@ -174,6 +174,15 @@ let handleAction = (action, request = {}) => {
             chrome.tabs.setZoom(tab[0].id, 0);
         });
     }
+    else if (action === 'back') {
+        chrome.tabs.executeScript(null, {'code': 'window.history.back()'});
+    }
+    else if (action === 'forward') {
+        chrome.tabs.executeScript(null, {'code': 'window.history.forward()'});
+    }
+    else if (action === 'reload') {
+        chrome.tabs.executeScript(null, {'code': 'window.location.reload()'});
+    }
     else if (action === 'openbookmark') {
         chrome.bookmarks.search({title: request.bookmark}, function (nodes) {
             let openNode;

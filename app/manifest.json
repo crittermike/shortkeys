@@ -82,6 +82,15 @@
     "zoomreset": {
       "description": "Zoom reset"
     },
+    "back": {
+      "description": "Go back"
+    },
+    "forward": {
+      "description": "Go forward"
+    },
+    "reload": {
+      "description": "Reload"
+    },
     "cleardownloads": {
       "description": "Clear downloads"
     },

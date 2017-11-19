@@ -78,7 +78,6 @@ var fetchConfig = function(keyCombo) {
 var doAction = function(keySetting) {
     var action = keySetting.action;
     var message = {};
-    var curZoom;
 
     if (action === 'copyurl') {
         message.text = document.URL;
@@ -114,15 +113,6 @@ var doAction = function(keySetting) {
             break;
         case 'scrollrightmore':
             window.scrollBy(500,0);
-            break;
-        case 'back':
-            history.back();
-            break;
-        case 'forward':
-            history.forward();
-            break;
-        case 'reload':
-            window.location.reload();
             break;
         case 'javascript':
             var script = document.createElement('script');
