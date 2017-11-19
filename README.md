@@ -1,7 +1,4 @@
-Shortkeys for Chrome
-================
-
-A Chrome extension for custom keyboard shortcuts.
+![Shortkeys banner image](https://i.imgur.com/XqLXokB.jpg)
 
 ### Installation
 
