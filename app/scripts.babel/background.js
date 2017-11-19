@@ -150,8 +150,28 @@ let handleAction = (action, request = {}) => {
         chrome.windows.create({incognito: true});
     }
     else if (action === 'closewindow') {
-        chrome.tabs.query( {currentWindow: true, active: true}, (tab) => {
+        chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
             chrome.windows.remove(tab[0].windowId);
+        });
+    }
+    else if (action === 'zoomin') {
+        chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
+            chrome.tabs.getZoom(tab[0].id, (zoomFactor) => {
+                console.log(zoomFactor);
+                chrome.tabs.setZoom(tab[0].id, zoomFactor + 0.1);
+            });
+        });
+    }
+    else if (action === 'zoomout') {
+        chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
+            chrome.tabs.getZoom(tab[0].id, (zoomFactor) => {
+                chrome.tabs.setZoom(tab[0].id, zoomFactor - 0.1);
+            });
+        });
+    }
+    else if (action === 'zoomreset') {
+        chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
+            chrome.tabs.setZoom(tab[0].id, 0);
         });
     }
     else if (action === 'openbookmark') {
@@ -164,7 +184,7 @@ let handleAction = (action, request = {}) => {
                     break;
                 }
             }
-            chrome.tabs.query( {currentWindow: true, active: true}, (tab) => {
+            chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
                 chrome.tabs.update(tab[0].id, {url: decodeURI(openNode.url)});
             });
         });

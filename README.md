@@ -4,6 +4,10 @@
 
 Download it [from the Chrome Webstore](https://chrome.google.com/webstore/detail/shortkeys/logpjaacgmcbpdkdchjiaagddngobkck?hl=en-US).
 
+### Usage
+
+Visit [the wiki](https://github.com/mikecrittenden/chrome-shortkeys/wiki/How-To-Use-Shortkeys).
+
 ### How to contribute
 
 Don't be scared! Setup only takes 2 minutes.

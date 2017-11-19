@@ -73,6 +73,15 @@
     "closewindow": {
       "description": "Close window"
     },
+    "zoomin": {
+      "description": "Zoom in"
+    },
+    "zoomout": {
+      "description": "Zoom out"
+    },
+    "zoomreset": {
+      "description": "Zoom reset"
+    },
     "cleardownloads": {
       "description": "Clear downloads"
     },
