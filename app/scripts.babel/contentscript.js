@@ -1,7 +1,7 @@
 'use strict';
 /* global Mousetrap */
 
-var keySettings;
+let keySettings;
 
 /**
  * Helper function to convert glob/wildcard * syntax to valid RegExp for URL checking.
@@ -9,14 +9,14 @@ var keySettings;
  * @param glob
  * @returns {RegExp}
  */
-var globToRegex = function(glob) {
+let globToRegex = function(glob) {
     // Use a regexp if the url starts and ends with a slash `/`
     if (/^\/.*\/$/.test(glob)) return new RegExp(glob.replace(/^\/(.*)\/$/, '$1'));
 
-    var specialChars = '\\^$*+?.()|{}[]';
-    var regexChars = ['^'];
-    for (var i = 0; i < glob.length; ++i) {
-        var c = glob.charAt(i);
+    const specialChars = '\\^$*+?.()|{}[]';
+    let regexChars = ['^'];
+    for (let i = 0; i < glob.length; ++i) {
+        let c = glob.charAt(i);
         if (c === '*') {
             regexChars.push('.*');
         } else {
@@ -57,10 +57,10 @@ let isAllowedSite = function(keySetting) {
  *
  * @param keyCombo
  */
-var fetchConfig = function(keyCombo) {
-    var keys = keySettings.keys;
+let fetchConfig = function(keyCombo) {
+    let keys = keySettings.keys;
     if (keys.length > 0) {
-        for (var i = 0; i < keys.length; i++) {
+        for (let i = 0; i < keys.length; i++) {
             if (keys[i].key === keyCombo) {
                 return keys[i];
             }
@@ -75,21 +75,15 @@ var fetchConfig = function(keyCombo) {
  *
  * @param keySetting
  */
-var doAction = function(keySetting) {
-    var action = keySetting.action;
-    var message = {};
+let doAction = function(keySetting) {
+    let action = keySetting.action;
+    let message = {};
 
     if (action === 'copyurl') {
         message.text = document.URL;
     }
 
     switch(action) {
-        case 'javascript':
-            var script = document.createElement('script');
-            script.textContent = keySetting.code.replace(/^\s*javascript:/, '');
-            document.body.appendChild(script);
-            document.body.removeChild(script);
-            break;
         case 'buttonnexttab':
             if (keySetting.button) {
                 document.querySelector(keySetting.button).click();
@@ -98,7 +92,7 @@ var doAction = function(keySetting) {
             chrome.runtime.sendMessage(message);
             break;
         default:
-            for (var attribute in keySetting) {
+            for (let attribute in keySetting) {
                 message[attribute] = keySetting[attribute];
             }
             chrome.runtime.sendMessage(message);
@@ -111,8 +105,8 @@ var doAction = function(keySetting) {
  *
  * @param keySetting
  */
-var activateKey = function(keySetting) {
-    var action = function() {
+let activateKey = function(keySetting) {
+    let action = function() {
         if (!isAllowedSite(keySetting)) return false;
         doAction(keySetting);
         return false;
@@ -130,7 +124,7 @@ var activateKey = function(keySetting) {
  * @param combo
  */
 Mousetrap.prototype.stopCallback = function(e, element, combo) {
-    var keySetting = fetchConfig(combo);
+    let keySetting = fetchConfig(combo);
 
     if (element.classList.contains('mousetrap')) {
         // We're not using the 'mousetrap' class functionality, which allows
@@ -161,9 +155,9 @@ Mousetrap.prototype.stopCallback = function(e, element, combo) {
 chrome.runtime.sendMessage({action: 'getKeys'}, function(response) {
     if (response) {
         keySettings = JSON.parse(response);
-        var keys = keySettings.keys;
+        let keys = keySettings.keys;
         if (keys.length > 0) {
-            for (var i = 0; i < keys.length; i++) {
+            for (let i = 0; i < keys.length; i++) {
                 activateKey(keys[i]);
             }
         }
