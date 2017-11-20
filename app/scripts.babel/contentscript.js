@@ -1,70 +1,21 @@
 'use strict';
 /* global Mousetrap */
 
-let keySettings;
-
-/**
- * Helper function to convert glob/wildcard * syntax to valid RegExp for URL checking.
- *
- * @param glob
- * @returns {RegExp}
- */
-let globToRegex = function(glob) {
-    // Use a regexp if the url starts and ends with a slash `/`
-    if (/^\/.*\/$/.test(glob)) return new RegExp(glob.replace(/^\/(.*)\/$/, '$1'));
-
-    const specialChars = '\\^$*+?.()|{}[]';
-    let regexChars = ['^'];
-    for (let i = 0; i < glob.length; ++i) {
-        let c = glob.charAt(i);
-        if (c === '*') {
-            regexChars.push('.*');
-        } else {
-            if (specialChars.indexOf(c) >= 0) {
-                regexChars.push('\\');
-            }
-            regexChars.push(c);
-        }
-    }
-    regexChars.push('$');
-    return new RegExp(regexChars.join(''));
-};
-
-/**
- * Helper function to determine if the current site is blacklisted or not.
- *
- * @param keySetting
- * @returns {boolean}
- */
-let isAllowedSite = function(keySetting) {
-    if (keySetting.blacklist !== 'true' && keySetting.blacklist !== 'whitelist') {
-        // This shortcut is allowed on all sites (not blacklisted or whitelisted).
-        return true;
-    }
-    let url = document.URL;
-    let allowed = keySetting.blacklist === 'true';
-    for (let i = 0; i < keySetting.sitesArray.length; i++) {
-        if (url.match(globToRegex(keySetting.sitesArray[i]))) {
-            allowed = !allowed;
-            break;
-        }
-    }
-    return allowed;
-};
+let Shortkeys = {};
+Shortkeys.keys = [];
 
 /**
  * Helper function for fetching the full key shortcut config given a keyboard combo.
  *
  * @param keyCombo
  */
-let fetchConfig = function(keyCombo) {
-    let keys = keySettings.keys;
-    if (keys.length > 0) {
-        for (let i = 0; i < keys.length; i++) {
-            if (keys[i].key === keyCombo) {
-                return keys[i];
+Shortkeys.fetchConfig = (keyCombo) => {
+    if (Shortkeys.keys.length > 0) {
+        Shortkeys.keys.forEach((key) => {
+            if (key.key === keyCombo) {
+                return key;
             }
-        }
+        });
     }
     return false;
 };
@@ -75,28 +26,21 @@ let fetchConfig = function(keyCombo) {
  *
  * @param keySetting
  */
-let doAction = function(keySetting) {
+Shortkeys.doAction = (keySetting) => {
     let action = keySetting.action;
     let message = {};
-
-    if (action === 'copyurl') {
-        message.text = document.URL;
+    for (let attribute in keySetting) {
+        message[attribute] = keySetting[attribute];
     }
 
-    switch(action) {
-        case 'buttonnexttab':
-            if (keySetting.button) {
-                document.querySelector(keySetting.button).click();
-            }
-            message.action = 'nexttab';
-            chrome.runtime.sendMessage(message);
-            break;
-        default:
-            for (let attribute in keySetting) {
-                message[attribute] = keySetting[attribute];
-            }
-            chrome.runtime.sendMessage(message);
+    if (action === 'buttonnexttab') {
+        if (keySetting.button) {
+            document.querySelector(keySetting.button).click();
+        }
+        message.action = 'nexttab';
     }
+
+    chrome.runtime.sendMessage(message);
 };
 
 /**
@@ -105,10 +49,9 @@ let doAction = function(keySetting) {
  *
  * @param keySetting
  */
-let activateKey = function(keySetting) {
+Shortkeys.activateKey = (keySetting) => {
     let action = function() {
-        if (!isAllowedSite(keySetting)) return false;
-        doAction(keySetting);
+        Shortkeys.doAction(keySetting);
         return false;
     };
     Mousetrap.bind(keySetting.key, action);
@@ -124,7 +67,7 @@ let activateKey = function(keySetting) {
  * @param combo
  */
 Mousetrap.prototype.stopCallback = function(e, element, combo) {
-    let keySetting = fetchConfig(combo);
+    let keySetting = Shortkeys.fetchConfig(combo);
 
     if (element.classList.contains('mousetrap')) {
         // We're not using the 'mousetrap' class functionality, which allows
@@ -152,14 +95,13 @@ Mousetrap.prototype.stopCallback = function(e, element, combo) {
 /**
  * Fetches the Shortkeys configuration object and wires up each configured shortcut.
  */
-chrome.runtime.sendMessage({action: 'getKeys'}, function(response) {
+chrome.runtime.sendMessage({action: 'getKeys', url: document.URL}, function(response) {
     if (response) {
-        keySettings = JSON.parse(response);
-        let keys = keySettings.keys;
-        if (keys.length > 0) {
-            for (let i = 0; i < keys.length; i++) {
-                activateKey(keys[i]);
-            }
+        Shortkeys.keys = response;
+        if (Shortkeys.keys.length > 0) {
+            Shortkeys.keys.forEach((key) => {
+                Shortkeys.activateKey(key);
+            });
         }
     }
 });
