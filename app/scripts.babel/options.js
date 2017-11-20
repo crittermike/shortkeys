@@ -1,7 +1,7 @@
 'use strict';
 /* jshint undef: false, unused: false */
 
-var app = angular.module('ShortkeysOptions', ['ui.bootstrap', 'ui.codemirror']);
+let app = angular.module('ShortkeysOptions', ['ui.bootstrap', 'ui.codemirror']);
 
 app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
 
@@ -81,8 +81,8 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
      *
      * @param bookmarkTreeNodes
      */
-    var traverseBookmarks = function(bookmarkTreeNodes) {
-        for(var i = 0; i < bookmarkTreeNodes.length; i++) {
+    let traverseBookmarks = function(bookmarkTreeNodes) {
+        for(let i = 0; i < bookmarkTreeNodes.length; i++) {
             $scope.bookmarks.push(bookmarkTreeNodes[i].title);
             if(bookmarkTreeNodes[i].children) {
                 traverseBookmarks(bookmarkTreeNodes[i].children);
@@ -105,11 +105,11 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
      *
      * @param action
      */
-    var actionToLabel = function(action) {
+    let actionToLabel = function(action) {
         if (action === 'none') {
             return 'New keyboard shortcut';
         }
-        for (var i = 0, len = $scope.actionOptions.length; i < len; i++) {
+        for (let i = 0, len = $scope.actionOptions.length; i < len; i++) {
             if ($scope.actionOptions[i].value === action) {
                 return $scope.actionOptions[i].label;
             }
@@ -168,7 +168,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
         });
 
         // Convert the "sites" textarea for each shortcut into an array separated by newlines.
-        for (var i = 0; i < $scope.keys.length; i++) {
+        for (let i = 0; i < $scope.keys.length; i++) {
             $scope.keys[i].open = false; // Close up the open accordions.
             if (typeof $scope.keys[i].sites === 'string') {
                 $scope.keys[i].sitesArray = $scope.keys[i].sites.split('\n');
@@ -178,9 +178,9 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
         }
 
         // Save the settings to Chrome storage sync and localStorage.
-        var settings = {keys: $scope.keys};
+        let settings = {keys: $scope.keys};
         chrome.storage.sync.set(settings, function () {});
-        localStorage.shortkeys = JSON.stringify(settings);
+        localStorage.shortkeys = JSON.stringify(settings); // @TODO: Why are we stringifying? Stop that.
 
         // Add a success messsage, an empty config if needed, and scroll up.
         $scope.alerts = [{ type: 'success', msg: 'Your settings were saved! Reload your tabs to use your new shortcuts.'}];
@@ -194,9 +194,9 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
         if (response && response.keys) {
             $scope.keys = response.keys;
         } else {
-            var settingsStr = localStorage.shortkeys;
+            let settingsStr = localStorage.shortkeys;
             if (settingsStr) {
-                var settings = JSON.parse(settingsStr);
+                let settings = JSON.parse(settingsStr);
                 $scope.keys = settings.keys || [];
             }
         }
