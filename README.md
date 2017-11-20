@@ -31,5 +31,5 @@ Don't be scared! Setup only takes 2 minutes.
 1. Run `gulp watch`.
 2. Edit some code. The extension itself should reload automatically (thanks Yeoman!).
 3. When you're done with your changes, push them to your fork and create a pull request for them.
-4. You can also run `gulp build` at any time to generate a distrubution version to `dist/`.
+4. You can also run `gulp build` at any time to generate a distribution version to `dist/`.
 5. Finally, you can run `gulp package` to generate a compressed version of the extension suitable for uploading to the Webstore.
