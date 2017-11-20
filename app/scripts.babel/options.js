@@ -179,7 +179,14 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
 
         // Save the settings to Chrome storage sync and localStorage.
         let settings = {keys: $scope.keys};
-        chrome.storage.sync.set(settings, function () {});
+        chrome.storage.sync.set(settings, function () {
+            if (chrome.runtime.lastError) {
+                chrome.storage.sync.clear(function() {
+                    $scope.alerts = [{ type: 'success', msg: "Your settings were saved, but they were too large to be synced to any other Chrome installations you have due to Chrome's 8KB limitation on the storage sync API. Everything will still work, but if you are logged into Chrome on any other computers, the settings won't sync there."}];
+                    $scope.$apply();
+                });
+            }
+        });
         localStorage.shortkeys = JSON.stringify(settings); // @TODO: Why are we stringifying? Stop that.
 
         // Add a success messsage, an empty config if needed, and scroll up.

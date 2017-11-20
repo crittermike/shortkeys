@@ -15,6 +15,10 @@ textarea {
   border-radius: 1px;
 }
 
+label input[type=checkbox] {
+  margin-top: -4px;
+}
+
 .panel-heading {
   color: #333;
   background-color: #f5f5f5;
@@ -31,7 +35,7 @@ textarea {
 .CodeMirror-wrap {
   border: 1px solid #ccc;
   padding: 3px 5px;
-  border-radius: 5px;
+  border-radius: 1px;
 }
 
 a.settings-expander {
@@ -51,14 +55,6 @@ label {
 
 .kbd-input {
   font-family: monospace;
-}
-
-.chosen-single {
-  height: 32px !important;
-  padding-top: 3px !important;
-  div {
-    top: 2px !important;
-  }
 }
 
 /**
