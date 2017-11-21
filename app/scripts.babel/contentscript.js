@@ -34,6 +34,16 @@ Shortkeys.doAction = (keySetting) => {
         message[attribute] = keySetting[attribute];
     }
 
+    // It's a little hacky, but we have to insert JS this way rather than using executeScript() from the background JS,
+    // because this way we have access to the libraries that exist on the page on any given site, such as jQuery.
+    if (action === 'javascript') {
+        let script = document.createElement('script');
+        script.textContent = keySetting.code;
+        document.body.appendChild(script);
+        document.body.removeChild(script);
+        return;
+    }
+
     if (action === 'buttonnexttab') {
         if (keySetting.button) {
             document.querySelector(keySetting.button).click();

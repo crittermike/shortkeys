@@ -260,9 +260,6 @@ let handleAction = (action, request = {}) => {
     else if (action === 'scrollrightmore') {
         chrome.tabs.executeScript(null, {'code': 'window.scrollBy(500,0)'});
     }
-    else if (action === 'javascript') {
-        chrome.tabs.executeScript(null, {'code': request.code});
-    }
     else if (action === 'openbookmark') {
         chrome.bookmarks.search({title: request.bookmark}, function (nodes) {
             let openNode;
