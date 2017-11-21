@@ -6,6 +6,10 @@ textarea {
   font-size: 13px;
 }
 
+body {
+  min-width: 750px;
+}
+
 .panel-group .panel {
   border: 1px solid rgba(0, 0, 0, 0.25);
   border-radius: 1px;
