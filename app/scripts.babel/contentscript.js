@@ -10,14 +10,15 @@ Shortkeys.keys = [];
  * @param keyCombo
  */
 Shortkeys.fetchConfig = (keyCombo) => {
+    let returnKey = false;
     if (Shortkeys.keys.length > 0) {
         Shortkeys.keys.forEach((key) => {
             if (key.key === keyCombo) {
-                return key;
+                returnKey = key;
             }
         });
     }
-    return false;
+    return returnKey;
 };
 
 /**
