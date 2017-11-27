@@ -260,7 +260,7 @@ let handleAction = (action, request = {}) => {
     else if (action === 'scrollrightmore') {
         chrome.tabs.executeScript(null, {'code': 'window.scrollBy(500,0)'});
     }
-    else if (action === 'openbookmark' || action === 'openbookmarknewtab') {
+    else if (action === 'openbookmark' || action === 'openbookmarknewtab' || action === 'openbookmarkbackgroundtab') {
         chrome.bookmarks.search({title: request.bookmark}, function (nodes) {
             let openNode;
             for (let i = nodes.length; i-- > 0;) {
@@ -274,6 +274,8 @@ let handleAction = (action, request = {}) => {
                 chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
                     chrome.tabs.update(tab[0].id, {url: decodeURI(openNode.url)});
                 });
+            } else if (action === 'openbookmarkbackgroundtab') {
+                chrome.tabs.create({url: decodeURI(openNode.url), active: false});
             } else {
                 chrome.tabs.create({url: decodeURI(openNode.url)});
             }

@@ -76,7 +76,7 @@
           <input ng-model="key.customName" class="form-control" placeholder="{{keyLabel(key)}}" type="text"/>
         </div>
 
-        <div ng-show="key.action == 'openbookmark' || key.action == 'openbookmarknewtab'" class="form-group">
+        <div ng-show="key.action == 'openbookmark' || key.action == 'openbookmarknewtab' || key.action == 'openbookmarkbackgroundtab'" class="form-group">
           <label>Bookmark</label>
           <select width="'100%'" ng-model="key.bookmark" ng-options="bookmark for bookmark in bookmarks track by bookmark" class="form-control">
             <option value="">Select bookmark...</option>
