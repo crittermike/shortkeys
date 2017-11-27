@@ -143,7 +143,9 @@
     {
       "matches": [
         "http://*/*",
-        "https://*/*"
+        "https://*/*",
+        "file://*",
+        "file:///*"
       ],
       "js": [
         "bower_components/mousetrap/mousetrap.min.js",
