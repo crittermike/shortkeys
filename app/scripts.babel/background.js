@@ -260,7 +260,7 @@ let handleAction = (action, request = {}) => {
     else if (action === 'scrollrightmore') {
         chrome.tabs.executeScript(null, {'code': 'window.scrollBy(500,0)'});
     }
-    else if (action === 'openbookmark') {
+    else if (action === 'openbookmark' || action === 'openbookmarknewtab') {
         chrome.bookmarks.search({title: request.bookmark}, function (nodes) {
             let openNode;
             for (let i = nodes.length; i-- > 0;) {
@@ -270,9 +270,14 @@ let handleAction = (action, request = {}) => {
                     break;
                 }
             }
-            chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
-                chrome.tabs.update(tab[0].id, {url: decodeURI(openNode.url)});
-            });
+            if (action === 'openbookmark') {
+                chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
+                    chrome.tabs.update(tab[0].id, {url: decodeURI(openNode.url)});
+                });
+            } else {
+                chrome.tabs.create({url: decodeURI(openNode.url)});
+            }
+
         });
     }
     else {
