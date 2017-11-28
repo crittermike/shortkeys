@@ -18,8 +18,8 @@ let selectTab = (direction) => {
             return;
         }
         chrome.tabs.query({currentWindow: true, active: true}, (currentTabInArray) => {
-            var currentTab = currentTabInArray[0];
-            var toSelect;
+            let currentTab = currentTabInArray[0];
+            let toSelect;
             switch (direction) {
                 case 'next':
                     toSelect = tabs[(currentTab.index + 1 + tabs.length) % tabs.length];
