@@ -130,6 +130,9 @@
     "scrollleftmore": {
       "description": "Scroll left more"
     },
+    "viewsource": {
+      "description": "View source"
+    },
     "disable": {
       "description": "Do nothing (disable Chrome shortcut - experimental)"
     }

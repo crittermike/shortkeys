@@ -91,6 +91,11 @@ let handleAction = (action, request = {}) => {
     if (action === 'cleardownloads') {
         chrome.browsingData.remove({'since': 0}, {'downloads': true});
     }
+    else if (action === 'viewsource') {
+        chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
+            chrome.tabs.create({url: 'view-source:' + tab[0].url});
+        });
+    }
     else if (action === 'nexttab') {
         selectTab('next');
     }

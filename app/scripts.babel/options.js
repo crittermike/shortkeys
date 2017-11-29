@@ -54,6 +54,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function($scope) {
         {value:'zoomreset', label: 'Reset Zoom', group: 'Zooming', builtin: true},
         {value:'javascript', label: 'Run JavaScript', group: 'Other'},
         {value:'cleardownloads', label: 'Clear downloads', group: 'Other', builtin: true},
+        {value:'viewsource', label: 'View source', group: 'Other', builtin: true},
         {value:'disable', label: 'Do nothing (disable Chrome shortcut)', group: 'Other', builtin: true},
         {value:'buttonnexttab', label: 'Click button and switch to next tab (for Tribal Wars players)', group: 'Other'}
     ];
