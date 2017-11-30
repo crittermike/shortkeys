@@ -1,5 +1,9 @@
 ![Shortkeys banner image](https://i.imgur.com/XqLXokB.jpg)
 
+### Donate
+
+👉 **[Donate here](https://salt.bountysource.com/teams/chrome-shortkeys)!** 👈 Donations are welcome and appreciated! 
+
 ### Installation
 
 Download it [from the Chrome Webstore](https://chrome.google.com/webstore/detail/shortkeys/logpjaacgmcbpdkdchjiaagddngobkck?hl=en-US).
