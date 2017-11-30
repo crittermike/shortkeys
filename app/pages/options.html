@@ -2,39 +2,12 @@
 <html ng-app="ShortkeysOptions" ng-csp>
 <meta charset="UTF-8">
 <head>
-  <!-- build:css styles/vendor.css -->
-  <!-- bower:css -->
-  <link rel="stylesheet" href="bower_components/codemirror/lib/codemirror.css" />
-  <!-- endbower -->
-  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
-  <link rel="stylesheet" href="bower_components/angular/angular-csp.css" />
-  <!-- endbuild -->
-
-  <!-- build:css styles/main.css -->
-  <link href="styles/main.css" rel="stylesheet">
-  <!-- endbuild -->
-
-  <!-- build:js scripts/vendor.js -->
-  <!-- bower:js -->
-  <script src="bower_components/angular/angular.js"></script>
-  <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
-  <script src="bower_components/jquery/dist/jquery.js"></script>
-  <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
-  <script src="bower_components/codemirror/lib/codemirror.js"></script>
-  <script src="bower_components/angular-ui-codemirror/ui-codemirror.js"></script>
-  <!-- endbower -->
-  <script src="bower_components/codemirror/mode/javascript/javascript.js"></script>
-  <script src="bower_components/codemirror/addon/edit/closebrackets.js"></script>
-  <!-- endbuild -->
-
-  <!-- build:js scripts/options.js -->
-  <script src="scripts/options.js"></script>
-  <!-- endbuild -->
+  <link rel="stylesheet" type="text/css" href="../styles/options.css">
 
   <title>Shortkeys Options</title>
 </head>
 <body ng-controller="ShortkeysOptionsCtrl">
-<div class="container"><br />
+<div class="container-fluid"><br />
   <p style="text-align: center;">
     <a href="https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck/reviews?hl=en-US&gl=US">Add a Review</a> |
     <a href="https://github.com/mikecrittenden/chrome-shortkeys/wiki/How-To-Use-Shortkeys">Documentation</a> |
@@ -139,5 +112,6 @@
     </div>
   </form>
 </div>
+<script src="../scripts/options.js"></script>
 </body>
 </html>

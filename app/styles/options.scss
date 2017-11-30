@@ -1,0 +1,49 @@
+@import '/vendor/bootstrap.min.css';
+@import '/vendor/codemirror.css';
+@import '/vendor/angular-csp.css';
+
+body {
+  min-width: 900px;
+}
+
+.panel-group .panel {
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 3px;
+}
+
+.panel-heading {
+  color: #333;
+  background-color: #f5f5f5;
+  border-color: #ddd;
+  kbd {
+    margin-right: 9px;
+  }
+  a.delete-link {
+    color: #d9534f;
+    text-decoration: none;
+  }
+}
+
+.CodeMirror-wrap {
+  border: 1px solid #d0d0d0 !important;
+  padding: 5px !important;
+  border-radius: 3px !important;
+}
+
+// Attempt to match Chrome's button styling, to look semi-native.
+button {
+  -webkit-appearance: none;
+  user-select: none;
+  background-image: linear-gradient(rgb(237, 237, 237), rgb(237, 237, 237) 38%, rgb(222, 222, 222));
+  box-shadow: rgba(0, 0, 0, 0.08) 0px 1px 0px, rgba(255, 255, 255, 0.75) 0px 1px 2px inset;
+  color: rgb(68, 68, 68);
+  text-shadow: rgb(240, 240, 240) 0px 1px 0px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.25);
+  border-image: initial;
+  border-radius: 2px;
+  font: inherit;
+  margin: 0px 1px 0px 0px;
+  outline: none;
+}

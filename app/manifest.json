@@ -1,29 +1,20 @@
 {
   "name": "__MSG_appName__",
+  "short_name": "__MSG_appShortName__",
+  "description": "__MSG_appDescription__",
   "version": "2.0.23",
   "manifest_version": 2,
-  "description": "__MSG_appDescription__",
+  "default_locale": "en",
   "icons": {
     "16": "images/icon_16.png",
     "48": "images/icon_48.png",
     "128": "images/icon_128.png"
   },
-  "default_locale": "en",
   "background": {
     "scripts": [
-      "scripts/chromereload.js",
       "scripts/background.js"
     ]
   },
-  "permissions": [
-    "tabs",
-    "clipboardWrite",
-    "browsingData",
-    "storage",
-    "bookmarks",
-    "sessions",
-    "<all_urls>"
-  ],
   "commands": {
     "newtab": {
       "description": "New tab"
@@ -138,8 +129,8 @@
     }
   },
   "options_ui": {
-    "page": "options.html",
-    "chrome_style": true,
+    "page": "pages/options.html",
+    "chrome_style": false,
     "open_in_tab": false
   },
   "content_scripts": [
@@ -151,12 +142,21 @@
         "file:///*"
       ],
       "js": [
-        "bower_components/mousetrap/mousetrap.min.js",
+        "vendor/mousetrap.min.js",
         "scripts/contentscript.js"
       ],
       "run_at": "document_end",
       "all_frames": true,
       "match_about_blank": true
     }
+  ],
+  "permissions": [
+    "tabs",
+    "clipboardWrite",
+    "browsingData",
+    "storage",
+    "bookmarks",
+    "sessions",
+    "<all_urls>"
   ]
 }

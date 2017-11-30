@@ -1,3 +1,12 @@
 {
-  "presets": ["es2015"]
+  "presets": [
+    ["env", {
+      "targets": {
+        "browsers": "last 2 versions"
+      },
+      "useBuiltIns": true,
+      "debug": false
+    }]
+  ],
+  "ignore": ["node_modules"]
 }
