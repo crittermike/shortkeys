@@ -66,3 +66,5 @@ Here is the full list of support Gulp commands:
 | `patch`      | Bumbs the patch version in the `manifest.json`,  `package.json`, commits and adds a git tag                                      |
 | `feature`    | Bumbs the minor version in the `manifest.json`, `package.json`, commits and adds a git tag                                       |
 | `release`    | Bumbs the major version in the `manifest.json`, `package.json`, commits and adds a git tag                                       |
+
+For more info on development, see the [docs for the Chrome Extension Kickstart](https://github.com/HaNdTriX/generator-chrome-extension-kickstart/blob/HEAD/DOCUMENTATION.md) generator, which this extension was built from.
