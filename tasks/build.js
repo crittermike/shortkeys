@@ -3,10 +3,10 @@ import gulpSequence from 'gulp-sequence'
 
 gulp.task('build', gulpSequence(
   'clean', [
+    'vendor',
     'manifest',
     'scripts',
     'styles',
-    'vendor',
     'pages',
     'locales',
     'images',
