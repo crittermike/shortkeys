@@ -2,7 +2,9 @@
 
 ### Donate
 
-👉 **[Donate here](https://salt.bountysource.com/teams/chrome-shortkeys)!** 👈 Donations are welcome and appreciated! 
+👉 **[DONATE TO SUPPORT SHORTKEYS](https://salt.bountysource.com/teams/chrome-shortkeys)** 👈 
+
+This is a personal side project and donations are welcome and appreciated!
 
 ### Installation
 
