@@ -155,6 +155,15 @@ let handleAction = (action, request = {}) => {
     chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
       copyToClipboard(tab[0].url)
     })
+  } else if (action === 'searchgoogle') {
+    chrome.tabs.executeScript({
+      code: 'window.getSelection().toString();'
+    }, function (selection) {
+      if (selection[0]) {
+        let query = encodeURIComponent(selection[0])
+        chrome.tabs.create({url: 'https://www.google.com/search?q=' + query})
+      }
+    })
   } else if (action === 'movetableft') {
     chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
       if (tab[0].index > 0) {

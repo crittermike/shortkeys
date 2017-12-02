@@ -34,6 +34,9 @@
     "togglemute": {
       "description": "Mute/unmute tab"
     },
+    "searchgoogle": {
+      "description": "Search Google for selected text"
+    },
     "onlytab": {
       "description": "Close other tabs"
     },

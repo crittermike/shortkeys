@@ -38,6 +38,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
     {value: 'forward', label: 'Go forward', group: 'Location', builtin: true},
     {value: 'reload', label: 'Reload page', group: 'Location', builtin: true},
     {value: 'copyurl', label: 'Copy URL', group: 'Location', builtin: true},
+    {value: 'searchgoogle', label: 'Search Google for selected text', group: 'Location', builtin: true},
     {value: 'openbookmark', label: 'Open Bookmark/Bookmarklet in current tab', group: 'Bookmarks'},
     {value: 'openbookmarknewtab', label: 'Open Bookmark/Bookmarklet in new tab', group: 'Bookmarks'},
     {value: 'openbookmarkbackgroundtab', label: 'Open Bookmark/Bookmarklet in new background tab', group: 'Bookmarks'},
