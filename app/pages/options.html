@@ -18,103 +18,153 @@
     <a href="https://github.com/mikecrittenden/chrome-shortkeys/issues">Support</a> |
     <a href="https://github.com/mikecrittenden/chrome-shortkeys/">Code</a> |
     <a href="https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck?hl=en-US&gl=US">Webstore</a>
-  </p>
+  </p><br />
 
   <div uib-alert ng-repeat="alert in alerts" type="{{alert.type}}" ng-class="'alert-' + (alert.type || 'warning')">{{alert.msg}}</div>
 
-  <form>
-    <uib-accordion close-others="oneAtATime">
+  <uib-tabset active="active">
 
-      <div uib-accordion-group ng-repeat="key in keys track by $index" is-open="key.open">
-        <uib-accordion-heading>
-          <kbd ng-show="key.key" class="light">{{key.key}}</kbd><span class="shortcut-label">{{keyLabel(key)}}</span>
-          <a ng-click="deleteKey($index)" class="pull-right delete-link">Delete </a>
-        </uib-accordion-heading>
-
-        <div class="form-group">
-          <label>Keyboard Shortcut</label>
-          <input ng-model="key.key" class="kbd-input form-control" placeholder="Example: ctrl+b" type="text"/>
-        </div>
-        <div class="form-group" ng-show="isBuiltIn(key.action)">
-          <div uib-alert class="alert-warning">This action is supported from Chrome's keyboard shortcuts settings, which
-            will allow it to run on the new tab page and when the address bar is focused, etc. The downside is that Chrome
-            is more restrictive about which shortcuts are supported, and you can't enable or disable on certain websites or when typing in form fields.<br /><br />
-            To try it, <strong>close this popup and scroll to the bottom, then click "Keyboard Shortcuts"</strong>. You can still add it here as well. <a href="https://github.com/mikecrittenden/chrome-shortkeys/wiki/FAQs-and-Troubleshooting#do-i-use-chromes-keyboard-shortcuts-settings-or-the-shortkeys-options-page">More information...</a></div>
-        </div>
-        <div class="form-group">
-          <label>Behavior</label>
-          <select width="'100%'" class="form-control" ng-model="key.action" ng-options="option.value as option.label group by option.group for option in actionOptions">
-            <option value="none">Select behavior...</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Label as</label>
-          <input ng-model="key.customName" class="form-control" placeholder="{{keyLabel(key)}}" type="text"/>
-        </div>
-
-        <div ng-show="key.action == 'openbookmark' || key.action == 'openbookmarknewtab' || key.action == 'openbookmarkbackgroundtab'" class="form-group">
-          <label>Bookmark</label>
-          <select width="'100%'" ng-model="key.bookmark" ng-options="bookmark for bookmark in bookmarks track by bookmark" class="form-control">
-            <option value="">Select bookmark...</option>
-          </select>
-        </div>
-
-        <div ng-show="key.action == 'javascript'" class="form-group javascriptconfig">
-          <label>Javascript code to run</label>
-          <textarea ui-codemirror ui-codemirror-opts="editorOptions" rows="20" ng-model="key.code" class="form-control"></textarea>
-        </div>
-
-        <div ng-show="key.action == 'buttonnexttab'" class="form-group">
-          <p>This action will click the button chosen by the selector below and then switch to the next tab.</p>
-          <p>Note that this action will likely only be helpful for players of <a href="https://www.tribalwars.net/">Tribal Wars</a>.</p>
-          <label>Button selector (example: <code>#troop_confirm_go</code> or <code>.button_class_123</code>.
-            (<a href="https://learn.jquery.com/using-jquery-core/selecting-elements/">Help</a>)</label>
-          <input type="text" ng-model="key.button" class="form-control" />
-        </div>
-
-        <div ng-show="key.action == 'gototab'" class="gototabconfig">
-          <div class="form-group gototabmatchurl">
-            <label>URL to match (<a target="_blank" href="https://developer.chrome.com/extensions/match_patterns">Examples</a>) </label>
-            <textarea ng-model="key.matchurl" class="form-control"></textarea>
-          </div>
-          <div class="form-group gototabopenurl">
-            <label>URL to open if no matching tab found</label>
-            <textarea ng-model="key.openurl" class="form-control"></textarea>
-          </div>
-          <div class="form-group gototabglobal">
-            <label><input type="checkbox" ng-model="key.currentWindow"/> Search in focused window only</label>
-          </div>
-        </div>
-
+    <!-- EDIT TAB -->
+    <uib-tab index="0" heading="Edit shortcuts"><br />
+      <form>
         <uib-accordion close-others="oneAtATime">
-          <div uib-accordion-group heading="Activation Settings...">
-            <div class="form-group">
-              <label><input type="checkbox" ng-model="key.activeInInputs"/> Active while in form fields</label>
+
+          <div uib-accordion-group ng-repeat="key in keys track by $index" is-open="key.open">
+            <uib-accordion-heading>
+              <kbd ng-show="key.key" class="light">{{key.key}}</kbd><span class="shortcut-label">{{keyLabel(key)}}</span>
+              <a ng-click="deleteKey($index)" class="pull-right delete-link">Delete </a>
+            </uib-accordion-heading>
+
+            <div class="row">
+              <div class="col-sm-4">
+                <div class="form-group">
+                <label>Keyboard Shortcut (<a href="https://github.com/mikecrittenden/chrome-shortkeys/wiki/How-To-Use-Shortkeys#supported-keyboard-shortcuts">Help</a>)</label>
+                <input ng-model="key.key" class="kbd-input form-control" placeholder="Example: ctrl+b" type="text"/>
+              </div></div>
+              <div class="col-sm-4">
+                <div class="form-group">
+                  <label>Behavior</label>
+                  <select width="'100%'" class="form-control" ng-model="key.action" ng-options="option.value as option.label group by option.group for option in actionOptions">
+                    <option value="none">Select behavior...</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-sm-4">
+                <div class="form-group">
+                  <label>(Optional) Label</label>
+                  <input ng-model="key.customName" class="form-control" placeholder="{{keyLabel(key)}}" type="text"/>
+                </div>
+              </div>
             </div>
-            <div class="form-group">
-              <label>Websites</label>
-              <select ng-model="key.blacklist" class="form-control">
-                <option value="false">All sites</option>
-                <option value="true">All sites except...</option>
-                <option value="whitelist">Only on specific sites</option>
+
+            <div class="form-group" ng-show="isBuiltIn(key.action)">
+              <div uib-alert class="alert-warning">This action is supported from Chrome's keyboard shortcuts settings, which
+                will allow it to run on the new tab page and when the address bar is focused, etc. The downside is that Chrome
+                is more restrictive about which shortcuts are supported, and you can't enable or disable on certain websites or when typing in form fields.<br /><br />
+                To try it, <strong>close this popup and scroll to the bottom, then click "Keyboard Shortcuts"</strong>. You can still add it here as well. <a href="https://github.com/mikecrittenden/chrome-shortkeys/wiki/FAQs-and-Troubleshooting#do-i-use-chromes-keyboard-shortcuts-settings-or-the-shortkeys-options-page">More information...</a></div>
+            </div>
+
+
+            <div ng-show="key.action == 'openbookmark' || key.action == 'openbookmarknewtab' || key.action == 'openbookmarkbackgroundtab'" class="form-group">
+              <label>Bookmark</label>
+              <select width="'100%'" ng-model="key.bookmark" ng-options="bookmark for bookmark in bookmarks track by bookmark" class="form-control">
+                <option value="">Select bookmark...</option>
               </select>
             </div>
-            <div ng-show="key.blacklist && key.blacklist !== 'false'" class="form-group">
-              <label>URLs (one per line)</label>
-              <textarea ng-model="key.sites" class="form-control"></textarea>
+
+            <div ng-show="key.action == 'javascript'" class="form-group javascriptconfig">
+              <label>Javascript code to run</label>
+              <textarea ui-codemirror ui-codemirror-opts="editorOptions" rows="20" ng-model="key.code" class="form-control"></textarea>
             </div>
+
+            <div ng-show="key.action == 'buttonnexttab'" class="form-group">
+              <p>This action will click the button chosen by the selector below and then switch to the next tab.</p>
+              <p>Note that this action will likely only be helpful for players of <a href="https://www.tribalwars.net/">Tribal Wars</a>.</p>
+              <label>Button selector (example: <code>#troop_confirm_go</code> or <code>.button_class_123</code>.
+                (<a href="https://learn.jquery.com/using-jquery-core/selecting-elements/">Help</a>)</label>
+              <input type="text" ng-model="key.button" class="form-control" />
+            </div>
+
+            <div ng-show="key.action == 'gototab'" class="gototabconfig">
+              <div class="form-group gototabmatchurl">
+                <label>URL to match (<a target="_blank" href="https://developer.chrome.com/extensions/match_patterns">Examples</a>) </label>
+                <textarea ng-model="key.matchurl" class="form-control"></textarea>
+              </div>
+              <div class="form-group gototabopenurl">
+                <label>URL to open if no matching tab found</label>
+                <textarea ng-model="key.openurl" class="form-control"></textarea>
+              </div>
+              <div class="form-group gototabglobal">
+                <label><input type="checkbox" ng-model="key.currentWindow"/> Search in focused window only</label>
+              </div>
+            </div>
+
+            <uib-accordion close-others="oneAtATime">
+              <div uib-accordion-group heading="Activation Settings...">
+                <div class="form-group">
+                  <label><input type="checkbox" ng-model="key.activeInInputs"/> Active while in form fields</label>
+                </div>
+                <div class="form-group">
+                  <label>Websites</label>
+                  <select ng-model="key.blacklist" class="form-control">
+                    <option value="false">All sites</option>
+                    <option value="true">All sites except...</option>
+                    <option value="whitelist">Only on specific sites</option>
+                  </select>
+                </div>
+                <div ng-show="key.blacklist && key.blacklist !== 'false'" class="form-group">
+                  <label>URLs (one per line)</label>
+                  <textarea ng-model="key.sites" class="form-control"></textarea>
+                </div>
+              </div>
+            </uib-accordion>
           </div>
         </uib-accordion>
-      </div>
-    </uib-accordion>
 
-    <div class="form-actions form-group">
-      <button ng-click="addEmpty()">Add</button>
-      <div class="pull-right">
-        <button ng-click="saveKeys()">Save</button>
-      </div>
-    </div>
-  </form>
+        <div class="form-actions form-group">
+          <button ng-click="addEmpty()">Add</button>
+          <div class="pull-right">
+            <button ng-click="saveKeys()">Save</button>
+          </div>
+        </div>
+      </form>
+    </uib-tab>
+
+    <!-- IMPORT TAB -->
+    <uib-tab index="1" heading="Import"><br />
+      <p>Paste in JSON exported from Shortkeys to import it here.</p>
+      <form>
+        <div class="form-group">
+          <label>Import</label>
+          <textarea ui-codemirror ui-codemirror-opts="editorOptions" rows="20" ng-model="import.text" class="form-control"></textarea>
+        </div>
+
+        <div class="form-actions form-group">
+          <div class="pull-right">
+            <button ng-click="importKeys()">Import</button>
+          </div>
+        </div>
+      </form>
+    </uib-tab>
+
+    <!-- EXPORT TAB -->
+    <uib-tab index="2" heading="Export"><br />
+      <form>
+        <p>Choose which keys you'd like to export, then copy the text below and paste it into the "Import" tab of another Shortkeys install.</p>
+        <div class="form-group">
+          <label class="display-block" ng-repeat="key in keys track by $index" ng-show="key.action != 'none'">
+            <input type="checkbox"
+                   ng-model="exportedKeys[$index]"
+                   ng-change="exportKey($index)"> {{keyLabel(key) }} ({{key.key}})
+          </label>
+        </div>
+        <div class="form-group">
+          <label>Export</label>
+          <textarea ui-codemirror ui-codemirror-opts="editorOptions" rows="20" ng-model="exportText" class="form-control"></textarea>
+        </div>
+      </form>
+    </uib-tab>
+  </uib-tabset>
 </div>
 <script src="../scripts/options.js"></script>
 </body>
