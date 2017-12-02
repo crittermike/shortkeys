@@ -129,6 +129,8 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
   }
 
   $scope.keys = []
+  $scope.exportedKeys = []
+  $scope.import = {}
 
   /**
    * If we don't have any shortcuts configured, add an empty one.
@@ -159,6 +161,37 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
    */
   $scope.deleteKey = function (index) {
     $scope.keys.splice(index, 1)
+  }
+
+  /**
+   * Export stringified JSON for a key or set of keys.
+   *
+   * @param index
+   */
+  $scope.exportKey = function (index) {
+    $scope.exportedConfig = []
+    $scope.exportedKeys.forEach((isChecked, index) => {
+      if (isChecked) {
+        $scope.exportedConfig.push($scope.keys[index])
+      }
+    })
+    $scope.exportText = JSON.stringify($scope.exportedConfig)
+  }
+
+  /**
+   * Import keys from a stringified JSON paste.
+   */
+  $scope.importKeys = function () {
+    try {
+      let config = JSON.parse($scope.import.text)
+      $scope.keys = $scope.keys.concat(config)
+      $scope.saveKeys();
+    } catch (e) {
+      $scope.alerts = [{
+        type: 'danger',
+        msg: 'Error: invalid settings. Are you sure you copied correctly?'
+      }]
+    }
   }
 
   /**
