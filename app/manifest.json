@@ -31,6 +31,9 @@
     "togglepin": {
       "description": "Pin/unpin tab"
     },
+    "togglemute": {
+      "description": "Mute/unmute tab"
+    },
     "onlytab": {
       "description": "Close other tabs"
     },

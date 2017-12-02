@@ -54,6 +54,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
     {value: 'firsttab', label: 'First tab', group: 'Tabs', builtin: true},
     {value: 'lasttab', label: 'Last tab', group: 'Tabs', builtin: true},
     {value: 'togglepin', label: 'Pin/unpin tab', group: 'Tabs', builtin: true},
+    {value: 'togglemute', label: 'Mute/unmute tab', group: 'Tabs', builtin: true},
     {value: 'movetableft', label: 'Move tab left', group: 'Tabs', builtin: true},
     {value: 'movetabright', label: 'Move tab right', group: 'Tabs', builtin: true},
     {value: 'newwindow', label: 'New window', group: 'Windows', builtin: true},

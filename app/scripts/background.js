@@ -146,6 +146,11 @@ let handleAction = (action, request = {}) => {
       let toggle = !tab[0].pinned
       chrome.tabs.update(tab[0].id, { pinned: toggle })
     })
+  } else if (action === 'togglemute') {
+    chrome.tabs.query({active: true, currentWindow: true}, (tab) => {
+      let toggle = !tab[0].mutedInfo.muted
+      chrome.tabs.update(tab[0].id, { muted: toggle })
+    })
   } else if (action === 'copyurl') {
     chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
       copyToClipboard(tab[0].url)
