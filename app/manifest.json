@@ -5,6 +5,12 @@
   "version": "2.2.2",
   "manifest_version": 2,
   "default_locale": "en",
+  "applications": {
+    "gecko": {
+      "id": "Shortkeys@Shortkeys.com",
+      "strict_min_version": "47.0"
+    }
+  },
   "icons": {
     "16": "images/icon_16.png",
     "48": "images/icon_48.png",
@@ -131,21 +137,19 @@
       "description": "View source"
     },
     "disable": {
-      "description": "Do nothing (disable Chrome shortcut - experimental)"
+      "description": "Do nothing (disable browser shortcut - experimental)"
     }
   },
   "options_ui": {
     "page": "pages/options.html",
-    "chrome_style": false,
+    "__chrome__chrome_style": false,
+    "__firefox__browser_style": false,
     "open_in_tab": false
   },
   "content_scripts": [
     {
       "matches": [
-        "http://*/*",
-        "https://*/*",
-        "file://*",
-        "file:///*"
+        "<all_urls>"
       ],
       "js": [
         "vendor/mousetrap.min.js",
