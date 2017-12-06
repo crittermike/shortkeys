@@ -1,4 +1,4 @@
-![Shortkeys banner image](https://i.imgur.com/XqLXokB.jpg)
+![Logo](https://user-images.githubusercontent.com/32261/33674247-eca884f0-da7c-11e7-8237-409887ef2c52.png)
 
 ### Donate
 
