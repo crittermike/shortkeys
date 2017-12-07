@@ -13,15 +13,13 @@
 
 👉 **[DONATE TO SUPPORT SHORTKEYS](https://salt.bountysource.com/teams/chrome-shortkeys)** 👈 
 
-This is a personal side project and donations are welcome and appreciated!
-
 ## Review
 
 ⭐ **[REVIEW SHORTKEYS ON THE WEBSTORE](https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck/reviews?hl=en-US&gl=US)** ⭐
 
 ## Usage
 
-Visit [the wiki](https://github.com/mikecrittenden/chrome-shortkeys/wiki/How-To-Use-Shortkeys) to learn about how to configure and use Shortkeys.
+📝 **[VISIT THE WIKI FOR INSTRUCTIONS](https://github.com/mikecrittenden/chrome-shortkeys/wiki/How-To-Use-Shortkeys)** 📝
 
 ## Contribute
 
