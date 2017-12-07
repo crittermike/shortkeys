@@ -1,20 +1,27 @@
 ![Logo](https://user-images.githubusercontent.com/32261/33674247-eca884f0-da7c-11e7-8237-409887ef2c52.png)
 
-### Donate
+**Custom keyboard shortcuts for your browser**
+
+## Download
+
+[![chrome](https://user-images.githubusercontent.com/32261/33695359-fe69c322-daca-11e7-8fd3-7a0126d08852.png)](https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck?hl=en-US&gl=US)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[![firefox](https://user-images.githubusercontent.com/32261/33695357-fe523b9e-daca-11e7-852b-6af15186b8c7.png)](https://addons.mozilla.org/en-US/firefox/addon/shortkeys-custom-shortcuts/)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[![opera](https://user-images.githubusercontent.com/32261/33695358-fe5e604a-daca-11e7-85cb-48e98367030d.png)](https://addons.opera.com/en/extensions/details/shortkeys/?display=en)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[![edge](https://user-images.githubusercontent.com/32261/33695356-fe474342-daca-11e7-8777-e163d19bcbf4.png)](https://github.com/mikecrittenden/shortkeys/releases)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+## How to help
 
 👉 **[DONATE TO SUPPORT SHORTKEYS](https://salt.bountysource.com/teams/chrome-shortkeys)** 👈 
 
+⭐ **[REVIEW SHORTKEYS ON THE WEBSTORE](https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck/reviews?hl=en-US&gl=US)** ⭐
+
 This is a personal side project and donations are welcome and appreciated!
 
-### Installation
-
-Download it [from the Chrome Webstore](https://chrome.google.com/webstore/detail/shortkeys/logpjaacgmcbpdkdchjiaagddngobkck?hl=en-US).
-
-### Usage
+## Usage
 
 Visit [the wiki](https://github.com/mikecrittenden/chrome-shortkeys/wiki/How-To-Use-Shortkeys).
 
-### How to contribute
+## How to contribute
 
 Don't be scared! Setup only takes 2 minutes.
 
@@ -41,36 +48,5 @@ Don't be scared! Setup only takes 2 minutes.
 
 1. Compile the extension for production using `gulp build --production`.
 2. Finally, you can run `gulp pack` to generate a compressed version of the extension suitable for uploading to the Webstore.
-
-### Gulp commands and flags
-
-You can influence most predefined gulp tasks by adding flags to the gulp command:
-
-| Flag           | Description                                                                                                                                                    |
-|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `--watch`      | Starts a livereload server and watches all assets. <br>To reload the extension on change include `livereload.js` in your bundle.                               |
-| `--production` | Minifies all assets and sets the `process.env.NODE_ENV` variable to `production`                                                                               |
-| `--verbose`    | Log additional data to the console                                                                                                                             |
-| `--vendor`     | Compile the extension for different vendors (`chrome`, `firefox`, `opera`, `edge`) and set the global `process.env.VENDOR` variable. <br>**Default:** `chrome` |
-| `--sourcemaps` | Force the creation of sourcemaps. <br>**Default:** `!production`                                                                                               |
-
-Here is the full list of support Gulp commands:
-
-| Command     | Description                                                                                                                      |
-|--------------|----------------------------------------------------------------------------------------------------------------------------------|
-| default      | alias for `build`                                                                                                                |
-| `build`      | Runs `clean`,  `manifest`, `scripts`, `styles`, `pages`, `locales`, `images`, `fonts` and `livereload` task                      |
-| `clean`      | Deletes the `dist` directory                                                                                                     |
-| `style`      | Compiles css, scss and less files in the root of your `app/styles/*` directory                                                   |
-| `scripts`    | Compiles the scripts in the root of your `app/scripts/*` directory                                                               |
-| `pages`      | Compiles the html files in the pages directory                                                                                   |
-| `manifest`   | Compiles the `manifest.json` file and transforms vendor specific keys.                                                           |
-| `locales`    | Copies the `_locales` into `dist`                                                                                                |
-| `fonts`      | Copies the `fonts` into dist                                                                                                     |
-| `livereload` | Starts a livereload server and watches all the assets. The `--watch` flag needs to be present in order for this task to work     |
-| `pack`       | Packs the dist directory into a zip file, adds version number and vendor to it and saves the bundle to the `packages` directory  |
-| `patch`      | Bumbs the patch version in the `manifest.json`,  `package.json`, commits and adds a git tag                                      |
-| `feature`    | Bumbs the minor version in the `manifest.json`, `package.json`, commits and adds a git tag                                       |
-| `release`    | Bumbs the major version in the `manifest.json`, `package.json`, commits and adds a git tag                                       |
 
 For more info on development, see the [docs for the Chrome Extension Kickstart](https://github.com/HaNdTriX/generator-chrome-extension-kickstart/blob/HEAD/DOCUMENTATION.md) generator, which this extension was built from.
