@@ -23,32 +23,15 @@ This is a personal side project and donations are welcome and appreciated!
 
 Visit [the wiki](https://github.com/mikecrittenden/chrome-shortkeys/wiki/How-To-Use-Shortkeys) to learn about how to configure and use Shortkeys.
 
-## How to contribute
+## Contribute
 
 Don't be scared! Setup only takes 2 minutes.
 
-**Step 1: Download and install dependencies**
+```
+npm install
+gulp build --watch`
+```
 
-1. Fork this repo and clone your fork locally.
-2. Open up the root directory in a terminal.
-3. Run `npm install` to install the node dependencies.
+Then go to `[chrome://extensions](chrome://extensions)` and check "Developer mode", and click "Load unpacked extension" and open the `dist/` directory.
 
-**Step 2: Build and enable the extension**
-
-1. Disable the Webstore version of the extension if you have it enabled.
-2. Run `gulp build --watch` to build the extension and watch for changes.
-3. Open up [chrome://extensions](chrome://extensions) and check "Developer mode".
-4. Click "Load unpacked extension" and browse to the `dist/` directory to install it.
-5. Open up the "Options" page to configure some shortcuts.
-
-**Step 3: Start developing**
-
-1. Edit some code and test it out.
-2. When you're happy, push your changes to your fork and create a pull request.
-
-**Step 4 (Optional): Package the extension**
-
-1. Compile the extension for production using `gulp build --production`.
-2. Finally, you can run `gulp pack` to generate a compressed version of the extension suitable for uploading to the Webstore.
-
-For more info on development, see the [docs for the Chrome Extension Kickstart](https://github.com/HaNdTriX/generator-chrome-extension-kickstart/blob/HEAD/DOCUMENTATION.md) generator, which this extension was built from.
+For more info on development, including the supported Gulp commands, see the [docs for the Chrome Extension Kickstart](https://github.com/HaNdTriX/generator-chrome-extension-kickstart/blob/HEAD/DOCUMENTATION.md) generator, which this extension was built from.
