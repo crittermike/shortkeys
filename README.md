@@ -23,13 +23,4 @@
 
 ## Contribute
 
-Don't be scared! Setup only takes 2 minutes.
-
-```
-npm install
-gulp build --watch`
-```
-
-Then go to `[chrome://extensions](chrome://extensions)` and check "Developer mode", and click "Load unpacked extension" and open the `dist/` directory.
-
-For more info on development, including the supported Gulp commands, see the [docs for the Chrome Extension Kickstart](https://github.com/HaNdTriX/generator-chrome-extension-kickstart/blob/HEAD/DOCUMENTATION.md) generator, which this extension was built from.
+🖥️ **[INSTRUCTIONS FOR SHORTKEYS DEVELOPMENT](https://github.com/mikecrittenden/shortkeys/wiki/Development-setup-instructions)** 🖥️
