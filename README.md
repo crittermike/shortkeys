@@ -9,17 +9,19 @@
 [![opera](https://user-images.githubusercontent.com/32261/33695358-fe5e604a-daca-11e7-85cb-48e98367030d.png)](https://addons.opera.com/en/extensions/details/shortkeys/?display=en)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 [![edge](https://user-images.githubusercontent.com/32261/33695356-fe474342-daca-11e7-8777-e163d19bcbf4.png)](https://github.com/mikecrittenden/shortkeys/releases)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
-## How to help
+## Donate
 
 👉 **[DONATE TO SUPPORT SHORTKEYS](https://salt.bountysource.com/teams/chrome-shortkeys)** 👈 
 
-⭐ **[REVIEW SHORTKEYS ON THE WEBSTORE](https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck/reviews?hl=en-US&gl=US)** ⭐
-
 This is a personal side project and donations are welcome and appreciated!
+
+## Review
+
+⭐ **[REVIEW SHORTKEYS ON THE WEBSTORE](https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck/reviews?hl=en-US&gl=US)** ⭐
 
 ## Usage
 
-Visit [the wiki](https://github.com/mikecrittenden/chrome-shortkeys/wiki/How-To-Use-Shortkeys).
+Visit [the wiki](https://github.com/mikecrittenden/chrome-shortkeys/wiki/How-To-Use-Shortkeys) to learn about how to configure and use Shortkeys.
 
 ## How to contribute
 
