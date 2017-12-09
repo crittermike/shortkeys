@@ -43,6 +43,9 @@ Shortkeys.doAction = (keySetting) => {
     document.body.removeChild(script)
     return
   }
+  else if (action === 'trigger') {
+    Mousetrap.trigger(keySetting.trigger)
+  }
 
   if (action === 'buttonnexttab') {
     if (keySetting.button) {

@@ -77,6 +77,12 @@
               <textarea ui-codemirror ui-codemirror-opts="editorOptions" rows="20" ng-model="key.code" class="form-control"></textarea>
             </div>
 
+            <div ng-show="key.action == 'trigger'" class="form-group">
+              <p>Note that this can ONLY trigger shortcuts that were added on this same form.</p>
+              <label>Keyboard shortcut to trigger</label>
+              <input type="text" ng-model="key.trigger" class="form-control" />
+            </div>
+
             <div ng-show="key.action == 'buttonnexttab'" class="form-group">
               <p>This action will click the button chosen by the selector below and then switch to the next tab.</p>
               <p>Note that this action will likely only be helpful for players of <a href="https://www.tribalwars.net/">Tribal Wars</a>.</p>
