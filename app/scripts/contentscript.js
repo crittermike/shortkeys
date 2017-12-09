@@ -65,7 +65,7 @@ Shortkeys.activateKey = (keySetting) => {
     Shortkeys.doAction(keySetting)
     return false
   }
-  Mousetrap.bind(keySetting.key, action)
+  Mousetrap.bind(keySetting.key.toLowerCase(), action)
 }
 
 /**
