@@ -38,7 +38,7 @@
             <div class="row">
               <div class="col-sm-4">
                 <div class="form-group">
-                <label>Keyboard Shortcut (<a href="https://github.com/mikecrittenden/chrome-shortkeys/wiki/How-To-Use-Shortkeys#supported-keyboard-shortcuts">Help</a>)</label>
+                <label>Keyboard shortcut (<a href="https://github.com/mikecrittenden/chrome-shortkeys/wiki/How-To-Use-Shortkeys#supported-keyboard-shortcuts">Help</a>)</label>
                 <input ng-model="key.key" class="kbd-input form-control" placeholder="Example: ctrl+b" type="text"/>
               </div></div>
               <div class="col-sm-4">
@@ -78,9 +78,13 @@
             </div>
 
             <div ng-show="key.action == 'trigger'" class="form-group">
-              <p>Note that this can ONLY trigger shortcuts that were added on this same form.</p>
-              <label>Keyboard shortcut to trigger</label>
-              <input type="text" ng-model="key.trigger" class="form-control" />
+              <div uib-alert class="alert-warning">Note that this can ONLY trigger shortcuts that were added on this same form.</div>
+              <div class="row">
+                <div class="col-sm-4">
+                  <label>Keyboard shortcut to trigger</label>
+                  <input type="text" ng-model="key.trigger" class="form-control" />
+                </div>
+              </div>
             </div>
 
             <div ng-show="key.action == 'buttonnexttab'" class="form-group">
