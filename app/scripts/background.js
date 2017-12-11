@@ -35,8 +35,8 @@ let selectTab = (direction) => {
           toSelect = tabs[tabs.length - 1]
           break
       }
-      chrome.tabs.update(toSelect.id, {highlighted: true})
-      chrome.tabs.update(currentTab.id, {highlighted: false})
+      chrome.tabs.update(toSelect.id, {active: true})
+      // chrome.tabs.update(currentTab.id, {active: false})
     })
   })
 }
@@ -109,7 +109,7 @@ let handleAction = (action, request = {}) => {
   } else if (action === 'reopentab') {
     chrome.sessions.getRecentlyClosed({maxResults: 1}, function (sessions) {
       let closedTab = sessions[0]
-      chrome.sessions.restore(closedTab.sessionsId)
+      chrome.sessions.restore(closedTab.sessionId)
     })
   } else if (action === 'closetab') {
     chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
@@ -185,7 +185,7 @@ let handleAction = (action, request = {}) => {
       }
       chrome.tabs.query(queryOption, function (tabs) {
         if (tabs.length > 0) {
-          chrome.tabs.update(tabs[0].id, {selected: true})
+          chrome.tabs.update(tabs[0].id, {active: true})
           chrome.windows.update(tabs[0].windowId, {focused: true})
         } else {
           createNewTab()
