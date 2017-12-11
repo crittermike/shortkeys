@@ -159,12 +159,15 @@
 
     <!-- EXPORT TAB -->
     <uib-tab index="2" heading="Export"><br />
-      <form>
+      <form ng-show="keys.length">
         <p>Choose which keys you'd like to export, then copy the text below and paste it into the "Import" tab of another Shortkeys install.</p>
         <div class="form-group">
+          <label class="display-block">
+            <input type="checkbox" ng-model="export.isAllExported" ng-click="toggleExportAll()" /> Select all
+          </label>
           <label class="display-block" ng-repeat="key in keys track by $index" ng-show="key.action != 'none'">
             <input type="checkbox"
-                   ng-model="exportedKeys[$index]"
+                   ng-model="key.exported"
                    ng-change="exportKey($index)"> {{keyLabel(key) }} ({{key.key}})
           </label>
         </div>
@@ -173,6 +176,7 @@
           <textarea ui-codemirror ui-codemirror-opts="editorOptions" rows="20" ng-model="exportText" class="form-control"></textarea>
         </div>
       </form>
+      <div ng-show="!keys.length" uib-alert class="alert-warning">Please add some keyboard shortcuts first.</div>
     </uib-tab>
   </uib-tabset>
 </div>

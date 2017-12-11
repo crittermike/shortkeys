@@ -132,8 +132,8 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
   }
 
   $scope.keys = []
-  $scope.exportedKeys = []
   $scope.import = {}
+  $scope.export = {}
 
   /**
    * If we don't have any shortcuts configured, add an empty one.
@@ -173,12 +173,22 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
    */
   $scope.exportKey = function (index) {
     $scope.exportedConfig = []
-    $scope.exportedKeys.forEach((isChecked, index) => {
-      if (isChecked) {
+    $scope.keys.forEach((key, index) => {
+      if (key.exported) {
         $scope.exportedConfig.push($scope.keys[index])
       }
     })
     $scope.exportText = JSON.stringify($scope.exportedConfig)
+  }
+
+  /**
+   * Check or uncheck all of the export checkboxes for all keys.
+   */
+  $scope.toggleExportAll = function () {
+    $scope.keys.forEach((key, index) => {
+      key.exported = $scope.export.isAllExported
+      $scope.exportKey(index)
+    })
   }
 
   /**
@@ -206,9 +216,12 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
       return element && element.key !== ''
     })
 
+    $scope.export.isAllExported = false
+
     // Convert the "sites" textarea for each shortcut into an array separated by newlines.
     for (let i = 0; i < $scope.keys.length; i++) {
       $scope.keys[i].open = false // Close up the open accordions.
+      $scope.keys[i].exported = false // Close up the open accordions.
       if (typeof $scope.keys[i].sites === 'string') {
         $scope.keys[i].sitesArray = $scope.keys[i].sites.split('\n')
       } else {
