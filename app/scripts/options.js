@@ -75,7 +75,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
   $scope.isBuiltIn = function (action) {
     for (let i = 0, len = $scope.actionOptions.length; i < len; i++) {
       if ($scope.actionOptions[i].value === action) {
-        //builtin actions do not work in Firefox yet
+        // Firefox doesn't have a UI for keyboard shortcuts yet.
         return ($scope.actionOptions[i].builtin || false) && process.env.VENDOR !== 'firefox'
       }
     }

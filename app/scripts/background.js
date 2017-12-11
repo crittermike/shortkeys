@@ -36,7 +36,6 @@ let selectTab = (direction) => {
           break
       }
       chrome.tabs.update(toSelect.id, {active: true})
-      // chrome.tabs.update(currentTab.id, {active: false})
     })
   })
 }
