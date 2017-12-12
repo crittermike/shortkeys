@@ -19,7 +19,7 @@
 
 ## Usage
 
-📝 **[VISIT THE WIKI FOR INSTRUCTIONS](https://github.com/mikecrittenden/chrome-shortkeys/wiki/How-To-Use-Shortkeys)** 📝
+📝 **[VISIT THE WIKI FOR INSTRUCTIONS](https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys)** 📝
 
 ## Contribute
 
