@@ -271,6 +271,8 @@ let handleAction = (action, request = {}) => {
 }
 
 chrome.commands.onCommand.addListener(function (command) {
+  // Remove the integer and hyphen at the beginning.
+  command = command.split('-')[1]
   handleAction(command)
 })
 

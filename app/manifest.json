@@ -22,122 +22,122 @@
     ]
   },
   "commands": {
-    "newtab": {
-      "description": "New tab"
+    "01-newtab": {
+      "description": "TABS: New tab"
     },
-    "closetab": {
-      "description": "Close tab"
+    "02-closetab": {
+      "description": "TABS: Close tab"
     },
-    "nexttab": {
-      "description": "Next tab"
+    "03-nexttab": {
+      "description": "TABS: Next tab"
     },
-    "prevtab": {
-      "description": "Previous tab"
+    "04-prevtab": {
+      "description": "TABS: Previous tab"
     },
-    "togglepin": {
-      "description": "Pin/unpin tab"
+    "05-togglepin": {
+      "description": "TABS: Pin/unpin tab"
     },
-    "togglemute": {
-      "description": "Mute/unmute tab"
+    "06-togglemute": {
+      "description": "TABS: Mute/unmute tab"
     },
-    "searchgoogle": {
-      "description": "Search Google for selected text"
+    "07-onlytab": {
+      "description": "TABS: Close other tabs"
     },
-    "onlytab": {
-      "description": "Close other tabs"
+    "08-closelefttabs": {
+      "description": "TABS: Close tabs to the left"
     },
-    "closelefttabs": {
-      "description": "Close tabs to the left"
+    "09-closerighttabs": {
+      "description": "TABS: Close tabs to the right"
     },
-    "closerighttabs": {
-      "description": "Close tabs to the right"
+    "10-clonetab": {
+      "description": "TABS: Duplicate tab"
     },
-    "clonetab": {
-      "description": "Duplicate tab"
+    "11-reopentab": {
+      "description": "TABS: Reopen closed tab"
     },
-    "reopentab": {
-      "description": "Reopen closed tab"
+    "12-firsttab": {
+      "description": "TABS: First tab"
     },
-    "firsttab": {
-      "description": "First tab"
+    "13-lasttab": {
+      "description": "TABS: Last tab"
     },
-    "lasttab": {
-      "description": "Last tab"
+    "14-movetableft": {
+      "description": "TABS: Move tab to the left"
     },
-    "movetableft": {
-      "description": "Move tab to the left"
+    "15-movetabright": {
+      "description": "TABS: Move tab to the right"
     },
-    "movetabright": {
-      "description": "Move tab to the right"
+    "16-newwindow": {
+      "description": "WINDOWS: New window"
     },
-    "newwindow": {
-      "description": "New window"
+    "17-newprivatewindow": {
+      "description": "WINDOWS: New private window"
     },
-    "newprivatewindow": {
-      "description": "New private window"
+    "18-closewindow": {
+      "description": "WINDOWS: Close window"
     },
-    "closewindow": {
-      "description": "Close window"
+    "19-zoomin": {
+      "description": "ZOOMING: Zoom in"
     },
-    "zoomin": {
-      "description": "Zoom in"
+    "20-zoomout": {
+      "description": "ZOOMING: Zoom out"
     },
-    "zoomout": {
-      "description": "Zoom out"
+    "21-zoomreset": {
+      "description": "ZOOMING: Zoom reset"
     },
-    "zoomreset": {
-      "description": "Zoom reset"
+    "22-back": {
+      "description": "LOCATION: Go back"
     },
-    "back": {
-      "description": "Go back"
+    "23-forward": {
+      "description": "LOCATION: Go forward"
     },
-    "forward": {
-      "description": "Go forward"
+    "24-reload": {
+      "description": "LOCATION: Reload"
     },
-    "reload": {
-      "description": "Reload"
+    "25-searchgoogle": {
+      "description": "LOCATION: Search Google for selected text"
     },
-    "cleardownloads": {
-      "description": "Clear downloads"
+    "26-copyurl": {
+      "description": "LOCATION: Copy URL to clipboard"
     },
-    "copyurl": {
-      "description": "Copy URL to clipboard"
+    "27-top": {
+      "description": "SCROLLING: Scroll to top"
     },
-    "top": {
-      "description": "Scroll to top"
+    "28-bottom": {
+      "description": "SCROLLING: Scroll to bottom"
     },
-    "bottom": {
-      "description": "Scroll to bottom"
+    "29-scrolldown": {
+      "description": "SCROLLING: Scroll down"
     },
-    "scrolldown": {
-      "description": "Scroll down"
+    "30-scrolldownmore": {
+      "description": "SCROLLING: Scroll down more"
     },
-    "scrolldownmore": {
-      "description": "Scroll down more"
+    "31-scrollup": {
+      "description": "SCROLLING: Scroll up"
     },
-    "scrollup": {
-      "description": "Scroll up"
+    "32-scrollupmore": {
+      "description": "SCROLLING: Scroll up more"
     },
-    "scrollupmore": {
-      "description": "Scroll up more"
+    "33-scrollright": {
+      "description": "SCROLLING: Scroll right"
     },
-    "scrollright": {
-      "description": "Scroll right"
+    "34-scrollrightmore": {
+      "description": "SCROLLING: Scroll right more"
     },
-    "scrollrightmore": {
-      "description": "Scroll right more"
+    "35-scrollleft": {
+      "description": "SCROLLING: Scroll left"
     },
-    "scrollleft": {
-      "description": "Scroll left"
+    "36-scrollleftmore": {
+      "description": "SCROLLING: Scroll left more"
     },
-    "scrollleftmore": {
-      "description": "Scroll left more"
+    "37-cleardownloads": {
+      "description": "UTILITY: Clear downloads"
     },
-    "viewsource": {
-      "description": "View source"
+    "38-viewsource": {
+      "description": "UTILITY: View source"
     },
-    "disable": {
-      "description": "Do nothing (disable browser shortcut - experimental)"
+    "39-disable": {
+      "description": "UTILITY: Do nothing (disable browser shortcut - experimental)"
     }
   },
   "options_ui": {
