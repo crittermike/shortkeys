@@ -2,11 +2,11 @@
 /* jshint undef: false, unused: false */
 /* global localStorage */
 
-import angular from 'Angular'
-import CodeMirror from 'CodeMirror'
-import 'CodeMirror/mode/javascript/javascript.js'
-import 'CodeMirror/addon/edit/closebrackets.js'
-import 'CodeMirror/addon/edit/matchbrackets.js'
+import angular from 'angular'
+import CodeMirror from 'codeMirror'
+import 'codemirror/mode/javascript/javascript.js'
+import 'codemirror/addon/edit/closebrackets.js'
+import 'codemirror/addon/edit/matchbrackets.js'
 import 'angular-ui-bootstrap'
 import 'angular-ui-codemirror'
 
