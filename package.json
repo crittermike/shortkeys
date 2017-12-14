@@ -26,7 +26,7 @@
     "babel-cli": "6.x.x",
     "babel-core": "6.x.x",
     "babel-loader": "7.x.x",
-    "babel-preset-env": "1.x.x",
+    "babel-preset-env": "^1.6.1",
     "chai": "4.x.x",
     "chromereload": "0.x.x",
     "debounce": "1.x.x",

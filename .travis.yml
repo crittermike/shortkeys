@@ -2,4 +2,5 @@ language: node_js
 node_js:
   - "node"
   - "lts/*"
+before_script: npm install -g gulp@3.9.0
 script: gulp build --production
