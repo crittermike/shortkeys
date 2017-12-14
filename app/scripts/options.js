@@ -199,7 +199,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
     try {
       let config = JSON.parse($scope.import.text)
       $scope.keys = $scope.keys.concat(config)
-      $scope.saveKeys();
+      $scope.saveKeys()
     } catch (e) {
       $scope.alerts = [{
         type: 'danger',

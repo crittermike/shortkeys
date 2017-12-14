@@ -42,8 +42,7 @@ Shortkeys.doAction = (keySetting) => {
     document.body.appendChild(script)
     document.body.removeChild(script)
     return
-  }
-  else if (action === 'trigger') {
+  } else if (action === 'trigger') {
     Mousetrap.trigger(keySetting.trigger)
   }
 
