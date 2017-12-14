@@ -2,13 +2,13 @@
 /* jshint undef: false, unused: false */
 /* global localStorage */
 
-import angular from 'Angular'
-import CodeMirror from 'CodeMirror'
-import 'CodeMirror/mode/javascript/javascript.js'
-import 'CodeMirror/addon/edit/closebrackets.js'
-import 'CodeMirror/addon/edit/matchbrackets.js'
-import 'angular-ui-bootstrap'
-import 'angular-ui-codemirror'
+const angular = require('Angular')
+const CodeMirror = require('CodeMirror')
+require('CodeMirror/mode/javascript/javascript.js')
+require('CodeMirror/addon/edit/closebrackets.js')
+require('CodeMirror/addon/edit/matchbrackets.js')
+require('angular-ui-bootstrap')
+require('angular-ui-codemirror')
 
 window.CodeMirror = CodeMirror
 let app = angular.module('ShortkeysOptions', ['ui.bootstrap', 'ui.codemirror'])
