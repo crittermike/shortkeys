@@ -3,7 +3,7 @@
 /* global localStorage */
 
 import angular from 'angular'
-import CodeMirror from 'codeMirror'
+import CodeMirror from 'codemirror'
 import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/addon/edit/closebrackets.js'
 import 'codemirror/addon/edit/matchbrackets.js'
