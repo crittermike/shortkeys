@@ -31,7 +31,7 @@
     "chromereload": "0.x.x",
     "debounce": "1.x.x",
     "del": "3.x.x",
-    "gulp": "3.x.x",
+    "gulp": "3.9.0",
     "gulp-bump": "2.x.x",
     "gulp-cache": "0.x.x",
     "gulp-clean-css": "^3.x.x",
