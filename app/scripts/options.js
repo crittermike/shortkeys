@@ -11,7 +11,7 @@ import 'angular-ui-bootstrap'
 import 'angular-ui-codemirror'
 
 window.CodeMirror = CodeMirror
-let app = angular.module('ShortkeysOptions', ['ui.bootstrap', 'ui.codemirror']);
+let app = angular.module('ShortkeysOptions', ['ui.bootstrap', 'ui.codemirror'])
 
 app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
   // Set some options for CodeMirror.
