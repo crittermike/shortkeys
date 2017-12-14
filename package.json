@@ -59,7 +59,7 @@
   "dependencies": {
     "angular": "^1.6.7",
     "angular-ui-bootstrap": "^2.5.6",
-    "angular-ui-codemirror": "https://github.com/mikecrittenden/ui-codemirror/tarball/master",
+    "angular-ui-codemirror": "github:mikecrittenden/ui-codemirror",
     "babel-register": "^6.26.0",
     "bootstrap": "^3.3.7",
     "codemirror": "^5.32.0",
