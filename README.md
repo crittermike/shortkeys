@@ -1,6 +1,6 @@
 ![Logo](https://user-images.githubusercontent.com/32261/33674247-eca884f0-da7c-11e7-8237-409887ef2c52.png)
 
-**Custom keyboard shortcuts for your browser**
+<a href="https://standardjs.com"><img src="https://img.shields.io/badge/code_style-standard-brightgreen.svg" alt="Standard - JavaScript Style Guide"></a>
 
 ## Download
 
