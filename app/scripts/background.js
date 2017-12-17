@@ -1,5 +1,5 @@
 'use strict'
-/* global localStorage, chrome */
+/* global chrome */
 
 let copyToClipboard = (text) => {
   let copyDiv = document.createElement('div')
@@ -276,34 +276,33 @@ chrome.commands.onCommand.addListener(function (command) {
   handleAction(command)
 })
 
+let getLocalStorage = function () {
+  return new Promise(function (resolve, reject) {
+    chrome.storage.local.get(null, function (response) {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError)
+      } else {
+        resolve(response)
+      }
+    })
+  })
+}
+
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   const action = request.action
   if (action === 'getKeys') {
     const currentUrl = request.url
-    if(process.env.VENDOR === 'firefox') {
-      sendResponse(browser.storage.local.get().then(function (response) {
-        let keys = new Array()
-        if (response && response.keys) {
-          response.keys.forEach((key) => {
-            if (isAllowedSite(key, currentUrl)) {
-              keys.push(key)
-            }
-          })
-        }
-        return keys
-      }))
-    } else{
-      let settings = JSON.parse(localStorage.shortkeys)
+    sendResponse(getLocalStorage().then(function (response) {
       let keys = []
-      if (settings.keys.length > 0) {
-        settings.keys.forEach((key) => {
+      if (response && response.keys) {
+        response.keys.forEach((key) => {
           if (isAllowedSite(key, currentUrl)) {
             keys.push(key)
           }
         })
       }
-      sendResponse(keys)
-    }
+      return keys
+    }))
   } else {
     handleAction(action, request)
   }

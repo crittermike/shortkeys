@@ -1,6 +1,5 @@
 'use strict'
 /* jshint undef: false, unused: false */
-/* global localStorage */
 
 import angular from 'angular'
 import CodeMirror from 'codemirror'
@@ -243,11 +242,8 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
         })
       }
     })
-    if(process.env.VENDOR === 'firefox') {
-      browser.storage.local.set(settings);
-    } else{
-      localStorage.shortkeys = JSON.stringify(settings) // @TODO: Why are we stringifying? Stop that.
-    }
+    // Also save the settings to local storage, from where it will be accessed at runtime
+    chrome.storage.local.set(settings)
 
     // Add a success messsage, an empty config if needed, and scroll up.
     $scope.alerts = [{
@@ -263,24 +259,16 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
   chrome.storage.sync.get(null, function (response) {
     if (response && response.keys) {
       $scope.keys = response.keys
-    } else if(process.env.VENDOR === 'firefox') {
-      browser.storage.local.get().then(function (response) {
+      $scope.addBlankIfEmpty()
+      $scope.$apply()
+    } else {
+      chrome.storage.local.get(null, function (response) {
         if (response) {
           $scope.keys = response.keys || []
         }
-
         $scope.addBlankIfEmpty()
         $scope.$apply()
       })
-      return
-    } else {
-      let settingsStr = localStorage.shortkeys
-      if (settingsStr) {
-        let settings = JSON.parse(settingsStr)
-        $scope.keys = settings.keys || []
-      }
     }
-    $scope.addBlankIfEmpty()
-    $scope.$apply()
   })
 }])
