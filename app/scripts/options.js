@@ -243,7 +243,11 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
         })
       }
     })
-    localStorage.shortkeys = JSON.stringify(settings) // @TODO: Why are we stringifying? Stop that.
+    if(process.env.VENDOR === 'firefox') {
+      browser.storage.local.set(settings);
+    } else{
+      localStorage.shortkeys = JSON.stringify(settings) // @TODO: Why are we stringifying? Stop that.
+    }
 
     // Add a success messsage, an empty config if needed, and scroll up.
     $scope.alerts = [{
@@ -259,6 +263,16 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
   chrome.storage.sync.get(null, function (response) {
     if (response && response.keys) {
       $scope.keys = response.keys
+    } else if(process.env.VENDOR === 'firefox') {
+      browser.storage.local.get().then(function (response) {
+        if (response) {
+          $scope.keys = response.keys || []
+        }
+
+        $scope.addBlankIfEmpty()
+        $scope.$apply()
+      })
+      return
     } else {
       let settingsStr = localStorage.shortkeys
       if (settingsStr) {

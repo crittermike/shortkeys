@@ -280,16 +280,31 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   const action = request.action
   if (action === 'getKeys') {
     const currentUrl = request.url
-    let settings = JSON.parse(localStorage.shortkeys)
-    let keys = []
-    if (settings.keys.length > 0) {
-      settings.keys.forEach((key) => {
-        if (isAllowedSite(key, currentUrl)) {
-          keys.push(key)
+    if(process.env.VENDOR === 'firefox') {
+      sendResponse(browser.storage.local.get().then(function (response) {
+        let keys = new Array()
+        if (response && response.keys) {
+          response.keys.forEach((key) => {
+            if (isAllowedSite(key, currentUrl)) {
+              keys.push(key)
+            }
+          })
         }
-      })
+        return keys
+      }))
+    } else{
+      let settings = JSON.parse(localStorage.shortkeys)
+      let keys = []
+      if (settings.keys.length > 0) {
+        settings.keys.forEach((key) => {
+          if (isAllowedSite(key, currentUrl)) {
+            keys.push(key)
+          }
+        })
+      }
+      sendResponse(keys)
     }
-    sendResponse(keys)
+  } else {
+    handleAction(action, request)
   }
-  handleAction(action, request)
 })
