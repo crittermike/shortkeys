@@ -1,7 +1,7 @@
 {
   "name": "shortkeys",
   "private": true,
-  "version": "2.2.6",
+  "version": "2.2.7",
   "description": "Custom keyboard shortcuts for your browser",
   "scripts": {
     "start": "npm run dev:chrome",
