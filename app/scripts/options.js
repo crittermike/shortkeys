@@ -208,7 +208,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
   }
 
   /**
-   * Save the config form to Chrome sync and localStorage.
+   * Save the config form to Chrome sync and local.
    */
   $scope.saveKeys = function () {
     // Remove empty keys
@@ -229,7 +229,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
       }
     }
 
-    // Save the settings to Chrome storage sync and localStorage.
+    // Save the settings to Chrome storage sync and local.
     let settings = {keys: $scope.keys}
     chrome.storage.sync.set(settings, function () {
       if (chrome.runtime.lastError) {
@@ -254,8 +254,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
     window.scroll(0, 0)
   }
 
-  // Attempt to fetch config from Chrome storage sync, and fall back to localStorage
-  // if not found (i.e., if the user never enabled sync in version 1.
+  // Attempt to fetch config from Chrome storage sync, and fall back to local if not found.
   chrome.storage.sync.get(null, function (response) {
     if (response && response.keys) {
       $scope.keys = response.keys

@@ -276,34 +276,23 @@ chrome.commands.onCommand.addListener(function (command) {
   handleAction(command)
 })
 
-let getLocalStorage = function () {
-  return new Promise(function (resolve, reject) {
-    chrome.storage.local.get(null, function (response) {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError)
-      } else {
-        resolve(response)
-      }
-    })
-  })
-}
-
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  const action = request.action
-  if (action === 'getKeys') {
-    const currentUrl = request.url
-    sendResponse(getLocalStorage().then(function (response) {
-      let keys = []
-      if (response && response.keys) {
+// Fetch from local storage and if key settings exist, then add a listener for them to communicate with the content script.
+chrome.storage.local.get(null, function (response) {
+  if (!chrome.runtime.lastError && response && response.keys) {
+    chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+      const action = request.action
+      if (action === 'getKeys') {
+        const currentUrl = request.url
+        let keys = []
         response.keys.forEach((key) => {
           if (isAllowedSite(key, currentUrl)) {
             keys.push(key)
           }
         })
+        sendResponse(keys)
+      } else {
+        handleAction(action, request)
       }
-      return keys
-    }))
-  } else {
-    handleAction(action, request)
+    })
   }
 })
