@@ -5,6 +5,7 @@
   "description": "Custom keyboard shortcuts for your browser",
   "scripts": {
     "start": "npm run dev:chrome",
+    "start:firefox": "web-ext run --source-dir ./dist/firefox/",
     "build": "npm run build:chrome",
     "build:chrome": "gulp pack --production --vendor=chrome",
     "build:firefox": "gulp pack --production --vendor=firefox",
