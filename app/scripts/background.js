@@ -34,6 +34,13 @@ let selectTab = (direction) => {
         case 'last':
           toSelect = tabs[tabs.length - 1]
           break
+        default:
+          let index = parseInt(direction) || 0
+          if (index >= 1 && index <= tabs.length) {
+            toSelect = tabs[index - 1]
+          } else {
+            return
+          }
       }
       chrome.tabs.update(toSelect.id, {active: true})
     })
@@ -192,6 +199,23 @@ let handleAction = (action, request = {}) => {
       })
     } else {
       createNewTab()
+    }
+  } else if (action === 'gototabbytitle') {
+    if (request.matchtitle) {
+      let queryOption = {title: request.matchtitle}
+      if (request.currentWindow) {
+        queryOption.currentWindow = true
+      }
+      chrome.tabs.query(queryOption, function (tabs) {
+        if (tabs.length > 0) {
+          chrome.tabs.update(tabs[0].id, {active: true})
+          chrome.windows.update(tabs[0].windowId, {focused: true})
+        }
+      })
+    }
+  } else if (action === 'gototabbyindex') {
+    if (request.matchindex) {
+      selectTab(request.matchindex)
     }
   } else if (action === 'newwindow') {
     chrome.windows.create()
