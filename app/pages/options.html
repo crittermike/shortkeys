@@ -109,6 +109,24 @@
               </div>
             </div>
 
+            <div ng-show="key.action == 'gototabbytitle'" class="gototabconfig">
+              <div class="form-group gototabmatchtitle">
+                <label>Title to match (<a target="_blank" href="https://developer.chrome.com/extensions/match_patterns">Examples</a>) </label>
+                <textarea ng-model="key.matchtitle" class="form-control"></textarea>
+              </div>
+              <div class="form-group gototabglobal">
+                <label><input type="checkbox" ng-model="key.currentWindow"/> Search in focused window only</label>
+              </div>
+            </div>
+
+            <div ng-show="key.action == 'gototabbyindex'" class="gototabconfig">
+              <p>Index 1 will jump to first tab. Index 9 will jump to 9th tab if it has 9 or more tabs. If you want to use 9 to jump to last tab, please use "Last tab" instead.</p>
+              <div class="form-group gototabmatchindex">
+                <label>Index to jump (Starts from 1)</label>
+                <input ng-model="key.matchindex" type="number" class="form-control">
+              </div>
+            </div>
+
             <uib-accordion close-others="oneAtATime">
               <div uib-accordion-group heading="Activation Settings...">
                 <div class="form-group">
