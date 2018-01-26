@@ -167,7 +167,9 @@ let handleAction = (action, request = {}) => {
     }, function (selection) {
       if (selection[0]) {
         let query = encodeURIComponent(selection[0])
-        chrome.tabs.create({url: 'https://www.google.com/search?q=' + query})
+        chrome.tabs.query({currentWindow: true, active: true}, (tabs) => {
+          chrome.tabs.create({url: 'https://www.google.com/search?q=' + query, index: tabs[0].index + 1})
+        })
       }
     })
   } else if (action === 'movetableft') {
