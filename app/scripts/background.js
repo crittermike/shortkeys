@@ -167,8 +167,8 @@ let handleAction = (action, request = {}) => {
     }, function (selection) {
       if (selection[0]) {
         let query = encodeURIComponent(selection[0])
-        chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
-          chrome.tabs.create({url: 'https://www.google.com/search?q=' + query, index: tab.index + 1})
+        chrome.tabs.query({currentWindow: true, active: true}, (tabs) => {
+          chrome.tabs.create({url: 'https://www.google.com/search?q=' + query, index: tabs[0].index + 1})
         })
       }
     })
