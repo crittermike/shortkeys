@@ -305,27 +305,31 @@ chrome.commands.onCommand.addListener(function (command) {
 })
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (sender.id !== chrome.runtime.id) {
-    // Prevent other extensions from interacting with this extension.
-    console.log("Guarded against another extension. Extension's id: " + sender.id)
-    return
-  }
-  const action = request.action
-  if (!action) {
-    return
-  }
-  if (action === 'getKeys') {
-    const currentUrl = request.url
-    let settings = JSON.parse(localStorage.shortkeys)
-    let keys = []
-    if (settings.keys.length > 0) {
-      settings.keys.forEach((key) => {
-        if (isAllowedSite(key, currentUrl)) {
-          keys.push(key)
-        }
-      })
+  try {
+    if (sender.id !== chrome.runtime.id) {
+      // Prevent other extensions from interacting with this extension.
+      console.log("Guarded against another extension. Extension's id: " + sender.id)
+      return
     }
-    sendResponse(keys)
+    const action = request.action
+    if (!action) {
+      return
+    }
+    if (action === 'getKeys') {
+      const currentUrl = request.url
+      let settings = JSON.parse(localStorage.shortkeys)
+      let keys = []
+      if (settings.keys.length > 0) {
+        settings.keys.forEach((key) => {
+          if (isAllowedSite(key, currentUrl)) {
+            keys.push(key)
+          }
+        })
+      }
+      sendResponse(keys)
+    }
+    handleAction(action, request)
+  } catch (error) {
+    console.log("Message handling failed:\n" + error)
   }
-  handleAction(action, request)
 })
