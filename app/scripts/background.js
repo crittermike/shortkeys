@@ -360,3 +360,17 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   }
   handleAction(action, request)
 })
+
+chrome.runtime.onInstalled.addListener(function (details) {
+  console.log(
+    "Extension install event:" +
+    "\nReason: " + details.reason +
+    "\nPrevious version" + details.previousVersion +
+    "\nid: " + details.id
+  )
+
+  if (details.reason && (details.reason === "update" || details.reason === "install")) {
+    console.log("Extension installed or updated. Checking if content scripts are loaded.")
+    handleAction("updateShortkeys", { inject: true })
+  }
+})
