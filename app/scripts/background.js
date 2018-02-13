@@ -290,6 +290,8 @@ let handleAction = (action, request = {}) => {
         chrome.tabs.create({url: decodeURI(openNode.url)})
       }
     })
+  } else if (action === "log") {
+    console.log(request.value)
   } else {
     return false
   }
