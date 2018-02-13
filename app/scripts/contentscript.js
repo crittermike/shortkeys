@@ -22,6 +22,31 @@ Shortkeys.fetchConfig = (keyCombo) => {
 }
 
 /**
+ * Execute some code as a content script
+ *
+ * @param code
+ */
+Shortkeys.contentScript = async (code) => {  
+  try {
+    let script = new Function("inject", code)
+    script(Shortkeys.injectScript)
+  } catch (error) { }
+}
+
+/**
+ * It's a little hacky, but we have to insert JS this way rather than using executeScript() from the background JS,
+ * because this way we have access to the libraries that exist on the page on any given site, such as jQuery.
+ *
+ * @param code
+ */
+Shortkeys.injectScript = (code) => {
+  let script = document.createElement('script')
+  script.textContent = code
+  document.body.appendChild(script)
+  document.body.removeChild(script)
+}
+
+/**
  * Given a key shortcut config item, carry out the action configured for it.
  * This is what happens when the user triggers the shortcut.
  *
@@ -34,19 +59,11 @@ Shortkeys.doAction = (keySetting) => {
     message[attribute] = keySetting[attribute]
   }
 
-  // It's a little hacky, but we have to insert JS this way rather than using executeScript() from the background JS,
-  // because this way we have access to the libraries that exist on the page on any given site, such as jQuery.
   if (action === 'javascript') {
     if (keySetting.isContentScript) {
-      try {
-        let script = new Function(code)
-        script()
-      } catch (error) { }
+      Shortkeys.contentScript(keySetting.code)
     } else {
-      let script = document.createElement('script')
-      script.textContent = keySetting.code
-      document.body.appendChild(script)
-      document.body.removeChild(script)
+      Shortkeys.injectScript(keySetting.code)
     }
     return
   } else if (action === 'trigger') {
