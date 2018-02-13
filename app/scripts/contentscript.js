@@ -22,6 +22,77 @@ Shortkeys.fetchConfig = (keyCombo) => {
 }
 
 /**
+ * Executes a function in the background script or gets/sets a property in the background script.
+ *
+ * @param propertyName
+ * @param args
+ * @param propertyAccess
+ * @returns {Promise}
+ */
+Shortkeys.backgroundOperation = async (propertyName, args, supportFunctionArgs, propertyAccess = false) => {
+  if (!Array.isArray(args)) {
+    args = []
+  } else if (propertyAccess && args.length > 1) {
+    args.length = 1
+  }
+
+  // Handle args that are functions
+  let functionArgs = []
+  let functions = []
+  if (supportFunctionArgs) {
+    for (let i = 0; i < args.length; i++) {
+      if (typeof args[i] === "function") {
+        functionArgs.push(i)
+        functions.push(args[i])
+        args[i] = null
+      }
+    }
+  }
+
+  return new Promise((resolve, reject) => {
+    try {
+      // Send op info to background script:
+      chrome.runtime.sendMessage({
+        action: "backgroundoperation",
+        property: propertyName,
+        operation: (propertyAccess ? "propertyAccess" : "functionCall"),
+        args: args,
+        functionArgs: functionArgs,
+      }, function (response) {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError)
+          return
+        }
+        if (functionArgs.length === 0) {
+          // Response is return value. Resolve promise with value:
+          try {
+            if (response.error) {
+              reject(response.error)
+            } else {
+              resolve(response.result)
+            }
+          } catch (err) {
+            reject(err)
+          }
+        } else if (response.calledArg && response.args) {
+          // Response was to an arg that is a function. Call it:
+          let index = functionArgs.indexOf(response.calledArg)
+          if (index >= 0)
+            functions[index].apply(null, response.args)
+          return
+        }
+      })
+      if (functionArgs.length > 0) {
+        // The response of this op is reserved for an arg that is a function
+        resolve(undefined)
+      }
+    } catch (err) {
+      reject(err)
+    }
+  })
+}
+
+/**
  * Log a value in the console via the background script.
  *
  * @param value
@@ -37,8 +108,21 @@ Shortkeys.log = async (value) => {
  * Execute some code as a content script
  *
  * @param code
+ * @param isAsync
+ * @param hideExtensionVars
+ * @param allowFunctionArgs
  */
-Shortkeys.contentScript = async (code) => {
+Shortkeys.contentScript = async (code, isAsync = true, hideExtensionVars = false, allowFunctionArgs = true) => {
+  if (isAsync) {
+    // Make script code async and allow await:
+    code = "async function a() {\n" + code + "\n}\nreturn a()"
+  }
+  if (hideExtensionVars) {
+    // Hide extension objects from user's content scripts
+    // Can be circumvented by the use of "new Function(code)"
+    code = "var chrome = undefined\n" + "var browser = undefined\n" + code
+  }
+  
   // Create script first run variable:
   try {
     if (!window.scriptStorage) {
@@ -46,9 +130,22 @@ Shortkeys.contentScript = async (code) => {
       window.scriptStorage = {}
     }
   } catch (error) { }
+  
   try {
-    let script = new Function("log", "inject", "data", code)
-    script(
+    let script = new Function("call", "get", "set", "log", "inject", "data", code)
+    await script(
+      function (functionName) {
+        let args = Array.from(arguments)
+        if (args.length > 0)
+          args.splice(0, 1)
+        return Shortkeys.backgroundOperation(functionName, args, allowFunctionArgs)
+      },
+      function (propertyName) {
+        return Shortkeys.backgroundOperation(propertyName, [], allowFunctionArgs, true)
+      },
+      function (propertyName, value) {
+        return Shortkeys.backgroundOperation(propertyName, [value], allowFunctionArgs, true)
+      },
       Shortkeys.log,
       Shortkeys.injectScript,
       window.scriptStorage
