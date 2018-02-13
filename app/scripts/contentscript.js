@@ -22,14 +22,29 @@ Shortkeys.fetchConfig = (keyCombo) => {
 }
 
 /**
+ * Log a value in the console via the background script.
+ *
+ * @param value
+ */
+Shortkeys.log = async (value) => {
+  chrome.runtime.sendMessage({
+    action: "log",
+    value: value,
+  })
+}
+
+/**
  * Execute some code as a content script
  *
  * @param code
  */
 Shortkeys.contentScript = async (code) => {  
   try {
-    let script = new Function("inject", code)
-    script(Shortkeys.injectScript)
+    let script = new Function("log", "inject", code)
+    script(
+      Shortkeys.log,
+      Shortkeys.injectScript
+    )
   } catch (error) { }
 }
 
