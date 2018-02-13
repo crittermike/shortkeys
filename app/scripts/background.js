@@ -290,13 +290,13 @@ let handleAction = (action, request = {}) => {
         chrome.tabs.create({url: decodeURI(openNode.url)})
       }
     })
-  } else if (action === "updateShortkeys") {
+  } else if (action === 'updateShortkeys') {
     chrome.tabs.query({discarded: false}, (tabs) => {
       for (let tab of tabs) {
         if (request.inject) {
           let hasLoadedContentScript = false
 
-          chrome.tabs.sendMessage(tab.id, {action: "update"}, function (response) {
+          chrome.tabs.sendMessage(tab.id, {action: 'update'}, function (response) {
             if (chrome.runtime.lastError) {
               return
             }
@@ -312,22 +312,22 @@ let handleAction = (action, request = {}) => {
           setTimeout(function () {
             if (!hasLoadedContentScript) {
               let details = {
-                file: "/vendor/mousetrap.min.js",
+                file: '/vendor/mousetrap.min.js',
                 allFrames: true,
                 matchAboutBlank: true,
-                runAt: "document_start",
+                runAt: 'document_start'
               }
               chrome.tabs.executeScript(tab.id, details, function () {
                 if (chrome.runtime.lastError) {
                   return
                 }
-                details.file = "/scripts/contentscript.js"
+                details.file = '/scripts/contentscript.js'
                 chrome.tabs.executeScript(tab.id, details)
               })
             }
           }, timeout)
         } else {
-          chrome.tabs.sendMessage(tab.id, {action: "update"})
+          chrome.tabs.sendMessage(tab.id, {action: 'update'})
         }
       }
     })
@@ -363,14 +363,15 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
 chrome.runtime.onInstalled.addListener(function (details) {
   console.log(
-    "Extension install event:" +
-    "\nReason: " + details.reason +
-    "\nPrevious version" + details.previousVersion +
-    "\nid: " + details.id
+    'Extension install event:' +
+    '\nReason: ' + details.reason +
+    '\nPrevious version' + details.previousVersion +
+    '\nid: ' + details.id
   )
 
-  if (details.reason && (details.reason === "update" || details.reason === "install")) {
-    console.log("Extension installed or updated. Checking if content scripts are loaded.")
-    handleAction("updateShortkeys", { inject: true })
+  if (details.reason && (details.reason === 'update' || details.reason === 'install')) {
+    console.log('Extension installed or updated. Checking if content scripts are loaded.')
+    handleAction('updateShortkeys', { inject: true })
   }
 })
+
