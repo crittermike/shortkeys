@@ -38,12 +38,20 @@ Shortkeys.log = async (value) => {
  *
  * @param code
  */
-Shortkeys.contentScript = async (code) => {  
+Shortkeys.contentScript = async (code) => {
+  // Create script first run variable:
   try {
-    let script = new Function("log", "inject", code)
+    if (!window.scriptStorage) {
+      // Create global. Accessable to all iFrames in the tab.
+      window.scriptStorage = {}
+    }
+  } catch (error) { }
+  try {
+    let script = new Function("log", "inject", "data", code)
     script(
       Shortkeys.log,
-      Shortkeys.injectScript
+      Shortkeys.injectScript,
+      window.scriptStorage
     )
   } catch (error) { }
 }
