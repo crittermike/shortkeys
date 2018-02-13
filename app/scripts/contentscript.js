@@ -146,7 +146,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     return
   }
   let handled = true
-  if (request.action === "update") {
+  if (request.action === 'update') {
     Shortkeys.getShortkeys()
   } else {
     handled = false
