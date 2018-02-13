@@ -47,3 +47,16 @@ button {
   margin: 0px 1px 0px 0px;
   outline: none;
 }
+
+// Firefox fixes:
+:root.firefox body {
+  overflow-y: hidden;
+  background-color: transparent;
+}
+:root.firefox body > div {
+  width: 100%;
+}
+:root.firefox .nav-tabs > li.active > a {
+  background-color: transparent;
+  border-bottom-color: #f9f9fa;
+}
