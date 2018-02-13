@@ -8,5 +8,11 @@
       "debug": false
     }]
   ],
-  "ignore": ["node_modules"]
+  "ignore": ["node_modules"],
+  "plugins": [
+    ["transform-runtime", {
+      "polyfill": false,
+      "regenerator": true
+    }]
+  ]
 }
