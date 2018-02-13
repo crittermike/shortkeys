@@ -53,7 +53,11 @@ Shortkeys.contentScript = async (code) => {
       Shortkeys.injectScript,
       window.scriptStorage
     )
-  } catch (error) { }
+  } catch (error) {
+    let logMessage = "Shortkeys user script - Uncaught error:\n" + error
+    console.log(logMessage)
+    Shortkeys.log(logMessage)
+  }
 }
 
 /**
