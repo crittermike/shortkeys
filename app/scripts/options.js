@@ -247,10 +247,13 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
     })
     localStorage.shortkeys = JSON.stringify(settings) // @TODO: Why are we stringifying? Stop that.
 
+    // Refresh shortkey data in content scripts:
+    chrome.runtime.sendMessage({action: 'updateShortkeys'})
+    
     // Add a success messsage, an empty config if needed, and scroll up.
     $scope.alerts = [{
       type: 'success',
-      msg: 'Your settings were saved! Reload your tabs to use your new shortcuts.'
+      msg: 'Your settings were saved! You should now be able to use your new shortcuts. If you can´t then try to reload your tabs.'
     }]
     $scope.addBlankIfEmpty()
     window.scroll(0, 0)
@@ -272,3 +275,9 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
     $scope.$apply()
   })
 }])
+
+
+if (browser) {
+  // Firefox fixes:
+  document.documentElement.classList.add("firefox")
+}
