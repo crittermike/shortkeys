@@ -298,6 +298,10 @@ let handleAction = (action, request = {}) => {
   return true
 }
 
+window.scriptStorage = {}
+let scriptStorageName = "scriptStorage"
+let scriptStorageAlias = "data"
+
 chrome.commands.onCommand.addListener(function (command) {
   // Remove the integer and hyphen at the beginning.
   command = command.split('-')[1]
@@ -315,6 +319,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (!action) {
       return
     }
+    let keepResponseOpen = false
+    
     if (action === 'getKeys') {
       const currentUrl = request.url
       let settings = JSON.parse(localStorage.shortkeys)
@@ -327,8 +333,127 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         })
       }
       sendResponse(keys)
+    } else if (action === "backgroundoperation") {
+      // If callback returns while operation is being processed then ensure that sendResponse isn't disposed:
+      keepResponseOpen = true
+
+
+      // Operation info:
+      let args = request.args
+      if (!Array.isArray(args)) {
+        args = []
+      }
+
+      let propertyName = request.property
+      let hasFunctionArg = false
+      let isFunctionCall = request.operation === "functionCall"
+      let isGetOperation = args.length === 0
+      let returnValue = undefined
+      let operationCompleted = false
+
+
+      // Make callbacks for args that are functions:
+      for (let funcArgIndex of request.functionArgs) {
+        if (0 <= funcArgIndex && funcArgIndex < args.length) {
+          args[funcArgIndex] = function () {
+            sendResponse({ calledArg: funcArgIndex, args: Array.from(arguments) })
+          }
+          hasFunctionArg = true
+        }
+      }
+
+
+      // Set property filters:
+      let allowedGlobals = [
+        scriptStorageAlias
+      ]
+      let blockedProperties = [
+        "addListener"
+      ]
+      if (isFunctionCall || isGetOperation) {
+        allowedGlobals.push(
+          "chrome",
+          "browser"
+        )
+      }
+
+
+      let executeOperation = async function () {
+        try {
+          // Find property:
+          let target = window
+          let properties = propertyName.split(".")
+          for (let i = 0; i < properties.length; i++) {
+            let property = properties[i]
+            if (!target) {
+              break
+            }
+            if (target === window) {
+              if (allowedGlobals.indexOf(property) < 0) {
+                throw new Error(
+                  "Property not allowed!" +
+                  "\nFull property name: " + propertyName +
+                  "\nAllowed globals: " + allowedGlobals.map(allowed => "\"" + allowed + "\"")
+                )
+              } else if (property === scriptStorageAlias) {
+                // No blocked properties in script storage:
+                blockedProperties = []
+                // Redirect to real name:
+                property = scriptStorageName
+              }
+            }
+            if (blockedProperties.indexOf(property) >= 0) {
+              throw new Error(
+                "Function not allowed!" +
+                "\nFull property name: " + propertyName +
+                "\nBlocked functions: " + blockedProperties.map(blocked => "\"" + blocked + "\"")
+              )
+            }
+
+            if (isFunctionCall || i + 1 < properties.length) {
+              target = target[property]
+            } else {
+              // Set or get a value:
+              if (isGetOperation) {
+                returnValue = target[property]
+              } else {
+                target[property] = args[0]
+              }
+              operationCompleted = true
+            }
+          }
+
+
+          // Execute operation:
+          if (isFunctionCall && target && typeof target === "function") {
+            returnValue = target.apply(null, args)
+            operationCompleted = true
+          }
+
+          if (!operationCompleted) {
+            throw new Error(
+              "Property not found!" +
+              "\nFull property name: " + propertyName
+            )
+          }
+
+          if (!hasFunctionArg) {
+            sendResponse({ result: await returnValue })
+          }
+        } catch (error) {
+          hasFunctionArg = false
+          sendResponse({ error: error.message })
+        }
+        if (!hasFunctionArg)
+          keepResponseOpen = false
+      }
+      executeOperation()  // will return with a promise on first "await" used on a promise
+    } else {
+      handleAction(action, request)
     }
-    handleAction(action, request)
+
+    if (keepResponseOpen)
+      return true
   } catch (error) {
     console.log("Message handling failed:\n" + error)
   }
