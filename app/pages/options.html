@@ -75,6 +75,10 @@
             <div ng-show="key.action == 'javascript'" class="form-group javascriptconfig">
               <label>Javascript code to run</label>
               <textarea ui-codemirror ui-codemirror-opts="editorOptions" rows="20" ng-model="key.code" class="form-control"></textarea>
+              <br />
+              <div class="form-group">
+                <label><input type="checkbox" ng-model="key.isContentScript"/> Run in content script</label>
+              </div>
             </div>
 
             <div ng-show="key.action == 'trigger'" class="form-group">
