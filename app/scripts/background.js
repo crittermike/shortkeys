@@ -315,7 +315,7 @@ let handleAction = (action, request = {}) => {
                 file: "/vendor/mousetrap.min.js",
                 allFrames: true,
                 matchAboutBlank: true,
-                runAt: "document_end",
+                runAt: "document_start",
               }
               chrome.tabs.executeScript(tab.id, details, function () {
                 if (chrome.runtime.lastError) {
