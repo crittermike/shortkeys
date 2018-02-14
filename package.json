@@ -19,7 +19,8 @@
   },
   "standard": {
     "globals": [
-      "chrome"
+      "chrome",
+      "browser"
     ]
   },
   "devDependencies": {
