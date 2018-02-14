@@ -249,7 +249,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
 
     // Refresh shortkey data in content scripts:
     chrome.runtime.sendMessage({action: 'updateShortkeys'})
-    
+
     // Add a success messsage, an empty config if needed, and scroll up.
     $scope.alerts = [{
       type: 'success',
