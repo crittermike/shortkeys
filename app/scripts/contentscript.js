@@ -28,14 +28,14 @@ Shortkeys.fetchConfig = (keyCombo) => {
  */
 Shortkeys.createStorageManager = (keyPrefix) => {
   let convertKeys = (key) => {
-    if (typeof key === "string") {
-      if (key === "") {
+    if (typeof key === 'string') {
+      if (key === '') {
         return key
       } else {
         return keyPrefix + key
       }
     } else if (Array.isArray(key)) {
-      return key.map(k => k !== "" && typeof key === "string" ? keyPrefix + k : k)
+      return key.map(k => k !== '' && typeof key === 'string' ? keyPrefix + k : k)
     } else if (key) {
       let newKey = {}
       for (let property of Object.keys(key)) {
@@ -46,7 +46,7 @@ Shortkeys.createStorageManager = (keyPrefix) => {
       return key
     }
   }
-  let convertResult = () => {
+  let convertResult = (items) => {
     let filteredItems = {}
     for (let property of Object.keys(items)) {
       if (property.indexOf(keyPrefix) === 0 && property.length > keyPrefix.length) {
@@ -56,7 +56,6 @@ Shortkeys.createStorageManager = (keyPrefix) => {
     }
     return filteredItems
   }
-
 
   let eventListeners = []
   let isEventRegistered = false
@@ -88,12 +87,12 @@ Shortkeys.createStorageManager = (keyPrefix) => {
     }
   }
   let onChangeEvent = {
-    addListener(callback) {
+    addListener (callback) {
       if (onChangeEvent.hasListener(callback)) {
         return
       }
-      if (typeof callback !== "function") {
-        throw new Error("Event callback must be a function")
+      if (typeof callback !== 'function') {
+        throw new Error('Event callback must be a function')
       }
       try {
         startListening()
@@ -105,26 +104,26 @@ Shortkeys.createStorageManager = (keyPrefix) => {
         throw error
       }
     },
-    removeListener(listener) {
-      if (!onChangeEvent.hasListener(callback)) {
+    removeListener (listener) {
+      if (!onChangeEvent.hasListener(listener)) {
         return
       }
       try {
-        eventListeners.push(callback)
+        eventListeners = eventListeners.filter(l => listener !== l)
       } finally {
         if (eventListeners.length === 0) {
           stopListening()
         }
       }
     },
-    hasListener(listener) {
+    hasListener (listener) {
       return eventListeners.indexOf(listener) >= 0
-    },
+    }
   }
 
   let createStorageAreaManger = function (storage) {
     let obj = {
-      async get(keys) {
+      async get (keys) {
         return new Promise(function (resolve, reject) {
           try {
             storage.get(convertKeys(keys), function (items) {
@@ -149,7 +148,7 @@ Shortkeys.createStorageManager = (keyPrefix) => {
           }
         })
       },
-      async getBytesInUse(keys) {
+      async getBytesInUse (keys) {
         return new Promise(async function (resolve, reject) {
           try {
             if (!keys) {
@@ -177,7 +176,7 @@ Shortkeys.createStorageManager = (keyPrefix) => {
           }
         })
       },
-      async set(items) {
+      async set (items) {
         return new Promise(async function (resolve, reject) {
           try {
             storage.set(convertKeys(items), function () {
@@ -196,10 +195,10 @@ Shortkeys.createStorageManager = (keyPrefix) => {
           }
         })
       },
-      async remove(keys) {
+      async remove (keys) {
         return new Promise(function (resolve, reject) {
           try {
-            storage.remove(convertKeys(items), function () {
+            storage.remove(convertKeys(keys), function () {
               try {
                 if (chrome.runtime.lastError) {
                   reject(chrome.runtime.lastError)
@@ -215,9 +214,9 @@ Shortkeys.createStorageManager = (keyPrefix) => {
           }
         })
       },
-      async clear() {
+      async clear () {
         await obj.remove(await obj.get(null))
-      },
+      }
     }
     // Return a copy of the object:
     return Object.assign({}, obj)
@@ -228,18 +227,18 @@ Shortkeys.createStorageManager = (keyPrefix) => {
 
   let manager = {
     keyPrefix: keyPrefix,
-    get onChanged() {
+    get onChanged () {
       // Return a copy of the object:
       return Object.assign({}, onChangeEvent)
     },
-    get local() {
+    get local () {
       // Return a copy of the object:
       return Object.assign({}, local)
     },
-    get sync() {
+    get sync () {
       // Return a copy of the object:
       return Object.assign({}, sync)
-    },
+    }
   }
 
   // Return a copy of the object:
@@ -266,7 +265,7 @@ Shortkeys.backgroundOperation = async (propertyName, args, supportFunctionArgs, 
   let functions = []
   if (supportFunctionArgs) {
     for (let i = 0; i < args.length; i++) {
-      if (typeof args[i] === "function") {
+      if (typeof args[i] === 'function') {
         functionArgs.push(i)
         functions.push(args[i])
         args[i] = null
@@ -278,11 +277,11 @@ Shortkeys.backgroundOperation = async (propertyName, args, supportFunctionArgs, 
     try {
       // Send op info to background script:
       chrome.runtime.sendMessage({
-        action: "backgroundoperation",
+        action: 'backgroundoperation',
         property: propertyName,
-        operation: (propertyAccess ? "propertyAccess" : "functionCall"),
+        operation: (propertyAccess ? 'propertyAccess' : 'functionCall'),
         args: args,
-        functionArgs: functionArgs,
+        functionArgs: functionArgs
       }, function (response) {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError)
@@ -302,9 +301,9 @@ Shortkeys.backgroundOperation = async (propertyName, args, supportFunctionArgs, 
         } else if (response.calledArg && response.args) {
           // Response was to an arg that is a function. Call it:
           let index = functionArgs.indexOf(response.calledArg)
-          if (index >= 0)
+          if (index >= 0) {
             functions[index].apply(null, response.args)
-          return
+          }
         }
       })
       if (functionArgs.length > 0) {
@@ -324,8 +323,8 @@ Shortkeys.backgroundOperation = async (propertyName, args, supportFunctionArgs, 
  */
 Shortkeys.log = async (value) => {
   chrome.runtime.sendMessage({
-    action: "log",
-    value: value,
+    action: 'log',
+    value: value
   })
 }
 
@@ -340,12 +339,12 @@ Shortkeys.log = async (value) => {
 Shortkeys.contentScript = async (code, isAsync = true, hideExtensionVars = false, allowFunctionArgs = true) => {
   if (isAsync) {
     // Make script code async and allow await:
-    code = "async function a() {\n" + code + "\n}\nreturn a()"
+    code = 'async function a() {\n' + code + '\n}\nreturn a()'
   }
   if (hideExtensionVars) {
     // Hide extension objects from user's content scripts
     // Can be circumvented by the use of "new Function(code)"
-    code = "var chrome = undefined\n" + "var browser = undefined\n" + code
+    code = 'var chrome = undefined\n' + 'var browser = undefined\n' + code
   }
   
   // Create script first run variables:
@@ -357,17 +356,18 @@ Shortkeys.contentScript = async (code, isAsync = true, hideExtensionVars = false
   } catch (error) { }
   try {
     if (!Shortkeys.scriptStorageManager) {
-      Shortkeys.scriptStorageManager = Shortkeys.createStorageManager("script_")
+      Shortkeys.scriptStorageManager = Shortkeys.createStorageManager('script_')
     }
   } catch (err) {}
-  
+
   try {
-    let script = new Function("call", "get", "set", "log", "inject", "storage", "data", code)
+    let script = new Function('call', 'get', 'set', 'log', 'inject', 'storage', 'data', code)
     await script(
       function (functionName) {
         let args = Array.from(arguments)
-        if (args.length > 0)
+        if (args.length > 0) {
           args.splice(0, 1)
+        }
         return Shortkeys.backgroundOperation(functionName, args, allowFunctionArgs)
       },
       function (propertyName) {
@@ -382,7 +382,7 @@ Shortkeys.contentScript = async (code, isAsync = true, hideExtensionVars = false
       window.scriptStorage
     )
   } catch (error) {
-    let logMessage = "Shortkeys user script - Uncaught error:\n" + error
+    let logMessage = 'Shortkeys user script - Uncaught error:\n' + error
     console.log(logMessage)
     Shortkeys.log(logMessage)
   }
