@@ -273,7 +273,10 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
   })
 }])
 
-if (browser) {
-  // Firefox fixes:
-  document.documentElement.classList.add('firefox')
-}
+try {
+  browser.runtime.getBrowserInfo().then((result) => {
+    if (result && result.name === 'Firefox') {
+      document.documentElement.classList.add('firefox')
+    }
+  })
+} catch (error) { }
