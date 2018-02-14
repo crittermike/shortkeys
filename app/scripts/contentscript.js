@@ -361,6 +361,7 @@ Shortkeys.contentScript = async (code, isAsync = true, hideExtensionVars = false
   } catch (err) {}
 
   try {
+    // eslint-disable-next-line no-new-func
     let script = new Function('call', 'get', 'set', 'log', 'inject', 'storage', 'data', code)
     await script(
       function (functionName) {
