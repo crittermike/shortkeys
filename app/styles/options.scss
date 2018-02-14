@@ -52,6 +52,7 @@ button {
 :root.firefox body {
   overflow-y: hidden;
   background-color: transparent;
+  min-width: unset;
 }
 :root.firefox body > div {
   width: 100%;
