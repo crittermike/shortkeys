@@ -346,7 +346,7 @@ Shortkeys.contentScript = async (code, isAsync = true, hideExtensionVars = false
     // Can be circumvented by the use of "new Function(code)"
     code = 'var chrome = undefined\n' + 'var browser = undefined\n' + code
   }
-  
+
   // Create script first run variables:
   try {
     if (!window.scriptStorage) {
