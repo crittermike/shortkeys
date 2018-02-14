@@ -374,4 +374,3 @@ chrome.runtime.onInstalled.addListener(function (details) {
     handleAction('updateShortkeys', { inject: true })
   }
 })
-
