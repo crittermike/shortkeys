@@ -80,7 +80,7 @@ Shortkeys.activateKey = (keySetting) => {
  * @param activeKey
  */
 Shortkeys.deactivateKey = (activeKey) => {
-  Mousetrap.unbind(activeKey.keys, activeKey.action)
+  Mousetrap.unbind(activeKey.keys)
 }
 
 /**
