@@ -141,10 +141,6 @@ Shortkeys.getShortkeys = () => {
 }
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (sender.id !== chrome.runtime.id) {
-    // Prevent other extensions from interacting with this extension.
-    return
-  }
   let handled = true
   if (request.action === 'update') {
     Shortkeys.getShortkeys()
