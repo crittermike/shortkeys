@@ -310,11 +310,6 @@ chrome.commands.onCommand.addListener(function (command) {
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   try {
-    if (sender.id !== chrome.runtime.id) {
-      // Prevent other extensions from interacting with this extension.
-      console.log('Guarded against another extension. Extension´s id: ' + sender.id)
-      return
-    }
     const action = request.action
     if (!action) {
       return
