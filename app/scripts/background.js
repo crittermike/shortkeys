@@ -361,6 +361,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   handleAction(action, request)
 })
 
+let hasInjectContentScript = false
 chrome.runtime.onInstalled.addListener(function (details) {
   console.log(
     'Extension install event:' +
@@ -371,6 +372,23 @@ chrome.runtime.onInstalled.addListener(function (details) {
 
   if (details.reason && (details.reason === 'update' || details.reason === 'install')) {
     console.log('Extension installed or updated. Checking if content scripts are loaded.')
-    handleAction('updateShortkeys', { inject: true })
+    if (!hasInjectContentScript) {
+      handleAction('updateShortkeys', { inject: true })
+      hasInjectContentScript = true
+    }
   }
 })
+
+let isBrowserStartup = false
+chrome.runtime.onStartup.addListener(function () {
+  console.log('Browser started.')
+  isBrowserStartup = true
+})
+
+setTimeout(function () {
+  if (!isBrowserStartup && !hasInjectContentScript) {
+    console.log('Extension enabled.')
+    handleAction('updateShortkeys', { inject: true })
+    hasInjectContentScript = true
+  }
+}, 1000)
