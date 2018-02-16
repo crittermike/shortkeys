@@ -272,3 +272,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
     $scope.$apply()
   })
 }])
+
+if (process.env.VENDOR === 'firefox') {
+  document.documentElement.classList.add('firefox')
+}
