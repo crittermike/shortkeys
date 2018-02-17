@@ -387,7 +387,7 @@ chrome.runtime.onStartup.addListener(function () {
 
 setTimeout(function () {
   if (!isBrowserStartup && !hasInjectContentScript) {
-    console.log('Extension enabled.')
+    console.log('Extension enabled or browser started in incognito/private mode. Checking if content scripts are loaded.')
     handleAction('updateShortkeys', { inject: true })
     hasInjectContentScript = true
   }
