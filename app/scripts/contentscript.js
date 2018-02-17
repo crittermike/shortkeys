@@ -3,6 +3,7 @@
 
 let Shortkeys = {}
 Shortkeys.keys = []
+Shortkeys.activeKeys = []
 
 /**
  * Helper function for fetching the full key shortcut config given a keyboard combo.
@@ -67,7 +68,19 @@ Shortkeys.activateKey = (keySetting) => {
     Shortkeys.doAction(keySetting)
     return false
   }
-  Mousetrap.bind(keySetting.key.toLowerCase(), action)
+  let keys = keySetting.key.toLowerCase()
+  Mousetrap.bind(keys, action)
+
+  return { keys: keys, action: action }
+}
+
+/**
+ * Deactivates an active key bind item.
+ *
+ * @param activeKey
+ */
+Shortkeys.deactivateKey = (activeKey) => {
+  Mousetrap.unbind(activeKey.keys)
 }
 
 /**
@@ -106,13 +119,35 @@ Mousetrap.prototype.stopCallback = function (e, element, combo) {
 /**
  * Fetches the Shortkeys configuration object and wires up each configured shortcut.
  */
-chrome.runtime.sendMessage({action: 'getKeys', url: document.URL}, function (response) {
-  if (response) {
-    Shortkeys.keys = response
-    if (Shortkeys.keys.length > 0) {
-      Shortkeys.keys.forEach((key) => {
-        Shortkeys.activateKey(key)
-      })
+Shortkeys.getShortkeys = () => {
+  chrome.runtime.sendMessage({ action: 'getKeys', url: document.URL }, function (response) {
+    if (response) {
+      // Remove old keybindings:
+      if (Shortkeys.activeKeys.length > 0) {
+        Shortkeys.activeKeys.forEach((activeKey) => {
+          Shortkeys.deactivateKey(activeKey)
+        })
+      }
+      Shortkeys.activeKeys = []
+      // Activate new keybindings:
+      Shortkeys.keys = response
+      if (Shortkeys.keys.length > 0) {
+        Shortkeys.keys.forEach((key) => {
+          Shortkeys.activeKeys.push(Shortkeys.activateKey(key))
+        })
+      }
     }
+  })
+}
+
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  let handled = true
+  if (request.action === 'update') {
+    Shortkeys.getShortkeys()
+  } else {
+    handled = false
   }
+  sendResponse({ handled: handled })
 })
+
+Shortkeys.getShortkeys()

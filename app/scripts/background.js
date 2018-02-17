@@ -290,6 +290,47 @@ let handleAction = (action, request = {}) => {
         chrome.tabs.create({url: decodeURI(openNode.url)})
       }
     })
+  } else if (action === 'updateShortkeys') {
+    chrome.tabs.query({discarded: false}, (tabs) => {
+      for (let tab of tabs) {
+        if (request.inject) {
+          let hasLoadedContentScript = false
+
+          chrome.tabs.sendMessage(tab.id, {action: 'update'}, function (response) {
+            if (chrome.runtime.lastError) {
+              return
+            }
+            if (response && response.handled !== undefined) {
+              hasLoadedContentScript = true
+            }
+          })
+
+          let timeout = 1000
+          if (request.timeout) {
+            timeout = request.timeout
+          }
+          setTimeout(function () {
+            if (!hasLoadedContentScript) {
+              let details = {
+                file: '/vendor/mousetrap.min.js',
+                allFrames: true,
+                matchAboutBlank: true,
+                runAt: 'document_start'
+              }
+              chrome.tabs.executeScript(tab.id, details, function () {
+                if (chrome.runtime.lastError) {
+                  return
+                }
+                details.file = '/scripts/contentscript.js'
+                chrome.tabs.executeScript(tab.id, details)
+              })
+            }
+          }, timeout)
+        } else {
+          chrome.tabs.sendMessage(tab.id, {action: 'update'})
+        }
+      }
+    })
   } else {
     return false
   }
@@ -319,3 +360,35 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   }
   handleAction(action, request)
 })
+
+let hasInjectContentScript = false
+chrome.runtime.onInstalled.addListener(function (details) {
+  console.log(
+    'Extension install event:' +
+    '\nReason: ' + details.reason +
+    '\nPrevious version' + details.previousVersion +
+    '\nid: ' + details.id
+  )
+
+  if (details.reason && (details.reason === 'update' || details.reason === 'install')) {
+    console.log('Extension installed or updated. Checking if content scripts are loaded.')
+    if (!hasInjectContentScript) {
+      handleAction('updateShortkeys', { inject: true })
+      hasInjectContentScript = true
+    }
+  }
+})
+
+let isBrowserStartup = false
+chrome.runtime.onStartup.addListener(function () {
+  console.log('Browser started.')
+  isBrowserStartup = true
+})
+
+setTimeout(function () {
+  if (!isBrowserStartup && !hasInjectContentScript) {
+    console.log('Extension enabled or browser started in incognito/private mode. Checking if content scripts are loaded.')
+    handleAction('updateShortkeys', { inject: true })
+    hasInjectContentScript = true
+  }
+}, 1000)
