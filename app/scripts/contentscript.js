@@ -250,6 +250,7 @@ Shortkeys.createStorageManager = (keyPrefix) => {
  *
  * @param propertyName
  * @param args
+ * @param supportFunctionArgs
  * @param propertyAccess
  * @returns {Promise}
  */
@@ -317,6 +318,57 @@ Shortkeys.backgroundOperation = async (propertyName, args, supportFunctionArgs, 
 }
 
 /**
+ * Get an object that contains objects that emulates the background scripts extension objects.
+ *
+ * @param supportFunctionArgs
+ * @returns {Promise}
+ */
+Shortkeys.getBackgroundExtensionObject = async (supportFunctionArgs) => {
+  return new Promise((resolve, reject) => {
+    try {
+      chrome.runtime.sendMessage({ action: 'getExtensionProperties' }, function (response) {
+        try {
+          if (chrome.runtime.lastError) {
+            reject(chrome.runtime.lastError)
+            return
+          }
+          let properties = response.extensionObjects
+          let emulateProperties = (properties, rootPath = '') => {
+            let obj = {}
+            for (let property of properties) {
+              let value
+              let path = (rootPath !== '' ? rootPath + '.' : '') + property.name
+              if (property.type === 'object') {
+                value = emulateProperties(property.properties, path)
+              } else if (property.type === 'function') {
+                value = function () {
+                  return Shortkeys.backgroundOperation(path, Array.from(arguments), supportFunctionArgs)
+                }
+              }
+              if (value) {
+                obj[property.name] = value
+              } else {
+                Object.defineProperty(obj, property.name, {
+                  get: function () {
+                    return Shortkeys.backgroundOperation(path, [], supportFunctionArgs, true)
+                  }
+                })
+              }
+            }
+            return obj
+          }
+          resolve(emulateProperties(properties))
+        } catch (error) {
+          reject(error)
+        }
+      })
+    } catch (error) {
+      reject(error)
+    }
+  })
+}
+
+/**
  * Log a value in the console via the background script.
  *
  * @param value
@@ -362,7 +414,7 @@ Shortkeys.contentScript = async (code, isAsync = true, hideExtensionVars = false
 
   try {
     // eslint-disable-next-line no-new-func
-    let script = new Function('call', 'get', 'set', 'log', 'inject', 'storage', 'data', code)
+    let script = new Function('call', 'executeInBackground', 'get', 'set', 'log', 'inject', 'storage', 'data', code)
     await script(
       function (functionName) {
         let args = Array.from(arguments)
@@ -370,6 +422,20 @@ Shortkeys.contentScript = async (code, isAsync = true, hideExtensionVars = false
           args.splice(0, 1)
         }
         return Shortkeys.backgroundOperation(functionName, args, allowFunctionArgs)
+      },
+      async function (func, args) {
+        func = func.toString()
+        let properties = await Shortkeys.getBackgroundExtensionObject(allowFunctionArgs)
+
+        let variableDeclarations = ''
+        let containerExtensionVariableName = 'extensionVariables'
+        for (let property of Object.keys(properties)) {
+          variableDeclarations += `var ${property} = ${containerExtensionVariableName}.${property}\n`
+        }
+
+        // eslint-disable-next-line no-new-func
+        let funcContainer = new Function('func', 'args', containerExtensionVariableName, 'log', variableDeclarations + 'return eval(func).apply(null, args)')
+        return funcContainer(func, args || [], properties, Shortkeys.log)
       },
       function (propertyName) {
         return Shortkeys.backgroundOperation(propertyName, [], allowFunctionArgs, true)
