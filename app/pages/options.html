@@ -93,6 +93,16 @@
                     </p>
                     <br />
                     <p>
+                        <label>async function executeInBackground(function, args)</label>
+                        <br />
+                        <span>Emulate calling a user defined function in the background script. Can be used to access the full extension APIs.</span>
+                        <br />
+                        <span>For example:</span>
+                        <code>executeInBackground(() => chrome.tabs.query({}, (tabs) => { alert("Tab Count: " + tabs.length) }))</code>
+                        <span>will show a message box with the current tab count.</span>
+                    </p>
+                    <br />
+                    <p>
                         <label>async function get(propertyName)</label>
                         <br />
                         <span>Get a variable's value from the background script. Can be used with the "data" variable to access script data stored in the background script. This data is the same for all tabs and is only reset when the extension is restarted (manually, on the extension being updated or on browser restart).</span>
