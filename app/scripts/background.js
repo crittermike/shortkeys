@@ -302,6 +302,8 @@ window.scriptStorage = {}
 let scriptStorageName = 'scriptStorage'
 let scriptStorageAlias = 'data'
 
+let extensionObjects = null
+
 chrome.commands.onCommand.addListener(function (command) {
   // Remove the integer and hyphen at the beginning.
   command = command.split('-')[1]
@@ -431,6 +433,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             sendResponse({ result: await returnValue })
           }
         } catch (error) {
+          console.log('Background operation threw error:\n' + error)
           hasFunctionArg = false
           sendResponse({ error: error.message })
         }
@@ -439,6 +442,37 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         }
       }
       executeOperation()  // will return with a promise on first "await" used on a promise
+    } else if (action === 'getExtensionProperties') {
+      if (!extensionObjects) {
+        let getProperties = (obj) => {
+          let properties = []
+          if (!obj) {
+            return properties
+          }
+
+          for (let p of Object.keys(obj)) {
+            let type = typeof obj[p]
+            let propertyObject = {
+              name: p,
+              type: type
+            }
+            if (type === 'object') {
+              propertyObject.properties = getProperties(obj[p])
+            }
+            properties.push(propertyObject)
+          }
+          return properties
+        }
+
+        let rootExtensionVariables = {}
+        for (let extVar of ['chrome', 'browser']) {
+          if (window[extVar]) {
+            rootExtensionVariables[extVar] = window[extVar]
+          }
+        }
+        extensionObjects = getProperties(rootExtensionVariables)
+      }
+      sendResponse({ extensionObjects: extensionObjects })
     } else {
       handleAction(action, request)
     }
