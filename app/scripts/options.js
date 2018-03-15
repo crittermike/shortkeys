@@ -136,7 +136,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
 
   $scope.keySyncToOtherDevicesChecked = function (key) {
     if (key.syncToOtherDevices) {
-      return " checked=\"checked\""
+      return ' checked="checked"'
     } else {
       return null
     }
