@@ -36,12 +36,13 @@
             </uib-accordion-heading>
 
             <div class="row">
-              <div class="col-sm-4">
+              <div class="col-sm-3">
                 <div class="form-group">
-                <label>Keyboard shortcut (<a href="https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys#supported-keyboard-shortcuts">Help</a>)</label>
-                <input ng-model="key.key" class="kbd-input form-control" placeholder="Example: ctrl+b" type="text"/>
-              </div></div>
-              <div class="col-sm-4">
+                  <label>Keyboard shortcut (<a href="https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys#supported-keyboard-shortcuts">Help</a>)</label>
+                  <input ng-model="key.key" class="kbd-input form-control" placeholder="Example: ctrl+b" type="text"/>
+                </div>
+              </div>
+              <div class="col-sm-3">
                 <div class="form-group">
                   <label>Behavior (<a href="https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys#full-list-of-commands">Help</a>)</label>
                   <select width="'100%'" class="form-control" ng-model="key.action" ng-options="option.value as option.label group by option.group for option in actionOptions">
@@ -49,10 +50,16 @@
                   </select>
                 </div>
               </div>
-              <div class="col-sm-4">
+              <div class="col-sm-3">
                 <div class="form-group">
                   <label>(Optional) Label</label>
                   <input ng-model="key.customName" class="form-control" placeholder="{{keyLabel(key)}}" type="text"/>
+                </div>
+              </div>
+              <div class="col-sm-3">
+                <div class="form-group">
+                  <label>Sync to other devices</label>
+                  <input ng-model="key.syncToOtherDevices" class="form-control" type="checkbox"{{keySyncToOtherDevicesChecked(key)}}/>
                 </div>
               </div>
             </div>
@@ -78,7 +85,7 @@
               <br />
               <div class="form-group">
                 <label><input type="checkbox" ng-model="key.isContentScript"/> Run in content script</label>
-              </div>              
+              </div>
               <uib-accordion ng-show="key.isContentScript" close-others="oneAtATime">
                 <div uib-accordion-group heading="Available help functionality">
                   <p>
@@ -151,7 +158,7 @@
                         <span>will not be saved and the next time the script is called the data variable will be an empty object again.</span>
                         <br />
                         <code>data.value = true</code>
-                        <span>will be saved and the next time the script is called the <code>data.value</code> property will have the value true.</span>                      
+                        <span>will be saved and the next time the script is called the <code>data.value</code> property will have the value true.</span>
                     </p>
                   </p>
                 </div>
