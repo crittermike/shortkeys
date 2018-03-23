@@ -134,6 +134,14 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
     }
   }
 
+  $scope.keySyncToOtherDevicesChecked = function (key) {
+    if (key.syncToOtherDevices) {
+      return ' checked="checked"'
+    } else {
+      return null
+    }
+  }
+
   $scope.keys = []
   $scope.import = {}
   $scope.export = {}
@@ -214,9 +222,9 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
    * Save the config form to Chrome sync and localStorage.
    */
   $scope.saveKeys = function () {
-    // Remove empty keys
+    // Remove empty keys or keys that we should not sync.
     $scope.keys = $scope.keys.filter(function (element) {
-      return element && element.key !== ''
+      return element && element.key !== '' && !element.syncToOtherDevices
     })
 
     $scope.export.isAllExported = false
