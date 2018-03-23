@@ -36,13 +36,13 @@
             </uib-accordion-heading>
 
             <div class="row">
-              <div class="col-sm-3">
+              <div class="col-sm-4">
                 <div class="form-group">
                   <label>Keyboard shortcut (<a href="https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys#supported-keyboard-shortcuts">Help</a>)</label>
                   <input ng-model="key.key" class="kbd-input form-control" placeholder="Example: ctrl+b" type="text"/>
                 </div>
               </div>
-              <div class="col-sm-3">
+              <div class="col-sm-4">
                 <div class="form-group">
                   <label>Behavior (<a href="https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys#full-list-of-commands">Help</a>)</label>
                   <select width="'100%'" class="form-control" ng-model="key.action" ng-options="option.value as option.label group by option.group for option in actionOptions">
@@ -50,16 +50,10 @@
                   </select>
                 </div>
               </div>
-              <div class="col-sm-3">
+              <div class="col-sm-4">
                 <div class="form-group">
                   <label>(Optional) Label</label>
                   <input ng-model="key.customName" class="form-control" placeholder="{{keyLabel(key)}}" type="text"/>
-                </div>
-              </div>
-              <div class="col-sm-3">
-                <div class="form-group">
-                  <label>Sync to other devices</label>
-                  <input ng-model="key.syncToOtherDevices" class="form-control" type="checkbox"{{keySyncToOtherDevicesChecked(key)}}/>
                 </div>
               </div>
             </div>
@@ -216,7 +210,10 @@
             </div>
 
             <uib-accordion close-others="oneAtATime">
-              <div uib-accordion-group heading="Activation Settings...">
+              <div uib-accordion-group heading="Settings...">
+                <div class="form-group">
+                  <label><input type="checkbox" ng-model="key.syncToOtherDevices"{{keySyncToOtherDevicesChecked(key)}}/> Sync to other devices</label>
+                </div>
                 <div class="form-group">
                   <label><input type="checkbox" ng-model="key.activeInInputs"/> Active while in form fields</label>
                 </div>
