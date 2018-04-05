@@ -288,12 +288,12 @@ let handleAction = (action, request = {}) => {
         chrome.tabs.create({url: decodeURI(openNode.url), active: false})
       } else if (action === 'openbookmarkbackgroundtabandclose') {
         chrome.tabs.create({url: decodeURI(openNode.url), active: false}, (createdTab) => {
-          var closeListener = function(tabId, changeInfo, updatedTab) {
-            if (tabId == createdTab.id && changeInfo.status == "complete") {
+          var closeListener = function (tabId, changeInfo, updatedTab) {
+            if (tabId === createdTab.id && changeInfo.status === 'complete') {
               chrome.tabs.remove(createdTab.id)
               chrome.tabs.onUpdated.removeListener(closeListener)
             }
-          };
+          }
           chrome.tabs.onUpdated.addListener(closeListener)
         })
       } else {
