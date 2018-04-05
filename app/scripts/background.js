@@ -270,7 +270,7 @@ let handleAction = (action, request = {}) => {
     chrome.tabs.executeScript(null, {'code': 'window.scrollBy(50,0)'})
   } else if (action === 'scrollrightmore') {
     chrome.tabs.executeScript(null, {'code': 'window.scrollBy(500,0)'})
-  } else if (action === 'openbookmark' || action === 'openbookmarknewtab' || action === 'openbookmarkbackgroundtab') {
+  } else if (action === 'openbookmark' || action === 'openbookmarknewtab' || action === 'openbookmarkbackgroundtab' || action === 'openbookmarkbackgroundtabandclose') {
     chrome.bookmarks.search({title: request.bookmark}, function (nodes) {
       let openNode
       for (let i = nodes.length; i-- > 0;) {
@@ -286,6 +286,16 @@ let handleAction = (action, request = {}) => {
         })
       } else if (action === 'openbookmarkbackgroundtab') {
         chrome.tabs.create({url: decodeURI(openNode.url), active: false})
+      } else if (action === 'openbookmarkbackgroundtabandclose') {
+        chrome.tabs.create({url: decodeURI(openNode.url), active: false}, (createdTab) => {
+          var closeListener = function(tabId, changeInfo, updatedTab) {
+            if (tabId == createdTab.id && changeInfo.status == "complete") {
+              chrome.tabs.remove(createdTab.id)
+              chrome.tabs.onUpdated.removeListener(closeListener)
+            }
+          };
+          chrome.tabs.onUpdated.addListener(closeListener)
+        })
       } else {
         chrome.tabs.create({url: decodeURI(openNode.url)})
       }
