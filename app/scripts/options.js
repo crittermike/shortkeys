@@ -42,6 +42,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
     {value: 'openbookmark', label: 'Open bookmark/bookmarklet in current tab', group: 'Bookmarks'},
     {value: 'openbookmarknewtab', label: 'Open bookmark/bookmarklet in new tab', group: 'Bookmarks'},
     {value: 'openbookmarkbackgroundtab', label: 'Open bookmark/bookmarklet in new background tab', group: 'Bookmarks'},
+    {value: 'openbookmarkbackgroundtabandclose', label: 'Open bookmark/bookmarklet in new background tab and close immediately after load', group: 'Bookmarks'},
     {value: 'gototab', label: 'Jump to tab by URL', group: 'Tabs'},
     {value: 'gototabbytitle', label: 'Jump to tab by title', group: 'Tabs'},
     {value: 'gototabbyindex', label: 'Jump to tab by index', group: 'Tabs'},
