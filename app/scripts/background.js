@@ -125,6 +125,11 @@ let handleAction = (action, request = {}) => {
     chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
       chrome.tabs.duplicate(tab[0].id)
     })
+  } else if (action === 'movetabtonewwindow') {
+    chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
+      chrome.windows.create({url: tab[0].url})
+      chrome.tabs.remove(tab[0].id)
+    })
   } else if (action === 'onlytab') {
     chrome.tabs.query({currentWindow: true, pinned: false, active: false}, (tabs) => {
       let ids = []

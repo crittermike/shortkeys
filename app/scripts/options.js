@@ -51,6 +51,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
     {value: 'closelefttabs', label: 'Close tabs to the left', group: 'Tabs', builtin: true},
     {value: 'closerighttabs', label: 'Close tabs to the right', group: 'Tabs', builtin: true},
     {value: 'clonetab', label: 'Duplicate tab', group: 'Tabs', builtin: true},
+    {value: 'movetabtonewwindow', label: 'Move tab to new window', group: 'Tabs', builtin: false},
     {value: 'reopentab', label: 'Reopen last closed tab', group: 'Tabs', builtin: true},
     {value: 'nexttab', label: 'Next tab', group: 'Tabs', builtin: true},
     {value: 'prevtab', label: 'Previous tab', group: 'Tabs', builtin: true},
