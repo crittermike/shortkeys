@@ -34,6 +34,13 @@ let selectTab = (direction) => {
         case 'last':
           toSelect = tabs[tabs.length - 1]
           break
+        default:
+          let index = parseInt(direction) || 0
+          if (index >= 1 && index <= tabs.length) {
+            toSelect = tabs[index - 1]
+          } else {
+            return
+          }
       }
       chrome.tabs.update(toSelect.id, {active: true})
     })
@@ -118,6 +125,11 @@ let handleAction = (action, request = {}) => {
     chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
       chrome.tabs.duplicate(tab[0].id)
     })
+  } else if (action === 'movetabtonewwindow') {
+    chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
+      chrome.windows.create({url: tab[0].url})
+      chrome.tabs.remove(tab[0].id)
+    })
   } else if (action === 'onlytab') {
     chrome.tabs.query({currentWindow: true, pinned: false, active: false}, (tabs) => {
       let ids = []
@@ -160,7 +172,9 @@ let handleAction = (action, request = {}) => {
     }, function (selection) {
       if (selection[0]) {
         let query = encodeURIComponent(selection[0])
-        chrome.tabs.create({url: 'https://www.google.com/search?q=' + query})
+        chrome.tabs.query({currentWindow: true, active: true}, (tabs) => {
+          chrome.tabs.create({url: 'https://www.google.com/search?q=' + query, index: tabs[0].index + 1})
+        })
       }
     })
   } else if (action === 'movetableft') {
@@ -192,6 +206,23 @@ let handleAction = (action, request = {}) => {
       })
     } else {
       createNewTab()
+    }
+  } else if (action === 'gototabbytitle') {
+    if (request.matchtitle) {
+      let queryOption = {title: request.matchtitle}
+      if (request.currentWindow) {
+        queryOption.currentWindow = true
+      }
+      chrome.tabs.query(queryOption, function (tabs) {
+        if (tabs.length > 0) {
+          chrome.tabs.update(tabs[0].id, {active: true})
+          chrome.windows.update(tabs[0].windowId, {focused: true})
+        }
+      })
+    }
+  } else if (action === 'gototabbyindex') {
+    if (request.matchindex) {
+      selectTab(request.matchindex)
     }
   } else if (action === 'newwindow') {
     chrome.windows.create()
@@ -244,7 +275,7 @@ let handleAction = (action, request = {}) => {
     chrome.tabs.executeScript(null, {'code': 'window.scrollBy(50,0)'})
   } else if (action === 'scrollrightmore') {
     chrome.tabs.executeScript(null, {'code': 'window.scrollBy(500,0)'})
-  } else if (action === 'openbookmark' || action === 'openbookmarknewtab' || action === 'openbookmarkbackgroundtab') {
+  } else if (action === 'openbookmark' || action === 'openbookmarknewtab' || action === 'openbookmarkbackgroundtab' || action === 'openbookmarkbackgroundtabandclose') {
     chrome.bookmarks.search({title: request.bookmark}, function (nodes) {
       let openNode
       for (let i = nodes.length; i-- > 0;) {
@@ -260,6 +291,16 @@ let handleAction = (action, request = {}) => {
         })
       } else if (action === 'openbookmarkbackgroundtab') {
         chrome.tabs.create({url: decodeURI(openNode.url), active: false})
+      } else if (action === 'openbookmarkbackgroundtabandclose') {
+        chrome.tabs.create({url: decodeURI(openNode.url), active: false}, (createdTab) => {
+          var closeListener = function (tabId, changeInfo, updatedTab) {
+            if (tabId === createdTab.id && changeInfo.status === 'complete') {
+              chrome.tabs.remove(createdTab.id)
+              chrome.tabs.onUpdated.removeListener(closeListener)
+            }
+          }
+          chrome.tabs.onUpdated.addListener(closeListener)
+        })
       } else {
         chrome.tabs.create({url: decodeURI(openNode.url)})
       }

@@ -41,13 +41,17 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
     {value: 'openbookmark', label: 'Open bookmark/bookmarklet in current tab', group: 'Bookmarks'},
     {value: 'openbookmarknewtab', label: 'Open bookmark/bookmarklet in new tab', group: 'Bookmarks'},
     {value: 'openbookmarkbackgroundtab', label: 'Open bookmark/bookmarklet in new background tab', group: 'Bookmarks'},
-    {value: 'gototab', label: 'Jump to tab or URL', group: 'Tabs'},
+    {value: 'openbookmarkbackgroundtabandclose', label: 'Open bookmark/bookmarklet in new background tab and close immediately after load', group: 'Bookmarks'},
+    {value: 'gototab', label: 'Jump to tab by URL', group: 'Tabs'},
+    {value: 'gototabbytitle', label: 'Jump to tab by title', group: 'Tabs'},
+    {value: 'gototabbyindex', label: 'Jump to tab by index', group: 'Tabs'},
     {value: 'newtab', label: 'New tab', group: 'Tabs', builtin: true},
     {value: 'closetab', label: 'Close tab', group: 'Tabs', builtin: true},
     {value: 'onlytab', label: 'Close other tabs', group: 'Tabs', builtin: true},
     {value: 'closelefttabs', label: 'Close tabs to the left', group: 'Tabs', builtin: true},
     {value: 'closerighttabs', label: 'Close tabs to the right', group: 'Tabs', builtin: true},
     {value: 'clonetab', label: 'Duplicate tab', group: 'Tabs', builtin: true},
+    {value: 'movetabtonewwindow', label: 'Move tab to new window', group: 'Tabs', builtin: false},
     {value: 'reopentab', label: 'Reopen last closed tab', group: 'Tabs', builtin: true},
     {value: 'nexttab', label: 'Next tab', group: 'Tabs', builtin: true},
     {value: 'prevtab', label: 'Previous tab', group: 'Tabs', builtin: true},
@@ -131,6 +135,14 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
     }
   }
 
+  $scope.keySyncToOtherDevicesChecked = function (key) {
+    if (key.syncToOtherDevices) {
+      return ' checked="checked"'
+    } else {
+      return null
+    }
+  }
+
   $scope.keys = []
   $scope.import = {}
   $scope.export = {}
@@ -211,9 +223,9 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
    * Save the config form to Chrome sync and local.
    */
   $scope.saveKeys = function () {
-    // Remove empty keys
+    // Remove empty keys or keys that we should not sync.
     $scope.keys = $scope.keys.filter(function (element) {
-      return element && element.key !== ''
+      return element && element.key !== '' && !element.syncToOtherDevices
     })
 
     $scope.export.isAllExported = false
@@ -271,3 +283,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
     }
   })
 }])
+
+if (process.env.VENDOR === 'firefox') {
+  document.documentElement.classList.add('firefox')
+}

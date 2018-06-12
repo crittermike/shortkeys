@@ -52,91 +52,94 @@
     "10-clonetab": {
       "description": "TABS: Duplicate tab"
     },
-    "11-reopentab": {
+    "11-movetabtonewwindow": {
+      "description": "TABS: Move tab to new window"
+    },
+    "12-reopentab": {
       "description": "TABS: Reopen closed tab"
     },
-    "12-firsttab": {
+    "13-firsttab": {
       "description": "TABS: First tab"
     },
-    "13-lasttab": {
+    "14-lasttab": {
       "description": "TABS: Last tab"
     },
-    "14-movetableft": {
+    "15-movetableft": {
       "description": "TABS: Move tab to the left"
     },
-    "15-movetabright": {
+    "16-movetabright": {
       "description": "TABS: Move tab to the right"
     },
-    "16-newwindow": {
+    "17-newwindow": {
       "description": "WINDOWS: New window"
     },
-    "17-newprivatewindow": {
+    "18-newprivatewindow": {
       "description": "WINDOWS: New private window"
     },
-    "18-closewindow": {
+    "19-closewindow": {
       "description": "WINDOWS: Close window"
     },
-    "19-zoomin": {
+    "20-zoomin": {
       "description": "ZOOMING: Zoom in"
     },
-    "20-zoomout": {
+    "21-zoomout": {
       "description": "ZOOMING: Zoom out"
     },
-    "21-zoomreset": {
+    "22-zoomreset": {
       "description": "ZOOMING: Zoom reset"
     },
-    "22-back": {
+    "23-back": {
       "description": "LOCATION: Go back"
     },
-    "23-forward": {
+    "24-forward": {
       "description": "LOCATION: Go forward"
     },
-    "24-reload": {
+    "25-reload": {
       "description": "LOCATION: Reload"
     },
-    "25-searchgoogle": {
+    "26-searchgoogle": {
       "description": "LOCATION: Search Google for selected text"
     },
-    "26-copyurl": {
+    "27-copyurl": {
       "description": "LOCATION: Copy URL to clipboard"
     },
-    "27-top": {
+    "28-top": {
       "description": "SCROLLING: Scroll to top"
     },
-    "28-bottom": {
+    "29-bottom": {
       "description": "SCROLLING: Scroll to bottom"
     },
-    "29-scrolldown": {
+    "30-scrolldown": {
       "description": "SCROLLING: Scroll down"
     },
-    "30-scrolldownmore": {
+    "31-scrolldownmore": {
       "description": "SCROLLING: Scroll down more"
     },
-    "31-scrollup": {
+    "32-scrollup": {
       "description": "SCROLLING: Scroll up"
     },
-    "32-scrollupmore": {
+    "33-scrollupmore": {
       "description": "SCROLLING: Scroll up more"
     },
-    "33-scrollright": {
+    "34-scrollright": {
       "description": "SCROLLING: Scroll right"
     },
-    "34-scrollrightmore": {
+    "35-scrollrightmore": {
       "description": "SCROLLING: Scroll right more"
     },
-    "35-scrollleft": {
+    "36-scrollleft": {
       "description": "SCROLLING: Scroll left"
     },
-    "36-scrollleftmore": {
+    "37-scrollleftmore": {
       "description": "SCROLLING: Scroll left more"
     },
-    "37-cleardownloads": {
+    "38-cleardownloads": {
       "description": "UTILITY: Clear downloads"
     },
-    "38-viewsource": {
+    "39-viewsource": {
       "description": "UTILITY: View source"
     },
-    "39-disable": {
+    "40-disable": {
       "description": "UTILITY: Do nothing (disable browser shortcut - experimental)"
     }
   },
