@@ -145,7 +145,7 @@
     "41-disable": {
       "description": "UTILITY: Do nothing (disable browser shortcut - experimental)"
     },
-    "42-isable": {
+    "42-disable": {
       "description": "UTILITY: Do nothing (disable browser shortcut - experimental)"
     },
     "43-disable": {
