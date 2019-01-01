@@ -102,6 +102,12 @@ let handleAction = (action, request = {}) => {
     chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
       chrome.tabs.create({url: 'view-source:' + tab[0].url})
     })
+  } else if (action === 'opensettings') {
+    chrome.tabs.create({ url: 'chrome://settings', active: true })
+  } else if (action === 'openextensions') {
+    chrome.tabs.create({ url: 'chrome://extensions', active: true })
+  } else if (action === 'openshortcuts') {
+    chrome.tabs.create({ url: 'chrome://extensions/shortcuts', active: true })
   } else if (action === 'nexttab') {
     selectTab('next')
   } else if (action === 'prevtab') {
