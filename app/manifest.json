@@ -161,10 +161,10 @@
       "description": "LOCATION: Open Settings Page"
     },
     "47-openextensions": {
-      "description": "SCROLLING: Open Extensions Page"
+      "description": "LOCATION: Open Extensions Page"
     },
     "48-openshortcuts": {
-      "description": "SCROLLING: Open Keyboard Shortcuts Page"
+      "description": "LOCATION: Open Keyboard Shortcuts Page"
     }
   },
   "options_ui": {
