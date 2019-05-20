@@ -183,6 +183,13 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
   }
 
   /**
+   * Delete all shortcuts. Used by the "Delete all shortcuts" button/link.
+   */
+  $scope.deleteAllKeys = function () {
+    chrome.extension.getBackgroundPage().confirm('Are you sure you want to delete all?') && $scope.keys.splice(0, $scope.keys.length)
+  }
+
+  /**
    * Export stringified JSON for a key or set of keys.
    *
    * @param index

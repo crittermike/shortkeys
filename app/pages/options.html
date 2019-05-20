@@ -164,7 +164,11 @@
 
     <!-- IMPORT TAB -->
     <uib-tab index="1" heading="Import"><br />
-      <p>Paste in JSON exported from Shortkeys to import it here.</p>
+      <div style="display: flex; justify-content: space-between";>
+        <p>Paste in JSON exported from Shortkeys to import it here.</p>
+        <a ng-click="deleteAllKeys()" class="delete-all">Delete all shortcuts</a>
+      </div>
+
       <form>
         <div class="form-group">
           <label>Import</label>

@@ -24,6 +24,15 @@ body {
   }
 }
 
+a.delete-all {
+  color: #d9534f;
+  text-decoration: none;
+}
+a.delete-all:hover {
+  color: #d9534f;
+  text-decoration: underline;
+}
+
 .CodeMirror-wrap {
   border: 1px solid #d0d0d0 !important;
   padding: 5px !important;
