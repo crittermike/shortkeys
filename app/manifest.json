@@ -165,6 +165,12 @@
     },
     "48-openshortcuts": {
       "description": "LOCATION: Open Keyboard Shortcuts Page"
+    },
+    "49-movetabtofirst": {
+      "description": "TABS: Move tab to first position"
+    },
+    "50-movetabtolast": {
+      "description": "TABS: Move tab to last position"
     }
   },
   "options_ui": {

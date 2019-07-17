@@ -193,6 +193,16 @@ let handleAction = (action, request = {}) => {
     chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
       chrome.tabs.move(tab[0].id, {'index': tab[0].index + 1})
     })
+  } else if (action === 'movetabtofirst') {
+    chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
+      if (tab[0].index > 0) {
+        chrome.tabs.move(tab[0].id, {'index': 0})
+      }
+    })
+  } else if (action === 'movetabtolast') {
+    chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
+      chrome.tabs.move(tab[0].id, {'index': -1})
+    })
   } else if (action === 'gototab') {
     let createNewTab = () => {
       chrome.tabs.create({url: request.openurl})
