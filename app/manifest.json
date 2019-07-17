@@ -194,6 +194,7 @@
     "storage",
     "bookmarks",
     "sessions",
+    "management",
     "<all_urls>"
   ]
 }

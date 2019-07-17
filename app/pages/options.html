@@ -128,6 +128,13 @@
               </div>
             </div>
 
+            <div ng-show="key.action == 'openapp'" class="openappconfig">
+              <div class="form-group openappid">
+                <label>App ID to open (Can be found on extensions management page) </label>
+                <textarea ng-model="key.openappid" class="form-control"></textarea>
+              </div>
+            </div>
+
             <uib-accordion close-others="oneAtATime">
               <div uib-accordion-group heading="Settings...">
                 <div class="form-group">
