@@ -311,6 +311,10 @@ let handleAction = (action, request = {}) => {
         chrome.tabs.create({url: decodeURI(openNode.url)})
       }
     })
+  } else if (action === 'openapp') {
+    if (request.openappid) {
+      chrome.management.launchApp(request.openappid)
+    }
   } else {
     return false
   }
