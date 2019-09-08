@@ -165,6 +165,9 @@
     },
     "48-openshortcuts": {
       "description": "LOCATION: Open Keyboard Shortcuts Page"
+    },
+    "49-showlatestdownload": {
+      "description": "DOWNLOADS: Show latest download"
     }
   },
   "options_ui": {
@@ -188,6 +191,7 @@
     }
   ],
   "permissions": [
+    "downloads",
     "tabs",
     "clipboardWrite",
     "browsingData",

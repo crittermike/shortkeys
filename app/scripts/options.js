@@ -71,6 +71,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
     {value: 'zoomin', label: 'Zoom In', group: 'Zooming', builtin: true},
     {value: 'zoomout', label: 'Zoom Out', group: 'Zooming', builtin: true},
     {value: 'zoomreset', label: 'Reset Zoom', group: 'Zooming', builtin: true},
+    {value: 'showlatestdownload', label: 'Show latest download', group: 'Downloads', builtin: true},
     {value: 'javascript', label: 'Run JavaScript', group: 'Other'},
     {value: 'cleardownloads', label: 'Clear downloads', group: 'Other', builtin: true},
     {value: 'viewsource', label: 'View source', group: 'Other', builtin: true},

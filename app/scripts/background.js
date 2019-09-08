@@ -255,6 +255,12 @@ let handleAction = (action, request = {}) => {
     chrome.tabs.query({currentWindow: true, active: true}, (tab) => {
       chrome.tabs.setZoom(tab[0].id, 0)
     })
+  } else if (action === 'showlatestdownload') {
+    chrome.downloads.search({orderBy: ['-startTime'], state: 'complete'}, downloads => {
+      if(downloads && downloads.length > 0 ) {
+        chrome.downloads.show(downloads[0].id)
+      }
+    })
   } else if (action === 'back') {
     chrome.tabs.executeScript(null, {'code': 'window.history.back()'})
   } else if (action === 'forward') {
