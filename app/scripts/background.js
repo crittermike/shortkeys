@@ -14,19 +14,20 @@ let copyToClipboard = (text) => {
 }
 
 let selectTab = (direction) => {
-  chrome.tabs.query({currentWindow: true}, (tabs) => {
+  chrome.tabs.query({currentWindow: true, hidden:false}, (tabs) => {
     if (tabs.length <= 1) {
       return
     }
     chrome.tabs.query({currentWindow: true, active: true}, (currentTabInArray) => {
       let currentTab = currentTabInArray[0]
+      let currentTabIndex = tabs.findIndex(i => i.id === currentTab.id);
       let toSelect
       switch (direction) {
         case 'next':
-          toSelect = tabs[(currentTab.index + 1 + tabs.length) % tabs.length]
+          toSelect = tabs[(currentTabIndex + 1 + tabs.length) % tabs.length]
           break
         case 'previous':
-          toSelect = tabs[(currentTab.index - 1 + tabs.length) % tabs.length]
+          toSelect = tabs[(currentTabIndex - 1 + tabs.length) % tabs.length]
           break
         case 'first':
           toSelect = tabs[0]
