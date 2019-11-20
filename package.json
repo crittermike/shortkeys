@@ -58,7 +58,7 @@
     "yargs": "^8.x.x"
   },
   "dependencies": {
-    "angular": "^1.6.7",
+    "angular": "^1.7.9",
     "angular-ui-bootstrap": "^2.5.6",
     "angular-ui-codemirror": "github:mikecrittenden/ui-codemirror",
     "babel-register": "^6.26.0",
