@@ -16,6 +16,7 @@
     "bootstrap": "^4.4.1",
     "codemirror": "^5.49.2",
     "css-loader": "^3.3.2",
+    "mousetrap": "^1.6.3",
     "style-loader": "^1.0.1"
   }
 }
