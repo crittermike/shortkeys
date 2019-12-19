@@ -106,7 +106,7 @@ Mousetrap.prototype.stopCallback = function (e, element, combo) {
 /**
  * Fetches the Shortkeys configuration object and wires up each configured shortcut.
  */
-browser.runtime.sendMessage({action: 'getKeys', url: document.URL}, function (response) {
+browser.runtime.sendMessage({action: 'getKeys', url: document.URL}).then(function (response) {
     if (response) {
         Shortkeys.keys = response
         if (Shortkeys.keys.length > 0) {

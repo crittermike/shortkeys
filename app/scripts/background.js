@@ -282,7 +282,7 @@ let handleAction = (action, request = {}) => {
   } else if (action === 'scrollrightmore') {
     browser.tabs.executeScript(null, {'code': 'window.scrollBy(500,0)'})
   } else if (action === 'openbookmark' || action === 'openbookmarknewtab' || action === 'openbookmarkbackgroundtab' || action === 'openbookmarkbackgroundtabandclose') {
-    browser.bookmarks.search({title: request.bookmark}, function (nodes) {
+    browser.bookmarks.search({title: request.bookmark}).then(function(nodes) {
       let openNode
       for (let i = nodes.length; i-- > 0;) {
         let node = nodes[i]
@@ -340,8 +340,7 @@ browser.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         }
       })
     }
-    sendResponse(keys)
-  } else {
-    handleAction(action, request)
+  return Promise.resolve(keys)
   }
+  handleAction(action, request)
 })
