@@ -14,11 +14,11 @@ let copyToClipboard = (text) => {
 }
 
 let selectTab = (direction) => {
-  browser.tabs.query({currentWindow: true}, (tabs) => {
+  browser.tabs.query({currentWindow: true}).then(function(tabs) {
     if (tabs.length <= 1) {
       return
     }
-    browser.tabs.query({currentWindow: true, active: true}, (currentTabInArray) => {
+    browser.tabs.query({currentWindow: true, active: true}).then(function(currentTabInArray) {
       let currentTab = currentTabInArray[0]
       let toSelect
       switch (direction) {
@@ -99,7 +99,7 @@ let handleAction = (action, request = {}) => {
   if (action === 'cleardownloads') {
     browser.browsingData.remove({'since': 0}, {'downloads': true})
   } else if (action === 'viewsource') {
-    browser.tabs.query({currentWindow: true, active: true}, (tab) => {
+    browser.tabs.query({currentWindow: true, active: true}).then(function(tab) {
       browser.tabs.create({url: 'view-source:' + tab[0].url})
     })
   } else if (action === 'opensettings') {
@@ -119,25 +119,25 @@ let handleAction = (action, request = {}) => {
   } else if (action === 'newtab') {
     browser.tabs.create({})
   } else if (action === 'reopentab') {
-    browser.sessions.getRecentlyClosed({maxResults: 1}, function (sessions) {
+    browser.sessions.getRecentlyClosed({maxResults: 1}).then(function(sessions) {
       let closedTab = sessions[0]
       browser.sessions.restore(closedTab.sessionId)
     })
   } else if (action === 'closetab') {
-    browser.tabs.query({currentWindow: true, active: true}, (tab) => {
+    browser.tabs.query({currentWindow: true, active: true}).then(function(tab) {
       browser.tabs.remove(tab[0].id)
     })
   } else if (action === 'clonetab') {
-    browser.tabs.query({currentWindow: true, active: true}, (tab) => {
+    browser.tabs.query({currentWindow: true, active: true}).then(function(tab) {
       browser.tabs.duplicate(tab[0].id)
     })
   } else if (action === 'movetabtonewwindow') {
-    browser.tabs.query({currentWindow: true, active: true}, (tab) => {
+    browser.tabs.query({currentWindow: true, active: true}).then(function(tab) {
       browser.windows.create({url: tab[0].url})
       browser.tabs.remove(tab[0].id)
     })
   } else if (action === 'onlytab') {
-    browser.tabs.query({currentWindow: true, pinned: false, active: false}, (tabs) => {
+    browser.tabs.query({currentWindow: true, pinned: false, active: false}).then(function(tabs) {
       let ids = []
       tabs.forEach(function (tab) {
         ids.push(tab.id)
@@ -145,9 +145,9 @@ let handleAction = (action, request = {}) => {
       browser.tabs.remove(ids)
     })
   } else if (action === 'closelefttabs' || action === 'closerighttabs') {
-    browser.tabs.query({currentWindow: true, active: true}, function (tabs) {
+    browser.tabs.query({currentWindow: true, active: true}).then(function(tabs) {
       let currentTabIndex = tabs[0].index
-      browser.tabs.query({currentWindow: true, pinned: false, active: false}, (tabs) => {
+      browser.tabs.query({currentWindow: true, pinned: false, active: false}).then(function(tabs) {
         let ids = []
         tabs.forEach(function (tab) {
           if ((action === 'closelefttabs' && tab.index < currentTabIndex) ||
@@ -159,17 +159,17 @@ let handleAction = (action, request = {}) => {
       })
     })
   } else if (action === 'togglepin') {
-    browser.tabs.query({active: true, currentWindow: true}, (tab) => {
+    browser.tabs.query({active: true, currentWindow: true}).then(function(tab) {
       let toggle = !tab[0].pinned
       browser.tabs.update(tab[0].id, { pinned: toggle })
     })
   } else if (action === 'togglemute') {
-    browser.tabs.query({active: true, currentWindow: true}, (tab) => {
+    browser.tabs.query({active: true, currentWindow: true}).then(function(tab) {
       let toggle = !tab[0].mutedInfo.muted
       browser.tabs.update(tab[0].id, { muted: toggle })
     })
   } else if (action === 'copyurl') {
-    browser.tabs.query({currentWindow: true, active: true}, (tab) => {
+    browser.tabs.query({currentWindow: true, active: true}).then(function(tab) {
       copyToClipboard(tab[0].url)
     })
   } else if (action === 'searchgoogle') {
@@ -178,19 +178,19 @@ let handleAction = (action, request = {}) => {
     }, function (selection) {
       if (selection[0]) {
         let query = encodeURIComponent(selection[0])
-        browser.tabs.query({currentWindow: true, active: true}, (tabs) => {
+        browser.tabs.query({currentWindow: true, active: true}).then(function(tabs) {
           browser.tabs.create({url: 'https://www.google.com/search?q=' + query, index: tabs[0].index + 1})
         })
       }
     })
   } else if (action === 'movetableft') {
-    browser.tabs.query({currentWindow: true, active: true}, (tab) => {
+    browser.tabs.query({currentWindow: true, active: true}).then(function(tab) {
       if (tab[0].index > 0) {
         browser.tabs.move(tab[0].id, {'index': tab[0].index - 1})
       }
     })
   } else if (action === 'movetabright') {
-    browser.tabs.query({currentWindow: true, active: true}, (tab) => {
+    browser.tabs.query({currentWindow: true, active: true}).then(function(tab) {
       browser.tabs.move(tab[0].id, {'index': tab[0].index + 1})
     })
   } else if (action === 'gototab') {
@@ -202,7 +202,7 @@ let handleAction = (action, request = {}) => {
       if (request.currentWindow) {
         queryOption.currentWindow = true
       }
-      browser.tabs.query(queryOption, function (tabs) {
+      browser.tabs.query(queryOption).then(function(tabs) {
         if (tabs.length > 0) {
           browser.tabs.update(tabs[0].id, {active: true})
           browser.windows.update(tabs[0].windowId, {focused: true})
@@ -219,7 +219,7 @@ let handleAction = (action, request = {}) => {
       if (request.currentWindow) {
         queryOption.currentWindow = true
       }
-      browser.tabs.query(queryOption, function (tabs) {
+      browser.tabs.query(queryOption).then(function (tabs) {
         if (tabs.length > 0) {
           browser.tabs.update(tabs[0].id, {active: true})
           browser.windows.update(tabs[0].windowId, {focused: true})
@@ -235,24 +235,23 @@ let handleAction = (action, request = {}) => {
   } else if (action === 'newprivatewindow') {
     browser.windows.create({incognito: true})
   } else if (action === 'closewindow') {
-    browser.tabs.query({currentWindow: true, active: true}, (tab) => {
+    browser.tabs.query({currentWindow: true, active: true}).then(function(tab) {
       browser.windows.remove(tab[0].windowId)
     })
   } else if (action === 'zoomin') {
-    browser.tabs.query({currentWindow: true, active: true}, (tab) => {
-      browser.tabs.getZoom(tab[0].id, (zoomFactor) => {
-        console.log(zoomFactor)
+    browser.tabs.query({currentWindow: true, active: true}).then(function(tab) {
+      browser.tabs.getZoom(tab[0].id).then(function(zoomFactor) {
         browser.tabs.setZoom(tab[0].id, zoomFactor + 0.1)
       })
     })
   } else if (action === 'zoomout') {
-    browser.tabs.query({currentWindow: true, active: true}, (tab) => {
-      browser.tabs.getZoom(tab[0].id, (zoomFactor) => {
+    browser.tabs.query({currentWindow: true, active: true}).then(function(tab) {
+      browser.tabs.getZoom(tab[0].id).then(function(zoomFactor) {
         browser.tabs.setZoom(tab[0].id, zoomFactor - 0.1)
       })
     })
   } else if (action === 'zoomreset') {
-    browser.tabs.query({currentWindow: true, active: true}, (tab) => {
+    browser.tabs.query({currentWindow: true, active: true}).then(function(tab) {
       browser.tabs.setZoom(tab[0].id, 0)
     })
   } else if (action === 'back') {
@@ -292,13 +291,13 @@ let handleAction = (action, request = {}) => {
         }
       }
       if (action === 'openbookmark') {
-        browser.tabs.query({currentWindow: true, active: true}, (tab) => {
+        browser.tabs.query({currentWindow: true, active: true}).then(function(tab) {
           browser.tabs.update(tab[0].id, {url: decodeURI(openNode.url)})
         })
       } else if (action === 'openbookmarkbackgroundtab') {
         browser.tabs.create({url: decodeURI(openNode.url), active: false})
       } else if (action === 'openbookmarkbackgroundtabandclose') {
-        browser.tabs.create({url: decodeURI(openNode.url), active: false}, (createdTab) => {
+        browser.tabs.create({url: decodeURI(openNode.url), active: false}).then(function(createdTab) {
           var closeListener = function (tabId, changeInfo, updatedTab) {
             if (tabId === createdTab.id && changeInfo.status === 'complete') {
               browser.tabs.remove(createdTab.id)
@@ -306,7 +305,7 @@ let handleAction = (action, request = {}) => {
             }
           }
           browser.tabs.onUpdated.addListener(closeListener)
-        })
+        });
       } else {
         browser.tabs.create({url: decodeURI(openNode.url)})
       }

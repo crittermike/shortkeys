@@ -171,9 +171,6 @@
       "matches": [
         "<all_urls>"
       ],
-      "css": [
-        "styles/contentscript.css"
-      ],
       "js": [
         "scripts/contentscript.js"
       ],
