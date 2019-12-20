@@ -1,6 +1,12 @@
-# Shortkeys  Custom Keyboard Shortcuts 
+# Shortkeys
 
 Custom keyboard shortcuts for your browser
+
+[Donate](https://salt.bountysource.com/teams/chrome-shortkeys) | 
+[Add a Review](https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck/reviews?hl=en-US&gl=US) | 
+[Documentation](https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys) | 
+[Support](https://github.com/mikecrittenden/shortkeys/issues) | 
+[Chrome Webstore](https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck?hl=en-US&gl=US)
 
 ## Install
 
