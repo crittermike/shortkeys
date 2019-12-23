@@ -142,6 +142,9 @@
     "39-viewsource": {
       "description": "UTILITY: View source"
     },
+    "30-print": {
+      "description": "UTILITY: Print page"
+    },
     "40-disable": {
       "description": "UTILITY: Do nothing (disable browser shortcut - experimental)"
     },

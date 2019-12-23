@@ -99,9 +99,11 @@ let handleAction = (action, request = {}) => {
   if (action === 'cleardownloads') {
     browser.browsingData.remove({'since': 0}, {'downloads': true})
   } else if (action === 'viewsource') {
-    browser.tabs.query({currentWindow: true, active: true}).then(function(tab) {
+    browser.tabs.query({currentWindow: true, active: true}).then(function (tab) {
       browser.tabs.create({url: 'view-source:' + tab[0].url})
     })
+  } else if (action === 'print') {
+    browser.tabs.executeScript(null, {'code': 'window.print()'})
   } else if (action === 'opensettings') {
     browser.tabs.create({ url: 'chrome://settings', active: true })
   } else if (action === 'openextensions') {

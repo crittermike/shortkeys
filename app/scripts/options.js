@@ -83,6 +83,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
         {value: 'viewsource', label: 'View source', group: 'Other', builtin: true},
         {value: 'disable', label: 'Do nothing (disable browser shortcut)', group: 'Other', builtin: true},
         {value: 'trigger', label: 'Trigger another shortcut', group: 'Other'},
+        {value: 'print', label: 'Print page', group: 'Other', builtin: true},
         {value: 'buttonnexttab', label: 'Click button and switch to next tab (for Tribal Wars players)', group: 'Other'},
         {value: 'openapp', label: 'Open App', group: 'Management'}
     ]
