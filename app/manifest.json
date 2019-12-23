@@ -2,7 +2,7 @@
   "name": "__MSG_appName__",
   "short_name": "__MSG_appShortName__",
   "description": "__MSG_appDescription__",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "manifest_version": 2,
   "default_locale": "en",
   "icons": {
@@ -109,11 +109,17 @@
     "31-scrolldownmore": {
       "description": "SCROLLING: Scroll down more"
     },
+    "31-pagedown": {
+      "description": "SCROLLING: Page down"
+    },
     "32-scrollup": {
       "description": "SCROLLING: Scroll up"
     },
     "33-scrollupmore": {
       "description": "SCROLLING: Scroll up more"
+    },
+    "33-pageup": {
+      "description": "SCROLLING: Page up"
     },
     "34-scrollright": {
       "description": "SCROLLING: Scroll right"

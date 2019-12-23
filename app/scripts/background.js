@@ -268,10 +268,14 @@ let handleAction = (action, request = {}) => {
     browser.tabs.executeScript(null, {'code': 'window.scrollBy(0,-50)'})
   } else if (action === 'scrollupmore') {
     browser.tabs.executeScript(null, {'code': 'window.scrollBy(0,-500)'})
+  } else if (action === 'pageup') {
+    browser.tabs.executeScript(null, {'code': 'window.scrollBy(0,-window.innerHeight)'})
   } else if (action === 'scrolldown') {
     browser.tabs.executeScript(null, {'code': 'window.scrollBy(0,50)'})
   } else if (action === 'scrolldownmore') {
     browser.tabs.executeScript(null, {'code': 'window.scrollBy(0,500)'})
+  } else if (action === 'pagedown') {
+    browser.tabs.executeScript(null, {'code': 'window.scrollBy(0,window.innerHeight)'})
   } else if (action === 'scrollleft') {
     browser.tabs.executeScript(null, {'code': 'window.scrollBy(-50,0)'})
   } else if (action === 'scrollleftmore') {
