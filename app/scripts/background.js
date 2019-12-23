@@ -260,6 +260,8 @@ let handleAction = (action, request = {}) => {
     browser.tabs.executeScript(null, {'code': 'window.history.forward()'})
   } else if (action === 'reload') {
     browser.tabs.executeScript(null, {'code': 'window.location.reload()'})
+  } else if (action === 'hardreload') {
+    browser.tabs.reload({bypassCache: true});
   } else if (action === 'top') {
     browser.tabs.executeScript(null, {'code': 'window.scrollTo(0, 0)'})
   } else if (action === 'bottom') {

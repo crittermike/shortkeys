@@ -91,6 +91,9 @@
     "25-reload": {
       "description": "LOCATION: Reload"
     },
+    "25-hardreload": {
+      "description": "LOCATION: Hard reload (bypass cache)"
+    },
     "26-searchgoogle": {
       "description": "LOCATION: Search Google for selected text"
     },
