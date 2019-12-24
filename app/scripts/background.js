@@ -177,7 +177,7 @@ let handleAction = (action, request = {}) => {
   } else if (action === 'searchgoogle') {
     browser.tabs.executeScript({
       code: 'window.getSelection().toString();'
-    }, function (selection) {
+    }).then(function(selection) {
       if (selection[0]) {
         let query = encodeURIComponent(selection[0])
         browser.tabs.query({currentWindow: true, active: true}).then(function(tabs) {
