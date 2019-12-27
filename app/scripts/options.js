@@ -102,7 +102,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
     /**
      * Create a flat list of bookmarks from a tree.
      *
-     * @param bookmarkTreeNodes
+     * @param bookmarkTreeNodesrm -
      */
     let traverseBookmarks = function (bookmarkTreeNodes) {
         for (let i = 0; i < bookmarkTreeNodes.length; i++) {
