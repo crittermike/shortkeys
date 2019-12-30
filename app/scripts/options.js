@@ -72,6 +72,8 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
         {value: 'togglemute', label: 'Mute/unmute tab', group: 'Tabs', builtin: true},
         {value: 'movetableft', label: 'Move tab left', group: 'Tabs', builtin: true},
         {value: 'movetabright', label: 'Move tab right', group: 'Tabs', builtin: true},
+        {value: 'movetabtofirst', label: 'Move tab to first position', group: 'Tabs', builtin: true},
+        {value: 'movetabtolast', label: 'Move tab to last position', group: 'Tabs', builtin: true},
         {value: 'newwindow', label: 'New window', group: 'Windows', builtin: true},
         {value: 'newprivatewindow', label: 'New private window', group: 'Windows', builtin: true},
         {value: 'closewindow', label: 'Close window', group: 'Windows', builtin: true},

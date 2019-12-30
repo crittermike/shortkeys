@@ -64,6 +64,12 @@
     "16-movetabright": {
       "description": "TABS: Move tab to the right"
     },
+    "16-movetabtofirst": {
+      "description": "TABS: Move tab to first position"
+    },
+    "16-movetabtolast": {
+      "description": "TABS: Move tab to last position"
+    },
     "17-newwindow": {
       "description": "WINDOWS: New window"
     },
