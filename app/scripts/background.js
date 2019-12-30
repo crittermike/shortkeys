@@ -96,6 +96,7 @@ let isAllowedSite = function (keySetting, url) {
 }
 
 let handleAction = (action, request = {}) => {
+  var smoothScrolling = request.smoothScrolling ? 'smooth' : 'auto';
   if (action === 'cleardownloads') {
     browser.browsingData.remove({'since': 0}, {'downloads': true})
   } else if (action === 'viewsource') {
@@ -280,29 +281,29 @@ let handleAction = (action, request = {}) => {
   } else if (action === 'hardreload') {
     browser.tabs.reload({bypassCache: true});
   } else if (action === 'top') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollTo(0, 0)'})
+    browser.tabs.executeScript(null, {'code': 'window.scrollTo({left: 0, top: 0, behavior: "' + smoothScrolling + '"})'})
   } else if (action === 'bottom') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollTo(0, document.body.scrollHeight)'})
+    browser.tabs.executeScript(null, {'code': 'window.scrollTo({left: 0, top: document.body.scrollHeight, behavior: "' + smoothScrolling + '"})'})
   } else if (action === 'scrollup') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollBy(0,-50)'})
+    browser.tabs.executeScript(null, {'code': 'window.scrollBy({left: 0, top: -50, behavior: "' + smoothScrolling + '"})'})
   } else if (action === 'scrollupmore') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollBy(0,-500)'})
+    browser.tabs.executeScript(null, {'code': 'window.scrollBy({left: 0, top: -500, behavior: "' + smoothScrolling + '"})'})
   } else if (action === 'pageup') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollBy(0,-window.innerHeight)'})
+    browser.tabs.executeScript(null, {'code': 'window.scrollBy({left: 0, top: -window.innerHeight, behavior: "' + smoothScrolling + '"})'})
   } else if (action === 'scrolldown') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollBy(0,50)'})
+    browser.tabs.executeScript(null, {'code': 'window.scrollBy({left: 0, top: 50, behavior: "' + smoothScrolling + '"})'})
   } else if (action === 'scrolldownmore') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollBy(0,500)'})
+    browser.tabs.executeScript(null, {'code': 'window.scrollBy({left: 0, top: 500, behavior: "' + smoothScrolling + '"})'})
   } else if (action === 'pagedown') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollBy(0,window.innerHeight)'})
+    browser.tabs.executeScript(null, {'code': 'window.scrollBy({left: 0, top: window.innerHeight, behavior: "' + smoothScrolling + '"})'})
   } else if (action === 'scrollleft') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollBy(-50,0)'})
+    browser.tabs.executeScript(null, {'code': 'window.scrollBy({left: -50, top: 0, behavior: "' + smoothScrolling + '"})'})
   } else if (action === 'scrollleftmore') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollBy(-500,0)'})
+    browser.tabs.executeScript(null, {'code': 'window.scrollBy({left: -500, top: 0, behavior: "' + smoothScrolling + '"})'})
   } else if (action === 'scrollright') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollBy(50,0)'})
+    browser.tabs.executeScript(null, {'code': 'window.scrollBy({left: 50, top: 0, behavior: "' + smoothScrolling + '"})'})
   } else if (action === 'scrollrightmore') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollBy(500,0)'})
+    browser.tabs.executeScript(null, {'code': 'window.scrollBy({left: 500, top: 0, behavior: "' + smoothScrolling + '"})'})
   } else if (action === 'openbookmark' || action === 'openbookmarknewtab' || action === 'openbookmarkbackgroundtab' || action === 'openbookmarkbackgroundtabandclose') {
     browser.bookmarks.search({title: request.bookmark}).then(function(nodes) {
       let openNode

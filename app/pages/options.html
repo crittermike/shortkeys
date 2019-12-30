@@ -71,6 +71,10 @@
               </select>
             </div>
 
+            <div ng-show="key.action == 'scrolldown' || key.action == 'scrolldownmore' || key.action == 'pagedown' || key.action == 'scrollup' || key.action == 'scrollupmore' || key.action == 'pageup' || key.action == 'scrollright' || key.action == 'scrollrightmore' || key.action == 'scrollleft' || key.action == 'scrollleftmore' || key.action == 'top' || key.action == 'bottom'" class="form-group">
+              <label><input type="checkbox" ng-model="key.smoothScrolling"/> Smooth scrolling</label>
+            </div>
+
             <div ng-show="key.action == 'javascript'" class="form-group javascriptconfig">
               <label>Javascript code to run</label>
               <textarea ui-codemirror ui-codemirror-opts="editorOptions" rows="20" ng-model="key.code" class="form-control"></textarea>
