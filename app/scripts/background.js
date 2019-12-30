@@ -304,9 +304,11 @@ let handleAction = (action, request = {}) => {
         }
       }
       if (action === 'openbookmark') {
-        browser.tabs.query({currentWindow: true, active: true}).then(function(tab) {
-          browser.tabs.update(tab[0].id, {url: decodeURI(openNode.url)})
-        })
+        if (openNode.url.indexOf('javascript:') === 0) {
+          browser.tabs.executeScript(null, {'code': decodeURIComponent(openNode.url.replace('javascript:', ''))})
+        } else {
+          browser.tabs.update(null, {url: decodeURI(openNode.url)})
+        }
       } else if (action === 'openbookmarkbackgroundtab') {
         browser.tabs.create({url: decodeURI(openNode.url), active: false})
       } else if (action === 'openbookmarkbackgroundtabandclose') {
