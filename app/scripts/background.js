@@ -240,6 +240,11 @@ let handleAction = (action, request = {}) => {
     browser.tabs.query({currentWindow: true, active: true}).then(function(tab) {
       browser.windows.remove(tab[0].windowId)
     })
+  } else if (action === 'fullscreen') {
+    browser.windows.getCurrent().then(function(window) {
+      var state = (window.state === 'fullscreen') ? 'normal' : 'fullscreen';
+      browser.windows.update(window.id, {state: state})
+    })
   } else if (action === 'zoomin') {
     browser.tabs.query({currentWindow: true, active: true}).then(function(tab) {
       browser.tabs.getZoom(tab[0].id).then(function(zoomFactor) {

@@ -73,6 +73,9 @@
     "19-closewindow": {
       "description": "WINDOWS: Close window"
     },
+    "19-fullscreen": {
+      "description": "WINDOWS: Toggle fullscreen"
+    },
     "20-zoomin": {
       "description": "ZOOMING: Zoom in"
     },

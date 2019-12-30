@@ -75,6 +75,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
         {value: 'newwindow', label: 'New window', group: 'Windows', builtin: true},
         {value: 'newprivatewindow', label: 'New private window', group: 'Windows', builtin: true},
         {value: 'closewindow', label: 'Close window', group: 'Windows', builtin: true},
+        {value: 'fullscreen', label: 'Toggle fullscreen', group: 'Windows', builtin: true},
         {value: 'zoomin', label: 'Zoom In', group: 'Zooming', builtin: true},
         {value: 'zoomout', label: 'Zoom Out', group: 'Zooming', builtin: true},
         {value: 'zoomreset', label: 'Reset Zoom', group: 'Zooming', builtin: true},
