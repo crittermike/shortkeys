@@ -219,6 +219,7 @@ app.controller('ShortkeysOptionsCtrl', ['$scope', function ($scope) {
      * Check or uncheck all of the export checkboxes for all keys.
      */
     $scope.toggleExportAll = function () {
+        $scope.export.isAllExported = !$scope.export.isAllExported;
         $scope.keys.forEach((key, index) => {
             key.exported = $scope.export.isAllExported
             $scope.exportKey(index)
