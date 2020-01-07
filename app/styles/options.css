@@ -64,6 +64,7 @@ a.delete-all:hover {
     border: 1px solid #d0d0d0 !important;
     padding: 5px !important;
     border-radius: 3px !important;
+    max-width: 900px;
 }
 
 :root.firefox body {
