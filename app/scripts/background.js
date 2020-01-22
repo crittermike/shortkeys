@@ -14,19 +14,37 @@ let copyToClipboard = (text) => {
 }
 
 let selectTab = (direction) => {
-  browser.tabs.query({currentWindow: true}).then(function(tabs) {
+  // default search parameters for most browsers
+  let searchParameter = {currentWindow: true};
+  if (typeof browser.runtime.getBrowserInfo === "function") {
+    browser.runtime.getBrowserInfo().then(function(browserInfo) {
+      // currently getBrowserInfo() is only supproted by firefox. But we check for the browser anyway
+      // to be future-compatible :-).
+      if (browserInfo.name == 'Firefox') {
+        searchParameter = {currentWindow: true, hidden:false};
+      }
+      selectTabSub(direction, searchParameter);
+    });
+  } else {
+      selectTabSub(direction, searchParameter);
+  }
+}
+
+let selectTabSub = (direction, searchParameter) => {
+  browser.tabs.query(searchParameter).then(function(tabs) {
     if (tabs.length <= 1) {
       return
     }
     browser.tabs.query({currentWindow: true, active: true}).then(function(currentTabInArray) {
       let currentTab = currentTabInArray[0]
+      let currentTabIndex = tabs.findIndex(i => i.id === currentTab.id);
       let toSelect
       switch (direction) {
         case 'next':
-          toSelect = tabs[(currentTab.index + 1 + tabs.length) % tabs.length]
+          toSelect = tabs[(currentTabIndex + 1 + tabs.length) % tabs.length]
           break
         case 'previous':
-          toSelect = tabs[(currentTab.index - 1 + tabs.length) % tabs.length]
+          toSelect = tabs[(currentTabIndex - 1 + tabs.length) % tabs.length]
           break
         case 'first':
           toSelect = tabs[0]
