@@ -180,6 +180,9 @@
     },
     "48-openshortcuts": {
       "description": "LOCATION: Open Keyboard Shortcuts Page"
+    },
+    "49-showlatestdownload": {
+      "description": "DOWNLOADS: Show latest download"
     }
   },
   "options_page": "pages/options.html",
@@ -200,6 +203,7 @@
     }
   ],
   "permissions": [
+    "downloads",
     "tabs",
     "clipboardWrite",
     "browsingData",
