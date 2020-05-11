@@ -4,7 +4,7 @@
     "description": "The name of the application"
   },
   "appShortName": {
-    "message": "shortkeys",
+    "message": "Shortkeys",
     "description": "The short_name (maximum of 12 characters recommended) is a short version of the app's name."
   },
   "appDescription": {

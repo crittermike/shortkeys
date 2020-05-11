@@ -1,6 +1,6 @@
 'use strict'
 /* global Mousetrap */
-
+import Mousetrap from 'mousetrap'
 let Shortkeys = {}
 Shortkeys.keys = []
 
@@ -10,15 +10,15 @@ Shortkeys.keys = []
  * @param keyCombo
  */
 Shortkeys.fetchConfig = (keyCombo) => {
-  let returnKey = false
-  if (Shortkeys.keys.length > 0) {
-    Shortkeys.keys.forEach((key) => {
-      if (key.key === keyCombo) {
-        returnKey = key
-      }
-    })
-  }
-  return returnKey
+    let returnKey = false
+    if (Shortkeys.keys.length > 0) {
+        Shortkeys.keys.forEach((key) => {
+            if (key.key === keyCombo) {
+                returnKey = key
+            }
+        })
+    }
+    return returnKey
 }
 
 /**
@@ -28,32 +28,32 @@ Shortkeys.fetchConfig = (keyCombo) => {
  * @param keySetting
  */
 Shortkeys.doAction = (keySetting) => {
-  let action = keySetting.action
-  let message = {}
-  for (let attribute in keySetting) {
-    message[attribute] = keySetting[attribute]
-  }
-
-  // It's a little hacky, but we have to insert JS this way rather than using executeScript() from the background JS,
-  // because this way we have access to the libraries that exist on the page on any given site, such as jQuery.
-  if (action === 'javascript') {
-    let script = document.createElement('script')
-    script.textContent = keySetting.code
-    document.body.appendChild(script)
-    document.body.removeChild(script)
-    return
-  } else if (action === 'trigger') {
-    Mousetrap.trigger(keySetting.trigger)
-  }
-
-  if (action === 'buttonnexttab') {
-    if (keySetting.button) {
-      document.querySelector(keySetting.button).click()
+    let action = keySetting.action
+    let message = {}
+    for (let attribute in keySetting) {
+        message[attribute] = keySetting[attribute]
     }
-    message.action = 'nexttab'
-  }
 
-  chrome.runtime.sendMessage(message)
+    // It's a little hacky, but we have to insert JS this way rather than using executeScript() from the background JS,
+    // because this way we have access to the libraries that exist on the page on any given site, such as jQuery.
+    if (action === 'javascript') {
+        let script = document.createElement('script')
+        script.textContent = keySetting.code
+        document.body.appendChild(script)
+        document.body.removeChild(script)
+        return
+    } else if (action === 'trigger') {
+        Mousetrap.trigger(keySetting.trigger)
+    }
+
+    if (action === 'buttonnexttab') {
+        if (keySetting.button) {
+            document.querySelector(keySetting.button).click()
+        }
+        message.action = 'nexttab'
+    }
+
+    browser.runtime.sendMessage(message)
 }
 
 /**
@@ -63,11 +63,11 @@ Shortkeys.doAction = (keySetting) => {
  * @param keySetting
  */
 Shortkeys.activateKey = (keySetting) => {
-  let action = function () {
-    Shortkeys.doAction(keySetting)
-    return false
-  }
-  Mousetrap.bind(keySetting.key.toLowerCase(), action)
+    let action = function () {
+        Shortkeys.doAction(keySetting)
+        return false
+    }
+    Mousetrap.bind(keySetting.key.toLowerCase(), action)
 }
 
 /**
@@ -80,39 +80,39 @@ Shortkeys.activateKey = (keySetting) => {
  * @param combo
  */
 Mousetrap.prototype.stopCallback = function (e, element, combo) {
-  let keySetting = Shortkeys.fetchConfig(combo)
+    let keySetting = Shortkeys.fetchConfig(combo)
 
-  if (element.classList.contains('mousetrap')) {
-    // We're not using the 'mousetrap' class functionality, which allows
-    // you to whitelist elements, so if we come across elements with that class
-    // then we can assume that they are provided by the site itself, not by
-    // us, so we don't activate Shortkeys in that case, to prevent conflicts.
-    // This fixes the chat box in Twitch.tv for example.
-    return true
-  } else if (!keySetting.activeInInputs) {
-    // If the user has not checked "Also allow in form inputs" for this shortcut,
-    // then we cut out of the user is in a form input.
-    return element.tagName === 'INPUT' ||
-      element.tagName === 'SELECT' ||
-      element.tagName === 'TEXTAREA' ||
-      element.isContentEditable
-  } else {
-    // The user HAS checked "Also allow in form inputs" for this shortcut so we
-    // have no reason to stop it from triggering.
-    return false
-  }
+    if (element.classList.contains('mousetrap')) {
+        // We're not using the 'mousetrap' class functionality, which allows
+        // you to whitelist elements, so if we come across elements with that class
+        // then we can assume that they are provided by the site itself, not by
+        // us, so we don't activate Shortkeys in that case, to prevent conflicts.
+        // This fixes the chat box in Twitch.tv for example.
+        return true
+    } else if (!keySetting.activeInInputs) {
+        // If the user has not checked "Also allow in form inputs" for this shortcut,
+        // then we cut out of the user is in a form input.
+        return element.tagName === 'INPUT' ||
+            element.tagName === 'SELECT' ||
+            element.tagName === 'TEXTAREA' ||
+            element.isContentEditable
+    } else {
+        // The user HAS checked "Also allow in form inputs" for this shortcut so we
+        // have no reason to stop it from triggering.
+        return false
+    }
 }
 
 /**
  * Fetches the Shortkeys configuration object and wires up each configured shortcut.
  */
-chrome.runtime.sendMessage({action: 'getKeys', url: document.URL}, function (response) {
-  if (response) {
-    Shortkeys.keys = response
-    if (Shortkeys.keys.length > 0) {
-      Shortkeys.keys.forEach((key) => {
-        Shortkeys.activateKey(key)
-      })
+browser.runtime.sendMessage({action: 'getKeys', url: document.URL}).then(function (response) {
+    if (response) {
+        Shortkeys.keys = response
+        if (Shortkeys.keys.length > 0) {
+            Shortkeys.keys.forEach((key) => {
+                Shortkeys.activateKey(key)
+            })
+        }
     }
-  }
 })

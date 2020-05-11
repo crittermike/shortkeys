@@ -7,3 +7,4 @@ package
 .idea
 npm-debug.log
 packages
+.DS_Store

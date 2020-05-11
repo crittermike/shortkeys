@@ -3,10 +3,6 @@
 <meta charset="UTF-8">
 <head>
   <link rel="stylesheet" type="text/css" href="../styles/options.css">
-  <link rel="stylesheet" type="text/css" href="../vendor/bootstrap.min.css">
-  <link rel="stylesheet" type="text/css" href="../vendor/codemirror.css">
-  <link rel="stylesheet" type="text/css" href="../vendor/angular-csp.css">
-
   <title>Shortkeys Options</title>
 </head>
 <body ng-controller="ShortkeysOptionsCtrl">
@@ -39,7 +35,7 @@
               <div class="col-sm-4">
                 <div class="form-group">
                   <label>Keyboard shortcut (<a href="https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys#supported-keyboard-shortcuts">Help</a>)</label>
-                  <input ng-model="key.key" class="kbd-input form-control" placeholder="Example: ctrl+b" type="text"/>
+                  <input ng-model="key.key" class="kbd-input form-control" placeholder="Example: ctrl+alt+b" type="text"/>
                 </div>
               </div>
               <div class="col-sm-4">
@@ -61,8 +57,10 @@
             <div class="form-group" ng-show="isBuiltIn(key.action)">
               <div uib-alert class="alert-warning">This action is supported from Chrome's keyboard shortcuts settings, which
                 will allow it to run on the new tab page and when the address bar is focused, etc. The downside is that Chrome
-                is more restrictive about which shortcuts are supported, and you can't enable or disable on certain websites or when typing in form fields.<br /><br />
-                To try it, <strong>close this popup and scroll to the bottom, then click "Keyboard Shortcuts"</strong>. You can still add it here as well. <a href="https://github.com/mikecrittenden/shortkeys/wiki/FAQs-and-Troubleshooting#do-i-use-chromes-keyboard-shortcuts-settings-or-the-shortkeys-options-page">More information...</a></div>
+                is more restrictive about which shortcuts are supported, and you can't enable or disable on certain websites or
+                when typing in form fields.<br /><br />To try it, <strong>go back to the extensions page, click the menu icon
+                at the top left, then click "Keyboard Shortcuts"</strong>. You can still add it here as well.
+                <a href="https://github.com/mikecrittenden/shortkeys/wiki/FAQs-and-Troubleshooting#Do_I_use_the_browsers_Keyboard_Shortcuts_settings_or_the_Shortkeys_options_page">More information...</a></div>
             </div>
 
 
@@ -71,6 +69,10 @@
               <select width="'100%'" ng-model="key.bookmark" ng-options="bookmark for bookmark in bookmarks track by bookmark" class="form-control">
                 <option value="">Select bookmark...</option>
               </select>
+            </div>
+
+            <div ng-show="key.action == 'scrolldown' || key.action == 'scrolldownmore' || key.action == 'pagedown' || key.action == 'scrollup' || key.action == 'scrollupmore' || key.action == 'pageup' || key.action == 'scrollright' || key.action == 'scrollrightmore' || key.action == 'scrollleft' || key.action == 'scrollleftmore' || key.action == 'top' || key.action == 'bottom'" class="form-group">
+              <label><input type="checkbox" ng-model="key.smoothScrolling"/> Smooth scrolling</label>
             </div>
 
             <div ng-show="key.action == 'javascript'" class="form-group javascriptconfig">
@@ -173,7 +175,7 @@
     <uib-tab index="1" heading="Import"><br />
       <div style="display: flex; justify-content: space-between";>
         <p>Paste in JSON exported from Shortkeys to import it here.</p>
-        <a ng-click="deleteAllKeys()" class="delete-all">Delete all shortcuts</a>
+        <a ng-click="deleteAllKeys()" href="#" class="delete-all">Delete all shortcuts</a>
       </div>
 
       <form>

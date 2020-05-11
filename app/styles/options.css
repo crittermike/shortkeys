@@ -1,0 +1,81 @@
+body {
+    min-width: 900px;
+}
+
+.display-block {
+    display: block;
+}
+
+.panel-group .panel {
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    border-radius: 3px;
+}
+
+.panel-title {
+    margin-bottom: 0;
+}
+
+.panel-heading {
+    color: #333;
+    background-color: #f5f5f5;
+    border-color: #ddd;
+    padding: 10px;
+}
+
+.panel-heading kbd {
+    margin-right: 9px;
+}
+
+.panel-heading a:hover {
+    text-decoration: none;
+}
+
+.panel-heading a.delete-link {
+    color: #d9534f;
+    float: right;
+}
+
+.panel-body {
+    padding: 10px;
+}
+
+a.delete-all {
+    color: #d9534f;
+    text-decoration: none;
+}
+a.delete-all:hover {
+    color: #d9534f;
+    text-decoration: underline;
+}
+
+.pull-right {
+    float: right;
+}
+
+.form-actions {
+    margin-top: 1rem;
+}
+
+.collapse.in {
+    display: block !important;
+}
+
+.CodeMirror-wrap {
+    border: 1px solid #d0d0d0 !important;
+    padding: 5px !important;
+    border-radius: 3px !important;
+    max-width: 900px;
+}
+
+:root.firefox body {
+   overflow-y: hidden;
+   background-color: transparent;
+   min-width: unset;
+}
+:root.firefox body > div {
+    width: 100%;
+}
+:root.firefox .nav-tabs > li.active > a {
+    background-color: transparent;
+    border-bottom-color: #f9f9fa;
+}

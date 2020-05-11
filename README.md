@@ -1,26 +1,39 @@
-![Logo](https://user-images.githubusercontent.com/32261/33674247-eca884f0-da7c-11e7-8237-409887ef2c52.png)
+# Shortkeys
 
-[![Gitter](https://img.shields.io/gitter/room/mikecrittenden/shortkeys.svg)](https://gitter.im/browser-shortkeys/Lobby#) [![Build Status](https://travis-ci.org/mikecrittenden/shortkeys.svg?branch=master)](https://travis-ci.org/mikecrittenden/shortkeys) [![Standard JS](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com) [![Chrome Web Store](https://img.shields.io/chrome-web-store/users/logpjaacgmcbpdkdchjiaagddngobkck.svg)](https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck) [![GitHub release](https://img.shields.io/github/release/mikecrittenden/shortkeys.svg)](https://github.com/mikecrittenden/shortkeys/releases) [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/logpjaacgmcbpdkdchjiaagddngobkck.svg)](https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck) [![Mozilla Add-on](https://img.shields.io/amo/v/shortkeys.svg)](https://addons.mozilla.org/firefox/addon/shortkeys/)
+Custom keyboard shortcuts for your browser
 
-## Download
+[Donate](https://salt.bountysource.com/teams/chrome-shortkeys) | 
+[Add a Review](https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck/reviews?hl=en-US&gl=US) | 
+[Documentation](https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys) | 
+[Support](https://github.com/mikecrittenden/shortkeys/issues) | 
+[Chrome Webstore](https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck?hl=en-US&gl=US)
 
-[![chrome](https://user-images.githubusercontent.com/32261/33695359-fe69c322-daca-11e7-8fd3-7a0126d08852.png)](https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-[![firefox](https://user-images.githubusercontent.com/32261/33695357-fe523b9e-daca-11e7-852b-6af15186b8c7.png)](https://addons.mozilla.org/firefox/addon/shortkeys/)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-[![opera](https://user-images.githubusercontent.com/32261/33695358-fe5e604a-daca-11e7-85cb-48e98367030d.png)](https://addons.opera.com/extensions/details/shortkeys/)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-[![edge](https://user-images.githubusercontent.com/32261/33695356-fe474342-daca-11e7-8777-e163d19bcbf4.png)](https://github.com/mikecrittenden/shortkeys/releases)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+## Install
 
-## Donate
+	$ npm install
 
-👉 **[DONATE TO SUPPORT SHORTKEYS](https://salt.bountysource.com/teams/chrome-shortkeys)** 👈 
+## Development
 
-## Review
+    npm run dev chrome
+    npm run dev firefox
+    npm run dev opera
+    npm run dev edge
 
-⭐ **[REVIEW SHORTKEYS ON THE WEBSTORE](https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck/reviews)** ⭐
+## Build
 
-## Usage
+    npm run build chrome
+    npm run build firefox
+    npm run build opera
+    npm run build edge
 
-📝 **[VISIT THE WIKI FOR INSTRUCTIONS](https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys)** 📝
+## Environment
 
-## Contribute
+The build tool also defines a variable named `process.env.NODE_ENV` in your scripts. 
 
-🖥️ **[INSTRUCTIONS FOR SHORTKEYS DEVELOPMENT](https://github.com/mikecrittenden/shortkeys/wiki/Development-setup-instructions)** 🖥️
+## Docs
+
+* [webextension-toolbox](https://github.com/HaNdTriX/webextension-toolbox)
+
+## Credits
+
+* Icon made by [Freepik](https://www.flaticon.com/authors/freepik "Freepik") from [www.flaticon.com](https://www.flaticon.com/ "Flaticon").
