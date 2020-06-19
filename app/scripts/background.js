@@ -14,19 +14,24 @@ let copyToClipboard = (text) => {
 }
 
 let selectTab = (direction) => {
-  browser.tabs.query({currentWindow: true}).then(function(tabs) {
+  let searchParam = { currentWindow: true };
+  if (process.env.VENDOR === 'firefox') {
+    searchParam.hidden = false;
+  }
+  browser.tabs.query(searchParam).then(function(tabs) {
     if (tabs.length <= 1) {
       return
     }
     browser.tabs.query({currentWindow: true, active: true}).then(function(currentTabInArray) {
       let currentTab = currentTabInArray[0]
+      let currentTabIndex = tabs.findIndex(i => i.id === currentTab.id);
       let toSelect
       switch (direction) {
         case 'next':
-          toSelect = tabs[(currentTab.index + 1 + tabs.length) % tabs.length]
+          toSelect = tabs[(currentTabIndex + 1 + tabs.length) % tabs.length]
           break
         case 'previous':
-          toSelect = tabs[(currentTab.index - 1 + tabs.length) % tabs.length]
+          toSelect = tabs[(currentTabIndex - 1 + tabs.length) % tabs.length]
           break
         case 'first':
           toSelect = tabs[0]
@@ -271,6 +276,12 @@ let handleAction = (action, request = {}) => {
   } else if (action === 'zoomreset') {
     browser.tabs.query({currentWindow: true, active: true}).then(function(tab) {
       browser.tabs.setZoom(tab[0].id, 0)
+    })
+  } else if (action === 'showlatestdownload') {
+    chrome.downloads.search({orderBy: ['-startTime'], state: 'complete'}, downloads => {
+      if(downloads && downloads.length > 0 ) {
+        chrome.downloads.show(downloads[0].id)
+      }
     })
   } else if (action === 'back') {
     browser.tabs.executeScript(null, {'code': 'window.history.back()'})
