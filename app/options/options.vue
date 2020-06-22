@@ -1,21 +1,28 @@
 <template>
     <section>
-        <a v-on:click="counter = counter + 1">{{counter}}</a>
-        <Message message="testing" />
+        <div v-for="key in keys" :key="key.key">
+            <ShortcutInput v-model="key.shortcut" />
+            <LabelInput v-model="key.label" />
+        </div>
+        <AddButton v-on:add-shortcut="keys.push({})" />
+        {{ keys }}
     </section>
 </template>
 
-
 <script>
-import Message from './components/Message.vue';
+import LabelInput from "./components/LabelInput";
+import ShortcutInput from "./components/ShortcutInput";
+import AddButton from "./components/AddButton";
 
 export default {
     components: {
-        Message,
+        ShortcutInput,
+        LabelInput,
+        AddButton,
     },
-    data: function() {
+    data() {
         return {
-            counter: 0
+            keys: [{shortcut: '123', label: '456'}]
         }
     }
 };
