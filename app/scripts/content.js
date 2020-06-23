@@ -108,6 +108,7 @@ Mousetrap.prototype.stopCallback = function (e, element, combo) {
  */
 browser.runtime.sendMessage({action: 'getKeys', url: document.URL}).then(function (response) {
     if (response) {
+        console.log(response);
         Shortkeys.keys = response
         if (Shortkeys.keys.length > 0) {
             Shortkeys.keys.forEach((key) => {

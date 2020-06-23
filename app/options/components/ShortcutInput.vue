@@ -1,23 +1,12 @@
 <template>
     <div>
         <label>Keyboard shortcut (<a href="https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys#supported-keyboard-shortcuts">Help</a>)</label>
-        <input v-model="value" />
+        <input :value="value" @input="$emit('input', $event.target.value)" />
     </div>
 </template>
 
 <script>
     export default {
-        props: {
-            value: {
-                type: String,
-                default: '',
-                required: true,
-            },
-        },
-        watch: {
-            value() {
-                this.$emit('input', this.value);
-            }
-        }
+        props: ['value']
     };
 </script>

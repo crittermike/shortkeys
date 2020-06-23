@@ -1,20 +1,23 @@
 <template>
     <section>
         <LinkBar />
-        <div v-for="key in keys" :key="key.key">
-            <ShortcutInput v-model="key.shortcut" />
+        <div v-for="key, index in keys" :key="key.key">
+            <TextInput :id="'key-' + index" v-model="key.shortcut" placeholder="Placeholder" label="This is the label" />
             <LabelInput v-model="key.label" />
             <ActionSelect v-model="key.action" :options="actions" />
         </div>
         <AddButton v-on:add-shortcut="keys.push({})" />
+        <SaveButton v-on:save-shortcuts="saveShortcuts" />
         {{ keys }}
     </section>
 </template>
 
 <script>
+import TextInput from "./components/TextInput";
 import LabelInput from "./components/LabelInput";
 import ShortcutInput from "./components/ShortcutInput";
 import AddButton from "./components/AddButton";
+import SaveButton from "./components/SaveButton";
 import LinkBar from "./components/LinkBar";
 import ActionSelect from "./components/ActionSelect";
 
@@ -24,11 +27,18 @@ export default {
         ShortcutInput,
         LinkBar,
         LabelInput,
+        TextInput,
         AddButton,
+        SaveButton,
+    },
+    methods: {
+        saveShortcuts: function (event) {
+            localStorage.shortkeys = JSON.stringify(this.keys);
+        }
     },
     data() {
         return {
-            keys: [{shortcut: '123', label: '456'}],
+            keys: localStorage.shortkeys ? JSON.parse(localStorage.shortkeys) : [{}],
             actions: [
                 {value: 'top', label: 'Scroll to top', group: 'Scrolling', builtin: true},
                 {value: 'bottom', label: 'Scroll to bottom', group: 'Scrolling', builtin: true},
