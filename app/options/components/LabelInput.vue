@@ -2,7 +2,6 @@
     <div>
         <label>(Optional) Label</label>
         <input v-model="value" />
-        <p>Message is: {{ value }}</p>
     </div>
 </template>
 
