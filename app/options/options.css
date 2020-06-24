@@ -1,3 +1,22 @@
-body {
-    background: red;
+* {
+    box-sizing: border-box;
+}
+
+.flex {
+    display: flex;
+    justify-content: space-between;
+}
+
+.flex-grow > * {
+    flex-grow: 1;
+    width: 0;
+    margin-right: 10px;
+}
+
+.flex-grow > *:last-child {
+    margin-right: 0;
+}
+
+input, select {
+    width: 100%;
 }

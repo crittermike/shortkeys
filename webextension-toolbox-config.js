@@ -38,7 +38,6 @@ module.exports = {
     copyIgnore: [
         '**/*.js',
         '**/*.json',
-        '**/*.css',
         '**/*.vue'
     ],
 };
