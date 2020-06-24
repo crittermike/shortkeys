@@ -1,10 +1,28 @@
 <template>
     <section>
         <LinkBar />
-        <div v-for="key, index in keys" :key="key.key">
-            <TextInput :id="'key-' + index" v-model="key.shortcut" placeholder="Placeholder" label="This is the label" />
-            <LabelInput v-model="key.label" />
-            <ActionSelect v-model="key.action" :options="actions" />
+        <div v-for="(key, index) in keys">
+            <TextInput
+                    :id="'key-' + index"
+                    v-model="key.key"
+                    placeholder="Example: ctrl+a"
+                    label="Keyboard shortcut (<a target='_blank' href='https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys#supported-keyboard-shortcuts'>Help</a>)" />
+            <TextInput
+                    :id="'label-' + index"
+                    v-model="key.label"
+                    label="Label (Optional)" />
+            <ActionSelect
+                    v-model="key.action"
+                    :options="actions" />
+            <SelectInput
+                    :id="'blacklist-' + index"
+                    v-model="key.blacklist"
+                    :options="websites"
+                    label="Websites" />
+            <TextareaInput v-show="key.blacklist && key.blacklist != 'false'"
+                :id="'urls-' + index"
+                v-model="key.sites"
+                label="URLs (one per line)" />
         </div>
         <AddButton v-on:add-shortcut="keys.push({})" />
         <SaveButton v-on:save-shortcuts="saveShortcuts" />
@@ -14,31 +32,36 @@
 
 <script>
 import TextInput from "./components/TextInput";
-import LabelInput from "./components/LabelInput";
-import ShortcutInput from "./components/ShortcutInput";
 import AddButton from "./components/AddButton";
 import SaveButton from "./components/SaveButton";
 import LinkBar from "./components/LinkBar";
 import ActionSelect from "./components/ActionSelect";
+import SelectInput from "./components/SelectInput";
+import TextareaInput from "./components/TextareaInput";
 
 export default {
     components: {
+        TextareaInput,
+        SelectInput,
         ActionSelect,
-        ShortcutInput,
         LinkBar,
-        LabelInput,
         TextInput,
         AddButton,
         SaveButton,
     },
     methods: {
-        saveShortcuts: function (event) {
-            localStorage.shortkeys = JSON.stringify(this.keys);
+        saveShortcuts: function () {
+            localStorage.shortkeys = JSON.stringify({keys: this.keys});
         }
     },
     data() {
         return {
-            keys: localStorage.shortkeys ? JSON.parse(localStorage.shortkeys) : [{}],
+            keys: localStorage.shortkeys ? JSON.parse(localStorage.shortkeys).keys : [{}],
+            websites: [
+                {value: false, label: 'All sites'},
+                {value: true, label: 'All sites except...'},
+                {value: 'whitelist', label: 'Only on specific sites'}
+            ],
             actions: [
                 {value: 'top', label: 'Scroll to top', group: 'Scrolling', builtin: true},
                 {value: 'bottom', label: 'Scroll to bottom', group: 'Scrolling', builtin: true},

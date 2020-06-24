@@ -1,13 +1,9 @@
 <template>
     <div>
         <label :for="id" v-html="label"></label>
-        <input
-            :id="id"
-            @input="e => $emit('input', e.target.value)"
-            :placeholder="placeholder"
-            :aria-labelledby="label"
-            :value="value"
-        />
+        <select :id="id" @input="e => $emit('input', e.target.value)" :aria-labelledby="label" :value="value">
+            <option v-for="option in options" :value="option.value">{{ option.label }}</option>
+        </select>
     </div>
 </template>
 
@@ -22,9 +18,9 @@
                 type: String,
                 required: false,
             },
-            placeholder: {
-                type: String,
-                required: false,
+            options: {
+                type: Array,
+                required: true,
             },
             value: {
                 type: String,

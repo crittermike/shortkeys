@@ -1,13 +1,13 @@
 <template>
     <div>
         <label :for="id" v-html="label"></label>
-        <input
+        <textarea
             :id="id"
             @input="e => $emit('input', e.target.value)"
             :placeholder="placeholder"
             :aria-labelledby="label"
             :value="value"
-        />
+        ></textarea>
     </div>
 </template>
 
