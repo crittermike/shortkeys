@@ -1,9 +1,10 @@
 <template>
     <div>
-        <label :for="id" v-html="label"></label>
-        <select :id="id" @input="e => $emit('input', e.target.value)" :aria-labelledby="label" :value="value">
-            <option v-for="option in options" :value="option.value">{{ option.label }}</option>
-        </select>
+        <b-field :label="label">
+            <b-select :id="id" @input.native="e => $emit('input', e.target.value)" :aria-labelledby="label" :value="value">
+                <option v-for="option in options" :value="option.value">{{ option.label }}</option>
+            </b-select>
+        </b-field>
     </div>
 </template>
 

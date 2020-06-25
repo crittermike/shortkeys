@@ -1,23 +1,19 @@
 <template>
     <div>
-        <label :for="id" v-html="label"></label>
-        <input
-            :id="id"
-            @input="e => $emit('input', e.target.value)"
-            :placeholder="placeholder"
-            :aria-labelledby="label"
-            :value="value"
-        />
+        <b-field :label="label">
+            <b-input
+                :placeholder="placeholder"
+                @input.native="e => $emit('input', e.target.value)"
+                :aria-labelledby="label"
+                v-model="value"
+            />
+        </b-field>
     </div>
 </template>
 
 <script>
     export default {
         props: {
-            id: {
-                type: String,
-                required: true,
-            },
             label: {
                 type: String,
                 required: false,

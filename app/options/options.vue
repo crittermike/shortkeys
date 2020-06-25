@@ -2,37 +2,44 @@
     <section>
         <LinkBar /><br /><br />
         <table class="table">
+            <thead>
+                <th>Active</th>
+                <th>Keyboard shortcut (<a target='_blank' href='https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys#supported-keyboard-shortcuts'>Help</a>)</th>
+                <th>Label (optional)</th>
+                <th>Behavior (<a href='https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys#full-list-of-commands'>Help</a>)</th>
+                <th>Websites</th>
+            </thead>
             <tbody>
                 <tr v-for="(key, index) in keys">
                     <td>
-                        <TextInput
-                                :id="'key-' + index"
-                                v-model="key.key"
-                                placeholder="Example: ctrl+a"
-                                label="Keyboard shortcut (<a target='_blank' href='https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys#supported-keyboard-shortcuts'>Help</a>)" />
+                        <b-switch></b-switch>
                     </td>
                     <td>
                         <TextInput
-                                :id="'label-' + index"
-                                v-model="key.label"
-                                label="Label (Optional)" />
+                            :id="'key-' + index"
+                            v-model="key.key"
+                            placeholder="Example: ctrl+a" />
                     </td>
                     <td>
-                        <ActionSelect
-                                v-model="key.action"
-                                :options="actions" />
+                        <TextInput
+                            :id="'label-' + index"
+                            v-model="key.label" />
                     </td>
-                    <td>
                     <td>
                         <SelectInput
-                                :id="'blacklist-' + index"
-                                v-model="key.blacklist"
-                                :options="websites"
-                                label="Websites" />
+                            :id="'action-' + index"
+                            v-model="key.action"
+                            :options="actions" />
+                    </td>
+                    <td>
+                        <SelectInput
+                            :id="'blacklist-' + index"
+                            v-model="key.blacklist"
+                            :options="websites" />
                         <TextareaInput v-show="key.blacklist && key.blacklist != 'false'"
-                                       :id="'urls-' + index"
-                                       v-model="key.sites"
-                                       label="URLs (one per line)" />
+                           :id="'urls-' + index"
+                           v-model="key.sites"
+                           label="URLs (one per line)" />
                     </td>
                 </tr>
             </tbody>
@@ -43,8 +50,8 @@
             <AddButton v-on:add-shortcut="keys.push({})" />
             <SaveButton v-on:save-shortcuts="saveShortcuts" />
         </div>
-        <br /><br /><br />
-        {{ keys }}
+        <br /><br />
+        <code>{{ keys }}</code>
     </section>
 </template>
 
@@ -53,7 +60,6 @@ import TextInput from "./components/TextInput";
 import AddButton from "./components/AddButton";
 import SaveButton from "./components/SaveButton";
 import LinkBar from "./components/LinkBar";
-import ActionSelect from "./components/ActionSelect";
 import SelectInput from "./components/SelectInput";
 import TextareaInput from "./components/TextareaInput";
 
@@ -61,7 +67,6 @@ export default {
     components: {
         TextareaInput,
         SelectInput,
-        ActionSelect,
         LinkBar,
         TextInput,
         AddButton,
@@ -70,6 +75,10 @@ export default {
     methods: {
         saveShortcuts: function () {
             localStorage.shortkeys = JSON.stringify({keys: this.keys});
+            this.$buefy.toast.open({
+                message: 'Shortcuts have been saved!',
+                type: 'is-success'
+            })
         }
     },
     data() {

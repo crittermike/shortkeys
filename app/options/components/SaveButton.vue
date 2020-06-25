@@ -1,6 +1,6 @@
 <template>
     <div>
-        <button v-on:click="$emit('save-shortcuts')">Save shortcuts</button>
+        <b-button v-on:click="$emit('save-shortcuts')">Save shortcuts</b-button>
     </div>
 </template>
 
