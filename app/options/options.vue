@@ -1,32 +1,44 @@
 <template>
     <section>
         <LinkBar /><br /><br />
-        <div v-for="(key, index) in keys">
-            <div class="flex flex-grow">
-                <TextInput
-                        :id="'key-' + index"
-                        v-model="key.key"
-                        placeholder="Example: ctrl+a"
-                        label="Keyboard shortcut (<a target='_blank' href='https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys#supported-keyboard-shortcuts'>Help</a>)" />
-                <TextInput
-                        :id="'label-' + index"
-                        v-model="key.label"
-                        label="Label (Optional)" />
-                <ActionSelect
-                        v-model="key.action"
-                        :options="actions" />
-            </div>
-            <SelectInput
-                    :id="'blacklist-' + index"
-                    v-model="key.blacklist"
-                    :options="websites"
-                    label="Websites" />
-            <TextareaInput v-show="key.blacklist && key.blacklist != 'false'"
-                :id="'urls-' + index"
-                v-model="key.sites"
-                label="URLs (one per line)" />
-            <br /><br /><br />
-        </div>
+        <table class="table">
+            <tbody>
+                <tr v-for="(key, index) in keys">
+                    <td>
+                        <TextInput
+                                :id="'key-' + index"
+                                v-model="key.key"
+                                placeholder="Example: ctrl+a"
+                                label="Keyboard shortcut (<a target='_blank' href='https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys#supported-keyboard-shortcuts'>Help</a>)" />
+                    </td>
+                    <td>
+                        <TextInput
+                                :id="'label-' + index"
+                                v-model="key.label"
+                                label="Label (Optional)" />
+                    </td>
+                    <td>
+                        <ActionSelect
+                                v-model="key.action"
+                                :options="actions" />
+                    </td>
+                    <td>
+                    <td>
+                        <SelectInput
+                                :id="'blacklist-' + index"
+                                v-model="key.blacklist"
+                                :options="websites"
+                                label="Websites" />
+                        <TextareaInput v-show="key.blacklist && key.blacklist != 'false'"
+                                       :id="'urls-' + index"
+                                       v-model="key.sites"
+                                       label="URLs (one per line)" />
+                    </td>
+                </tr>
+            </tbody>
+
+        </table>
+
         <div class="flex">
             <AddButton v-on:add-shortcut="keys.push({})" />
             <SaveButton v-on:save-shortcuts="saveShortcuts" />
