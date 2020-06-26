@@ -1,0 +1,7 @@
+.select select {
+    max-width: 300px !important;
+}
+
+.w-full {
+    width: 100%;
+}
