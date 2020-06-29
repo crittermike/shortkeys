@@ -4,7 +4,7 @@
         <table class="table w-full">
             <thead>
                 <th>Active</th>
-                <th>Shortcut (<a target='_blank' href='https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys#supported-keyboard-shortcuts'>Help</a>)</th>
+                <th>Shortcut <b-button size="is-small" rounded @click="showHelp = true">Help</b-button></th>
                 <th>Label (optional)</th>
                 <th>Behavior (<a href='https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys#full-list-of-commands'>Help</a>)</th>
                 <th>Settings</th>
@@ -43,10 +43,10 @@
 
         <div v-for="(key, index) in keys">
             <b-sidebar
-            type="is-light"
-            right
-            fullheight
-            :open.sync="key.sidebarOpen">
+                type="is-light"
+                right
+                fullheight
+                :open.sync="key.sidebarOpen">
                 <b-field>
                     <b-select v-model="key.blacklist">
                         <option v-for="option in websites" :value="option.value">{{ option.label }}</option>
@@ -64,6 +64,31 @@
         </b-field>
         <br /><br />
         <pre>{{ keys }}</pre>
+
+        <b-sidebar
+                type="is-light"
+                right
+                fullheight
+                :open.sync="showHelp">
+            <div class="content">
+
+                <h3 class="subtitle">Supported keyboard shortcuts</h3>
+                <p>Key combos are zero or more modifiers (<code>ctrl</code>, <code>shift</code>, etc.) plus one regular key (letter keys, number keys, arrow keys, etc), all joined with <code>+</code> signs (for keys to be pressed at the same time) or spaces (for keys to be pressed one after another.</p>
+                <p><strong>Note that you have to use <code>+</code> rather than <code>-</code> to signify pressing keys at the same time. Example: <code>ctrl+b</code> will work but <code>ctrl-b</code> will not.</strong></p>
+                <p>Here are a couple examples:</p>
+                <ul>
+                    <li><code>t</code></li>
+                    <li><code>ctrl+l</code> (hold ctrl and press l)</li>
+                    <li><code>t g</code> (press t then g)</li>
+                    <li><code>shift+h</code></li>
+                    <li><code>ctrl+shift+⇑+pageup</code></li>
+                    <li><code>alt+f7 r</code> (hold alt and press F7, release, then press r)</li>
+                </ul>
+                <p>The following modifiers are available: <code>⇑</code>, <code>shift</code>, <code>option</code>, <code>⌥</code>, <code>alt</code>, <code>ctrl</code>, <code>control</code>, <code>command</code>, and <code>⌘</code>.</p>
+                <p>In addition to regular letters, numbers, and punctuation, the following special keys can be used for shortcuts: <code>backspace</code>, <code>tab</code>, <code>clear</code>, <code>enter</code>, <code>return</code>, <code>esc</code>, <code>escape</code>, <code>space</code>, <code>up</code>, <code>down</code>, <code>left</code>, <code>right</code>, <code>home</code>, <code>end</code>, <code>pageup</code>, <code>pagedown</code>, <code>del</code>, <code>delete</code> and <code>f1</code> through <code>f19</code>.</p>
+
+            </div>
+        </b-sidebar>
     </section>
 </template>
 
@@ -91,6 +116,7 @@ export default {
     },
     data() {
         return {
+            showHelp: false,
             keys: localStorage.shortkeys ? JSON.parse(localStorage.shortkeys).keys : [{}],
             websites: [
                 {value: false, label: 'All sites'},
