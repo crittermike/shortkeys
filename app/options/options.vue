@@ -4,9 +4,9 @@
         <table class="table w-full">
             <thead>
                 <th>Active</th>
-                <th>Shortcut <b-button size="is-small" rounded @click="showHelp = true">Help</b-button></th>
+                <th>Shortcut <b-button size="is-small" rounded @click="showShortcutHelp = true">Help</b-button></th>
                 <th>Label (optional)</th>
-                <th>Behavior (<a href='https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys#full-list-of-commands'>Help</a>)</th>
+                <th>Behavior <b-button size="is-small" rounded @click="showBehaviorHelp = true">Help</b-button></th>
                 <th>Settings</th>
             </thead>
             <tbody>
@@ -69,9 +69,8 @@
                 type="is-light"
                 right
                 fullheight
-                :open.sync="showHelp">
-            <div class="content">
-
+                :open.sync="showShortcutHelp">
+            <div class="content p-1">
                 <h3 class="subtitle">Supported keyboard shortcuts</h3>
                 <p>Key combos are zero or more modifiers (<code>ctrl</code>, <code>shift</code>, etc.) plus one regular key (letter keys, number keys, arrow keys, etc), all joined with <code>+</code> signs (for keys to be pressed at the same time) or spaces (for keys to be pressed one after another.</p>
                 <p><strong>Note that you have to use <code>+</code> rather than <code>-</code> to signify pressing keys at the same time. Example: <code>ctrl+b</code> will work but <code>ctrl-b</code> will not.</strong></p>
@@ -86,7 +85,18 @@
                 </ul>
                 <p>The following modifiers are available: <code>⇑</code>, <code>shift</code>, <code>option</code>, <code>⌥</code>, <code>alt</code>, <code>ctrl</code>, <code>control</code>, <code>command</code>, and <code>⌘</code>.</p>
                 <p>In addition to regular letters, numbers, and punctuation, the following special keys can be used for shortcuts: <code>backspace</code>, <code>tab</code>, <code>clear</code>, <code>enter</code>, <code>return</code>, <code>esc</code>, <code>escape</code>, <code>space</code>, <code>up</code>, <code>down</code>, <code>left</code>, <code>right</code>, <code>home</code>, <code>end</code>, <code>pageup</code>, <code>pagedown</code>, <code>del</code>, <code>delete</code> and <code>f1</code> through <code>f19</code>.</p>
+            </div>
+        </b-sidebar>
 
+        <b-sidebar
+                type="is-light"
+                right
+                fullheight
+                :open.sync="showBehaviorHelp">
+            <div class="content p-1">
+                <h3 class="subtitle">Behaviors</h3>
+                <p>Here is a <a href="https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys#full-list-of-commands">full list of commands</a> with explanations of what each one does.</p>
+                <p>Note that Shortkeys makes some behaviors are available in the browser's built in Keyboard Shortcuts UI. Here's some <a href="https://github.com/mikecrittenden/shortkeys/wiki/FAQs-and-Troubleshooting#Do_I_use_the_browsers_Keyboard_Shortcuts_settings_or_the_Shortkeys_options_page">more info about that</a>.</p>
             </div>
         </b-sidebar>
     </section>
@@ -116,7 +126,8 @@ export default {
     },
     data() {
         return {
-            showHelp: false,
+            showShortcutHelp: false,
+            showBehaviorHelp: false,
             keys: localStorage.shortkeys ? JSON.parse(localStorage.shortkeys).keys : [{}],
             websites: [
                 {value: false, label: 'All sites'},
