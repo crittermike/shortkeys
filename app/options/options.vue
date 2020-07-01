@@ -99,6 +99,81 @@
                 <p>Note that Shortkeys makes some behaviors are available in the browser's built in Keyboard Shortcuts UI. Here's some <a href="https://github.com/mikecrittenden/shortkeys/wiki/FAQs-and-Troubleshooting#Do_I_use_the_browsers_Keyboard_Shortcuts_settings_or_the_Shortkeys_options_page">more info about that</a>.</p>
             </div>
         </b-sidebar>
+
+        <b-table
+                :data="keys"
+                ref="table"
+                paginated
+                per-page="5"
+                :opened-detailed="defaultOpenedDetails"
+                detailed
+                detail-key="id"
+                @details-open="(row, index) => $buefy.toast.open(`Expanded ${row.value}`)"
+                :show-detail-icon="showDetailIcon"
+                aria-next-label="Next page"
+                aria-previous-label="Previous page"
+                aria-page-label="Page"
+                aria-current-label="Current page">
+
+            <template slot-scope="props">
+                <b-table-column field="id" label="ID" width="40" numeric>
+                    {{ props.row.id }}
+                </b-table-column>
+
+                <b-table-column field="value" label="First Name" sortable>
+                    <template v-if="showDetailIcon">
+                        {{ props.row.value }}
+                    </template>
+                    <template v-else>
+                        <a @click="toggle(props.row)">
+                            {{ props.row.value }}
+                        </a>
+                    </template>
+                </b-table-column>
+
+                <b-table-column field="label" label="Last Name" sortable>
+                    {{ props.row.label }}
+                </b-table-column>
+
+                <b-table-column field="date" label="Date" sortable centered>
+                    <span class="tag is-success">
+                        {{ new Date(props.row.date).toLocaleDateString() }}
+                    </span>
+                </b-table-column>
+
+                <b-table-column label="Gender">
+                    <span>
+                        <b-icon pack="fas"
+                                :icon="props.row.gender === 'Male' ? 'mars' : 'venus'">
+                        </b-icon>
+                        {{ props.row.gender }}
+                    </span>
+                </b-table-column>
+            </template>
+
+            <template slot="detail" slot-scope="props">
+                <article class="media">
+                    <figure class="media-left">
+                        <p class="image is-64x64">
+                            <img src="/static/img/placeholder-128x128.png">
+                        </p>
+                    </figure>
+                    <div class="media-content">
+                        <div class="content">
+                            <p>
+                                <strong>{{ props.row.value }} {{ props.row.label }}</strong>
+                                <small>@{{ props.row.value }}</small>
+                                <small>31m</small>
+                                <br>
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                                Proin ornare magna eros, eu pellentesque tortor vestibulum ut.
+                                Maecenas non massa sem. Etiam finibus odio quis feugiat facilisis.
+                            </p>
+                        </div>
+                    </div>
+                </article>
+            </template>
+        </b-table>
     </section>
 </template>
 
@@ -126,6 +201,8 @@ export default {
     },
     data() {
         return {
+            defaultOpenedDetails: [1],
+            showDetailIcon: true,
             showShortcutHelp: false,
             showBehaviorHelp: false,
             keys: localStorage.shortkeys ? JSON.parse(localStorage.shortkeys).keys : [{}],
