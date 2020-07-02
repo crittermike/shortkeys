@@ -9,54 +9,7 @@
                 <th>Behavior <b-button size="is-small" rounded @click="showBehaviorHelp = true">Help</b-button></th>
                 <th>Settings</th>
             </thead>
-            <tbody>
-                <tr v-for="(key, index) in keys">
-                    <td>
-                        <b-switch></b-switch>
-                    </td>
-                    <td>
-                        <b-field>
-                            <b-input placeholder="Example: ctrl+a" v-model="key.key"/>
-                        </b-field>
-                    </td>
-                    <td>
-                        <b-field>
-                            <b-input v-model="key.label"/>
-                        </b-field>
-                    </td>
-                    <td>
-                        <b-field>
-                            <b-select v-model="key.action">
-                                <optgroup v-for="(group, name) in actions" :label="name">
-                                    <option v-for="option in group" :value="option.value">{{ option.label }}</option>
-                                </optgroup>
-                            </b-select>
-                        </b-field>
-                    </td>
-                    <td>
-                        <b-button @click="key.sidebarOpen = true">Configure</b-button>
-                    </td>
-                </tr>
-            </tbody>
-
         </table>
-
-        <div v-for="(key, index) in keys">
-            <b-sidebar
-                type="is-light"
-                right
-                fullheight
-                :open.sync="key.sidebarOpen">
-                <b-field>
-                    <b-select v-model="key.blacklist">
-                        <option v-for="option in websites" :value="option.value">{{ option.label }}</option>
-                    </b-select>
-                </b-field>
-                <b-field>
-                    <b-input type="textarea" v-show="key.blacklist && key.blacklist != 'false'" v-model="key.sites" />
-                </b-field>
-            </b-sidebar>
-        </div>
 
         <b-field>
             <b-button @click="keys.push({})">Add shortcut</b-button>
@@ -105,71 +58,49 @@
                 ref="table"
                 paginated
                 per-page="5"
-                :opened-detailed="defaultOpenedDetails"
                 detailed
-                detail-key="id"
-                @details-open="(row, index) => $buefy.toast.open(`Expanded ${row.value}`)"
-                :show-detail-icon="showDetailIcon"
+                detail-key="key"
+                show-detail-icon="true"
                 aria-next-label="Next page"
                 aria-previous-label="Previous page"
                 aria-page-label="Page"
                 aria-current-label="Current page">
 
             <template slot-scope="props">
-                <b-table-column field="id" label="ID" width="40" numeric>
-                    {{ props.row.id }}
+                <b-table-column field="key" label="Shortcut">
+                    <b-field>
+                        <b-input placeholder="Example: ctrl+a" v-model="props.row.key"/>
+                    </b-field>
                 </b-table-column>
 
-                <b-table-column field="value" label="First Name" sortable>
-                    <template v-if="showDetailIcon">
-                        {{ props.row.value }}
-                    </template>
-                    <template v-else>
-                        <a @click="toggle(props.row)">
-                            {{ props.row.value }}
-                        </a>
-                    </template>
+                <b-table-column field="label" label="Label" sortable>
+                    <b-field>
+                        <b-input v-model="props.row.label"/>
+                    </b-field>
                 </b-table-column>
 
-                <b-table-column field="label" label="Last Name" sortable>
-                    {{ props.row.label }}
-                </b-table-column>
-
-                <b-table-column field="date" label="Date" sortable centered>
-                    <span class="tag is-success">
-                        {{ new Date(props.row.date).toLocaleDateString() }}
-                    </span>
-                </b-table-column>
-
-                <b-table-column label="Gender">
-                    <span>
-                        <b-icon pack="fas"
-                                :icon="props.row.gender === 'Male' ? 'mars' : 'venus'">
-                        </b-icon>
-                        {{ props.row.gender }}
-                    </span>
+                <b-table-column field="action" label="Behavior" sortable>
+                    <b-field>
+                        <b-select v-model="props.row.action">
+                            <optgroup v-for="(group, name) in actions" :label="name">
+                                <option v-for="option in group" :value="option.value">{{ option.label }}</option>
+                            </optgroup>
+                        </b-select>
+                    </b-field>
                 </b-table-column>
             </template>
 
             <template slot="detail" slot-scope="props">
                 <article class="media">
-                    <figure class="media-left">
-                        <p class="image is-64x64">
-                            <img src="/static/img/placeholder-128x128.png">
-                        </p>
-                    </figure>
                     <div class="media-content">
-                        <div class="content">
-                            <p>
-                                <strong>{{ props.row.value }} {{ props.row.label }}</strong>
-                                <small>@{{ props.row.value }}</small>
-                                <small>31m</small>
-                                <br>
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                                Proin ornare magna eros, eu pellentesque tortor vestibulum ut.
-                                Maecenas non massa sem. Etiam finibus odio quis feugiat facilisis.
-                            </p>
-                        </div>
+                        <b-field>
+                            <b-select v-model="props.row.blacklist">
+                                <option v-for="option in websites" :value="option.value">{{ option.label }}</option>
+                            </b-select>
+                        </b-field>
+                        <b-field>
+                            <b-input type="textarea" v-show="props.row.blacklist && props.row.blacklist != 'false'" v-model="props.row.sites" />
+                        </b-field>
                     </div>
                 </article>
             </template>
@@ -201,7 +132,6 @@ export default {
     },
     data() {
         return {
-            defaultOpenedDetails: [1],
             showDetailIcon: true,
             showShortcutHelp: false,
             showBehaviorHelp: false,
