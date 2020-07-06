@@ -1,22 +1,6 @@
 <template>
     <section>
         <LinkBar /><br /><br />
-        <table class="table w-full">
-            <thead>
-                <th>Active</th>
-                <th>Shortcut <b-button size="is-small" rounded @click="showShortcutHelp = true">Help</b-button></th>
-                <th>Label (optional)</th>
-                <th>Behavior <b-button size="is-small" rounded @click="showBehaviorHelp = true">Help</b-button></th>
-                <th>Settings</th>
-            </thead>
-        </table>
-
-        <b-field>
-            <b-button @click="keys.push({})">Add shortcut</b-button>
-            <b-button @click="saveShortcuts">Save shortcuts</b-button>
-        </b-field>
-        <br /><br />
-        <pre>{{ keys }}</pre>
 
         <b-sidebar
                 type="is-light"
@@ -56,18 +40,12 @@
         <b-table
                 :data="keys"
                 ref="table"
-                paginated
-                per-page="5"
                 detailed
                 detail-key="key"
-                show-detail-icon="true"
-                aria-next-label="Next page"
-                aria-previous-label="Previous page"
-                aria-page-label="Page"
-                aria-current-label="Current page">
+                show-detail-icon="true">
 
             <template slot-scope="props">
-                <b-table-column field="key" label="Shortcut">
+                <b-table-column field="key" label="Shortcut" sortable>
                     <b-field>
                         <b-input placeholder="Example: ctrl+a" v-model="props.row.key"/>
                     </b-field>
@@ -105,6 +83,13 @@
                 </article>
             </template>
         </b-table>
+        <br /><br />
+        <b-field>
+            <b-button @click="keys.push({})">Add shortcut</b-button>
+            <b-button @click="saveShortcuts">Save shortcuts</b-button>
+        </b-field>
+        <br /><br />
+        <pre>{{ keys }}</pre>
     </section>
 </template>
 
