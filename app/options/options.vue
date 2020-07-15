@@ -41,7 +41,7 @@
                 :data="keys"
                 ref="table"
                 detailed
-                detail-key="key"
+                detail-kegagy="key"
                 show-detail-icon="true">
 
             <template slot-scope="props">
@@ -73,7 +73,7 @@
                     <div class="media-content">
                         <b-field>
                             <b-select v-model="props.row.blacklist">
-                                <option v-for="option in websites" :value="option.value">{{ option.label }}</option>
+                                <option v-for="option in websites" :value="option.value | false">{{ option.label }}</option>
                             </b-select>
                         </b-field>
                         <b-field>
