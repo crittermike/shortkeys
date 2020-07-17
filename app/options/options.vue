@@ -69,16 +69,9 @@
             </template>
 
             <template slot="detail" slot-scope="props">
-                <article class="media">
-                    <div class="media-content">
-                        <b-field>
-                            <b-select v-model="props.row.blacklist">
-                                <option v-for="option in websites" :value="option.value | false">{{ option.label }}</option>
-                            </b-select>
-                        </b-field>
-                        <b-field>
-                            <b-input type="textarea" v-show="props.row.blacklist && props.row.blacklist != 'false'" v-model="props.row.sites" />
-                        </b-field>
+                <div class="columns">
+                    <div class="column">
+                        <h5 class="title is-5">Shortcut settings</h5>
                         <b-switch
                                 v-model="props.row.smoothScrolling"
                                 v-show="props.row.action == 'scrolldown' || props.row.action == 'scrolldownmore' || props.row.action == 'pagedown' || props.row.action == 'scrollup' || props.row.action == 'scrollupmore' || props.row.action == 'pageup' || props.row.action == 'scrollright' || props.row.action == 'scrollrightmore' || props.row.action == 'scrollleft' || props.row.action == 'scrollleftmore' || props.row.action == 'top' || props.row.action == 'bottom'"
@@ -91,11 +84,22 @@
                         >
                             Search in current window only
                         </b-switch>
+                    </div>
+                    <div class="column">
+                        <h5 class="title is-5">Activation settings</h5>
                         <b-switch v-model="props.row.activeInInputs">
                             Active while in inputs
                         </b-switch>
+                        <b-field>
+                            <b-select v-model="props.row.blacklist">
+                                <option v-for="option in websites" :value="option.value | false">{{ option.label }}</option>
+                            </b-select>
+                        </b-field>
+                        <b-field>
+                            <b-input type="textarea" v-show="props.row.blacklist && props.row.blacklist != 'false'" v-model="props.row.sites" />
+                        </b-field>
                     </div>
-                </article>
+                </div>
             </template>
         </b-table>
         <br /><br />
