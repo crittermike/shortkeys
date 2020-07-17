@@ -37,78 +37,96 @@
             </div>
         </b-sidebar>
 
-        <b-table
-                :data="keys"
-                ref="table"
-                detailed
-                detail-kegagy="key"
-                show-detail-icon="true">
+        <b-tabs v-model="activeTab" type="is-toggle" expanded>
+            <b-tab-item label="Shortcuts">
+                <b-table
+                        :data="keys"
+                        ref="table"
+                        detailed
+                        detail-kegagy="key"
+                        show-detail-icon="true">
 
-            <template slot-scope="props">
-                <b-table-column field="key" label="Shortcut" sortable>
-                    <b-field>
-                        <b-input placeholder="Example: ctrl+a" v-model="props.row.key"/>
-                    </b-field>
-                </b-table-column>
+                    <template slot-scope="props">
+                        <b-table-column field="key" label="Shortcut" sortable>
+                            <b-field>
+                                <b-input placeholder="Example: ctrl+a" v-model="props.row.key"/>
+                            </b-field>
+                        </b-table-column>
 
-                <b-table-column field="label" label="Label" sortable>
-                    <b-field>
-                        <b-input v-model="props.row.label"/>
-                    </b-field>
-                </b-table-column>
+                        <b-table-column field="label" label="Label" sortable>
+                            <b-field>
+                                <b-input v-model="props.row.label"/>
+                            </b-field>
+                        </b-table-column>
 
-                <b-table-column field="action" label="Behavior" sortable>
-                    <b-field>
-                        <b-select v-model="props.row.action">
-                            <optgroup v-for="(group, name) in actions" :label="name">
-                                <option v-for="option in group" :value="option.value">{{ option.label }}</option>
-                            </optgroup>
-                        </b-select>
-                    </b-field>
-                </b-table-column>
-            </template>
+                        <b-table-column field="action" label="Behavior" sortable>
+                            <b-field>
+                                <b-select v-model="props.row.action">
+                                    <optgroup v-for="(group, name) in actions" :label="name">
+                                        <option v-for="option in group" :value="option.value">{{ option.label }}</option>
+                                    </optgroup>
+                                </b-select>
+                            </b-field>
+                        </b-table-column>
+                    </template>
 
-            <template slot="detail" slot-scope="props">
-                <div class="columns">
-                    <div class="column">
-                        <h5 class="title is-5">Shortcut settings</h5>
-                        <b-switch
-                                v-model="props.row.smoothScrolling"
-                                v-show="props.row.action == 'scrolldown' || props.row.action == 'scrolldownmore' || props.row.action == 'pagedown' || props.row.action == 'scrollup' || props.row.action == 'scrollupmore' || props.row.action == 'pageup' || props.row.action == 'scrollright' || props.row.action == 'scrollrightmore' || props.row.action == 'scrollleft' || props.row.action == 'scrollleftmore' || props.row.action == 'top' || props.row.action == 'bottom'"
-                        >
-                            Smooth scrolling
-                        </b-switch>
-                        <b-switch
-                                v-model="props.row.currentWindow"
-                                v-show="props.row.action == 'gototab' || props.row.action == 'gototabbytitle'"
-                        >
-                            Search in current window only
-                        </b-switch>
-                    </div>
-                    <div class="column">
-                        <h5 class="title is-5">Activation settings</h5>
-                        <b-switch v-model="props.row.activeInInputs">
-                            Active while in inputs
-                        </b-switch>
+                    <template slot="detail" slot-scope="props">
+                        <div class="columns">
+                            <div class="column">
+                                <h5 class="title is-5">Shortcut settings</h5>
+                                <b-switch
+                                        v-model="props.row.smoothScrolling"
+                                        v-show="props.row.action == 'scrolldown' || props.row.action == 'scrolldownmore' || props.row.action == 'pagedown' || props.row.action == 'scrollup' || props.row.action == 'scrollupmore' || props.row.action == 'pageup' || props.row.action == 'scrollright' || props.row.action == 'scrollrightmore' || props.row.action == 'scrollleft' || props.row.action == 'scrollleftmore' || props.row.action == 'top' || props.row.action == 'bottom'"
+                                >
+                                    Smooth scrolling
+                                </b-switch>
+                                <b-switch
+                                        v-model="props.row.currentWindow"
+                                        v-show="props.row.action == 'gototab' || props.row.action == 'gototabbytitle'"
+                                >
+                                    Search in current window only
+                                </b-switch>
+                            </div>
+                            <div class="column">
+                                <h5 class="title is-5">Activation settings</h5>
+                                <b-switch v-model="props.row.activeInInputs">
+                                    Active while in inputs
+                                </b-switch>
+                                <b-field>
+                                    <b-select v-model="props.row.blacklist">
+                                        <option v-for="option in websites" :value="option.value | false">{{ option.label }}</option>
+                                    </b-select>
+                                </b-field>
+                                <b-field>
+                                    <b-input type="textarea" v-show="props.row.blacklist && props.row.blacklist != 'false'" v-model="props.row.sites" />
+                                </b-field>
+                            </div>
+                        </div>
+                    </template>
+                </b-table>
+                <br /><br />
+                <div class="level">
+                    <div class="level-left">
                         <b-field>
-                            <b-select v-model="props.row.blacklist">
-                                <option v-for="option in websites" :value="option.value | false">{{ option.label }}</option>
-                            </b-select>
+                            <b-button @click="keys.push({})">Add shortcut</b-button>
                         </b-field>
+                    </div>
+                    <div class="level-right">
                         <b-field>
-                            <b-input type="textarea" v-show="props.row.blacklist && props.row.blacklist != 'false'" v-model="props.row.sites" />
+                            <b-button @click="saveShortcuts">Save shortcuts</b-button>
                         </b-field>
                     </div>
                 </div>
-            </template>
-        </b-table>
-        <br /><br />
-        <b-field>
-            <b-button @click="keys.push({})">Add shortcut</b-button>
-            <b-button @click="saveShortcuts">Save shortcuts</b-button>
-        </b-field>
-        <br /><br />
-        <pre>{{ keys }}</pre>
+            </b-tab-item>
+            <b-tab-item label="Import">
+                <b-field>
+                    <b-input type="textarea" />
+                </b-field>
+            </b-tab-item>
+            <b-tab-item label="Export">
+                <pre>{{ keys }}</pre>
+            </b-tab-item>
+        </b-tabs>
     </section>
 </template>
 
@@ -136,6 +154,7 @@ export default {
     },
     data() {
         return {
+            activeTab: 0,
             showDetailIcon: true,
             showShortcutHelp: false,
             showBehaviorHelp: false,
