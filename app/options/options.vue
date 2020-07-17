@@ -85,6 +85,12 @@
                         >
                             Smooth scrolling
                         </b-switch>
+                        <b-switch
+                                v-model="props.row.currentWindow"
+                                v-show="props.row.action == 'gototab' || props.row.action == 'gototabbytitle'"
+                        >
+                            Search in current window only
+                        </b-switch>
                     </div>
                 </article>
             </template>
