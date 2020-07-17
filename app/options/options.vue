@@ -79,6 +79,12 @@
                         <b-field>
                             <b-input type="textarea" v-show="props.row.blacklist && props.row.blacklist != 'false'" v-model="props.row.sites" />
                         </b-field>
+                        <b-switch
+                                v-model="props.row.smoothScrolling"
+                                v-show="props.row.action == 'scrolldown' || props.row.action == 'scrolldownmore' || props.row.action == 'pagedown' || props.row.action == 'scrollup' || props.row.action == 'scrollupmore' || props.row.action == 'pageup' || props.row.action == 'scrollright' || props.row.action == 'scrollrightmore' || props.row.action == 'scrollleft' || props.row.action == 'scrollleftmore' || props.row.action == 'top' || props.row.action == 'bottom'"
+                        >
+                            Smooth scrolling
+                        </b-switch>
                     </div>
                 </article>
             </template>
