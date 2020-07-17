@@ -91,6 +91,9 @@
                         >
                             Search in current window only
                         </b-switch>
+                        <b-switch v-model="props.row.activeInInputs">
+                            Active while in inputs
+                        </b-switch>
                     </div>
                 </article>
             </template>
