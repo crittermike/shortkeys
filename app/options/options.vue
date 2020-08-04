@@ -86,6 +86,9 @@
                                 >
                                     Search in current window only
                                 </b-switch>
+                                <b-field label="Javascript code" v-show="props.row.action == 'javascript'">
+                                    <b-input type="textarea" v-model="props.row.code"></b-input>
+                                </b-field>
                             </div>
                             <div class="column">
                                 <h5 class="title is-5">Activation settings</h5>
