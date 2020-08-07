@@ -89,6 +89,9 @@
                                 <b-field label="Javascript code" v-show="props.row.action == 'javascript'">
                                     <b-input type="textarea" v-model="props.row.code"></b-input>
                                 </b-field>
+                                <b-field label="Keyboard shortcut to trigger" v-show="props.row.action == 'trigger'">
+                                    <b-input type="text" v-model="props.row.trigger"></b-input>
+                                </b-field>
                             </div>
                             <div class="column">
                                 <h5 class="title is-5">Activation settings</h5>
