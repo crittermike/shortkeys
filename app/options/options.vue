@@ -71,6 +71,14 @@
                     </template>
 
                     <template slot="detail" slot-scope="props">
+                        <b-notification type="is-info" v-show="isBuiltIn(props.row.action)" aria-close-label="Close notification">
+                            This action is supported from Chrome's keyboard shortcuts settings, which
+                            will allow it to run on the new tab page and when the address bar is focused, etc. The downside is that Chrome
+                            is more restrictive about which shortcuts are supported, and you can't enable or disable on certain websites or
+                            when typing in form fields.<br /><br />To try it, <strong>go back to the extensions page, click the menu icon
+                            at the top left, then click "Keyboard Shortcuts"</strong>. You can still add it here as well.
+                            <a href="https://github.com/mikecrittenden/shortkeys/wiki/FAQs-and-Troubleshooting#Do_I_use_the_browsers_Keyboard_Shortcuts_settings_or_the_Shortkeys_options_page">More information...</a>
+                        </b-notification>
                         <div class="columns">
                             <div class="column">
                                 <h5 class="title is-5">Shortcut settings</h5>
@@ -156,6 +164,17 @@ export default {
             this.keys.forEach(key => delete key.sidebarOpen);
             localStorage.shortkeys = JSON.stringify({keys: this.keys});
             this.$buefy.snackbar.open(`Shortcuts have been saved!`);
+        },
+        isBuiltIn: function (action) {
+            let builtIn = false;
+            for (const category in this.actions) {
+                this.actions[category].forEach(actionType => {
+                    if (actionType.value === action) {
+                        builtIn = actionType.builtin;
+                    }
+                });
+            }
+            return builtIn;
         }
     },
     data() {
