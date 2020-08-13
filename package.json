@@ -19,6 +19,6 @@
     "mousetrap": "^1.6.3",
     "style-loader": "^1.0.1",
     "webextension-polyfill": "^0.5.0",
-    "serialize-javascript": ">=2.1.1"
+    "serialize-javascript": ">=3.1.0"
   }
 }
