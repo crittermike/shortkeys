@@ -84,20 +84,23 @@
                                 <h5 class="title is-5">Shortcut settings</h5>
                                 <b-switch
                                         v-model="props.row.smoothScrolling"
-                                        v-show="props.row.action == 'scrolldown' || props.row.action == 'scrolldownmore' || props.row.action == 'pagedown' || props.row.action == 'scrollup' || props.row.action == 'scrollupmore' || props.row.action == 'pageup' || props.row.action == 'scrollright' || props.row.action == 'scrollrightmore' || props.row.action == 'scrollleft' || props.row.action == 'scrollleftmore' || props.row.action == 'top' || props.row.action == 'bottom'"
+                                        v-show="props.row.action === 'scrolldown' || props.row.action === 'scrolldownmore' || props.row.action === 'pagedown' || props.row.action === 'scrollup' || props.row.action === 'scrollupmore' || props.row.action === 'pageup' || props.row.action === 'scrollright' || props.row.action === 'scrollrightmore' || props.row.action === 'scrollleft' || props.row.action === 'scrollleftmore' || props.row.action === 'top' || props.row.action === 'bottom'"
                                 >
                                     Smooth scrolling
                                 </b-switch>
                                 <b-switch
                                         v-model="props.row.currentWindow"
-                                        v-show="props.row.action == 'gototab' || props.row.action == 'gototabbytitle'"
+                                        v-show="props.row.action === 'gototab' || props.row.action === 'gototabbytitle'"
                                 >
                                     Search in current window only
                                 </b-switch>
-                                <b-field label="Javascript code" v-show="props.row.action == 'javascript'">
+                                <b-field label="Javascript code" v-show="props.row.action === 'javascript'">
                                     <b-input type="textarea" v-model="props.row.code"></b-input>
                                 </b-field>
-                                <b-field label="Keyboard shortcut to trigger" v-show="props.row.action == 'trigger'">
+                                <b-field label="Button selector (example: #troop_confirm_go or .button_class_123)" v-show="props.row.action === 'buttonnexttab'">
+                                    <b-input type="text" v-model="props.row.button"></b-input>
+                                </b-field>
+                                <b-field label="Keyboard shortcut to trigger" v-show="props.row.action === 'trigger'">
                                     <b-input type="text" v-model="props.row.trigger"></b-input>
                                 </b-field>
                             </div>
