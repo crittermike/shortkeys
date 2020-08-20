@@ -71,35 +71,59 @@
                     </template>
 
                     <template slot="detail" slot-scope="props">
-                        <b-notification type="is-info" v-show="isBuiltIn(props.row.action)" aria-close-label="Close notification">
-                            This action is supported from Chrome's keyboard shortcuts settings, which
+                        <b-message title="Try the browser's keyboard shortcut settings" type="is-info" v-show="isBuiltIn(props.row.action)" aria-close-label="Close message">
+                            This action is supported from the browser's keyboard shortcuts settings, which
                             will allow it to run on the new tab page and when the address bar is focused, etc. The downside is that Chrome
                             is more restrictive about which shortcuts are supported, and you can't enable or disable on certain websites or
                             when typing in form fields.<br /><br />To try it, <strong>go back to the extensions page, click the menu icon
                             at the top left, then click "Keyboard Shortcuts"</strong>. You can still add it here as well.
                             <a href="https://github.com/mikecrittenden/shortkeys/wiki/FAQs-and-Troubleshooting#Do_I_use_the_browsers_Keyboard_Shortcuts_settings_or_the_Shortkeys_options_page">More information...</a>
-                        </b-notification>
+                        </b-message>
                         <div class="columns">
                             <div class="column">
                                 <h5 class="title is-5">Shortcut settings</h5>
+
                                 <b-switch
                                         v-model="props.row.smoothScrolling"
                                         v-show="props.row.action === 'scrolldown' || props.row.action === 'scrolldownmore' || props.row.action === 'pagedown' || props.row.action === 'scrollup' || props.row.action === 'scrollupmore' || props.row.action === 'pageup' || props.row.action === 'scrollright' || props.row.action === 'scrollrightmore' || props.row.action === 'scrollleft' || props.row.action === 'scrollleftmore' || props.row.action === 'top' || props.row.action === 'bottom'"
                                 >
                                     Smooth scrolling
                                 </b-switch>
+
                                 <b-switch
                                         v-model="props.row.currentWindow"
                                         v-show="props.row.action === 'gototab' || props.row.action === 'gototabbytitle'"
                                 >
                                     Search in current window only
                                 </b-switch>
+
                                 <b-field label="Javascript code" v-show="props.row.action === 'javascript'">
                                     <b-input type="textarea" v-model="props.row.code"></b-input>
                                 </b-field>
+
+                                <b-field label="Text to match (wildcards accepted)" v-show="props.row.action === 'gototabbytitle'">
+                                    <b-input type="textarea" v-model="props.row.matchtitle"></b-input>
+                                </b-field>
+
+                                <b-field v-show="props.row.action === 'gototab'">
+                                    <template slot="label">
+                                        URL to match (<a target="_blank" href="https://developer.chrome.com/extensions/match_patterns">Examples</a>)
+                                    </template>
+                                    <b-input type="textarea" v-model="props.row.matchurl"></b-input>
+                                </b-field>
+
+                                <b-field label="URL to open if no matching tab found" v-show="props.row.action === 'gototab'">
+                                    <b-input type="textarea" v-model="props.row.openurl"></b-input>
+                                </b-field>
+
+                                <b-field label="Tab index (starts from 1)" v-show="props.row.action === 'gototabbyindex'">
+                                    <b-input type="number" v-model="props.row.matchindex"></b-input>
+                                </b-field>
+
                                 <b-field label="Button selector (example: #troop_confirm_go or .button_class_123)" v-show="props.row.action === 'buttonnexttab'">
                                     <b-input type="text" v-model="props.row.button"></b-input>
                                 </b-field>
+
                                 <b-field label="Keyboard shortcut to trigger" v-show="props.row.action === 'trigger'">
                                     <b-input type="text" v-model="props.row.trigger"></b-input>
                                 </b-field>
