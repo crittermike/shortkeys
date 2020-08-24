@@ -124,6 +124,10 @@
                                     <b-input type="text" v-model="props.row.button"></b-input>
                                 </b-field>
 
+                                <b-field label="App ID to open (Can be found on extensions management page)" v-show="props.row.action === 'openapp'">
+                                    <b-input type="text" v-model="props.row.openappid"></b-input>
+                                </b-field>
+
                                 <b-field label="Keyboard shortcut to trigger" v-show="props.row.action === 'trigger'">
                                     <b-input type="text" v-model="props.row.trigger"></b-input>
                                 </b-field>
