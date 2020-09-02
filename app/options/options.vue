@@ -68,6 +68,10 @@
                                 </b-select>
                             </b-field>
                         </b-table-column>
+
+                        <b-table-column field="delete">
+                            <b-button rounded icon-right="delete" @click="deleteKey(props.row)" />
+                        </b-table-column>
                     </template>
 
                     <template slot="detail" slot-scope="props">
@@ -195,6 +199,12 @@ export default {
             this.keys.forEach(key => delete key.sidebarOpen);
             localStorage.shortkeys = JSON.stringify({keys: this.keys});
             this.$buefy.snackbar.open(`Shortcuts have been saved!`);
+        },
+        deleteKey: function (key) {
+            this.$buefy.dialog.confirm({
+                message: 'Delete this shortcut?',
+                onConfirm: () => this.keys = this.keys.filter(curKey => key.key !== curKey.key)
+            });
         },
         isBuiltIn: function (action) {
             let builtIn = false;
