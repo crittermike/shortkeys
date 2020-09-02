@@ -70,7 +70,7 @@
                         </b-table-column>
 
                         <b-table-column field="delete">
-                            <b-button rounded icon-right="delete" @click="deleteKey(props.row)" />
+                            <b-button rounded icon-right="delete" @click="deleteShortcut(props.row)" />
                         </b-table-column>
                     </template>
 
@@ -200,7 +200,7 @@ export default {
             localStorage.shortkeys = JSON.stringify({keys: this.keys});
             this.$buefy.snackbar.open(`Shortcuts have been saved!`);
         },
-        deleteKey: function (key) {
+        deleteShortcut: function (key) {
             this.$buefy.dialog.confirm({
                 message: 'Delete this shortcut?',
                 onConfirm: () => this.keys = this.keys.filter(curKey => key.key !== curKey.key)
