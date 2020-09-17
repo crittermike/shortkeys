@@ -101,6 +101,10 @@
                                     Search in current window only
                                 </b-switch>
 
+                                <b-select v-model="props.row.bookmark" v-show="props.row.action === 'openbookmark' || props.row.action === 'openbookmarknewtab' || props.row.action === 'openbookmarkbackgroundtab' || props.row.action === 'openbookmarkbackgroundtabandclose'">
+                                    <option v-for="bookmark in bookmarks" :value="bookmark">{{ bookmark }}</option>
+                                </b-select>
+
                                 <b-field label="Javascript code" v-show="props.row.action === 'javascript'">
                                     <b-input type="textarea" v-model="props.row.code"></b-input>
                                 </b-field>
@@ -195,7 +199,7 @@ export default {
         TextInput,
     },
     methods: {
-        saveShortcuts: function () {
+        saveShortcuts: function() {
             this.keys.forEach(key => delete key.sidebarOpen);
             localStorage.shortkeys = JSON.stringify({keys: this.keys});
             this.$buefy.snackbar.open(`Shortcuts have been saved!`);
@@ -216,7 +220,7 @@ export default {
                 });
             }
             return builtIn;
-        }
+        },
     },
     data() {
         return {
@@ -230,6 +234,7 @@ export default {
                 {value: true, label: 'All sites except...'},
                 {value: 'whitelist', label: 'Only on specific sites'}
             ],
+            bookmarks: [],
             actions: {
                 'Scrolling': [
                     {value: 'top', label: 'Scroll to top', builtin: true},
@@ -312,6 +317,20 @@ export default {
                 ]
             }
         }
-    }
+    },
+    async created() {
+        const processBookmarks = (bookmarks) => {
+            for (let i = 0; i < bookmarks.length; i++) {
+                let bookmark = bookmarks[i];
+                if (bookmark.url) {
+                    this.bookmarks.push(bookmark.title)
+                }
+                if (bookmark.children) {
+                    processBookmarks(bookmark.children);
+                }
+            }
+        };
+        chrome.bookmarks.getTree(processBookmarks)
+    },
 };
 </script>
