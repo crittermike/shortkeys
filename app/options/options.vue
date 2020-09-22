@@ -43,8 +43,8 @@
                         :data="keys"
                         ref="table"
                         detailed
-                        detail-kegagy="key"
-                        show-detail-icon="true">
+                        detail-key="key"
+                        :show-detail-icon="showDetailIcon">
 
                     <template slot-scope="props">
                         <b-table-column field="key" label="Shortcut" sortable>
@@ -173,8 +173,16 @@
             </b-tab-item>
             <b-tab-item label="Import">
                 <b-field>
-                    <b-input type="textarea" />
+                    <b-input type="textarea" v-model="importJson" />
                 </b-field>
+                <div class="level">
+                    <div class="level-left"></div>
+                    <div class="level-right">
+                        <b-field>
+                            <b-button @click="importKeys">Import</b-button>
+                        </b-field>
+                    </div>
+                </div>
             </b-tab-item>
             <b-tab-item label="Export">
                 <pre>{{ keys }}</pre>
@@ -204,6 +212,10 @@ export default {
             localStorage.shortkeys = JSON.stringify({keys: this.keys});
             this.$buefy.snackbar.open(`Shortcuts have been saved!`);
         },
+        importKeys: function() {
+            this.keys = this.keys.concat(JSON.parse(this.importJson));
+            this.$buefy.snackbar.open(`Imported successfully!`);
+        },
         deleteShortcut: function (key) {
             this.$buefy.dialog.confirm({
                 message: 'Delete this shortcut?',
@@ -225,6 +237,7 @@ export default {
     data() {
         return {
             activeTab: 0,
+            importJson: "",
             showDetailIcon: true,
             showShortcutHelp: false,
             showBehaviorHelp: false,
