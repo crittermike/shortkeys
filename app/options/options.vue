@@ -77,7 +77,7 @@
                     <template slot="detail" slot-scope="props">
                         <b-message title="Try the browser's keyboard shortcut settings" type="is-info" v-show="isBuiltIn(props.row.action)" aria-close-label="Close message">
                             This action is supported from the browser's keyboard shortcuts settings, which
-                            will allow it to run on the new tab page and when the address bar is focused, etc. The downside is that Chrome
+                            will allow it to run on the new tab page and when the address bar is focused, etc. The downside is that the browser
                             is more restrictive about which shortcuts are supported, and you can't enable or disable on certain websites or
                             when typing in form fields.<br /><br />To try it, <strong>go back to the extensions page, click the menu icon
                             at the top left, then click "Keyboard Shortcuts"</strong>. You can still add it here as well.
@@ -101,9 +101,11 @@
                                     Search in current window only
                                 </b-switch>
 
-                                <b-select v-model="props.row.bookmark" v-show="props.row.action === 'openbookmark' || props.row.action === 'openbookmarknewtab' || props.row.action === 'openbookmarkbackgroundtab' || props.row.action === 'openbookmarkbackgroundtabandclose'">
-                                    <option v-for="bookmark in bookmarks" :value="bookmark">{{ bookmark }}</option>
-                                </b-select>
+                                <b-field label="Bookmark" v-show="props.row.action === 'openbookmark' || props.row.action === 'openbookmarknewtab' || props.row.action === 'openbookmarkbackgroundtab' || props.row.action === 'openbookmarkbackgroundtabandclose'">
+                                    <b-select v-model="props.row.bookmark" >
+                                        <option v-for="bookmark in bookmarks" :value="bookmark">{{ bookmark }}</option>
+                                    </b-select>
+                                </b-field>
 
                                 <b-field label="Javascript code" v-show="props.row.action === 'javascript'">
                                     <b-input type="textarea" v-model="props.row.code"></b-input>
@@ -142,9 +144,11 @@
                             </div>
                             <div class="column">
                                 <h5 class="title is-5">Activation settings</h5>
-                                <b-switch v-model="props.row.activeInInputs">
-                                    Active while in inputs
-                                </b-switch>
+                                <b-field>
+                                    <b-switch v-model="props.row.activeInInputs">
+                                        Active while in inputs
+                                    </b-switch>
+                                </b-field>
                                 <b-field>
                                     <b-select v-model="props.row.blacklist">
                                         <option v-for="option in websites" :value="option.value | false">{{ option.label }}</option>
