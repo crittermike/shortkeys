@@ -213,8 +213,9 @@ export default {
     methods: {
         saveShortcuts: function() {
             this.keys.forEach((key) => {
-                key.sitesArray = key.sites.split('\n')
-                delete key.sidebarOpen
+                key.sites = key.sites || "";
+                key.sitesArray = key.sites.split('\n');
+                delete key.sidebarOpen;
             });
             localStorage.shortkeys = JSON.stringify({keys: this.keys});
             this.$buefy.snackbar.open(`Shortcuts have been saved!`);
