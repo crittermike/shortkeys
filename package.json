@@ -14,11 +14,15 @@
     "angular-ui-bootstrap": "^2.5.6",
     "angular-ui-codemirror": "^0.3.0",
     "bootstrap": "^4.4.1",
+    "buefy": "^0.8.20",
     "codemirror": "^5.49.2",
     "css-loader": "^3.3.2",
     "mousetrap": "^1.6.3",
+    "serialize-javascript": ">=2.1.1",
     "style-loader": "^1.0.1",
-    "webextension-polyfill": "^0.5.0",
-    "serialize-javascript": ">=3.1.0"
+    "vue": "^2.6.11",
+    "vue-loader": "^15.8.3",
+    "vue-template-compiler": "^2.6.11",
+    "webextension-polyfill": "^0.5.0"
   }
 }
