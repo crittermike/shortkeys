@@ -87,11 +87,11 @@ let globToRegex = function (glob) {
  * @returns {boolean}
  */
 let isAllowedSite = function (keySetting, url) {
-  if (keySetting.blacklist !== 'true' && keySetting.blacklist !== 'whitelist') {
+  if (!keySetting.blacklist || keySetting.blacklist === 'false') {
     // This shortcut is allowed on all sites (not blacklisted or whitelisted).
     return true
   }
-  let allowed = keySetting.blacklist === 'true'
+  let allowed = (keySetting.blacklist === true || keySetting.blacklist === 'true')
   keySetting.sitesArray.forEach((site) => {
     if (url.match(globToRegex(site))) {
       allowed = !allowed
