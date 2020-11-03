@@ -7,7 +7,7 @@
     "build": "webextension-toolbox build"
   },
   "devDependencies": {
-    "webextension-toolbox": "latest"
+    "webextension-toolbox": "^3.0.0"
   },
   "dependencies": {
     "angular": "^1.8.0",
