@@ -13,41 +13,51 @@ let copyToClipboard = (text) => {
   document.body.removeChild(copyDiv)
 }
 
-let selectTab = (direction) => {
+let selectTab = (direction, {closeFormerlyCurrentTab = false, permitWrapping = true}={}) => {
   let searchParam = { currentWindow: true };
   if (process.env.VENDOR === 'firefox') {
     searchParam.hidden = false;
   }
   browser.tabs.query(searchParam).then(function(tabs) {
-    if (tabs.length <= 1) {
+    if (tabs.length <= 1 && !closeFormerlyCurrentTab) {
       return
     }
     browser.tabs.query({currentWindow: true, active: true}).then(function(currentTabInArray) {
       let currentTab = currentTabInArray[0]
       let currentTabIndex = tabs.findIndex(i => i.id === currentTab.id);
-      let toSelect
+      let selectIndex
       switch (direction) {
         case 'next':
-          toSelect = tabs[(currentTabIndex + 1 + tabs.length) % tabs.length]
+          selectIndex = currentTabIndex + 1
           break
         case 'previous':
-          toSelect = tabs[(currentTabIndex - 1 + tabs.length) % tabs.length]
+          selectIndex = currentTabIndex - 1
           break
         case 'first':
-          toSelect = tabs[0]
+          selectIndex = 0
           break
         case 'last':
-          toSelect = tabs[tabs.length - 1]
+          selectIndex = tabs.length - 1
           break
         default:
           let index = parseInt(direction) || 0
           if (index >= 1 && index <= tabs.length) {
-            toSelect = tabs[index - 1]
+            selectIndex = index - 1
           } else {
             return
           }
       }
-      browser.tabs.update(toSelect.id, {active: true})
+      if (permitWrapping) {
+          selectIndex = (selectIndex + tabs.length) % tabs.length
+      } else if (selectIndex < 0) {
+          selectIndex = 0
+      } else if (selectIndex > tabs.length - 1) {
+          selectIndex = tabs.length - 1
+      }
+      browser.tabs.update(tabs[selectIndex].id, {active: true})
+      if (closeFormerlyCurrentTab) {
+        browser.tabs.remove(currentTab.id)
+      }
     })
   })
 }
@@ -124,6 +134,14 @@ let handleAction = (action, request = {}) => {
     selectTab('first')
   } else if (action === 'lasttab') {
     selectTab('last')
+  } else if (action === 'closetabmovetonext') {
+    selectTab('next', {closeFormerlyCurrentTab: true, permitWrapping: false})
+  } else if (action === 'closetabmovetoprev') {
+    selectTab('previous', {closeFormerlyCurrentTab: true, permitWrapping: false})
+  } else if (action === 'closetabmovetofirst') {
+    selectTab('first', {closeFormerlyCurrentTab: true})
+  } else if (action === 'closetabmovetolast') {
+    selectTab('last', {closeFormerlyCurrentTab: true})
   } else if (action === 'newtab') {
     browser.tabs.create({})
   } else if (action === 'reopentab') {

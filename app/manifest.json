@@ -71,7 +71,11 @@
     "46-opensettings": {"description": "LOCATION: Open Settings Page"},
     "47-openextensions": {"description": "LOCATION: Open Extensions Page"},
     "48-openshortcuts": {"description": "LOCATION: Open Keyboard Shortcuts Page"},
-    "49-showlatestdownload": {"description": "DOWNLOADS: Show latest download"}
+    "49-showlatestdownload": {"description": "DOWNLOADS: Show latest download"},
+    "50-closetabmovetonext": {"description": "TABS: Close tab and move to next tab"},
+    "51-closetabmovetoprev": {"description": "TABS: Close tab and move to previous tab"},
+    "52-closetabmovetofirst": {"description": "TABS: Close tab and move to first tab"},
+    "53-closetabmovetolast": {"description": "TABS: Close tab and move to last tab"}
   },
   "options_ui": {
     "page": "options/options.html",

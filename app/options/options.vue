@@ -313,6 +313,10 @@ export default {
                     {value: 'movetabright', label: 'Move tab right', builtin: true},
                     {value: 'movetabtofirst', label: 'Move tab to first position', builtin: true},
                     {value: 'movetabtolast', label: 'Move tab to last position', builtin: true},
+                    {value: 'closetabmovetonext', label: 'Close tab and move to next tab', builtin: true},
+                    {value: 'closetabmovetoprev', label: 'Close tab and move to previous tab', builtin: true},
+                    {value: 'closetabmovetofirst', label: 'Close tab and move to first tab', builtin: true},
+                    {value: 'closetabmovetolast', label: 'Close tab and move to last tab', builtin: true},
                 ],
                 'Windows': [
                     {value: 'newwindow', label: 'New window', builtin: true},
