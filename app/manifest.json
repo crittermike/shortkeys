@@ -98,7 +98,8 @@
     "bookmarks",
     "sessions",
     "management",
-    "<all_urls>"
+    "<all_urls>",
+    "debugger"
   ],
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }

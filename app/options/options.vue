@@ -334,7 +334,8 @@ export default {
                     {value: 'trigger', label: 'Trigger another shortcut'},
                     {value: 'print', label: 'Print page', builtin: true},
                     {value: 'buttonnexttab', label: 'Click button and switch to next tab (for Tribal Wars players)'},
-                    {value: 'openapp', label: 'Open App'}
+                    {value: 'openapp', label: 'Open App'},
+                    {value: 'capturescreenshot', label: 'Capture Screenshot'}
                 ]
             }
         }
