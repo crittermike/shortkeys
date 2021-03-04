@@ -52,6 +52,7 @@ Shortkeys.doAction = (keySetting) => {
         }
         message.action = 'nexttab'
     }
+
     browser.runtime.sendMessage(message)
 }
 
