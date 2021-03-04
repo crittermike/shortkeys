@@ -1,1 +1,1 @@
-declare const browser: typeof chrome;
+declare const browser: typeof chrome

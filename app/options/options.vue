@@ -335,7 +335,9 @@ export default {
                     {value: 'print', label: 'Print page', builtin: true},
                     {value: 'buttonnexttab', label: 'Click button and switch to next tab (for Tribal Wars players)'},
                     {value: 'openapp', label: 'Open App'},
-                    {value: 'capturescreenshot', label: 'Capture Screenshot'}
+                    {value: 'capturescreenshot', label: 'Capture current viewport screenshot'},
+                    {value: 'capturefullsizescreenshot', label: 'Capture full size screenshot (max height is 16,348px due to browser limitation)'},
+                    {value: 'forcecapturefullsizescreenshot', label: 'Force capture full size screenshot (when window is not scrollable)'}
                 ]
             }
         }

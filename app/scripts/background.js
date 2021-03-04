@@ -1,6 +1,6 @@
 'use strict'
 
-import captureScreenshot from './captureScreenshot'
+import captureScreenshot from './actions/captureScreenshot'
 
 /* global localStorage, chrome */
 
@@ -356,6 +356,10 @@ let handleAction = (action, request = {}) => {
     }
   } else if (action === 'capturescreenshot') {
     captureScreenshot()
+  } else if (action === 'capturefullsizescreenshot') {
+    captureScreenshot({fullsize: true})
+  } else if (action === 'forcecapturefullsizescreenshot') {
+    captureScreenshot({fullsize: true, force: true})
   } else {
     return false
   }
