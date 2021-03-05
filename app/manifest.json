@@ -71,7 +71,10 @@
     "46-opensettings": {"description": "LOCATION: Open Settings Page"},
     "47-openextensions": {"description": "LOCATION: Open Extensions Page"},
     "48-openshortcuts": {"description": "LOCATION: Open Keyboard Shortcuts Page"},
-    "49-showlatestdownload": {"description": "DOWNLOADS: Show latest download"}
+    "49-showlatestdownload": {"description": "DOWNLOADS: Show latest download"},
+    "50-capturescreenshot": {"description": "UTILITY: Capture current viewport screenshot"},
+    "51-capturefullsizescreenshot": {"description": "UTILITY: Capture full size screenshot (max height is 16,348px due to browser limitation)"},
+    "52-forcecapturefullsizescreenshot": {"description": "UTILITY: Force capture full size screenshot (when window is not scrollable)"}
   },
   "options_ui": {
     "page": "options/options.html",
@@ -98,7 +101,8 @@
     "bookmarks",
     "sessions",
     "management",
-    "<all_urls>"
+    "<all_urls>",
+    "debugger"
   ],
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }

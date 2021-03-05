@@ -1,4 +1,7 @@
 'use strict'
+
+import captureScreenshot from './actions/captureScreenshot'
+
 /* global localStorage, chrome */
 
 let copyToClipboard = (text) => {
@@ -351,6 +354,12 @@ let handleAction = (action, request = {}) => {
     if (request.openappid) {
       browser.management.launchApp(request.openappid)
     }
+  } else if (action === 'capturescreenshot') {
+    captureScreenshot()
+  } else if (action === 'capturefullsizescreenshot') {
+    captureScreenshot({fullsize: true})
+  } else if (action === 'forcecapturefullsizescreenshot') {
+    captureScreenshot({fullsize: true, force: true})
   } else {
     return false
   }
