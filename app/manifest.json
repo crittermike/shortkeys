@@ -30,6 +30,7 @@
     "12-reopentab": {"description": "TABS: Reopen closed tab"},
     "13-firsttab": {"description": "TABS: First tab"},
     "14-lasttab": {"description": "TABS: Last tab"},
+    "14-lastusedtab": {"description": "TABS: Switch to last used tab"},
     "15-movetableft": {"description": "TABS: Move tab to the left"},
     "16-movetabright": {"description": "TABS: Move tab to the right"},
     "16-movetabtofirst": {"description": "TABS: Move tab to first position"},

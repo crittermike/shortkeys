@@ -43,6 +43,21 @@ async function getBodyScrollHeight() {
 }
 
 /**
+ * Convert base64 data to a blob and download
+ * @param {string} filename download filename
+ * @param {string} data base64 string
+ * @returns {Promise<void>}
+ */
+async function downloadBase64File(filename, data) {
+  const res = await fetch(data)
+  const blob = await res.blob()
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = filename
+  a.click()
+}
+
+/**
  * Use chrome remote debugging protocol to capture screenshot.
  * @param {object} param0
  * @param {boolean} param0.fullsize Whether to capture full size screenshot.
@@ -88,24 +103,9 @@ async function captureScreenshot({fullsize = false, force = false} = {}) {
        * Get screenshot png base64 data
        */
       const {data} = await sendCommand(tabId, 'Page.captureScreenshot')
-
-      /**
-       * Convert base64 data to a blob and download
-       */
-      browser.tabs.executeScript({
-        code: `
-        fetch("data:image/png;base64,${data}")
-          .then(
-            (res) => res.blob().then(
-              blob => {
-                const a = document.createElement('a')
-                a.href = URL.createObjectURL(blob)
-                a.download="${new URL(url).hostname}.png"
-                a.click()
-              }
-            )
-          );`,
-      })
+      const filename = `${new URL(url).hostname}.png`
+      const base64 = `data:image/png;base64,${data}`
+      downloadBase64File(filename, base64)
     } finally {
       browser.debugger.detach({tabId})
     }
