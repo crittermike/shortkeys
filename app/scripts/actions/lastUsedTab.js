@@ -1,11 +1,11 @@
 /**
- * This variable stores two tabs - last tab and current tab.
+ * This queue stores two tabs - last tab and current tab.
  * @type {chrome.tabs.TabActiveInfo[]}
  */
 let usedTabInfoQueue = [undefined, undefined]
 
 /**
- * Save used tabs history.
+ * Manage usedTabInfoQueue.
  */
 browser.tabs.onActivated.addListener(function (currentTab) {
   usedTabInfoQueue = [usedTabInfoQueue[1], currentTab]
@@ -34,13 +34,18 @@ async function switchToLastUsedTab() {
 
   if (lastTab.windowId !== currentTab.windowId) {
     await browser.windows.update(lastTab.windowId, {focused: true})
+    /**
+     * Switch window is no need to update tab.
+     * Update queue manually.
+     */
+    usedTabInfoQueue = [currentTab, lastTab]
+  } else {
+    /**
+     * Call Update will trigger 'onActivated' event.
+     * Then the listener above will manage usedTabInfoQueue.
+     */
+    await browser.tabs.update(lastTab.tabId, {active: true})
   }
-  await browser.tabs.update(lastTab.tabId, {active: true})
-  /**
-   * Call update function will not trigger 'onActivated' event.
-   * So we have to update queue manually.
-   */
-  usedTabInfoQueue = [currentTab, lastTab]
 }
 
 export default switchToLastUsedTab
