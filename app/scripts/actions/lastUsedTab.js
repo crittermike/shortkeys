@@ -1,3 +1,4 @@
+/// <reference path='../browser.d.ts' />
 /**
  * This queue stores two tabs - last tab and current tab.
  * @type {chrome.tabs.TabActiveInfo[]}
@@ -9,6 +10,17 @@ let usedTabInfoQueue = [undefined, undefined]
  */
 browser.tabs.onActivated.addListener(function (currentTab) {
   usedTabInfoQueue = [usedTabInfoQueue[1], currentTab]
+})
+/**
+ * Switch window will not trigger 'onActivated' event.
+ * So we have to manually save current window's current tab.
+ */
+browser.windows.onFocusChanged.addListener(async function (windowId) {
+  // -1 means focused a devtools debug window, just ignore it.
+  if (windowId === -1) return
+
+  const [{ id }] = await browser.tabs.query({windowId, active: true})
+  usedTabInfoQueue = [usedTabInfoQueue[1], {windowId, tabId: id}]
 })
 
 /**
@@ -33,15 +45,14 @@ async function switchToLastUsedTab() {
   if (!lastTab) return
 
   if (lastTab.windowId !== currentTab.windowId) {
-    await browser.windows.update(lastTab.windowId, {focused: true})
     /**
-     * Switch window is no need to update tab.
-     * Update queue manually.
+     * Call windows.update will trigger 'onFocusChanged' event.
+     * Then the listener above will manage usedTabInfoQueue.
      */
-    usedTabInfoQueue = [currentTab, lastTab]
+    await browser.windows.update(lastTab.windowId, {focused: true})
   } else {
     /**
-     * Call Update will trigger 'onActivated' event.
+     * Call tabs.update will trigger 'onActivated' event.
      * Then the listener above will manage usedTabInfoQueue.
      */
     await browser.tabs.update(lastTab.tabId, {active: true})
