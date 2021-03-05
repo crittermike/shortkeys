@@ -30,6 +30,7 @@
     "12-reopentab": {"description": "TABS: Reopen closed tab"},
     "13-firsttab": {"description": "TABS: First tab"},
     "14-lasttab": {"description": "TABS: Last tab"},
+    "14-lastusedtab": {"description": "TABS: Switch to last used tab"},
     "15-movetableft": {"description": "TABS: Move tab to the left"},
     "16-movetabright": {"description": "TABS: Move tab to the right"},
     "16-movetabtofirst": {"description": "TABS: Move tab to first position"},
@@ -74,8 +75,7 @@
     "49-showlatestdownload": {"description": "DOWNLOADS: Show latest download"},
     "50-capturescreenshot": {"description": "UTILITY: Capture current viewport screenshot"},
     "51-capturefullsizescreenshot": {"description": "UTILITY: Capture full size screenshot (max height is 16,348px due to browser limitation)"},
-    "52-forcecapturefullsizescreenshot": {"description": "UTILITY: Force capture full size screenshot (when window is not scrollable)"},
-    "53-lastusedtab": {"description": "TABS: Switch to last used tab"}
+    "52-forcecapturefullsizescreenshot": {"description": "UTILITY: Force capture full size screenshot (when window is not scrollable)"}
   },
   "options_ui": {
     "page": "options/options.html",
