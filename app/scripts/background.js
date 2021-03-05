@@ -1,6 +1,7 @@
 'use strict'
 
 import captureScreenshot from './actions/captureScreenshot'
+import lastUsedTab from './actions/lastUsedTab'
 
 /* global localStorage, chrome */
 
@@ -127,6 +128,8 @@ let handleAction = (action, request = {}) => {
     selectTab('first')
   } else if (action === 'lasttab') {
     selectTab('last')
+  } else if (action === 'lastusedtab') {
+    lastUsedTab()
   } else if (action === 'newtab') {
     browser.tabs.create({})
   } else if (action === 'reopentab') {

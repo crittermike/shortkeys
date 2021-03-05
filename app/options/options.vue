@@ -307,6 +307,7 @@ export default {
                     {value: 'prevtab', label: 'Previous tab', builtin: true},
                     {value: 'firsttab', label: 'First tab', builtin: true},
                     {value: 'lasttab', label: 'Last tab', builtin: true},
+                    {value: 'lastusedtab', label: 'Switch to last used tab'},
                     {value: 'togglepin', label: 'Pin/unpin tab', builtin: true},
                     {value: 'togglemute', label: 'Mute/unmute tab', builtin: true},
                     {value: 'movetableft', label: 'Move tab left', builtin: true},
