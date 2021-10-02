@@ -1,6 +1,8 @@
 'use strict'
 /* global Mousetrap */
 import Mousetrap from 'mousetrap'
+import Keycode from 'keycode'
+
 let Shortkeys = {}
 Shortkeys.keys = []
 
@@ -51,6 +53,16 @@ Shortkeys.doAction = (keySetting) => {
             document.querySelector(keySetting.button).click()
         }
         message.action = 'nexttab'
+    }
+
+    if (action == 'remapkey') {
+        document.dispatchEvent(new KeyboardEvent('keydown', {
+            keyCode: Keycode(keySetting.mapkey),
+            ctrlKey: keySetting.mapctrl,
+            altKey: keySetting.mapalt,
+            shiftKey: keySetting.mapshift,
+            metaKey: keySetting.mapmeta
+        }));
     }
 
     browser.runtime.sendMessage(message)
