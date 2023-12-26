@@ -3,13 +3,16 @@
  * Max height is 16,348px due to a limitation of Chromium.
  * Record url: https://bugs.chromium.org/p/chromium/issues/detail?id=770769&desc=2
  */
-const MAX_HEIGHT = 16348
+const MAX_HEIGHT = 16348;
+if (typeof browser === "undefined") {
+  var browser = chrome;
+}
 
 /**
  *  CaptureScreenshot works since 1.3, tagged at Chrome 64.
  *  Doc url: https://chromedevtools.github.io/devtools-protocol/1-3/Page/#method-captureScreenshot
  */
-const PROTOCOL_VERSION = '1.3'
+const PROTOCOL_VERSION = "1.3";
 
 /**
  * Promisify debugger.sendCommand
@@ -22,13 +25,13 @@ const PROTOCOL_VERSION = '1.3'
 async function sendCommand(tabId, method, params, waitMilliseconds = 0) {
   return new Promise((resolve, reject) => {
     try {
-      browser.debugger.sendCommand({tabId}, method, params, (res) =>
+      browser.debugger.sendCommand({ tabId }, method, params, res =>
         setTimeout(() => resolve(res), waitMilliseconds)
-      )
+      );
     } catch (e) {
-      reject(e)
+      reject(e);
     }
-  })
+  });
 }
 
 /**
@@ -37,9 +40,9 @@ async function sendCommand(tabId, method, params, waitMilliseconds = 0) {
  */
 async function getBodyScrollHeight() {
   const height = await browser.tabs.executeScript({
-    code: 'document.body.scrollHeight',
-  })
-  return height[0]
+    code: "document.body.scrollHeight"
+  });
+  return height[0];
 }
 
 /**
@@ -49,12 +52,12 @@ async function getBodyScrollHeight() {
  * @returns {Promise<void>}
  */
 async function downloadBase64File(filename, data) {
-  const res = await fetch(data)
-  const blob = await res.blob()
-  const a = document.createElement('a')
-  a.href = URL.createObjectURL(blob)
-  a.download = filename
-  a.click()
+  const res = await fetch(data);
+  const blob = await res.blob();
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
 }
 
 /**
@@ -64,19 +67,19 @@ async function downloadBase64File(filename, data) {
  * @param {boolean} param0.force Whether to force set browser height to max height.
  * @returns {Promise<void>}
  */
-async function captureScreenshot({fullsize = false, force = false} = {}) {
+async function captureScreenshot({ fullsize = false, force = false } = {}) {
   const [
-    {id: tabId, url, height: defaultHeight, width},
+    { id: tabId, url, height: defaultHeight, width }
   ] = await browser.tabs.query({
     currentWindow: true,
-    active: true,
-  })
+    active: true
+  });
 
-  browser.debugger.attach({tabId}, PROTOCOL_VERSION, async () => {
+  browser.debugger.attach({ tabId }, PROTOCOL_VERSION, async () => {
     try {
-      let height = defaultHeight
+      let height = defaultHeight;
       if (fullsize) {
-        height = force ? MAX_HEIGHT : await getBodyScrollHeight()
+        height = force ? MAX_HEIGHT : await getBodyScrollHeight();
       }
       /**
        * When debugger send command, browser will display a notice.
@@ -86,30 +89,30 @@ async function captureScreenshot({fullsize = false, force = false} = {}) {
        */
       await sendCommand(
         tabId,
-        'Emulation.setDeviceMetricsOverride',
+        "Emulation.setDeviceMetricsOverride",
         {
           height,
           width,
           mobile: false,
-          deviceScaleFactor: 0,
+          deviceScaleFactor: 0
         },
         /**
          * Wait until view size changed
          */
         200
-      )
+      );
 
       /**
        * Get screenshot png base64 data
        */
-      const {data} = await sendCommand(tabId, 'Page.captureScreenshot')
-      const filename = `${new URL(url).hostname}.png`
-      const base64 = `data:image/png;base64,${data}`
-      downloadBase64File(filename, base64)
+      const { data } = await sendCommand(tabId, "Page.captureScreenshot");
+      const filename = `${new URL(url).hostname}.png`;
+      const base64 = `data:image/png;base64,${data}`;
+      downloadBase64File(filename, base64);
     } finally {
-      browser.debugger.detach({tabId})
+      browser.debugger.detach({ tabId });
     }
-  })
+  });
 }
 
-export default captureScreenshot
+export default captureScreenshot;

@@ -1,5 +1,5 @@
 {
-  "name": "shortkeys",
+  "name": "shortkeys-test",
   "version": "4.0.2",
   "description": "Custom keyboard shortcuts for your browser",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "devDependencies": {
     "@types/chrome": "^0.0.133",
-    "webextension-toolbox": "^3.0.0"
+    "@webextension-toolbox/webextension-toolbox": "^6.2.0"
   },
   "dependencies": {
     "angular": "^1.8.0",
@@ -24,6 +24,7 @@
     "vue": "^2.6.11",
     "vue-loader": "^15.8.3",
     "vue-template-compiler": "^2.6.11",
-    "webextension-polyfill": "^0.5.0"
+    "webextension-polyfill": "^0.5.0",
+    "webpack": "^5.89.0"
   }
 }
