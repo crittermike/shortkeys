@@ -11,7 +11,7 @@ module.exports = {
         ];
 
         config.entry = {
-            'scripts/service_worker': './scripts/background.js',
+            'scripts/service_worker': './scripts/service_worker.js',
             'scripts/content': './scripts/content.js',
             'options/options': './options/options.js',
         };

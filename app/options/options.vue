@@ -249,7 +249,7 @@ export default {
             showDetailIcon: true,
             showShortcutHelp: false,
             showBehaviorHelp: false,
-            keys: [{}],
+            keys: [],
             websites: [
                 {value: false, label: 'All sites'},
                 {value: true, label: 'All sites except...'},

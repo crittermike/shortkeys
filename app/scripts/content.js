@@ -41,6 +41,8 @@ Shortkeys.doAction = (keySetting) => {
 
     // It's a little hacky, but we have to insert JS this way rather than using executeScript() from the background JS,
     // because this way we have access to the libraries that exist on the page on any given site, such as jQuery.
+    //
+    // this doesn't seem to violate Content Security Policy and does not work with manifest v3
     if (action === 'javascript') {
         let script = document.createElement('script')
         script.textContent = keySetting.code

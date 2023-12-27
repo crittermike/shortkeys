@@ -99,7 +99,9 @@
     "bookmarks",
     "sessions",
     "management",
-    "debugger"
+    "debugger",
+    "scripting",
+    "activeTab"
   ],
   "host_permissions": ["*://*/*"],
   "content_security_policy": {

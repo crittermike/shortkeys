@@ -2,6 +2,7 @@
 
 import captureScreenshot from './actions/captureScreenshot'
 import lastUsedTab from './actions/lastUsedTab'
+import { executeScript } from './utils'
 
 /* global localStorage, chrome */
 
@@ -10,15 +11,13 @@ if (typeof browser === "undefined") {
 }
 
 let copyToClipboard = (text) => {
-  let copyDiv = document.createElement('div')
-  copyDiv.contentEditable = true
-  document.body.appendChild(copyDiv)
-  copyDiv.innerHTML = text
-  copyDiv.unselectable = 'off'
-  copyDiv.focus()
-  document.execCommand('SelectAll')
-  document.execCommand('Copy', false, null)
-  document.body.removeChild(copyDiv)
+  executeScript((text) => {
+    const type = "text/plain";
+    const blob = new Blob([text], { type });
+    const data = [new ClipboardItem({ [type]: blob })];
+
+    navigator.clipboard.write(data)
+  }, [text])
 }
 
 let selectTab = (direction) => {
@@ -108,7 +107,7 @@ let isAllowedSite = function (keySetting, url) {
   return allowed
 }
 
-let handleAction = (action, request = {}) => {
+let handleAction = async (action, request = {}) => {
   var smoothScrolling = request.smoothScrolling ? 'smooth' : 'auto';
   if (action === 'cleardownloads') {
     browser.browsingData.remove({'since': 0}, {'downloads': true})
@@ -117,7 +116,7 @@ let handleAction = (action, request = {}) => {
       browser.tabs.create({url: 'view-source:' + tab[0].url})
     })
   } else if (action === 'print') {
-    browser.tabs.executeScript(null, {'code': 'window.print()'})
+    executeScript(() => window.print())
   } else if (action === 'opensettings') {
     browser.tabs.create({ url: 'chrome://settings', active: true })
   } else if (action === 'openextensions') {
@@ -191,16 +190,16 @@ let handleAction = (action, request = {}) => {
       copyToClipboard(tab[0].url)
     })
   } else if (action === 'searchgoogle') {
-    browser.tabs.executeScript({
-      code: 'window.getSelection().toString();'
-    }).then(function(selection) {
-      if (selection[0]) {
-        let query = encodeURIComponent(selection[0])
-        browser.tabs.query({currentWindow: true, active: true}).then(function(tabs) {
-          browser.tabs.create({url: 'https://www.google.com/search?q=' + query, index: tabs[0].index + 1})
-        })
-      }
-    })
+    executeScript(() => window.getSelection().toString())
+      .then(function(results) {
+        const selection = results[0].result
+        if (selection) {
+          let query = encodeURIComponent(selection)
+          browser.tabs.query({currentWindow: true, active: true}).then(function(tabs) {
+            browser.tabs.create({url: 'https://www.google.com/search?q=' + query, index: tabs[0].index + 1})
+          })
+        }
+      })
   } else if (action === 'movetableft') {
     browser.tabs.query({currentWindow: true, active: true}).then(function(tab) {
       if (tab[0].index > 0) {
@@ -294,37 +293,37 @@ let handleAction = (action, request = {}) => {
       }
     })
   } else if (action === 'back') {
-    browser.tabs.executeScript(null, {'code': 'window.history.back()'})
+    executeScript(() => window.history.back())
   } else if (action === 'forward') {
-    browser.tabs.executeScript(null, {'code': 'window.history.forward()'})
+    executeScript(() => window.history.forward())
   } else if (action === 'reload') {
-    browser.tabs.executeScript(null, {'code': 'window.location.reload()'})
+    executeScript(() => window.location.reload())
   } else if (action === 'hardreload') {
     browser.tabs.reload({bypassCache: true});
   } else if (action === 'top') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollTo({left: 0, top: 0, behavior: "' + smoothScrolling + '"})'})
+    executeScript(() => window.scrollTo({left: 0, top: 0, behavior: smoothScrolling}))
   } else if (action === 'bottom') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollTo({left: 0, top: document.body.scrollHeight, behavior: "' + smoothScrolling + '"})'})
+    executeScript(() => window.scrollTo({left: 0, top: document.body.scrollHeight, behavior: smoothScrolling}))
   } else if (action === 'scrollup') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollBy({left: 0, top: -50, behavior: "' + smoothScrolling + '"})'})
+    executeScript((smoothScrolling) => window.scrollBy({left: 0, top: -50, behavior:  smoothScrolling  }))
   } else if (action === 'scrollupmore') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollBy({left: 0, top: -500, behavior: "' + smoothScrolling + '"})'})
+    executeScript((smoothScrolling) => window.scrollBy({left: 0, top: -500, behavior:   smoothScrolling  }))
   } else if (action === 'pageup') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollBy({left: 0, top: -window.innerHeight, behavior: "' + smoothScrolling + '"})'})
+    executeScript((smoothScrolling) => window.scrollBy({left: 0, top: -window.innerHeight, behavior:  smoothScrolling  }))
   } else if (action === 'scrolldown') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollBy({left: 0, top: 50, behavior: "' + smoothScrolling + '"})'})
+    executeScript((smoothScrolling) => window.scrollBy({left: 0, top: 50, behavior: smoothScrolling  }))
   } else if (action === 'scrolldownmore') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollBy({left: 0, top: 500, behavior: "' + smoothScrolling + '"})'})
+    executeScript((smoothScrolling) => window.scrollBy({left: 0, top: 500, behavior: smoothScrolling  }))
   } else if (action === 'pagedown') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollBy({left: 0, top: window.innerHeight, behavior: "' + smoothScrolling + '"})'})
+    executeScript((smoothScrolling) => window.scrollBy({left: 0, top: window.innerHeight, behavior: smoothScrolling  }))
   } else if (action === 'scrollleft') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollBy({left: -50, top: 0, behavior: "' + smoothScrolling + '"})'})
+    executeScript((smoothScrolling) => window.scrollBy({left: -50, top: window.innerHeight, behavior: smoothScrolling  }))
   } else if (action === 'scrollleftmore') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollBy({left: -500, top: 0, behavior: "' + smoothScrolling + '"})'})
+    executeScript((smoothScrolling) => window.scrollBy({left: -500, top: window.innerHeight, behavior: smoothScrolling  }))
   } else if (action === 'scrollright') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollBy({left: 50, top: 0, behavior: "' + smoothScrolling + '"})'})
+    executeScript((smoothScrolling) => window.scrollBy({left: 50, top: window.innerHeight, behavior: smoothScrolling  }))
   } else if (action === 'scrollrightmore') {
-    browser.tabs.executeScript(null, {'code': 'window.scrollBy({left: 500, top: 0, behavior: "' + smoothScrolling + '"})'})
+    executeScript((smoothScrolling) => window.scrollBy({left: 500, top: window.innerHeight, behavior: smoothScrolling  }))
   } else if (action === 'openbookmark' || action === 'openbookmarknewtab' || action === 'openbookmarkbackgroundtab' || action === 'openbookmarkbackgroundtabandclose') {
     browser.bookmarks.search({title: request.bookmark}).then(function(nodes) {
       let openNode
@@ -337,7 +336,9 @@ let handleAction = (action, request = {}) => {
       }
       if (action === 'openbookmark') {
         if (openNode.url.indexOf('javascript:') === 0) {
-          browser.tabs.executeScript(null, {'code': decodeURIComponent(openNode.url.replace('javascript:', ''))})
+          // todo: add support for bookmarklets when userscripts API is ready 
+          // @link https://developer.chrome.com/docs/extensions/reference/api/userScripts 
+          executeScript(() => {alert('Bookmarklets are not supported by Manifest v3 yet.')})
         } else {
           browser.tabs.update(null, {url: decodeURI(openNode.url)})
         }
