@@ -12,6 +12,7 @@ module.exports = {
 
         config.entry = {
             'scripts/service_worker': './scripts/service_worker.js',
+            'scripts/script-to-inject': './scripts/inject-scripts/script-to-inject.js',
             'scripts/content': './scripts/content.js',
             'options/options': './options/options.js',
         };

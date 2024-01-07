@@ -336,9 +336,12 @@ let handleAction = async (action, request = {}) => {
       }
       if (action === 'openbookmark') {
         if (openNode.url.indexOf('javascript:') === 0) {
-          // todo: add support for bookmarklets when userscripts API is ready 
-          // @link https://developer.chrome.com/docs/extensions/reference/api/userScripts 
-          executeScript(() => {alert('Bookmarklets are not supported by Manifest v3 yet.')})
+          const code = decodeURIComponent(openNode.url.replace('javascript:', ''))
+          executeScript((code) => document.dispatchEvent(new CustomEvent('shortkeys_js_run', {
+            detail: code // code to run
+          })), [code])
+          
+
         } else {
           browser.tabs.update(null, {url: decodeURI(openNode.url)})
         }

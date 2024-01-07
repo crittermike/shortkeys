@@ -105,6 +105,14 @@
   ],
   "host_permissions": ["*://*/*"],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self';"
-  }
+    "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' 'unsafe-inline';"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "/scripts/script-to-inject.js"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
