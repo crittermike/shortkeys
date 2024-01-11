@@ -111,6 +111,33 @@
                                     <b-input type="textarea" v-model="props.row.code"></b-input>
                                 </b-field>
 
+                                <b-field label="Hot Key" v-show="props.row.action === 'remapkey'">
+                                    <b-input placeholder="Key (ex: n)" v-model="props.row.mapkey"></b-input>
+                                </b-field>
+
+                                <b-field v-show="props.row.action === 'remapkey'">
+                                    <section>
+                                        <div class="block">
+                                            <b-checkbox v-model="props.row.mapctrl"
+                                                native-value="Ctrl">
+                                                Ctrl
+                                            </b-checkbox>
+                                            <b-checkbox v-model="props.row.mapalt"
+                                                native-value="Alt">
+                                                Alt
+                                            </b-checkbox>
+                                            <b-checkbox v-model="props.row.mapshift"
+                                                native-value="Shift">
+                                                Shift
+                                            </b-checkbox>
+                                            <b-checkbox v-model="props.row.mapmeta"
+                                                native-value="Meta">
+                                                Meta
+                                            </b-checkbox>
+                                        </div>
+                                    </section>
+                                </b-field>
+
                                 <b-field label="Text to match (wildcards accepted)" v-show="props.row.action === 'gototabbytitle'">
                                     <b-input type="textarea" v-model="props.row.matchtitle"></b-input>
                                 </b-field>
@@ -338,7 +365,8 @@ export default {
                     {value: 'openapp', label: 'Open App'},
                     {value: 'capturescreenshot', label: 'Capture current viewport screenshot'},
                     {value: 'capturefullsizescreenshot', label: 'Capture full size screenshot (max height is 16,348px due to browser limitation)'},
-                    {value: 'forcecapturefullsizescreenshot', label: 'Force capture full size screenshot (when window is not scrollable)'}
+                    {value: 'forcecapturefullsizescreenshot', label: 'Force capture full size screenshot (when window is not scrollable)'},
+                    {value: 'remapkey', label: 'Remap Key Binding'}
                 ]
             }
         }

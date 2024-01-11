@@ -75,7 +75,8 @@
     "49-showlatestdownload": {"description": "DOWNLOADS: Show latest download"},
     "50-capturescreenshot": {"description": "UTILITY: Capture current viewport screenshot"},
     "51-capturefullsizescreenshot": {"description": "UTILITY: Capture full size screenshot (max height is 16,348px due to browser limitation)"},
-    "52-forcecapturefullsizescreenshot": {"description": "UTILITY: Force capture full size screenshot (when window is not scrollable)"}
+    "52-forcecapturefullsizescreenshot": {"description": "UTILITY: Force capture full size screenshot (when window is not scrollable)"},
+    "53-remapkey": { "description": "UTILITY: Remap key binding" }
   },
   "options_ui": {
     "page": "options/options.html",
