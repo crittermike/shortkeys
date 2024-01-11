@@ -379,7 +379,7 @@ browser.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   const action = request.action
   if (action === 'getKeys') {
     const currentUrl = request.url
-    let settings = JSON.parse(localStorage.shortkeys)
+    let settings = localStorage.shortkeys ? JSON.parse(localStorage.shortkeys) : [{}]
     let keys = []
     if (settings.keys.length > 0) {
       settings.keys.forEach((key) => {
