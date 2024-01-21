@@ -249,7 +249,7 @@ export default {
             showDetailIcon: true,
             showShortcutHelp: false,
             showBehaviorHelp: false,
-            keys: [],
+            keys: [{}],
             websites: [
                 {value: false, label: 'All sites'},
                 {value: true, label: 'All sites except...'},
@@ -357,7 +357,7 @@ export default {
         };
 
         const savedKeys = await chrome.storage.local.get('keys')
-        this.keys.push(...JSON.parse(savedKeys.keys || '[]'))
+        this.keys = [...JSON.parse(savedKeys.keys || '[{}]')]
 
         chrome.bookmarks.getTree(processBookmarks)
     },
