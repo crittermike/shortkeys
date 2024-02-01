@@ -211,13 +211,13 @@ export default {
         TextInput,
     },
     methods: {
-        saveShortcuts: function() {
+        saveShortcuts: async function() {
             this.keys.forEach((key) => {
                 key.sites = key.sites || "";
                 key.sitesArray = key.sites.split('\n');
                 delete key.sidebarOpen;
             });
-            localStorage.shortkeys = JSON.stringify({keys: this.keys});
+            await chrome.storage.local.set({ keys: JSON.stringify(this.keys) });
             this.$buefy.snackbar.open(`Shortcuts have been saved!`);
         },
         importKeys: function() {
@@ -249,7 +249,7 @@ export default {
             showDetailIcon: true,
             showShortcutHelp: false,
             showBehaviorHelp: false,
-            keys: localStorage.shortkeys ? JSON.parse(localStorage.shortkeys).keys : [{}],
+            keys: [{}],
             websites: [
                 {value: false, label: 'All sites'},
                 {value: true, label: 'All sites except...'},
@@ -355,6 +355,10 @@ export default {
                 }
             }
         };
+
+        const savedKeys = await chrome.storage.local.get('keys')
+        this.keys = [...JSON.parse(savedKeys.keys || '[{}]')]
+
         chrome.bookmarks.getTree(processBookmarks)
     },
 };

@@ -1,7 +1,13 @@
 'use strict'
 /* global Mousetrap */
 import Mousetrap from 'mousetrap'
-let Shortkeys = {}
+import './inject-scripts/inject.js'
+
+if (typeof browser === "undefined") {
+  var browser = chrome;
+}
+
+export let Shortkeys = {}
 Shortkeys.keys = []
 
 /**
@@ -34,13 +40,13 @@ Shortkeys.doAction = (keySetting) => {
         message[attribute] = keySetting[attribute]
     }
 
-    // It's a little hacky, but we have to insert JS this way rather than using executeScript() from the background JS,
-    // because this way we have access to the libraries that exist on the page on any given site, such as jQuery.
+    // After migration to manifest v3 the content_scripts now run in ISOLATED world
+    // to make custom JS run we inject a script that awaits for the custom event 
+    // to the page MAIN world and dispatch this event from the content script
     if (action === 'javascript') {
-        let script = document.createElement('script')
-        script.textContent = keySetting.code
-        document.body.appendChild(script)
-        document.body.removeChild(script)
+        document.dispatchEvent(new CustomEvent('shortkeys_js_run', {
+          detail: keySetting.code // code to run
+        }))
         return
     } else if (action === 'trigger') {
         Mousetrap.trigger(keySetting.trigger)

@@ -1,3 +1,9 @@
+import { executeScript } from '../utils'
+
+if (typeof browser === "undefined") {
+  var browser = chrome;
+}
+
 /// <reference path='../browser.d.ts' />
 /**
  * Max height is 16,348px due to a limitation of Chromium.
@@ -36,9 +42,7 @@ async function sendCommand(tabId, method, params, waitMilliseconds = 0) {
  * @returns {Promise<number>}
  */
 async function getBodyScrollHeight() {
-  const height = await browser.tabs.executeScript({
-    code: 'document.body.scrollHeight',
-  })
+  const height = await executeScript(() => document.body.scrollHeight)
   return height[0]
 }
 
@@ -105,7 +109,7 @@ async function captureScreenshot({fullsize = false, force = false} = {}) {
       const {data} = await sendCommand(tabId, 'Page.captureScreenshot')
       const filename = `${new URL(url).hostname}.png`
       const base64 = `data:image/png;base64,${data}`
-      downloadBase64File(filename, base64)
+      executeScript(downloadBase64File, [filename, base64])
     } finally {
       browser.debugger.detach({tabId})
     }

@@ -1,3 +1,6 @@
+if (typeof browser === "undefined") {
+  var browser = chrome;
+}
 /// <reference path='../browser.d.ts' />
 /**
  * This queue stores two tabs - last tab and current tab.
