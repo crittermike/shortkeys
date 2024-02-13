@@ -1,6 +1,6 @@
 {
   "name": "shortkeys",
-  "version": "4.0.4",
+  "version": "4.0.5",
   "description": "Custom keyboard shortcuts for your browser",
   "scripts": {
     "dev": "webextension-toolbox dev",
