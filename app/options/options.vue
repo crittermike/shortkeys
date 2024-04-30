@@ -356,8 +356,19 @@ export default {
             }
         };
 
-        const savedKeys = await chrome.storage.local.get('keys')
-        this.keys = [...JSON.parse(savedKeys.keys || '[{}]')]
+        async function loadKeys() {
+            const savedKeys = await chrome.storage.local.get('keys');
+            if (savedKeys.keys) {
+                this.keys = [...JSON.parse(savedKeys.keys)];
+            } else {
+                // Fallback to localStorage if chrome.storage.local has no keys.
+                // This supports the manifest v2 to v3 migratoin path.
+                this.keys = localStorage.shortkeys ? JSON.parse(localStorage.shortkeys).keys : [{}];
+            }
+        }
+
+        loadKeys();
+
 
         chrome.bookmarks.getTree(processBookmarks)
     },
