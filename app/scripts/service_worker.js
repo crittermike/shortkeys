@@ -384,12 +384,30 @@ browser.commands.onCommand.addListener(function (command) {
 })
 
 browser.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
+    if (notificationId === 'settingsNotification' && buttonIndex === 0) {
+      // Open the options page if exists
+      chrome.runtime.openOptionsPage();
+    }
+  });
   const action = request.action
   if (action === 'getKeys') {
     (async () => {
       const currentUrl = request.url
       const keysFromStorage = await chrome.storage.local.get("keys")
-      const settings = { keys: JSON.parse(keysFromStorage.keys) }
+      const settings = {}
+      if (keysFromStorage.keys) {
+        settings.keys = JSON.parse(keysFromStorage.keys)
+      } else {
+        chrome.notifications.create('settingsNotification', {
+          type: 'basic',
+          iconUrl: '/images/icon_128.png',
+          title: 'Shortkeys upgraded',
+          message: 'Action needed: re-save your shortcuts to continue using them.',
+          requireInteraction: true,
+          buttons: [{title: "Open and re-save settings"}]
+        });
+      }
       let keys = []
 
       if (settings.keys.length > 0) {

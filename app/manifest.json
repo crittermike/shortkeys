@@ -124,6 +124,7 @@
     "management",
     "debugger",
     "scripting",
+    "notifications",
     "activeTab"
   ],
   "host_permissions": ["*://*/*"],
