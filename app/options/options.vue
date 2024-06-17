@@ -39,6 +39,14 @@
 
         <b-tabs v-model="activeTab" type="is-toggle" expanded>
             <b-tab-item label="Shortcuts">
+                <b-message
+                    title="Enable Developer Mode"
+                    type="is-warning"
+                    :active="needsDeveloperMode()"
+                    :closable="false">
+                    In order for JavaScript actions to work, you must first enable Developer Mode in your browser extension settings. Follow the instructions <a href="https://developer.chrome.com/docs/extensions/reference/api/userScripts#developer_mode_for_extension_users" target="_blank">here</a>, then come back and save your shortcuts.
+                </b-message>
+
                 <b-table
                         :data="keys"
                         ref="table"
@@ -196,6 +204,7 @@
 </template>
 
 <script>
+import { v4 as uuid } from "uuid";
 import TextInput from "./components/TextInput";
 import LinkBar from "./components/LinkBar";
 import SelectInput from "./components/SelectInput";
@@ -211,8 +220,25 @@ export default {
         TextInput,
     },
     methods: {
+        needsDeveloperMode: function() {
+            const hasJsKeys = this.keys.some(key => key.action === 'javascript');
+            if (!hasJsKeys) {
+                return false;
+            }
+
+            try {
+                chrome.userScripts;
+                return false;
+            } catch {
+                return true;
+            }
+        },
         saveShortcuts: async function() {
             this.keys.forEach((key) => {
+                if (!key.id) {
+                    key.id = uuid();
+                }
+
                 key.sites = key.sites || "";
                 key.sitesArray = key.sites.split('\n');
                 delete key.sidebarOpen;

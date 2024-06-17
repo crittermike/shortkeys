@@ -7,7 +7,7 @@
     "build": "webextension-toolbox build"
   },
   "devDependencies": {
-    "@types/chrome": "^0.0.133",
+    "@types/chrome": "^0.0.267",
     "@webextension-toolbox/webextension-toolbox": "^6.2.0"
   },
   "dependencies": {
@@ -21,6 +21,7 @@
     "mousetrap": "^1.6.3",
     "serialize-javascript": ">=2.1.1",
     "style-loader": "^1.0.1",
+    "uuid": "^10.0.0",
     "vue": "^2.6.11",
     "vue-loader": "^15.8.3",
     "vue-template-compiler": "^2.6.11",
