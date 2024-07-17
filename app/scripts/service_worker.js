@@ -377,6 +377,56 @@ let handleAction = async (action, request = {}) => {
   return true
 }
 
+async function registerUserScript() {
+    const keys = JSON.parse((await chrome.storage.local.get("keys")).keys) || []
+    const javascriptActions = keys.filter(key => key.action === "javascript")
+
+    const actionHandlersAsObject = javascriptActions.reduce((acc, cur) => {
+        acc += JSON.stringify(cur.id) + ":"
+        acc += "function() {" + cur.code + "},"
+        return acc
+    }, "{") + "}"
+
+    function registerHandlers() {
+        document.addEventListener('shortkeys_js_run', function(e) {
+            if (handlers[e.detail]) {
+                handlers[e.detail]()
+            }
+        })
+    }
+
+    const existingScripts = await chrome.userScripts.getScripts({
+        ids: ["shortkeys-actions"]
+    })
+
+    const scripts = [
+        {
+            id: "shortkeys-actions",
+            matches: [ "*://*/*" ],
+            world: "MAIN",
+            js: [
+                {
+                    code: `const handlers = ${actionHandlersAsObject};\n${registerHandlers.toString()}\nregisterHandlers();`
+                }
+            ]
+        }
+    ]
+
+    if (existingScripts.length) {
+        await chrome.userScripts.update(scripts)
+    } else {
+        await chrome.userScripts.register(scripts)
+    }
+}
+
+chrome.storage.local.onChanged.addListener(registerUserScript)
+
+chrome.runtime.onInstalled.addListener(function (details) {
+  if (details.reason === "update") {
+    registerUserScript()
+  }
+})
+
 browser.commands.onCommand.addListener(function (command) {
   // Remove the integer and hyphen at the beginning.
   command = command.split('-')[1]
