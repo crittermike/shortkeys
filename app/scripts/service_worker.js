@@ -406,7 +406,7 @@ async function registerUserScript() {
             world: "MAIN",
             js: [
                 {
-                    code: `const handlers = ${actionHandlersAsObject};\n${registerHandlers.toString()}\nregisterHandlers();`
+                    code: `const handlers = ${actionHandlersAsObject};\n(${registerHandlers.toString()})();`
                 }
             ]
         }
