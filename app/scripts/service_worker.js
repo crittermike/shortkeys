@@ -3,6 +3,7 @@
 import captureScreenshot from './actions/captureScreenshot'
 import lastUsedTab from './actions/lastUsedTab'
 import { executeScript } from './utils'
+import { v4 as uuid } from "uuid"
 
 /* global localStorage, chrome */
 
@@ -377,6 +378,16 @@ let handleAction = async (action, request = {}) => {
   return true
 }
 
+async function checkKeys() {
+  const keys = JSON.parse((await chrome.storage.local.get("keys")).keys) || []
+  for (const key of keys) {
+    if (!key.id) {
+      key.id = uuid()
+    }
+  }
+  await chrome.storage.local.set({ keys: JSON.stringify(keys) });
+}
+
 async function registerUserScript() {
     const keys = JSON.parse((await chrome.storage.local.get("keys")).keys) || []
     const javascriptActions = keys.filter(key => key.action === "javascript")
@@ -406,7 +417,7 @@ async function registerUserScript() {
             world: "MAIN",
             js: [
                 {
-                    code: `const handlers = ${actionHandlersAsObject};\n${registerHandlers.toString()}\nregisterHandlers();`
+                    code: `const handlers = ${actionHandlersAsObject};\n(${registerHandlers.toString()})();`
                 }
             ]
         }
@@ -421,8 +432,9 @@ async function registerUserScript() {
 
 chrome.storage.local.onChanged.addListener(registerUserScript)
 
-chrome.runtime.onInstalled.addListener(function (details) {
+chrome.runtime.onInstalled.addListener(async function (details) {
   if (details.reason === "update") {
+    await checkKeys()
     registerUserScript()
   }
 })
