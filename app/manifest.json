@@ -129,7 +129,6 @@
     "userScripts"
   ],
   "host_permissions": ["*://*/*"],
-  "user_scripts": { },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' 'unsafe-inline'; style-src-elem 'self' 'unsafe-inline' https://cdn.materialdesignicons.com https://cdn.jsdelivr.net;"
   },
