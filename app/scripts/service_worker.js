@@ -436,6 +436,8 @@ chrome.runtime.onInstalled.addListener(async function (details) {
   if (details.reason === "update") {
     await checkKeys()
     registerUserScript()
+  } else if (details.reason === "install") {
+    chrome.runtime.openOptionsPage();
   }
 })
 
