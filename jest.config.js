@@ -1,8 +1,9 @@
 module.exports = {
-  testEnvironment: 'node',
-  moduleFileExtensions: ['js'],
+  testEnvironment: 'jsdom',
+  moduleFileExtensions: ['js', 'vue'],
   transform: {
-    '^.+\\.js$': 'babel-jest'
+    '^.+\\.js$': 'babel-jest',
+    '^.+\\.vue$': 'vue-jest'
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/app/$1'
@@ -17,5 +18,6 @@ module.exports = {
     '!**/node_modules/**'
   ],
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'html']
+  coverageReporters: ['text', 'lcov', 'html'],
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.js']
 };
