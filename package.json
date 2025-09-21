@@ -28,7 +28,7 @@
     "codemirror": "^5.58.2",
     "css-loader": "^3.3.2",
     "mousetrap": "^1.6.3",
-    "serialize-javascript": ">=2.1.1",
+    "serialize-javascript": ">=6.0.2",
     "style-loader": "^1.0.1",
     "uuid": "^10.0.0",
     "vue": "^2.6.11",
