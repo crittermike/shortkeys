@@ -9,4 +9,4 @@ npm-debug.log
 packages
 .DS_Store
 coverage
-tests/setup.js
+test-options.sh
