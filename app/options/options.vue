@@ -40,11 +40,12 @@
         <b-tabs v-model="activeTab" type="is-toggle" expanded>
             <b-tab-item label="Shortcuts">
                 <b-message
-                    title="Enable Developer Mode"
+                    title="Allow User Scripts"
                     type="is-warning"
-                    :active="needsDeveloperMode()"
+                    :active="needsUserScripts()"
                     :closable="false">
-                    In order for JavaScript actions to work, you must first enable Developer Mode in your browser extension settings. Follow the instructions <a href="https://developer.chrome.com/docs/extensions/reference/api/userScripts#developer_mode_for_extension_users" target="_blank">here</a>, then come back and save your shortcuts.
+                    In order for JavaScript actions to work, you must first allow User Scripts in your browser extension details as showed in the image below. Then come back and save your shortcuts.
+                    <img src="/images/allowscripts.png" alt="Allow User Scripts" />
                 </b-message>
 
                 <b-table
@@ -220,14 +221,14 @@ export default {
         TextInput,
     },
     methods: {
-        needsDeveloperMode: function() {
+        needsUserScripts: function() {
             const hasJsKeys = this.keys.some(key => key.action === 'javascript');
             if (!hasJsKeys) {
                 return false;
             }
 
             try {
-                chrome.userScripts;
+                chrome.userScripts.register;
                 return false;
             } catch {
                 return true;
@@ -243,7 +244,10 @@ export default {
                 key.sitesArray = key.sites.split('\n');
                 delete key.sidebarOpen;
             });
-            await chrome.storage.local.set({ keys: JSON.stringify(this.keys) });
+            await chrome.storage.local.set({
+                keys: JSON.stringify(this.keys),
+                random: Math.random(), // make sure onChanged event will be triggered
+            });
             this.$buefy.snackbar.open(`Shortcuts have been saved!`);
         },
         importKeys: function() {
