@@ -27,6 +27,14 @@ Custom keyboard shortcuts for your browser
     npm run build opera
     npm run build edge
 
+## Testing
+
+    npm test                # Run all tests
+    npm run test:watch      # Run tests in watch mode
+    npm run test:coverage   # Run tests with coverage
+
+See [Testing Guide](docs/TESTING.md) for detailed information about the testing setup.
+
 ## Environment
 
 The build tool also defines a variable named `process.env.NODE_ENV` in your scripts. 
