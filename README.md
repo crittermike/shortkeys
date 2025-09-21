@@ -27,6 +27,10 @@ Custom keyboard shortcuts for your browser
     npm run build opera
     npm run build edge
 
+## Testing
+
+    npm test
+
 ## Environment
 
 The build tool also defines a variable named `process.env.NODE_ENV` in your scripts. 
