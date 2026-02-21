@@ -9,6 +9,12 @@ export default defineConfig({
     description: 'Custom keyboard shortcuts for your browser',
     version: '5.0.0',
     default_locale: 'en',
+    browser_specific_settings: {
+      gecko: {
+        id: 'niceshortcuts@niceshortcuts.com',
+        strict_min_version: '109.0',
+      },
+    },
     icons: {
       16: '/images/icon_16.png',
       48: '/images/icon_48.png',

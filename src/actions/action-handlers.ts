@@ -71,15 +71,18 @@ const actionHandlers: Record<string, ActionHandler> = {
     return true
   },
   opensettings: async () => {
-    await browser.tabs.create({ url: 'chrome://settings', active: true })
+    const isFirefox = navigator.userAgent.includes('Firefox')
+    await browser.tabs.create({ url: isFirefox ? 'about:preferences' : 'chrome://settings', active: true })
     return true
   },
   openextensions: async () => {
-    await browser.tabs.create({ url: 'chrome://extensions', active: true })
+    const isFirefox = navigator.userAgent.includes('Firefox')
+    await browser.tabs.create({ url: isFirefox ? 'about:addons' : 'chrome://extensions', active: true })
     return true
   },
   openshortcuts: async () => {
-    await browser.tabs.create({ url: 'chrome://extensions/shortcuts', active: true })
+    const isFirefox = navigator.userAgent.includes('Firefox')
+    await browser.tabs.create({ url: isFirefox ? 'about:addons' : 'chrome://extensions/shortcuts', active: true })
     return true
   },
 
@@ -404,7 +407,7 @@ const actionHandlers: Record<string, ActionHandler> = {
   // -- Downloads --
   showlatestdownload: async () => {
     const downloads = await chrome.downloads.search({ orderBy: ['-startTime'], state: 'complete' })
-    if (downloads?.length > 0) {
+    if (downloads?.length > 0 && chrome.downloads.show) {
       chrome.downloads.show(downloads[0].id)
     }
     return true
