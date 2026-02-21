@@ -10,14 +10,16 @@ import {
 import type { KeySetting } from '@/utils/url-matching'
 
 const activeTab = ref(0)
-const keys = ref<KeySetting[]>([{}] as KeySetting[])
+const keys = ref<KeySetting[]>([])
 const bookmarks = ref<string[]>([])
 const importJson = ref('')
-const expandedRow = ref<string | null>(null)
+const expandedRow = ref<number | null>(null)
 const snackMessage = ref('')
+const snackType = ref<'success' | 'danger'>('success')
 
-function showSnack(msg: string) {
+function showSnack(msg: string, type: 'success' | 'danger' = 'success') {
   snackMessage.value = msg
+  snackType.value = type
   setTimeout(() => (snackMessage.value = ''), 3000)
 }
 
@@ -32,9 +34,19 @@ function needsUserScripts(): boolean {
   }
 }
 
-async function saveShortcuts() {
+function ensureIds() {
   keys.value.forEach((key) => {
     if (!key.id) key.id = uuid()
+  })
+}
+
+function addShortcut() {
+  keys.value.push({ id: uuid() } as KeySetting)
+}
+
+async function saveShortcuts() {
+  ensureIds()
+  keys.value.forEach((key) => {
     key.sites = key.sites || ''
     key.sitesArray = key.sites.split('\n')
   })
@@ -42,41 +54,48 @@ async function saveShortcuts() {
     keys: JSON.stringify(keys.value),
     random: Math.random(),
   })
-  showSnack('Shortcuts have been saved!')
+  showSnack('Shortcuts saved!')
 }
 
 function importKeys() {
   try {
     const parsed = JSON.parse(importJson.value)
     keys.value = keys.value.concat(parsed)
+    ensureIds()
     showSnack('Imported successfully!')
   } catch {
-    showSnack('Invalid JSON. Please check and try again.')
+    showSnack('Invalid JSON. Please check and try again.', 'danger')
   }
 }
 
-function deleteShortcut(key: KeySetting) {
+function deleteShortcut(index: number) {
   if (confirm('Delete this shortcut?')) {
-    keys.value = keys.value.filter((k) => k.key !== key.key)
+    keys.value.splice(index, 1)
+    if (expandedRow.value === index) expandedRow.value = null
   }
 }
 
-function toggleDetails(key: string) {
-  expandedRow.value = expandedRow.value === key ? null : key
+function toggleDetails(index: number) {
+  expandedRow.value = expandedRow.value === index ? null : index
 }
 
 function isScrollAction(action: string): boolean {
   return (SCROLL_ACTIONS as readonly string[]).includes(action)
 }
 
+function isBookmarkAction(action: string): boolean {
+  return ['openbookmark', 'openbookmarknewtab', 'openbookmarkbackgroundtab', 'openbookmarkbackgroundtabandclose'].includes(action)
+}
+
 onMounted(async () => {
-  // Load saved keys
   const saved = await chrome.storage.local.get('keys')
   if (saved.keys) {
     keys.value = JSON.parse(saved.keys)
+    ensureIds()
+  } else {
+    addShortcut()
   }
 
-  // Load bookmarks
   chrome.bookmarks.getTree((tree) => {
     const process = (nodes: chrome.bookmarks.BookmarkTreeNode[]) => {
       for (const node of nodes) {
@@ -90,321 +109,549 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="section">
-    <!-- Navigation -->
-    <nav class="navbar is-light mb-5" role="navigation">
-      <div class="navbar-brand">
-        <span class="navbar-item has-text-weight-bold">SHORTKEYS</span>
-      </div>
-      <div class="navbar-menu">
-        <div class="navbar-start">
-          <a
-            class="navbar-item"
-            href="https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck/reviews"
-            target="_blank"
-          >
-            Review
-          </a>
-          <a
-            class="navbar-item"
-            href="https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys"
-            target="_blank"
-          >
-            Documentation
-          </a>
-          <a
-            class="navbar-item"
-            href="https://github.com/mikecrittenden/shortkeys/issues"
-            target="_blank"
-          >
-            Support
-          </a>
-          <a
-            class="navbar-item"
-            href="https://github.com/mikecrittenden/shortkeys"
-            target="_blank"
-          >
-            GitHub
-          </a>
+  <div class="app-wrapper">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-inner">
+        <div class="brand">
+          <img src="/images/icon_48.png" alt="Shortkeys" class="brand-icon" />
+          <span class="brand-text">Shortkeys</span>
         </div>
+        <nav class="header-links">
+          <a href="https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck/reviews" target="_blank">Review</a>
+          <a href="https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys" target="_blank">Docs</a>
+          <a href="https://github.com/mikecrittenden/shortkeys/issues" target="_blank">Support</a>
+          <a href="https://github.com/mikecrittenden/shortkeys" target="_blank">GitHub</a>
+        </nav>
       </div>
-    </nav>
+    </header>
 
-    <!-- Snack bar -->
-    <div
-      v-if="snackMessage"
-      class="notification is-success is-light"
-      style="position: fixed; bottom: 20px; right: 20px; z-index: 999"
-    >
-      {{ snackMessage }}
-    </div>
+    <!-- Toast -->
+    <Transition name="toast">
+      <div v-if="snackMessage" :class="['toast', snackType === 'danger' ? 'toast-error' : 'toast-success']">
+        {{ snackMessage }}
+      </div>
+    </Transition>
 
-    <!-- Tabs -->
-    <div class="tabs is-toggle is-fullwidth">
-      <ul>
-        <li :class="{ 'is-active': activeTab === 0 }">
-          <a @click="activeTab = 0">Shortcuts</a>
-        </li>
-        <li :class="{ 'is-active': activeTab === 1 }">
-          <a @click="activeTab = 1">Import</a>
-        </li>
-        <li :class="{ 'is-active': activeTab === 2 }">
-          <a @click="activeTab = 2">Export</a>
-        </li>
-      </ul>
-    </div>
+    <main class="app-main">
+      <!-- Tabs -->
+      <div class="tab-bar">
+        <button :class="['tab-btn', { active: activeTab === 0 }]" @click="activeTab = 0">
+          <i class="mdi mdi-keyboard"></i> Shortcuts
+        </button>
+        <button :class="['tab-btn', { active: activeTab === 1 }]" @click="activeTab = 1">
+          <i class="mdi mdi-import"></i> Import
+        </button>
+        <button :class="['tab-btn', { active: activeTab === 2 }]" @click="activeTab = 2">
+          <i class="mdi mdi-export"></i> Export
+        </button>
+      </div>
 
-    <!-- Shortcuts Tab -->
-    <div v-show="activeTab === 0">
-      <!-- User Scripts Warning -->
-      <article v-if="needsUserScripts()" class="message is-warning">
-        <div class="message-header">
-          <p>Allow User Scripts</p>
-        </div>
-        <div class="message-body">
+      <!-- Shortcuts Tab -->
+      <div v-show="activeTab === 0" class="tab-content">
+        <article v-if="needsUserScripts()" class="alert alert-warning">
+          <strong>Allow User Scripts</strong> —
           In order for JavaScript actions to work, you must first allow User Scripts in your
-          browser extension details. Then come back and save your shortcuts.
-        </div>
-      </article>
+          browser extension details page. Then come back and save your shortcuts.
+        </article>
 
-      <!-- Shortcuts Table -->
-      <table class="table is-fullwidth is-striped">
-        <thead>
-          <tr>
-            <th>Shortcut</th>
-            <th>Label</th>
-            <th>Behavior</th>
-            <th></th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <template v-for="(row, index) in keys" :key="row.key || index">
-            <tr>
-              <td>
+        <!-- Shortcut rows -->
+        <div class="shortcut-list">
+          <div v-for="(row, index) in keys" :key="row.id" class="shortcut-card">
+            <div class="shortcut-row">
+              <div class="field-group">
+                <label class="field-label">Shortcut</label>
                 <input
-                  class="input"
+                  class="field-input shortcut-input"
                   type="text"
-                  placeholder="Example: ctrl+a"
+                  placeholder="e.g. ctrl+shift+k"
                   v-model="row.key"
                 />
-              </td>
-              <td>
-                <input class="input" type="text" v-model="row.label" />
-              </td>
-              <td>
-                <div class="select">
-                  <select v-model="row.action">
-                    <optgroup
-                      v-for="(group, name) in ACTION_CATEGORIES"
-                      :key="name"
-                      :label="name"
-                    >
-                      <option v-for="opt in group" :key="opt.value" :value="opt.value">
-                        {{ opt.label }}
-                      </option>
-                    </optgroup>
-                  </select>
-                </div>
-              </td>
-              <td>
-                <button
-                  class="button is-small"
-                  @click="toggleDetails(row.key || String(index))"
-                >
-                  <span class="icon">
-                    <i
-                      :class="
-                        expandedRow === (row.key || String(index))
-                          ? 'mdi mdi-chevron-up'
-                          : 'mdi mdi-chevron-down'
-                      "
-                    ></i>
-                  </span>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Label</label>
+                <input class="field-input" type="text" placeholder="Optional label" v-model="row.label" />
+              </div>
+              <div class="field-group field-group-grow">
+                <label class="field-label">Behavior</label>
+                <select class="field-select" v-model="row.action">
+                  <option value="" disabled>Choose action…</option>
+                  <optgroup v-for="(group, name) in ACTION_CATEGORIES" :key="name" :label="name">
+                    <option v-for="opt in group" :key="opt.value" :value="opt.value">
+                      {{ opt.label }}
+                    </option>
+                  </optgroup>
+                </select>
+              </div>
+              <div class="shortcut-actions">
+                <button class="btn-icon" @click="toggleDetails(index)" :title="expandedRow === index ? 'Collapse' : 'Settings'">
+                  <i :class="expandedRow === index ? 'mdi mdi-chevron-up' : 'mdi mdi-cog-outline'"></i>
                 </button>
-              </td>
-              <td>
-                <button class="button is-small is-danger is-outlined" @click="deleteShortcut(row)">
-                  <span class="icon"><i class="mdi mdi-delete"></i></span>
+                <button class="btn-icon btn-delete" @click="deleteShortcut(index)" title="Delete">
+                  <i class="mdi mdi-close"></i>
                 </button>
-              </td>
-            </tr>
+              </div>
+            </div>
 
-            <!-- Expanded details row -->
-            <tr v-if="expandedRow === (row.key || String(index))">
-              <td colspan="5">
-                <!-- Built-in hint -->
-                <article v-if="isBuiltInAction(row.action)" class="message is-info mb-4">
-                  <div class="message-body">
-                    This action is also available via the browser's native Keyboard Shortcuts settings,
-                    which allows it to work on the new tab page and when the address bar is focused.
-                    <a
-                      href="https://github.com/mikecrittenden/shortkeys/wiki/FAQs-and-Troubleshooting#Do_I_use_the_browsers_Keyboard_Shortcuts_settings_or_the_Shortkeys_options_page"
-                      target="_blank"
-                    >
-                      More information...
-                    </a>
-                  </div>
+            <!-- Expanded details -->
+            <Transition name="expand">
+              <div v-if="expandedRow === index" class="shortcut-details">
+                <article v-if="isBuiltInAction(row.action)" class="alert alert-info">
+                  <i class="mdi mdi-information-outline"></i>
+                  This action is also available via the browser's native
+                  <strong>Keyboard Shortcuts</strong> settings (works on new tab page &amp; address bar).
+                  <a href="https://github.com/mikecrittenden/shortkeys/wiki/FAQs-and-Troubleshooting#Do_I_use_the_browsers_Keyboard_Shortcuts_settings_or_the_Shortkeys_options_page" target="_blank">Learn more</a>
                 </article>
 
-                <div class="columns">
-                  <div class="column">
-                    <h5 class="title is-5">Shortcut settings</h5>
+                <div class="details-columns">
+                  <div class="details-col">
+                    <h4>Shortcut settings</h4>
 
-                    <div v-if="isScrollAction(row.action)" class="field">
-                      <label class="checkbox">
-                        <input type="checkbox" v-model="row.smoothScrolling" />
-                        Smooth scrolling
-                      </label>
+                    <label v-if="isScrollAction(row.action)" class="check-label">
+                      <input type="checkbox" v-model="row.smoothScrolling" /> Smooth scrolling
+                    </label>
+
+                    <label v-if="row.action === 'gototab' || row.action === 'gototabbytitle'" class="check-label">
+                      <input type="checkbox" v-model="row.currentWindow" /> Search current window only
+                    </label>
+
+                    <div v-if="isBookmarkAction(row.action)" class="detail-field">
+                      <label>Bookmark</label>
+                      <select class="field-select" v-model="row.bookmark">
+                        <option v-for="bm in bookmarks" :key="bm" :value="bm">{{ bm }}</option>
+                      </select>
                     </div>
 
-                    <div
-                      v-if="row.action === 'gototab' || row.action === 'gototabbytitle'"
-                      class="field"
-                    >
-                      <label class="checkbox">
-                        <input type="checkbox" v-model="row.currentWindow" />
-                        Search in current window only
-                      </label>
+                    <div v-if="row.action === 'javascript'" class="detail-field">
+                      <label>JavaScript code</label>
+                      <textarea class="field-textarea mono" v-model="row.code" rows="5"></textarea>
                     </div>
 
-                    <div
-                      v-if="
-                        ['openbookmark', 'openbookmarknewtab', 'openbookmarkbackgroundtab', 'openbookmarkbackgroundtabandclose'].includes(
-                          row.action,
-                        )
-                      "
-                      class="field"
-                    >
-                      <label class="label">Bookmark</label>
-                      <div class="select">
-                        <select v-model="row.bookmark">
-                          <option v-for="bm in bookmarks" :key="bm" :value="bm">{{ bm }}</option>
-                        </select>
-                      </div>
+                    <div v-if="row.action === 'gototabbytitle'" class="detail-field">
+                      <label>Text to match (wildcards accepted)</label>
+                      <input class="field-input" v-model="row.matchtitle" />
                     </div>
 
-                    <div v-if="row.action === 'javascript'" class="field">
-                      <label class="label">JavaScript code</label>
-                      <textarea class="textarea" v-model="row.code"></textarea>
+                    <div v-if="row.action === 'gototab'" class="detail-field">
+                      <label>URL to match (<a target="_blank" href="https://developer.chrome.com/extensions/match_patterns">examples</a>)</label>
+                      <input class="field-input" v-model="row.matchurl" />
                     </div>
 
-                    <div v-if="row.action === 'gototabbytitle'" class="field">
-                      <label class="label">Text to match (wildcards accepted)</label>
-                      <textarea class="textarea" v-model="row.matchtitle"></textarea>
+                    <div v-if="row.action === 'gototab'" class="detail-field">
+                      <label>URL to open if no match</label>
+                      <input class="field-input" v-model="row.openurl" />
                     </div>
 
-                    <div v-if="row.action === 'gototab'" class="field">
-                      <label class="label">
-                        URL to match
-                        (<a
-                          target="_blank"
-                          href="https://developer.chrome.com/extensions/match_patterns"
-                        >
-                          Examples
-                        </a>)
-                      </label>
-                      <textarea class="textarea" v-model="row.matchurl"></textarea>
+                    <div v-if="row.action === 'gototabbyindex'" class="detail-field">
+                      <label>Tab index (starts from 1)</label>
+                      <input class="field-input" type="number" v-model="row.matchindex" />
                     </div>
 
-                    <div v-if="row.action === 'gototab'" class="field">
-                      <label class="label">URL to open if no matching tab found</label>
-                      <textarea class="textarea" v-model="row.openurl"></textarea>
+                    <div v-if="row.action === 'buttonnexttab'" class="detail-field">
+                      <label>Button CSS selector</label>
+                      <input class="field-input" v-model="row.button" placeholder="#troop_confirm_go" />
                     </div>
 
-                    <div v-if="row.action === 'gototabbyindex'" class="field">
-                      <label class="label">Tab index (starts from 1)</label>
-                      <input class="input" type="number" v-model="row.matchindex" />
+                    <div v-if="row.action === 'openapp'" class="detail-field">
+                      <label>App ID</label>
+                      <input class="field-input" v-model="row.openappid" />
                     </div>
 
-                    <div v-if="row.action === 'buttonnexttab'" class="field">
-                      <label class="label">Button selector</label>
-                      <input class="input" type="text" v-model="row.button" />
-                    </div>
-
-                    <div v-if="row.action === 'openapp'" class="field">
-                      <label class="label">App ID</label>
-                      <input class="input" type="text" v-model="row.openappid" />
-                    </div>
-
-                    <div v-if="row.action === 'trigger'" class="field">
-                      <label class="label">Keyboard shortcut to trigger</label>
-                      <input class="input" type="text" v-model="row.trigger" />
+                    <div v-if="row.action === 'trigger'" class="detail-field">
+                      <label>Shortcut to trigger</label>
+                      <input class="field-input" v-model="row.trigger" placeholder="e.g. ctrl+b" />
                     </div>
                   </div>
 
-                  <div class="column">
-                    <h5 class="title is-5">Activation settings</h5>
+                  <div class="details-col">
+                    <h4>Activation</h4>
 
-                    <div class="field">
-                      <label class="checkbox">
-                        <input type="checkbox" v-model="row.activeInInputs" />
-                        Active while in inputs
-                      </label>
+                    <label class="check-label">
+                      <input type="checkbox" v-model="row.activeInInputs" /> Active while in form inputs
+                    </label>
+
+                    <div class="detail-field">
+                      <label>Website filter</label>
+                      <select class="field-select" v-model="row.blacklist">
+                        <option v-for="opt in WEBSITE_OPTIONS" :key="String(opt.value)" :value="opt.value">
+                          {{ opt.label }}
+                        </option>
+                      </select>
                     </div>
 
-                    <div class="field">
-                      <div class="select">
-                        <select v-model="row.blacklist">
-                          <option v-for="opt in WEBSITE_OPTIONS" :key="String(opt.value)" :value="opt.value">
-                            {{ opt.label }}
-                          </option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div v-if="row.blacklist && row.blacklist !== 'false'" class="field">
-                      <textarea
-                        class="textarea"
-                        v-model="row.sites"
-                        placeholder="One URL pattern per line"
-                      ></textarea>
+                    <div v-if="row.blacklist && row.blacklist !== 'false'" class="detail-field">
+                      <label>URL patterns (one per line)</label>
+                      <textarea class="field-textarea" v-model="row.sites" rows="4" placeholder="*example.com*"></textarea>
                     </div>
                   </div>
                 </div>
-              </td>
-            </tr>
-          </template>
-        </tbody>
-      </table>
-
-      <div class="level">
-        <div class="level-left">
-          <button class="button" @click="keys.push({} as KeySetting)">Add shortcut</button>
+              </div>
+            </Transition>
+          </div>
         </div>
-        <div class="level-right">
-          <button class="button is-primary" @click="saveShortcuts">Save shortcuts</button>
-        </div>
-      </div>
-    </div>
 
-    <!-- Import Tab -->
-    <div v-show="activeTab === 1">
-      <div class="field">
-        <textarea
-          class="textarea"
-          v-model="importJson"
-          placeholder="Paste JSON here..."
-          rows="10"
-        ></textarea>
-      </div>
-      <div class="level">
-        <div class="level-left"></div>
-        <div class="level-right">
-          <button class="button is-primary" @click="importKeys">Import</button>
+        <div class="action-bar">
+          <button class="btn btn-secondary" @click="addShortcut">
+            <i class="mdi mdi-plus"></i> Add shortcut
+          </button>
+          <button class="btn btn-primary" @click="saveShortcuts">
+            <i class="mdi mdi-content-save"></i> Save shortcuts
+          </button>
         </div>
       </div>
-    </div>
 
-    <!-- Export Tab -->
-    <div v-show="activeTab === 2">
-      <pre class="box">{{ JSON.stringify(keys, null, 2) }}</pre>
-    </div>
-  </section>
+      <!-- Import Tab -->
+      <div v-show="activeTab === 1" class="tab-content">
+        <p class="tab-desc">Paste a JSON array of shortcut objects to import them.</p>
+        <textarea class="field-textarea mono" v-model="importJson" rows="12" placeholder='[{"key":"ctrl+b","action":"newtab"}]'></textarea>
+        <div class="action-bar">
+          <span></span>
+          <button class="btn btn-primary" @click="importKeys">
+            <i class="mdi mdi-import"></i> Import
+          </button>
+        </div>
+      </div>
+
+      <!-- Export Tab -->
+      <div v-show="activeTab === 2" class="tab-content">
+        <p class="tab-desc">Copy the JSON below to back up or share your shortcuts.</p>
+        <pre class="export-pre">{{ JSON.stringify(keys, null, 2) }}</pre>
+      </div>
+    </main>
+  </div>
 </template>
 
 <style>
-.select select {
-  max-width: 300px;
+/* ── Reset & base ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #f5f7fa;
+  color: #1a1a2e;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+a { color: #4361ee; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Layout ── */
+.app-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-icon { width: 28px; height: 28px; }
+
+.brand-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  letter-spacing: -0.3px;
+}
+
+.header-links {
+  display: flex;
+  gap: 20px;
+}
+
+.header-links a {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+  transition: color 0.15s;
+}
+
+.header-links a:hover { color: #4361ee; text-decoration: none; }
+
+.app-main {
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px;
+  flex: 1;
+}
+
+/* ── Tabs ── */
+.tab-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.tab-btn:hover { color: #1a1a2e; background: #f1f5f9; }
+.tab-btn.active { background: #4361ee; color: #fff; box-shadow: 0 2px 8px rgba(67,97,238,0.3); }
+.tab-btn .mdi { font-size: 16px; }
+
+.tab-content { animation: fadeIn 0.15s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── Shortcut cards ── */
+.shortcut-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shortcut-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  overflow: hidden;
+  transition: box-shadow 0.15s;
+}
+
+.shortcut-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+.shortcut-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.field-group-grow { flex: 1.5; }
+
+.field-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94a3b8;
+}
+
+.field-input, .field-select, .field-textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #1a1a2e;
+  background: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.field-input:focus, .field-select:focus, .field-textarea:focus {
+  outline: none;
+  border-color: #4361ee;
+  box-shadow: 0 0 0 3px rgba(67,97,238,0.12);
+}
+
+.field-textarea { resize: vertical; }
+.mono { font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 13px; }
+
+.shortcut-input { font-family: 'SF Mono', Menlo, Consolas, monospace; font-weight: 500; }
+
+.shortcut-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+  padding-bottom: 1px;
+}
+
+.btn-icon {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fff;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 16px;
+}
+
+.btn-icon:hover { background: #f1f5f9; color: #1a1a2e; }
+.btn-delete:hover { background: #fef2f2; color: #ef4444; border-color: #fecaca; }
+
+/* ── Details panel ── */
+.shortcut-details {
+  border-top: 1px solid #f1f5f9;
+  padding: 20px;
+  background: #fafbfc;
+}
+
+.details-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+.details-col h4 {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+}
+
+.detail-field {
+  margin-bottom: 12px;
+}
+
+.detail-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+  margin-bottom: 4px;
+}
+
+.check-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #475569;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.check-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #4361ee;
+}
+
+/* ── Alerts ── */
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.alert-warning { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+.alert-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+.alert-info .mdi { margin-right: 4px; }
+
+/* ── Buttons ── */
+.action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-primary { background: #4361ee; color: #fff; }
+.btn-primary:hover { background: #3730a3; }
+
+.btn-secondary { background: #fff; color: #475569; border: 1px solid #e2e8f0; }
+.btn-secondary:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+.toast-success { background: #059669; color: #fff; }
+.toast-error { background: #ef4444; color: #fff; }
+
+.toast-enter-active, .toast-leave-active { transition: all 0.3s ease; }
+.toast-enter-from, .toast-leave-to { opacity: 0; transform: translateY(16px); }
+
+/* ── Expand animation ── */
+.expand-enter-active, .expand-leave-active { transition: all 0.2s ease; }
+.expand-enter-from, .expand-leave-to { opacity: 0; }
+
+/* ── Export ── */
+.export-pre {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  font-family: 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 12px;
+  overflow: auto;
+  max-height: 500px;
+  color: #334155;
+}
+
+.tab-desc {
+  color: #64748b;
+  margin-bottom: 12px;
 }
 </style>

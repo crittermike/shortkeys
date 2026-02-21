@@ -32,8 +32,8 @@ export default defineBackground(() => {
 
     function registerHandlers() {
       document.addEventListener('shortkeys_js_run', function (e: any) {
-        if ((globalThis as any).handlers[e.detail]) {
-          ;(globalThis as any).handlers[e.detail]()
+        if (handlers[e.detail]) {
+          handlers[e.detail]()
         }
       })
     }
@@ -44,7 +44,7 @@ export default defineBackground(() => {
         id: 'shortkeys-actions',
         matches: ['*://*/*'] as string[],
         world: 'MAIN' as const,
-        js: [{ code: `const handlers = ${handlersObj};\n(${registerHandlers.toString()})();` }],
+        js: [{ code: `var handlers = ${handlersObj};\n(${registerHandlers.toString()})();` }],
       },
     ]
 
