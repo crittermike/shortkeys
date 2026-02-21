@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { v4 as uuid } from 'uuid'
 import {
   ACTION_CATEGORIES,
@@ -8,8 +8,10 @@ import {
   isBuiltInAction,
 } from '@/utils/actions-registry'
 import type { KeySetting } from '@/utils/url-matching'
+import { detectConflicts, type ShortcutConflict } from '@/utils/shortcut-conflicts'
 import SearchSelect from '@/components/SearchSelect.vue'
 import CodeEditor from '@/components/CodeEditor.vue'
+import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
 
 const activeTab = ref(0)
 const keys = ref<KeySetting[]>([])
@@ -22,6 +24,12 @@ const snackType = ref<'success' | 'danger'>('success')
 interface BrowserTab { id: number; title: string; url: string; favIconUrl?: string }
 const openTabs = ref<BrowserTab[]>([])
 const selectedTabId = ref<number | null>(null)
+
+const conflicts = computed(() => detectConflicts(keys.value))
+
+function getConflicts(index: number): ShortcutConflict[] {
+  return conflicts.value.get(index) || []
+}
 
 async function refreshTabs() {
   const tabs = await chrome.tabs.query({})
@@ -229,11 +237,9 @@ onMounted(async () => {
             <div class="shortcut-row">
               <div class="field-group shortcut-col">
                 <label class="field-label">Shortcut</label>
-                <input
-                  class="field-input shortcut-input"
-                  type="text"
-                  placeholder="e.g. ctrl+shift+k"
-                  v-model="row.key"
+                <ShortcutRecorder
+                  :modelValue="row.key"
+                  @update:modelValue="row.key = $event"
                 />
               </div>
               <div class="field-group behavior-col">
@@ -252,6 +258,14 @@ onMounted(async () => {
                 <button class="btn-icon btn-delete" @click="deleteShortcut(index)" title="Delete">
                   <i class="mdi mdi-close"></i>
                 </button>
+              </div>
+            </div>
+
+            <!-- Conflict warnings -->
+            <div v-if="getConflicts(index).length" class="conflict-warnings">
+              <div v-for="(c, ci) in getConflicts(index)" :key="ci" :class="['conflict-pill', c.type]">
+                <i :class="c.type === 'browser' ? 'mdi mdi-alert-outline' : 'mdi mdi-content-duplicate'"></i>
+                {{ c.message }}
               </div>
             </div>
 
@@ -571,7 +585,7 @@ a:hover { text-decoration: underline; }
   min-width: 0;
 }
 
-.shortcut-col { width: 200px; flex: 0 0 200px; }
+.shortcut-col { width: 260px; flex: 0 0 260px; }
 .behavior-col { flex: 1; min-width: 0; }
 
 .field-label {
@@ -651,6 +665,38 @@ a:hover { text-decoration: underline; }
 
 .shortcut-label-title::placeholder { color: #cbd5e1; }
 .shortcut-label-title:focus { color: #1a1a2e; }
+
+/* ── Conflict warnings ── */
+.conflict-warnings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 16px 10px;
+}
+
+.conflict-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.conflict-pill .mdi { font-size: 14px; }
+
+.conflict-pill.browser {
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.conflict-pill.duplicate {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
 
 .details-section {
   display: flex;
