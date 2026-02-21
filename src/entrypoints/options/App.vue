@@ -103,6 +103,20 @@ function toggleDetails(index: number) {
   expandedRow.value = expandedRow.value === index ? null : index
 }
 
+/** Actions that have required config fields the user needs to fill in */
+const ACTIONS_NEEDING_EXPANSION = [
+  'javascript', 'openbookmark', 'openbookmarknewtab', 'openbookmarkbackgroundtab',
+  'openbookmarkbackgroundtabandclose', 'gototab', 'gototabbytitle', 'gototabbyindex',
+  'buttonnexttab', 'openapp', 'trigger', 'openurl',
+]
+
+function onActionChange(row: KeySetting, index: number, action: string) {
+  row.action = action
+  if (ACTIONS_NEEDING_EXPANSION.includes(action)) {
+    expandedRow.value = index
+  }
+}
+
 function isScrollAction(action: string): boolean {
   return (SCROLL_ACTIONS as readonly string[]).includes(action)
 }
@@ -246,7 +260,7 @@ onMounted(async () => {
                 <label class="field-label">Behavior</label>
                 <SearchSelect
                   :modelValue="row.action"
-                  @update:modelValue="row.action = $event"
+                  @update:modelValue="onActionChange(row, index, $event)"
                   :options="ACTION_CATEGORIES"
                   placeholder="Choose action…"
                 />
@@ -320,9 +334,12 @@ onMounted(async () => {
 
                   <div v-if="isBookmarkAction(row.action)" class="detail-field">
                     <label>Bookmark</label>
-                    <select class="field-select" v-model="row.bookmark">
-                      <option v-for="bm in bookmarks" :key="bm" :value="bm">{{ bm }}</option>
-                    </select>
+                    <SearchSelect
+                      :modelValue="row.bookmark || ''"
+                      @update:modelValue="row.bookmark = $event"
+                      :options="{ Bookmarks: bookmarks.map(bm => ({ value: bm, label: bm })) }"
+                      placeholder="Search bookmarks…"
+                    />
                   </div>
 
                   <div v-if="row.action === 'gototabbytitle'" class="detail-field">
