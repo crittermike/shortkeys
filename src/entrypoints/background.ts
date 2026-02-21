@@ -120,7 +120,7 @@ export default defineBackground(() => {
         }
 
         const keys = JSON.parse(raw)
-        const allowedKeys = keys.filter((key: any) => isAllowedSite(key, currentUrl))
+        const allowedKeys = keys.filter((key: any) => key.enabled !== false && isAllowedSite(key, currentUrl))
         sendResponse(allowedKeys)
       })()
       return true

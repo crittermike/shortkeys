@@ -6,6 +6,7 @@ import {
   SCROLL_ACTIONS,
   WEBSITE_OPTIONS,
   isBuiltInAction,
+  getAllActionValues,
 } from '@/utils/actions-registry'
 import type { KeySetting } from '@/utils/url-matching'
 import { detectConflicts, type ShortcutConflict } from '@/utils/shortcut-conflicts'
@@ -20,6 +21,8 @@ const importJson = ref('')
 const expandedRow = ref<number | null>(null)
 const snackMessage = ref('')
 const snackType = ref<'success' | 'danger'>('success')
+const searchQuery = ref('')
+const dragIndex = ref<number | null>(null)
 
 interface BrowserTab { id: number; title: string; url: string; favIconUrl?: string }
 const openTabs = ref<BrowserTab[]>([])
@@ -30,6 +33,38 @@ const conflicts = computed(() => detectConflicts(keys.value))
 function getConflicts(index: number): ShortcutConflict[] {
   return conflicts.value.get(index) || []
 }
+
+/** Build a lookup from action value → label */
+const actionLabels = computed(() => {
+  const map: Record<string, string> = {}
+  for (const actions of Object.values(ACTION_CATEGORIES)) {
+    for (const a of actions) map[a.value] = a.label
+  }
+  return map
+})
+
+/** Indices of shortcuts that match the search query */
+const filteredIndices = computed(() => {
+  const q = searchQuery.value.toLowerCase().trim()
+  if (!q) return keys.value.map((_, i) => i)
+  return keys.value
+    .map((row, i) => {
+      const label = (row.label || '').toLowerCase()
+      const key = (row.key || '').toLowerCase()
+      const action = (actionLabels.value[row.action] || row.action || '').toLowerCase()
+      if (label.includes(q) || key.includes(q) || action.includes(q)) return i
+      return -1
+    })
+    .filter((i) => i >= 0)
+})
+
+const stats = computed(() => {
+  const total = keys.value.length
+  const enabled = keys.value.filter((k) => k.enabled !== false).length
+  const disabled = total - enabled
+  const withConflicts = conflicts.value.size
+  return { total, enabled, disabled, withConflicts }
+})
 
 async function refreshTabs() {
   const tabs = await chrome.tabs.query({})
@@ -61,11 +96,12 @@ function needsUserScripts(): boolean {
 function ensureIds() {
   keys.value.forEach((key) => {
     if (!key.id) key.id = uuid()
+    if (key.enabled === undefined) key.enabled = true
   })
 }
 
 function addShortcut() {
-  keys.value.push({ id: uuid() } as KeySetting)
+  keys.value.push({ id: uuid(), enabled: true } as KeySetting)
 }
 
 async function saveShortcuts() {
@@ -115,6 +151,26 @@ function onActionChange(row: KeySetting, index: number, action: string) {
   if (ACTIONS_NEEDING_EXPANSION.includes(action)) {
     expandedRow.value = index
   }
+}
+
+function toggleEnabled(row: KeySetting) {
+  row.enabled = row.enabled === false ? true : false
+}
+
+function onDragStart(index: number) {
+  dragIndex.value = index
+}
+
+function onDragOver(e: DragEvent, index: number) {
+  e.preventDefault()
+  if (dragIndex.value === null || dragIndex.value === index) return
+  const item = keys.value.splice(dragIndex.value, 1)[0]
+  keys.value.splice(index, 0, item)
+  dragIndex.value = index
+}
+
+function onDragEnd() {
+  dragIndex.value = null
 }
 
 function isScrollAction(action: string): boolean {
@@ -238,29 +294,75 @@ onMounted(async () => {
           browser extension details page. Then come back and save your shortcuts.
         </article>
 
+        <!-- Stats bar -->
+        <div v-if="keys.length > 0" class="stats-bar">
+          <div class="stats-chips">
+            <span class="stat-chip">
+              <i class="mdi mdi-keyboard"></i> {{ stats.total }} shortcut{{ stats.total !== 1 ? 's' : '' }}
+            </span>
+            <span v-if="stats.disabled > 0" class="stat-chip stat-disabled">
+              <i class="mdi mdi-pause-circle-outline"></i> {{ stats.disabled }} disabled
+            </span>
+            <span v-if="stats.withConflicts > 0" class="stat-chip stat-warn">
+              <i class="mdi mdi-alert-outline"></i> {{ stats.withConflicts }} with conflicts
+            </span>
+          </div>
+          <div class="search-wrap">
+            <i class="mdi mdi-magnify search-icon"></i>
+            <input
+              class="search-input"
+              type="text"
+              placeholder="Filter shortcuts…"
+              v-model="searchQuery"
+            />
+            <button v-if="searchQuery" class="search-clear" @click="searchQuery = ''" type="button">
+              <i class="mdi mdi-close"></i>
+            </button>
+          </div>
+        </div>
+
         <!-- Shortcut rows -->
         <div class="shortcut-list">
-          <div v-for="(row, index) in keys" :key="row.id" class="shortcut-card">
+          <div
+            v-for="index in filteredIndices"
+            :key="keys[index].id"
+            :class="['shortcut-card', { disabled: keys[index].enabled === false, dragging: dragIndex === index }]"
+            draggable="true"
+            @dragstart="onDragStart(index)"
+            @dragover="onDragOver($event, index)"
+            @dragend="onDragEnd"
+          >
             <!-- Editable label above the card -->
-            <input
-              class="shortcut-label-title"
-              type="text"
-              placeholder="Untitled shortcut"
-              v-model="row.label"
-            />
+            <div class="shortcut-header">
+              <i class="mdi mdi-drag-vertical drag-handle" title="Drag to reorder"></i>
+              <input
+                class="shortcut-label-title"
+                type="text"
+                placeholder="Untitled shortcut"
+                v-model="keys[index].label"
+              />
+              <button
+                :class="['toggle toggle-sm', { on: keys[index].enabled !== false }]"
+                @click="toggleEnabled(keys[index])"
+                type="button"
+                :title="keys[index].enabled !== false ? 'Enabled — click to disable' : 'Disabled — click to enable'"
+              >
+                <span class="toggle-knob"></span>
+              </button>
+            </div>
             <div class="shortcut-row">
               <div class="field-group shortcut-col">
                 <label class="field-label">Shortcut</label>
                 <ShortcutRecorder
-                  :modelValue="row.key"
-                  @update:modelValue="row.key = $event"
+                  :modelValue="keys[index].key"
+                  @update:modelValue="keys[index].key = $event"
                 />
               </div>
               <div class="field-group behavior-col">
                 <label class="field-label">Behavior</label>
                 <SearchSelect
-                  :modelValue="row.action"
-                  @update:modelValue="onActionChange(row, index, $event)"
+                  :modelValue="keys[index].action"
+                  @update:modelValue="onActionChange(keys[index], index, $event)"
                   :options="ACTION_CATEGORIES"
                   placeholder="Choose action…"
                 />
@@ -287,7 +389,7 @@ onMounted(async () => {
             <Transition name="expand">
               <div v-if="expandedRow === index" class="shortcut-details">
 
-                <article v-if="isBuiltInAction(row.action)" class="alert alert-info">
+                <article v-if="isBuiltInAction(keys[index].action)" class="alert alert-info">
                   <i class="mdi mdi-information-outline"></i>
                   Also available via the browser's native
                   <strong>Keyboard Shortcuts</strong> settings.
@@ -295,7 +397,7 @@ onMounted(async () => {
                 </article>
 
                 <!-- Code editor for JS (full-width, prominent) -->
-                <div v-if="row.action === 'javascript'" class="code-editor-wrap">
+                <div v-if="keys[index].action === 'javascript'" class="code-editor-wrap">
                   <div class="code-header">
                     <span class="code-title"><i class="mdi mdi-code-braces"></i> JavaScript</span>
                     <div class="code-actions">
@@ -313,74 +415,74 @@ onMounted(async () => {
                       </button>
                     </div>
                   </div>
-                  <CodeEditor :modelValue="row.code || ''" @update:modelValue="row.code = $event" />
+                  <CodeEditor :modelValue="keys[index].code || ''" @update:modelValue="keys[index].code = $event" />
                 </div>
 
                 <!-- Action-specific settings -->
                 <div class="details-section">
-                  <div v-if="isScrollAction(row.action)" class="toggle-row-inline">
+                  <div v-if="isScrollAction(keys[index].action)" class="toggle-row-inline">
                     <span class="toggle-label-sm">Smooth scrolling</span>
-                    <button :class="['toggle', { on: row.smoothScrolling }]" @click="row.smoothScrolling = !row.smoothScrolling" type="button">
+                    <button :class="['toggle', { on: keys[index].smoothScrolling }]" @click="keys[index].smoothScrolling = !keys[index].smoothScrolling" type="button">
                       <span class="toggle-knob"></span>
                     </button>
                   </div>
 
-                  <div v-if="row.action === 'gototab' || row.action === 'gototabbytitle'" class="toggle-row-inline">
+                  <div v-if="keys[index].action === 'gototab' || keys[index].action === 'gototabbytitle'" class="toggle-row-inline">
                     <span class="toggle-label-sm">Current window only</span>
-                    <button :class="['toggle', { on: row.currentWindow }]" @click="row.currentWindow = !row.currentWindow" type="button">
+                    <button :class="['toggle', { on: keys[index].currentWindow }]" @click="keys[index].currentWindow = !keys[index].currentWindow" type="button">
                       <span class="toggle-knob"></span>
                     </button>
                   </div>
 
-                  <div v-if="isBookmarkAction(row.action)" class="detail-field">
+                  <div v-if="isBookmarkAction(keys[index].action)" class="detail-field">
                     <label>Bookmark</label>
                     <SearchSelect
-                      :modelValue="row.bookmark || ''"
-                      @update:modelValue="row.bookmark = $event"
+                      :modelValue="keys[index].bookmark || ''"
+                      @update:modelValue="keys[index].bookmark = $event"
                       :options="{ Bookmarks: bookmarks.map(bm => ({ value: bm, label: bm })) }"
                       placeholder="Search bookmarks…"
                     />
                   </div>
 
-                  <div v-if="row.action === 'gototabbytitle'" class="detail-field">
+                  <div v-if="keys[index].action === 'gototabbytitle'" class="detail-field">
                     <label>Title to match <span class="hint">(wildcards accepted)</span></label>
-                    <input class="field-input" v-model="row.matchtitle" placeholder="*Gmail*" />
+                    <input class="field-input" v-model="keys[index].matchtitle" placeholder="*Gmail*" />
                   </div>
 
-                  <div v-if="row.action === 'gototab'" class="detail-row">
+                  <div v-if="keys[index].action === 'gototab'" class="detail-row">
                     <div class="detail-field flex-1">
                       <label>URL to match <a class="hint-link" target="_blank" href="https://developer.chrome.com/extensions/match_patterns">pattern help →</a></label>
-                      <input class="field-input" v-model="row.matchurl" placeholder="*://mail.google.com/*" />
+                      <input class="field-input" v-model="keys[index].matchurl" placeholder="*://mail.google.com/*" />
                     </div>
                     <div class="detail-field flex-1">
                       <label>Fallback URL <span class="hint">(if no match)</span></label>
-                      <input class="field-input" v-model="row.openurl" placeholder="https://mail.google.com" />
+                      <input class="field-input" v-model="keys[index].openurl" placeholder="https://mail.google.com" />
                     </div>
                   </div>
 
-                  <div v-if="row.action === 'gototabbyindex'" class="detail-field" style="max-width: 200px">
+                  <div v-if="keys[index].action === 'gototabbyindex'" class="detail-field" style="max-width: 200px">
                     <label>Tab index <span class="hint">(starts from 1)</span></label>
-                    <input class="field-input" type="number" v-model="row.matchindex" min="1" />
+                    <input class="field-input" type="number" v-model="keys[index].matchindex" min="1" />
                   </div>
 
-                  <div v-if="row.action === 'buttonnexttab'" class="detail-field">
+                  <div v-if="keys[index].action === 'buttonnexttab'" class="detail-field">
                     <label>Button CSS selector</label>
-                    <input class="field-input mono" v-model="row.button" placeholder="#submit-btn" />
+                    <input class="field-input mono" v-model="keys[index].button" placeholder="#submit-btn" />
                   </div>
 
-                  <div v-if="row.action === 'openurl'" class="detail-field">
+                  <div v-if="keys[index].action === 'openurl'" class="detail-field">
                     <label>URL to open</label>
-                    <input class="field-input mono" v-model="row.openurl" placeholder="https://example.com" />
+                    <input class="field-input mono" v-model="keys[index].openurl" placeholder="https://example.com" />
                   </div>
 
-                  <div v-if="row.action === 'openapp'" class="detail-field">
+                  <div v-if="keys[index].action === 'openapp'" class="detail-field">
                     <label>App ID <span class="hint">(from extensions page)</span></label>
-                    <input class="field-input mono" v-model="row.openappid" />
+                    <input class="field-input mono" v-model="keys[index].openappid" />
                   </div>
 
-                  <div v-if="row.action === 'trigger'" class="detail-field" style="max-width: 250px">
+                  <div v-if="keys[index].action === 'trigger'" class="detail-field" style="max-width: 250px">
                     <label>Shortcut to trigger</label>
-                    <input class="field-input shortcut-input" v-model="row.trigger" placeholder="e.g. ctrl+b" />
+                    <input class="field-input shortcut-input" v-model="keys[index].trigger" placeholder="e.g. ctrl+b" />
                   </div>
                 </div>
 
@@ -389,20 +491,20 @@ onMounted(async () => {
                   <div class="site-filter-inline">
                     <div class="segmented">
                       <button
-                        :class="['seg-btn', { active: !row.blacklist || row.blacklist === 'false' }]"
-                        @click="row.blacklist = false" type="button"
+                        :class="['seg-btn', { active: !keys[index].blacklist || keys[index].blacklist === 'false' }]"
+                        @click="keys[index].blacklist = false" type="button"
                       >
                         <i class="mdi mdi-earth"></i> All sites
                       </button>
                       <button
-                        :class="['seg-btn', { active: row.blacklist === true || row.blacklist === 'true' }]"
-                        @click="row.blacklist = true" type="button"
+                        :class="['seg-btn', { active: keys[index].blacklist === true || keys[index].blacklist === 'true' }]"
+                        @click="keys[index].blacklist = true" type="button"
                       >
                         <i class="mdi mdi-earth-minus"></i> Except…
                       </button>
                       <button
-                        :class="['seg-btn', { active: row.blacklist === 'whitelist' }]"
-                        @click="row.blacklist = 'whitelist'" type="button"
+                        :class="['seg-btn', { active: keys[index].blacklist === 'whitelist' }]"
+                        @click="keys[index].blacklist = 'whitelist'" type="button"
                       >
                         <i class="mdi mdi-earth-plus"></i> Only on…
                       </button>
@@ -410,17 +512,17 @@ onMounted(async () => {
                   </div>
                   <div class="toggle-row-inline">
                     <span class="toggle-label-sm">Active in form inputs</span>
-                    <button :class="['toggle', { on: row.activeInInputs }]" @click="row.activeInInputs = !row.activeInInputs" type="button">
+                    <button :class="['toggle', { on: keys[index].activeInInputs }]" @click="keys[index].activeInInputs = !keys[index].activeInInputs" type="button">
                       <span class="toggle-knob"></span>
                     </button>
                   </div>
                 </div>
                 <textarea
-                  v-if="row.blacklist && row.blacklist !== 'false'"
+                  v-if="keys[index].blacklist && keys[index].blacklist !== 'false'"
                   class="field-textarea mono site-patterns"
-                  v-model="row.sites"
+                  v-model="keys[index].sites"
                   rows="3"
-                  :placeholder="row.blacklist === 'whitelist' ? 'Sites to activate on…\n*example.com*' : 'Sites to disable on…\n*example.com*'"
+                  :placeholder="keys[index].blacklist === 'whitelist' ? 'Sites to activate on…\n*example.com*' : 'Sites to disable on…\n*example.com*'"
                 ></textarea>
               </div>
             </Transition>
@@ -577,6 +679,79 @@ a:hover { text-decoration: underline; }
 .tab-content { animation: fadeIn 0.15s ease; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+/* ── Stats bar ── */
+.stats-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.stats-chips {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #eef2f6;
+  color: #475569;
+}
+
+.stat-chip .mdi { font-size: 14px; }
+.stat-disabled { background: #fef3c7; color: #92400e; }
+.stat-warn { background: #fef2f2; color: #991b1b; }
+
+.search-wrap {
+  position: relative;
+  flex: 1;
+  max-width: 280px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 16px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 7px 32px 7px 32px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #1a1a2e;
+  background: #fff;
+  transition: border-color 0.15s;
+}
+
+.search-input:focus { outline: none; border-color: #4361ee; }
+.search-input::placeholder { color: #cbd5e1; }
+
+.search-clear {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 2px;
+  font-size: 14px;
+}
+
 /* ── Shortcut cards ── */
 .shortcut-list {
   display: flex;
@@ -592,6 +767,46 @@ a:hover { text-decoration: underline; }
 }
 
 .shortcut-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.shortcut-card.disabled { opacity: 0.5; }
+.shortcut-card.dragging { opacity: 0.4; box-shadow: 0 4px 16px rgba(67,97,238,0.2); }
+
+.shortcut-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px 0 8px;
+}
+
+.drag-handle {
+  color: #cbd5e1;
+  font-size: 18px;
+  cursor: grab;
+  padding: 2px;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.drag-handle:hover { color: #94a3b8; }
+.shortcut-card.dragging .drag-handle { cursor: grabbing; }
+
+.shortcut-label-title {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+  outline: none;
+  padding: 2px 4px;
+}
+
+.shortcut-label-title::placeholder { color: #cbd5e1; }
+.shortcut-label-title:focus { color: #1a1a2e; }
+
+.toggle-sm { width: 36px; height: 20px; border-radius: 10px; }
+.toggle-sm .toggle-knob { width: 16px; height: 16px; }
+.toggle-sm.on .toggle-knob { transform: translateX(16px); }
 
 .shortcut-row {
   display: flex;
@@ -672,21 +887,6 @@ a:hover { text-decoration: underline; }
   background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
   border-radius: 0 0 10px 10px;
 }
-
-.shortcut-label-title {
-  display: block;
-  width: 100%;
-  padding: 10px 16px 0;
-  border: none;
-  background: transparent;
-  font-size: 13px;
-  font-weight: 500;
-  color: #64748b;
-  outline: none;
-}
-
-.shortcut-label-title::placeholder { color: #cbd5e1; }
-.shortcut-label-title:focus { color: #1a1a2e; }
 
 /* ── Conflict warnings ── */
 .conflict-warnings {
