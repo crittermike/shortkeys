@@ -540,14 +540,20 @@ const actionHandlers: Record<string, ActionHandler> = {
     const openNode = nodes.reverse().find((n) => n.url && n.title === request.bookmark)
     if (openNode?.url) {
       if (openNode.url.startsWith('javascript:')) {
-        const code = decodeURIComponent(openNode.url.replace('javascript:', ''))
+        // Use try/catch for decodeURIComponent — bare % signs cause URIError (#628)
+        let code: string
+        try {
+          code = decodeURIComponent(openNode.url.replace('javascript:', ''))
+        } catch {
+          code = openNode.url.replace('javascript:', '')
+        }
         await executeScript(
           (code: string) =>
             document.dispatchEvent(new CustomEvent('shortkeys_js_run', { detail: code })),
           [code],
         )
       } else {
-        await browser.tabs.update(undefined as any, { url: decodeURI(openNode.url) })
+        await browser.tabs.update(undefined as any, { url: openNode.url })
       }
     }
     return true
@@ -557,7 +563,7 @@ const actionHandlers: Record<string, ActionHandler> = {
     const nodes = await browser.bookmarks.search({ title: request.bookmark! })
     const openNode = nodes.reverse().find((n) => n.url && n.title === request.bookmark)
     if (openNode?.url) {
-      await browser.tabs.create({ url: decodeURI(openNode.url) })
+      await browser.tabs.create({ url: openNode.url })
     }
     return true
   },
@@ -566,7 +572,7 @@ const actionHandlers: Record<string, ActionHandler> = {
     const nodes = await browser.bookmarks.search({ title: request.bookmark! })
     const openNode = nodes.reverse().find((n) => n.url && n.title === request.bookmark)
     if (openNode?.url) {
-      await browser.tabs.create({ url: decodeURI(openNode.url), active: false })
+      await browser.tabs.create({ url: openNode.url, active: false })
     }
     return true
   },
@@ -575,7 +581,7 @@ const actionHandlers: Record<string, ActionHandler> = {
     const nodes = await browser.bookmarks.search({ title: request.bookmark! })
     const openNode = nodes.reverse().find((n) => n.url && n.title === request.bookmark)
     if (openNode?.url) {
-      const createdTab = await browser.tabs.create({ url: decodeURI(openNode.url), active: false })
+      const createdTab = await browser.tabs.create({ url: openNode.url, active: false })
       const closeListener = (tabId: number, changeInfo: browser.Tabs.OnUpdatedChangeInfoType) => {
         if (tabId === createdTab.id && changeInfo.status === 'complete') {
           browser.tabs.remove(createdTab.id!)

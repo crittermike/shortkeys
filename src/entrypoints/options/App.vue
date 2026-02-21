@@ -107,6 +107,8 @@ function addShortcut() {
 
 async function saveShortcuts() {
   ensureIds()
+  // Strip empty shortcuts that have no key and no action
+  keys.value = keys.value.filter((k) => k.key || k.action)
   keys.value.forEach((key) => {
     key.sites = key.sites || ''
     key.sitesArray = key.sites.split('\n')
@@ -121,7 +123,11 @@ async function saveShortcuts() {
 function importKeys() {
   try {
     const parsed = JSON.parse(importJson.value)
-    keys.value = keys.value.concat(parsed)
+    // Filter out empty/invalid shortcuts (#472/#598)
+    const valid = (Array.isArray(parsed) ? parsed : [parsed]).filter(
+      (k: any) => k && (k.key || k.action),
+    )
+    keys.value = keys.value.concat(valid)
     ensureIds()
     showSnack('Imported successfully!')
   } catch {
