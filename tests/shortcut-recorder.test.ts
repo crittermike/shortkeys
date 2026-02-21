@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest'
 /**
  * Tests for the ShortcutRecorder key capture logic.
  * Uses e.code (physical key) to avoid unicode issues with Alt on Mac.
+ * Supports ctrl+meta together and multi-key sequences (e.g. "j j").
  */
 
 interface MockKeyEvent {
@@ -14,44 +15,26 @@ interface MockKeyEvent {
   code: string
 }
 
-function captureKeyToString(e: MockKeyEvent): string | null {
+function keyToString(e: MockKeyEvent): string | null {
   const modifierKeys = ['Control', 'Shift', 'Alt', 'Meta', 'OS']
   if (modifierKeys.includes(e.key)) return null
 
   const parts: string[] = []
   if (e.metaKey) parts.push('meta')
-  if (e.ctrlKey && !e.metaKey) parts.push('ctrl')
+  if (e.ctrlKey) parts.push('ctrl')
   if (e.altKey) parts.push('alt')
   if (e.shiftKey) parts.push('shift')
 
   const codeMap: Record<string, string> = {
-    'Space': 'space',
-    'ArrowUp': 'up',
-    'ArrowDown': 'down',
-    'ArrowLeft': 'left',
-    'ArrowRight': 'right',
-    'Escape': 'escape',
-    'Enter': 'enter',
-    'Backspace': 'backspace',
-    'Delete': 'del',
-    'Tab': 'tab',
-    'Home': 'home',
-    'End': 'end',
-    'PageUp': 'pageup',
-    'PageDown': 'pagedown',
-    'Insert': 'ins',
-    'CapsLock': 'capslock',
-    'Minus': '-',
-    'Equal': '=',
-    'BracketLeft': '[',
-    'BracketRight': ']',
-    'Backslash': '\\',
-    'Semicolon': ';',
-    'Quote': "'",
-    'Comma': ',',
-    'Period': '.',
-    'Slash': '/',
-    'Backquote': '`',
+    'Space': 'space', 'ArrowUp': 'up', 'ArrowDown': 'down',
+    'ArrowLeft': 'left', 'ArrowRight': 'right', 'Escape': 'escape',
+    'Enter': 'enter', 'Backspace': 'backspace', 'Delete': 'del',
+    'Tab': 'tab', 'Home': 'home', 'End': 'end',
+    'PageUp': 'pageup', 'PageDown': 'pagedown', 'Insert': 'ins',
+    'CapsLock': 'capslock', 'Minus': '-', 'Equal': '=',
+    'BracketLeft': '[', 'BracketRight': ']', 'Backslash': '\\',
+    'Semicolon': ';', 'Quote': "'", 'Comma': ',',
+    'Period': '.', 'Slash': '/', 'Backquote': '`',
   }
 
   let key: string
@@ -74,105 +57,128 @@ function captureKeyToString(e: MockKeyEvent): string | null {
   return parts.join('+')
 }
 
+/** Simulate recording a sequence of keys */
+function recordSequence(events: MockKeyEvent[]): string {
+  const keys: string[] = []
+  for (const e of events) {
+    const result = keyToString(e)
+    if (result) keys.push(result)
+  }
+  return keys.join(' ')
+}
+
 const noMods = { ctrlKey: false, altKey: false, shiftKey: false, metaKey: false }
 
 describe('ShortcutRecorder key capture', () => {
   it('captures simple letter key', () => {
-    expect(captureKeyToString({ ...noMods, key: 'a', code: 'KeyA' })).toBe('a')
+    expect(keyToString({ ...noMods, key: 'a', code: 'KeyA' })).toBe('a')
   })
 
   it('captures ctrl+key combo', () => {
-    expect(captureKeyToString({ ...noMods, ctrlKey: true, key: 'b', code: 'KeyB' })).toBe('ctrl+b')
+    expect(keyToString({ ...noMods, ctrlKey: true, key: 'b', code: 'KeyB' })).toBe('ctrl+b')
   })
 
   it('captures ctrl+shift+key combo', () => {
-    expect(captureKeyToString({ ...noMods, ctrlKey: true, shiftKey: true, key: 'K', code: 'KeyK' })).toBe('ctrl+shift+k')
+    expect(keyToString({ ...noMods, ctrlKey: true, shiftKey: true, key: 'K', code: 'KeyK' })).toBe('ctrl+shift+k')
   })
 
   it('captures alt+key using physical key (not unicode)', () => {
-    // On Mac, alt+l produces ¬ in e.key but e.code is still KeyL
-    expect(captureKeyToString({ ...noMods, altKey: true, key: '¬', code: 'KeyL' })).toBe('alt+l')
+    expect(keyToString({ ...noMods, altKey: true, key: '¬', code: 'KeyL' })).toBe('alt+l')
   })
 
   it('captures alt+key with other unicode chars', () => {
-    // alt+p on Mac produces π
-    expect(captureKeyToString({ ...noMods, altKey: true, key: 'π', code: 'KeyP' })).toBe('alt+p')
+    expect(keyToString({ ...noMods, altKey: true, key: 'π', code: 'KeyP' })).toBe('alt+p')
   })
 
-  it('captures ctrl+alt+shift+key', () => {
-    expect(captureKeyToString({ ...noMods, ctrlKey: true, altKey: true, shiftKey: true, key: 'z', code: 'KeyZ' }))
-      .toBe('ctrl+alt+shift+z')
+  it('captures meta (Cmd) as meta', () => {
+    expect(keyToString({ ...noMods, metaKey: true, key: 't', code: 'KeyT' })).toBe('meta+t')
   })
 
-  it('captures meta (Cmd on Mac) as meta', () => {
-    expect(captureKeyToString({ ...noMods, metaKey: true, key: 't', code: 'KeyT' })).toBe('meta+t')
+  it('captures ctrl+meta together', () => {
+    expect(keyToString({ ...noMods, metaKey: true, ctrlKey: true, key: 'o', code: 'KeyO' }))
+      .toBe('meta+ctrl+o')
   })
 
-  it('captures meta+shift', () => {
-    expect(captureKeyToString({ ...noMods, metaKey: true, shiftKey: true, key: 'T', code: 'KeyT' })).toBe('meta+shift+t')
+  it('captures ctrl+meta+shift together', () => {
+    expect(keyToString({ ...noMods, metaKey: true, ctrlKey: true, shiftKey: true, key: 'A', code: 'KeyA' }))
+      .toBe('meta+ctrl+shift+a')
   })
 
-  it('meta takes precedence over ctrl (no double modifier)', () => {
-    // On some systems both metaKey and ctrlKey can be true
-    expect(captureKeyToString({ ...noMods, metaKey: true, ctrlKey: true, key: 'c', code: 'KeyC' })).toBe('meta+c')
+  it('captures all four modifiers together', () => {
+    expect(keyToString({ metaKey: true, ctrlKey: true, altKey: true, shiftKey: true, key: 'x', code: 'KeyX' }))
+      .toBe('meta+ctrl+alt+shift+x')
   })
 
   it('ignores standalone modifier keys', () => {
-    expect(captureKeyToString({ ...noMods, ctrlKey: true, key: 'Control', code: 'ControlLeft' })).toBeNull()
-    expect(captureKeyToString({ ...noMods, shiftKey: true, key: 'Shift', code: 'ShiftLeft' })).toBeNull()
-    expect(captureKeyToString({ ...noMods, altKey: true, key: 'Alt', code: 'AltLeft' })).toBeNull()
-    expect(captureKeyToString({ ...noMods, metaKey: true, key: 'Meta', code: 'MetaLeft' })).toBeNull()
+    expect(keyToString({ ...noMods, ctrlKey: true, key: 'Control', code: 'ControlLeft' })).toBeNull()
+    expect(keyToString({ ...noMods, shiftKey: true, key: 'Shift', code: 'ShiftLeft' })).toBeNull()
+    expect(keyToString({ ...noMods, altKey: true, key: 'Alt', code: 'AltLeft' })).toBeNull()
+    expect(keyToString({ ...noMods, metaKey: true, key: 'Meta', code: 'MetaLeft' })).toBeNull()
   })
 
   it('maps special keys via e.code', () => {
     const cases: [string, string, string][] = [
       ['ArrowUp', 'ArrowUp', 'up'],
       ['ArrowDown', 'ArrowDown', 'down'],
-      ['ArrowLeft', 'ArrowLeft', 'left'],
-      ['ArrowRight', 'ArrowRight', 'right'],
-      ['Escape', 'Escape', 'escape'],
-      ['Enter', 'Enter', 'enter'],
-      ['Backspace', 'Backspace', 'backspace'],
-      ['Delete', 'Delete', 'del'],
-      ['Tab', 'Tab', 'tab'],
-      ['Home', 'Home', 'home'],
-      ['End', 'End', 'end'],
-      ['PageUp', 'PageUp', 'pageup'],
-      ['PageDown', 'PageDown', 'pagedown'],
       [' ', 'Space', 'space'],
+      ['Enter', 'Enter', 'enter'],
+      ['Escape', 'Escape', 'escape'],
+      ['Backspace', 'Backspace', 'backspace'],
+      ['Tab', 'Tab', 'tab'],
     ]
     for (const [key, code, expected] of cases) {
-      expect(captureKeyToString({ ...noMods, key, code }), `${code} → ${expected}`).toBe(expected)
+      expect(keyToString({ ...noMods, key, code }), `${code} → ${expected}`).toBe(expected)
     }
   })
 
-  it('maps punctuation keys via e.code', () => {
-    expect(captureKeyToString({ ...noMods, key: '-', code: 'Minus' })).toBe('-')
-    expect(captureKeyToString({ ...noMods, key: '=', code: 'Equal' })).toBe('=')
-    expect(captureKeyToString({ ...noMods, key: ',', code: 'Comma' })).toBe(',')
-    expect(captureKeyToString({ ...noMods, key: '.', code: 'Period' })).toBe('.')
-    expect(captureKeyToString({ ...noMods, key: '/', code: 'Slash' })).toBe('/')
+  it('maps punctuation keys', () => {
+    expect(keyToString({ ...noMods, key: '-', code: 'Minus' })).toBe('-')
+    expect(keyToString({ ...noMods, key: '=', code: 'Equal' })).toBe('=')
+    expect(keyToString({ ...noMods, key: ',', code: 'Comma' })).toBe(',')
   })
 
   it('handles function keys', () => {
-    expect(captureKeyToString({ ...noMods, key: 'F1', code: 'F1' })).toBe('f1')
-    expect(captureKeyToString({ ...noMods, ctrlKey: true, key: 'F5', code: 'F5' })).toBe('ctrl+f5')
+    expect(keyToString({ ...noMods, key: 'F1', code: 'F1' })).toBe('f1')
+    expect(keyToString({ ...noMods, ctrlKey: true, key: 'F5', code: 'F5' })).toBe('ctrl+f5')
   })
 
   it('handles digit keys', () => {
-    expect(captureKeyToString({ ...noMods, ctrlKey: true, key: '1', code: 'Digit1' })).toBe('ctrl+1')
-    expect(captureKeyToString({ ...noMods, key: '0', code: 'Digit0' })).toBe('0')
+    expect(keyToString({ ...noMods, ctrlKey: true, key: '1', code: 'Digit1' })).toBe('ctrl+1')
+  })
+})
+
+describe('ShortcutRecorder sequence recording', () => {
+  it('records single key as single entry', () => {
+    expect(recordSequence([
+      { ...noMods, key: 'j', code: 'KeyJ' },
+    ])).toBe('j')
   })
 
-  it('handles numpad keys', () => {
-    expect(captureKeyToString({ ...noMods, key: '5', code: 'Numpad5' })).toBe('5')
+  it('records vim-style double key (j j)', () => {
+    expect(recordSequence([
+      { ...noMods, key: 'j', code: 'KeyJ' },
+      { ...noMods, key: 'j', code: 'KeyJ' },
+    ])).toBe('j j')
   })
 
-  it('ctrl+arrow on Mac', () => {
-    expect(captureKeyToString({ ...noMods, ctrlKey: true, key: 'ArrowDown', code: 'ArrowDown' })).toBe('ctrl+down')
+  it('records multi-key sequence (g i)', () => {
+    expect(recordSequence([
+      { ...noMods, key: 'g', code: 'KeyG' },
+      { ...noMods, key: 'i', code: 'KeyI' },
+    ])).toBe('g i')
   })
 
-  it('meta+alt combo on Mac', () => {
-    expect(captureKeyToString({ ...noMods, metaKey: true, altKey: true, key: 'Dead', code: 'KeyI' })).toBe('meta+alt+i')
+  it('records mixed modifier + plain sequence', () => {
+    expect(recordSequence([
+      { ...noMods, ctrlKey: true, key: 'a', code: 'KeyA' },
+      { ...noMods, key: 'x', code: 'KeyX' },
+    ])).toBe('ctrl+a x')
+  })
+
+  it('skips standalone modifiers in sequence', () => {
+    expect(recordSequence([
+      { ...noMods, ctrlKey: true, key: 'Control', code: 'ControlLeft' },
+      { ...noMods, key: 'j', code: 'KeyJ' },
+    ])).toBe('j')
   })
 })

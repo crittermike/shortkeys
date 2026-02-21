@@ -10,62 +10,50 @@ const emit = defineEmits<{
 }>()
 
 const recording = ref(false)
+const recordedKeys = ref<string[]>([])
+let autoStopTimer: ReturnType<typeof setTimeout> | null = null
 
 function startRecording() {
   recording.value = true
+  recordedKeys.value = []
+  emit('update:modelValue', '')
   window.addEventListener('keydown', captureKey, true)
-  // Auto-stop after 5 seconds if no key pressed
-  setTimeout(() => stopRecording(), 5000)
+  resetAutoStop()
 }
 
 function stopRecording() {
   recording.value = false
   window.removeEventListener('keydown', captureKey, true)
+  if (autoStopTimer) { clearTimeout(autoStopTimer); autoStopTimer = null }
+  // Emit the final accumulated sequence (e.g. "j j" for Mousetrap sequence)
+  if (recordedKeys.value.length > 0) {
+    emit('update:modelValue', recordedKeys.value.join(' '))
+  }
 }
 
-function captureKey(e: KeyboardEvent) {
-  e.preventDefault()
-  e.stopPropagation()
+function resetAutoStop() {
+  if (autoStopTimer) clearTimeout(autoStopTimer)
+  // Auto-stop 3s after the last keypress (or 10s from start if no keys)
+  autoStopTimer = setTimeout(() => stopRecording(), recordedKeys.value.length > 0 ? 3000 : 10000)
+}
 
-  // Ignore standalone modifier keys — wait for a real key
-  const modifierKeys = ['Control', 'Shift', 'Alt', 'Meta', 'OS']
-  if (modifierKeys.includes(e.key)) return
-
+function keyToString(e: KeyboardEvent): string {
   const parts: string[] = []
   if (e.metaKey) parts.push('meta')
-  if (e.ctrlKey && !e.metaKey) parts.push('ctrl')
+  if (e.ctrlKey) parts.push('ctrl')
   if (e.altKey) parts.push('alt')
   if (e.shiftKey) parts.push('shift')
 
-  // Use e.code to get the physical key — e.key produces unicode with Alt on Mac
   const codeMap: Record<string, string> = {
-    'Space': 'space',
-    'ArrowUp': 'up',
-    'ArrowDown': 'down',
-    'ArrowLeft': 'left',
-    'ArrowRight': 'right',
-    'Escape': 'escape',
-    'Enter': 'enter',
-    'Backspace': 'backspace',
-    'Delete': 'del',
-    'Tab': 'tab',
-    'Home': 'home',
-    'End': 'end',
-    'PageUp': 'pageup',
-    'PageDown': 'pagedown',
-    'Insert': 'ins',
-    'CapsLock': 'capslock',
-    'Minus': '-',
-    'Equal': '=',
-    'BracketLeft': '[',
-    'BracketRight': ']',
-    'Backslash': '\\',
-    'Semicolon': ';',
-    'Quote': "'",
-    'Comma': ',',
-    'Period': '.',
-    'Slash': '/',
-    'Backquote': '`',
+    'Space': 'space', 'ArrowUp': 'up', 'ArrowDown': 'down',
+    'ArrowLeft': 'left', 'ArrowRight': 'right', 'Escape': 'escape',
+    'Enter': 'enter', 'Backspace': 'backspace', 'Delete': 'del',
+    'Tab': 'tab', 'Home': 'home', 'End': 'end',
+    'PageUp': 'pageup', 'PageDown': 'pagedown', 'Insert': 'ins',
+    'CapsLock': 'capslock', 'Minus': '-', 'Equal': '=',
+    'BracketLeft': '[', 'BracketRight': ']', 'Backslash': '\\',
+    'Semicolon': ';', 'Quote': "'", 'Comma': ',',
+    'Period': '.', 'Slash': '/', 'Backquote': '`',
   }
 
   let key: string
@@ -73,21 +61,34 @@ function captureKey(e: KeyboardEvent) {
   if (codeMap[code]) {
     key = codeMap[code]
   } else if (code.startsWith('Key')) {
-    key = code.slice(3).toLowerCase() // KeyA → a
+    key = code.slice(3).toLowerCase()
   } else if (code.startsWith('Digit')) {
-    key = code.slice(5) // Digit1 → 1
+    key = code.slice(5)
   } else if (code.startsWith('Numpad')) {
-    key = code.slice(6).toLowerCase() // Numpad1 → 1
+    key = code.slice(6).toLowerCase()
   } else if (code.startsWith('F') && /^F\d+$/.test(code)) {
-    key = code.toLowerCase() // F1 → f1
+    key = code.toLowerCase()
   } else {
-    key = e.key.toLowerCase() // fallback
+    key = e.key.toLowerCase()
   }
 
   parts.push(key)
+  return parts.join('+')
+}
 
-  emit('update:modelValue', parts.join('+'))
-  stopRecording()
+function captureKey(e: KeyboardEvent) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  const modifierKeys = ['Control', 'Shift', 'Alt', 'Meta', 'OS']
+  if (modifierKeys.includes(e.key)) return
+
+  const combo = keyToString(e)
+  recordedKeys.value.push(combo)
+
+  // Show live preview
+  emit('update:modelValue', recordedKeys.value.join(' '))
+  resetAutoStop()
 }
 </script>
 
@@ -105,10 +106,10 @@ function captureKey(e: KeyboardEvent) {
       :class="['record-btn', { recording }]"
       @click="recording ? stopRecording() : startRecording()"
       type="button"
-      :title="recording ? 'Press any key combo…' : 'Record shortcut'"
+      :title="recording ? 'Click to stop recording' : 'Record shortcut'"
     >
       <i :class="recording ? 'mdi mdi-stop-circle' : 'mdi mdi-record-circle-outline'"></i>
-      <span class="record-text">{{ recording ? 'Press keys…' : 'Record' }}</span>
+      <span class="record-text">{{ recording ? 'Stop' : 'Record' }}</span>
     </button>
   </div>
 </template>
