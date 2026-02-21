@@ -10,6 +10,15 @@ export default defineContentScript({
   main() {
     let keys: KeySetting[] = []
 
+    /** Check if the extension context is still valid (not orphaned after reload). */
+    function isContextValid(): boolean {
+      try {
+        return !!chrome.runtime?.id
+      } catch {
+        return false
+      }
+    }
+
     function doAction(keySetting: KeySetting): void {
       const action = keySetting.action
 
@@ -31,7 +40,8 @@ export default defineContentScript({
         message.action = 'nexttab'
       }
 
-      browser.runtime.sendMessage(message)
+      if (!isContextValid()) return
+      browser.runtime.sendMessage(message).catch(() => {})
     }
 
     function activateKey(keySetting: KeySetting): void {
@@ -57,12 +67,13 @@ export default defineContentScript({
 
     // Fetch keys from background and activate them
     function loadKeys() {
+      if (!isContextValid()) return
       browser.runtime.sendMessage({ action: 'getKeys', url: document.URL }).then((response) => {
         if (response) {
           keys = response
           bindAllKeys()
         }
-      })
+      }).catch(() => {})
     }
 
     // Listen for live reload when shortcuts are saved
