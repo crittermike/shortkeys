@@ -1,6 +1,0 @@
-[build]
-  command = "npm run build chrome"
-  publish = "."
-
-[build.environment]
-  NODE_VERSION = "18"
