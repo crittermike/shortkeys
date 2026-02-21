@@ -210,6 +210,13 @@ onMounted(async () => {
         <!-- Shortcut rows -->
         <div class="shortcut-list">
           <div v-for="(row, index) in keys" :key="row.id" class="shortcut-card">
+            <!-- Editable label above the card -->
+            <input
+              class="shortcut-label-title"
+              type="text"
+              placeholder="Untitled shortcut"
+              v-model="row.label"
+            />
             <div class="shortcut-row">
               <div class="field-group shortcut-col">
                 <label class="field-label">Shortcut</label>
@@ -242,13 +249,6 @@ onMounted(async () => {
             <!-- Expanded details -->
             <Transition name="expand">
               <div v-if="expandedRow === index" class="shortcut-details">
-                <!-- Editable label as a title -->
-                <input
-                  class="shortcut-label-input"
-                  type="text"
-                  placeholder="Add a label for this shortcut…"
-                  v-model="row.label"
-                />
 
                 <article v-if="isBuiltInAction(row.action)" class="alert alert-info">
                   <i class="mdi mdi-information-outline"></i>
@@ -339,14 +339,8 @@ onMounted(async () => {
                   </div>
                 </div>
 
-                <!-- Activation bar: toggle + website filter side by side -->
+                <!-- Activation bar: website filter + form inputs toggle -->
                 <div class="activation-bar">
-                  <div class="toggle-row-inline">
-                    <span class="toggle-label-sm">Active in form inputs</span>
-                    <button :class="['toggle', { on: row.activeInInputs }]" @click="row.activeInInputs = !row.activeInInputs" type="button">
-                      <span class="toggle-knob"></span>
-                    </button>
-                  </div>
                   <div class="site-filter-inline">
                     <div class="segmented">
                       <button
@@ -368,6 +362,12 @@ onMounted(async () => {
                         <i class="mdi mdi-earth-plus"></i> Only on…
                       </button>
                     </div>
+                  </div>
+                  <div class="toggle-row-inline">
+                    <span class="toggle-label-sm">Active in form inputs</span>
+                    <button :class="['toggle', { on: row.activeInInputs }]" @click="row.activeInInputs = !row.activeInInputs" type="button">
+                      <span class="toggle-knob"></span>
+                    </button>
                   </div>
                 </div>
                 <textarea
@@ -628,20 +628,20 @@ a:hover { text-decoration: underline; }
   border-radius: 0 0 10px 10px;
 }
 
-.shortcut-label-input {
+.shortcut-label-title {
+  display: block;
   width: 100%;
-  padding: 0;
+  padding: 10px 16px 0;
   border: none;
   background: transparent;
-  font-size: 16px;
-  font-weight: 600;
-  color: #1a1a2e;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
   outline: none;
-  margin-bottom: 16px;
 }
 
-.shortcut-label-input::placeholder { color: #cbd5e1; font-weight: 400; }
-.shortcut-label-input:focus { border-bottom: 2px solid #4361ee; padding-bottom: 4px; }
+.shortcut-label-title::placeholder { color: #cbd5e1; }
+.shortcut-label-title:focus { color: #1a1a2e; }
 
 .details-section {
   display: flex;
