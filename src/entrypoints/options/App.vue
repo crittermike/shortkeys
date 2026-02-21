@@ -124,17 +124,12 @@ async function testJavascript(row: KeySetting) {
       }
     }
 
-    // Inject via blob URL to bypass even strict CSP that blocks inline scripts
+    // Execute in MAIN world — chrome.scripting with world:'MAIN' bypasses page CSP
+    // We wrap in Function() instead of eval() since some environments restrict eval
     await chrome.scripting.executeScript({
       target: { tabId: selectedTabId.value },
-      func: (code: string) => {
-        const blob = new Blob([code], { type: 'text/javascript' })
-        const url = URL.createObjectURL(blob)
-        const s = document.createElement('script')
-        s.src = url
-        s.onload = () => { URL.revokeObjectURL(url); s.remove() }
-        ;(document.head || document.documentElement).appendChild(s)
-      },
+      world: 'MAIN' as any,
+      func: (code: string) => { new Function(code)() },
       args: [row.code || ''],
     })
     showSnack(`✓ Ran on ${tab ? new URL(tab.url).hostname : 'tab'}`)
