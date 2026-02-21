@@ -19,7 +19,8 @@ describe('ACTION_CATEGORIES', () => {
     expect(categories).toContain('Miscellaneous')
     expect(categories).toContain('Video Controls')
     expect(categories).toContain('Search Providers')
-    expect(categories).toHaveLength(9)
+    expect(categories).toContain('Page Tools')
+    expect(categories).toHaveLength(10)
   })
 
   it('has valid structure for every action', () => {

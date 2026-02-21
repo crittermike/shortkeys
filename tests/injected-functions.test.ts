@@ -299,3 +299,124 @@ describe('scroll focused element logic (#300)', () => {
     expect(div.scrollBy).toHaveBeenCalledWith({ left: 50, top: 0, behavior: 'auto' })
   })
 })
+
+describe('dark mode toggle', () => {
+  const STYLE_ID = '__shortkeys-darkmode'
+
+  function toggleDarkMode() {
+    const existing = document.getElementById(STYLE_ID)
+    if (existing) { existing.remove(); return }
+    const style = document.createElement('style')
+    style.id = STYLE_ID
+    style.textContent = `
+      html { filter: invert(1) hue-rotate(180deg) !important; }
+      img, video, picture, canvas, svg, [style*="background-image"] {
+        filter: invert(1) hue-rotate(180deg) !important;
+      }
+    `
+    document.documentElement.appendChild(style)
+  }
+
+  beforeEach(() => {
+    const existing = document.getElementById(STYLE_ID)
+    if (existing) existing.remove()
+  })
+
+  it('injects dark mode style on first call', () => {
+    toggleDarkMode()
+    const style = document.getElementById(STYLE_ID)
+    expect(style).toBeTruthy()
+    expect(style!.textContent).toContain('invert(1)')
+    expect(style!.textContent).toContain('hue-rotate(180deg)')
+  })
+
+  it('removes dark mode style on second call (toggle off)', () => {
+    toggleDarkMode() // on
+    expect(document.getElementById(STYLE_ID)).toBeTruthy()
+    toggleDarkMode() // off
+    expect(document.getElementById(STYLE_ID)).toBeNull()
+  })
+
+  it('toggles back on after being toggled off', () => {
+    toggleDarkMode() // on
+    toggleDarkMode() // off
+    toggleDarkMode() // on again
+    expect(document.getElementById(STYLE_ID)).toBeTruthy()
+  })
+
+  it('preserves images by double-inverting them', () => {
+    toggleDarkMode()
+    const style = document.getElementById(STYLE_ID)
+    expect(style!.textContent).toContain('img, video, picture, canvas, svg')
+  })
+})
+
+describe('cheat sheet overlay', () => {
+  const OVERLAY_ID = '__shortkeys-cheatsheet'
+
+  function createCheatSheet(keys: Array<{ key: string; action: string; label?: string; enabled?: boolean }>) {
+    const existing = document.getElementById(OVERLAY_ID)
+    if (existing) { existing.remove(); return }
+    const overlay = document.createElement('div')
+    overlay.id = OVERLAY_ID
+    const activeKeys = keys.filter((k) => k.key && k.action && k.enabled !== false)
+    for (const k of activeKeys) {
+      const row = document.createElement('div')
+      row.className = 'cheatsheet-row'
+      row.setAttribute('data-key', k.key)
+      row.setAttribute('data-label', k.label || k.action)
+      overlay.appendChild(row)
+    }
+    document.body.appendChild(overlay)
+  }
+
+  beforeEach(() => {
+    const existing = document.getElementById(OVERLAY_ID)
+    if (existing) existing.remove()
+  })
+
+  it('creates overlay with active shortcuts', () => {
+    createCheatSheet([
+      { key: 'ctrl+b', action: 'newtab', label: 'New tab' },
+      { key: 'j', action: 'scrolldown', label: 'Scroll down' },
+    ])
+    const overlay = document.getElementById(OVERLAY_ID)
+    expect(overlay).toBeTruthy()
+    const rows = overlay!.querySelectorAll('.cheatsheet-row')
+    expect(rows).toHaveLength(2)
+    expect(rows[0].getAttribute('data-key')).toBe('ctrl+b')
+    expect(rows[0].getAttribute('data-label')).toBe('New tab')
+  })
+
+  it('excludes disabled shortcuts', () => {
+    createCheatSheet([
+      { key: 'ctrl+b', action: 'newtab', enabled: true },
+      { key: 'ctrl+c', action: 'closetab', enabled: false },
+    ])
+    const rows = document.querySelectorAll('.cheatsheet-row')
+    expect(rows).toHaveLength(1)
+    expect(rows[0].getAttribute('data-key')).toBe('ctrl+b')
+  })
+
+  it('excludes shortcuts with no key', () => {
+    createCheatSheet([
+      { key: '', action: 'newtab' },
+      { key: 'j', action: 'scrolldown' },
+    ])
+    const rows = document.querySelectorAll('.cheatsheet-row')
+    expect(rows).toHaveLength(1)
+  })
+
+  it('toggles off when called again', () => {
+    createCheatSheet([{ key: 'j', action: 'scrolldown' }])
+    expect(document.getElementById(OVERLAY_ID)).toBeTruthy()
+    createCheatSheet([{ key: 'j', action: 'scrolldown' }])
+    expect(document.getElementById(OVERLAY_ID)).toBeNull()
+  })
+
+  it('uses action name when no label is set', () => {
+    createCheatSheet([{ key: 'j', action: 'scrolldown' }])
+    const row = document.querySelector('.cheatsheet-row')
+    expect(row!.getAttribute('data-label')).toBe('scrolldown')
+  })
+})

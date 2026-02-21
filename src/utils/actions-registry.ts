@@ -119,6 +119,10 @@ export const ACTION_CATEGORIES: Record<string, ActionDefinition[]> = {
     { value: 'searchwikipedia', label: 'Search Wikipedia for selected text', builtin: true },
     { value: 'searchgithub', label: 'Search GitHub for selected text', builtin: true },
   ],
+  'Page Tools': [
+    { value: 'showcheatsheet', label: 'Show shortcut cheat sheet overlay' },
+    { value: 'toggledarkmode', label: 'Toggle dark mode on current page' },
+  ],
 }
 
 /** Get a flat list of all valid action values. */
