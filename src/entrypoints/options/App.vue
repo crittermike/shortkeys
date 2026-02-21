@@ -8,6 +8,7 @@ import {
   isBuiltInAction,
 } from '@/utils/actions-registry'
 import type { KeySetting } from '@/utils/url-matching'
+import SearchSelect from '@/components/SearchSelect.vue'
 
 const activeTab = ref(0)
 const keys = ref<KeySetting[]>([])
@@ -174,14 +175,12 @@ onMounted(async () => {
               </div>
               <div class="field-group field-group-grow">
                 <label class="field-label">Behavior</label>
-                <select class="field-select" v-model="row.action">
-                  <option value="" disabled>Choose action…</option>
-                  <optgroup v-for="(group, name) in ACTION_CATEGORIES" :key="name" :label="name">
-                    <option v-for="opt in group" :key="opt.value" :value="opt.value">
-                      {{ opt.label }}
-                    </option>
-                  </optgroup>
-                </select>
+                <SearchSelect
+                  :modelValue="row.action"
+                  @update:modelValue="row.action = $event"
+                  :options="ACTION_CATEGORIES"
+                  placeholder="Choose action…"
+                />
               </div>
               <div class="shortcut-actions">
                 <button class="btn-icon" @click="toggleDetails(index)" :title="expandedRow === index ? 'Collapse' : 'Settings'">
