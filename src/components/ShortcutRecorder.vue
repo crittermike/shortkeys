@@ -83,7 +83,6 @@ function captureKey(e: KeyboardEvent) {
   } else {
     key = e.key.toLowerCase() // fallback
   }
-  }
 
   parts.push(key)
 
