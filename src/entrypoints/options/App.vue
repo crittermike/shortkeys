@@ -113,26 +113,34 @@ async function testJavascript(row: KeySetting) {
     showSnack('Select a tab to test on', 'danger')
     return
   }
+  const tabId = selectedTabId.value
   try {
-    // Switch to the target tab first so user sees the result
-    const tab = openTabs.value.find((t) => t.id === selectedTabId.value)
-    await chrome.tabs.update(selectedTabId.value, { active: true })
+    const tab = openTabs.value.find((t) => t.id === tabId)
+    await chrome.tabs.update(tabId, { active: true })
     if (tab) {
-      const tabInfo = await chrome.tabs.get(selectedTabId.value)
+      const tabInfo = await chrome.tabs.get(tabId)
       if (tabInfo.windowId) {
         await chrome.windows.update(tabInfo.windowId, { focused: true })
       }
     }
 
-    // Execute in MAIN world — chrome.scripting with world:'MAIN' bypasses page CSP
-    // We wrap in Function() instead of eval() since some environments restrict eval
-    await chrome.scripting.executeScript({
-      target: { tabId: selectedTabId.value },
-      world: 'MAIN' as any,
-      func: (code: string) => { new Function(code)() },
-      args: [row.code || ''],
-    })
-    showSnack(`✓ Ran on ${tab ? new URL(tab.url).hostname : 'tab'}`)
+    // Use Chrome DevTools Protocol to execute JS — bypasses page CSP entirely
+    await chrome.debugger.attach({ tabId }, '1.3')
+    try {
+      const result: any = await chrome.debugger.sendCommand(
+        { tabId },
+        'Runtime.evaluate',
+        { expression: row.code || '', userGesture: true, awaitPromise: true },
+      )
+      if (result?.exceptionDetails) {
+        const desc = result.exceptionDetails.exception?.description || result.exceptionDetails.text
+        showSnack(`Error: ${desc}`, 'danger')
+      } else {
+        showSnack(`✓ Ran on ${tab ? new URL(tab.url!).hostname : 'tab'}`)
+      }
+    } finally {
+      await chrome.debugger.detach({ tabId })
+    }
   } catch (e: any) {
     showSnack(e.message, 'danger')
   }
