@@ -805,7 +805,7 @@ a:hover { text-decoration: underline; }
 .shortcut-label-title:focus { color: #1a1a2e; }
 
 .toggle-sm { width: 36px; height: 20px; border-radius: 10px; }
-.toggle-sm .toggle-knob { width: 16px; height: 16px; }
+.toggle-sm .toggle-knob { width: 16px; height: 16px; top: 2px; left: 2px; }
 .toggle-sm.on .toggle-knob { transform: translateX(16px); }
 
 .shortcut-row {

@@ -60,6 +60,11 @@ function onKeydown(e: KeyboardEvent) {
   }
 }
 
+function openSettings() {
+  chrome.runtime.openOptionsPage()
+  window.close()
+}
+
 onMounted(async () => {
   const saved = await chrome.storage.local.get('keys')
   if (saved.keys) {
@@ -105,7 +110,7 @@ onMounted(async () => {
     </div>
     <div class="footer">
       <span class="hint"><kbd>↑↓</kbd> navigate <kbd>↵</kbd> trigger</span>
-      <a class="settings-link" @click="chrome.runtime.openOptionsPage(); window.close()">
+      <a class="settings-link" @click="openSettings">
         <i class="mdi mdi-cog-outline"></i> Settings
       </a>
     </div>

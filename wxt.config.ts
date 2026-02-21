@@ -9,6 +9,18 @@ export default defineConfig({
     description: 'Custom keyboard shortcuts for your browser',
     version: '5.0.0',
     default_locale: 'en',
+    icons: {
+      16: '/images/icon_16.png',
+      48: '/images/icon_48.png',
+      128: '/images/icon_128.png',
+    },
+    action: {
+      default_icon: {
+        16: '/images/icon_16.png',
+        48: '/images/icon_48.png',
+        128: '/images/icon_128.png',
+      },
+    },
     commands: {
       // TABS
       '01-newtab': { description: 'TABS: New tab' },
