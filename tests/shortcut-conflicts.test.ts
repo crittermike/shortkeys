@@ -67,6 +67,18 @@ describe('getBrowserConflict', () => {
     expect(getBrowserConflict('meta+q')).toBe('Quit browser (Mac)')
   })
 
+  it('cross-platform: ctrl shortcut matches meta browser default', () => {
+    // User types ctrl+q but on Mac the browser default is meta+q
+    expect(getBrowserConflict('ctrl+q')).toBe('Quit browser (Mac)')
+    expect(getBrowserConflict('ctrl+,')).toBe('Open preferences (Mac)')
+  })
+
+  it('cross-platform: meta shortcut matches ctrl browser default', () => {
+    // User types meta+j but the list has ctrl+j = Open downloads
+    expect(getBrowserConflict('meta+j')).toBe('Open downloads')
+    expect(getBrowserConflict('meta+h')).not.toBeNull()
+  })
+
   it('returns null for non-conflicting shortcuts', () => {
     expect(getBrowserConflict('ctrl+shift+k')).toBeNull()
     expect(getBrowserConflict('alt+z')).toBeNull()

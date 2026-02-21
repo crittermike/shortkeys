@@ -124,11 +124,23 @@ export function normalizeKey(key: string): string {
 
 /**
  * Check if a shortcut key conflicts with a known browser default.
+ * Checks both ctrl and meta variants since ctrl on Windows/Linux ≡ meta (Cmd) on Mac.
  * Returns the browser action description if it conflicts, or null.
  */
 export function getBrowserConflict(key: string): string | null {
   const normalized = normalizeKey(key)
-  return BROWSER_DEFAULTS[normalized] ?? null
+  if (BROWSER_DEFAULTS[normalized]) return BROWSER_DEFAULTS[normalized]
+
+  // Cross-platform: also check the ctrl↔meta equivalent
+  if (normalized.includes('ctrl+')) {
+    const metaVariant = normalized.replace('ctrl+', 'meta+')
+    if (BROWSER_DEFAULTS[metaVariant]) return BROWSER_DEFAULTS[metaVariant]
+  } else if (normalized.includes('meta+')) {
+    const ctrlVariant = normalized.replace('meta+', 'ctrl+')
+    if (BROWSER_DEFAULTS[ctrlVariant]) return BROWSER_DEFAULTS[ctrlVariant]
+  }
+
+  return null
 }
 
 /**
