@@ -3,6 +3,7 @@
 import captureScreenshot from './actions/captureScreenshot'
 import lastUsedTab from './actions/lastUsedTab'
 import { executeScript } from './utils'
+import { isAllowedSite } from './url-matching'
 import { v4 as uuid } from "uuid"
 
 /* global localStorage, chrome */
@@ -58,54 +59,6 @@ let selectTab = (direction) => {
       browser.tabs.update(toSelect.id, {active: true})
     })
   })
-}
-
-/**
- * Helper function to convert glob/wildcard * syntax to valid RegExp for URL checking.
- *
- * @param glob
- * @returns {RegExp}
- */
-let globToRegex = function (glob) {
-  // Use a regexp if the url starts and ends with a slash `/`
-  if (/^\/.*\/$/.test(glob)) return new RegExp(glob.replace(/^\/(.*)\/$/, '$1'))
-
-  const specialChars = '\\^$*+?.()|{}[]'
-  let regexChars = ['^']
-  for (let i = 0; i < glob.length; ++i) {
-    let c = glob.charAt(i)
-    if (c === '*') {
-      regexChars.push('.*')
-    } else {
-      if (specialChars.indexOf(c) >= 0) {
-        regexChars.push('\\')
-      }
-      regexChars.push(c)
-    }
-  }
-  regexChars.push('$')
-  return new RegExp(regexChars.join(''))
-}
-
-/**
- * Helper function to determine if the current site is blacklisted or not.
- *
- * @param keySetting
- * @param url
- * @returns {boolean}
- */
-let isAllowedSite = function (keySetting, url) {
-  if (!keySetting.blacklist || keySetting.blacklist === 'false') {
-    // This shortcut is allowed on all sites (not blacklisted or whitelisted).
-    return true
-  }
-  let allowed = (keySetting.blacklist === true || keySetting.blacklist === 'true')
-  keySetting.sitesArray.forEach((site) => {
-    if (url.match(globToRegex(site))) {
-      allowed = !allowed
-    }
-  })
-  return allowed
 }
 
 let handleAction = async (action, request = {}) => {
