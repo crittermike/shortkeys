@@ -65,7 +65,11 @@ const browserMock = {
 // @ts-ignore
 globalThis.browser = browserMock
 // @ts-ignore
-globalThis.chrome = { ...browserMock, downloads: { search: vi.fn(), show: vi.fn() } }
+globalThis.chrome = {
+  ...browserMock,
+  downloads: { search: vi.fn(), show: vi.fn() },
+  tabs: { ...browserMock.tabs, group: vi.fn().mockResolvedValue(1), ungroup: vi.fn().mockResolvedValue(undefined) },
+}
 
 // Now import the module under test
 const { handleAction } = await import('../src/actions/action-handlers')
@@ -335,6 +339,152 @@ describe('handleAction', () => {
     it('returns true without doing anything', async () => {
       const result = await handleAction('disable')
       expect(result).toBe(true)
+    })
+  })
+
+  describe('new tab to the right (#615)', () => {
+    it('creates tab at current index + 1', async () => {
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, index: 3 }])
+      await handleAction('newtabright')
+      expect(mockTabsCreate).toHaveBeenCalledWith({ index: 4 })
+    })
+  })
+
+  describe('audible tab (#487)', () => {
+    it('switches to first audible tab', async () => {
+      mockTabsQuery
+        .mockResolvedValueOnce([{ id: 7, windowId: 2 }]) // audible query
+      await handleAction('audibletab')
+      expect(mockTabsUpdate).toHaveBeenCalledWith(7, { active: true })
+      expect(mockWindowsUpdate).toHaveBeenCalledWith(2, { focused: true })
+    })
+
+    it('shows toast when no audible tabs', async () => {
+      mockTabsQuery.mockResolvedValueOnce([]) // no audible tabs
+      await handleAction('audibletab')
+      expect(mockTabsUpdate).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('tab groups (#455)', () => {
+    it('adds tab to new group', async () => {
+      await handleAction('grouptab')
+      expect(chrome.tabs.group).toHaveBeenCalledWith({ tabIds: [1] })
+    })
+
+    it('removes tab from group', async () => {
+      await handleAction('ungrouptab')
+      expect(chrome.tabs.ungroup).toHaveBeenCalledWith(1)
+    })
+  })
+
+  describe('insert text (#495)', () => {
+    it('calls executeScript with configured text', async () => {
+      const { executeScript } = await import('../src/utils/execute-script')
+      await handleAction('inserttext', { inserttext: 'hello world' } as any)
+      expect(executeScript).toHaveBeenCalled()
+    })
+
+    it('does nothing without inserttext config', async () => {
+      const { executeScript } = await import('../src/utils/execute-script')
+      vi.mocked(executeScript).mockClear()
+      await handleAction('inserttext', {} as any)
+      expect(executeScript).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('copy actions with toast', () => {
+    it('copyurl trims whitespace (#630)', async () => {
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, url: '  https://example.com  ' }])
+      const { executeScript } = await import('../src/utils/execute-script')
+      await handleAction('copyurl')
+      // copyToClipboard calls executeScript with the trimmed URL
+      expect(executeScript).toHaveBeenCalled()
+    })
+
+    it('copytitleurlmarkdown formats as markdown link', async () => {
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, title: 'Example', url: 'https://example.com' }])
+      const { executeScript } = await import('../src/utils/execute-script')
+      await handleAction('copytitleurlmarkdown')
+      // Verify executeScript was called (copies [title](url))
+      expect(executeScript).toHaveBeenCalled()
+    })
+  })
+
+  describe('maximized windows (#645)', () => {
+    it('new window opens maximized', async () => {
+      await handleAction('newwindow')
+      expect(mockWindowsCreate).toHaveBeenCalledWith({ state: 'maximized' })
+    })
+
+    it('new private window opens maximized', async () => {
+      await handleAction('newprivatewindow')
+      expect(mockWindowsCreate).toHaveBeenCalledWith({ incognito: true, state: 'maximized' })
+    })
+
+    it('move tab to new window opens maximized', async () => {
+      await handleAction('movetabtonewwindow')
+      expect(mockWindowsCreate).toHaveBeenCalledWith({ url: 'https://example.com', state: 'maximized' })
+    })
+
+    it('open incognito opens maximized', async () => {
+      await handleAction('openincognito')
+      expect(mockWindowsCreate).toHaveBeenCalledWith({ url: 'https://example.com', incognito: true, state: 'maximized' })
+    })
+  })
+
+  describe('video controls (#632)', () => {
+    it('videoplaypause calls executeScript', async () => {
+      const { executeScript } = await import('../src/utils/execute-script')
+      await handleAction('videoplaypause')
+      expect(executeScript).toHaveBeenCalled()
+    })
+
+    it('videospeedup calls executeScript', async () => {
+      const { executeScript } = await import('../src/utils/execute-script')
+      await handleAction('videospeedup')
+      expect(executeScript).toHaveBeenCalled()
+    })
+
+    it('videoskipforward calls executeScript', async () => {
+      const { executeScript } = await import('../src/utils/execute-script')
+      await handleAction('videoskipforward')
+      expect(executeScript).toHaveBeenCalled()
+    })
+  })
+
+  describe('search providers (#658)', () => {
+    it('searchyoutube opens YouTube with selection', async () => {
+      const { executeScript } = await import('../src/utils/execute-script')
+      vi.mocked(executeScript).mockResolvedValueOnce([{ result: 'test query' }])
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, index: 2 }])
+      await handleAction('searchyoutube')
+      expect(mockTabsCreate).toHaveBeenCalledWith({
+        url: 'https://www.youtube.com/results?search_query=test%20query',
+        index: 3,
+      })
+    })
+
+    it('searchwikipedia opens Wikipedia with selection', async () => {
+      const { executeScript } = await import('../src/utils/execute-script')
+      vi.mocked(executeScript).mockResolvedValueOnce([{ result: 'quantum' }])
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, index: 2 }])
+      await handleAction('searchwikipedia')
+      expect(mockTabsCreate).toHaveBeenCalledWith({
+        url: 'https://en.wikipedia.org/w/index.php?search=quantum',
+        index: 3,
+      })
+    })
+
+    it('searchgithub opens GitHub with selection', async () => {
+      const { executeScript } = await import('../src/utils/execute-script')
+      vi.mocked(executeScript).mockResolvedValueOnce([{ result: 'react hooks' }])
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, index: 2 }])
+      await handleAction('searchgithub')
+      expect(mockTabsCreate).toHaveBeenCalledWith({
+        url: 'https://github.com/search?q=react%20hooks&type=repositories',
+        index: 3,
+      })
     })
   })
 

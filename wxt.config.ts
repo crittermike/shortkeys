@@ -111,6 +111,10 @@ export default defineConfig({
       '79-searchyoutube': { description: 'SEARCH: Search YouTube for selected text' },
       '80-searchwikipedia': { description: 'SEARCH: Search Wikipedia for selected text' },
       '81-searchgithub': { description: 'SEARCH: Search GitHub for selected text' },
+      '82-newtabright': { description: 'TABS: New tab to the right' },
+      '83-audibletab': { description: 'TABS: Jump to tab playing audio/video' },
+      '84-grouptab': { description: 'TABS: Add tab to new group' },
+      '85-ungrouptab': { description: 'TABS: Remove tab from group' },
     },
     permissions: [
       'downloads',

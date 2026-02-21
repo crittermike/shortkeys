@@ -18,6 +18,7 @@
     "@types/chrome": "^0.0.267",
     "@vitest/coverage-v8": "^4.0.18",
     "@wxt-dev/module-vue": "^1.0.3",
+    "jsdom": "^27.0.1",
     "vitest": "^3.2.4",
     "wxt": "^0.20.17"
   },

@@ -143,7 +143,7 @@ function toggleDetails(index: number) {
 const ACTIONS_NEEDING_EXPANSION = [
   'javascript', 'openbookmark', 'openbookmarknewtab', 'openbookmarkbackgroundtab',
   'openbookmarkbackgroundtabandclose', 'gototab', 'gototabbytitle', 'gototabbyindex',
-  'buttonnexttab', 'openapp', 'trigger', 'openurl',
+  'buttonnexttab', 'openapp', 'trigger', 'openurl', 'inserttext',
 ]
 
 function onActionChange(row: KeySetting, index: number, action: string) {
@@ -483,6 +483,11 @@ onMounted(async () => {
                   <div v-if="keys[index].action === 'trigger'" class="detail-field" style="max-width: 250px">
                     <label>Shortcut to trigger</label>
                     <input class="field-input shortcut-input" v-model="keys[index].trigger" placeholder="e.g. ctrl+b" />
+                  </div>
+
+                  <div v-if="keys[index].action === 'inserttext'" class="detail-field">
+                    <label>Text to insert</label>
+                    <textarea class="field-textarea mono" v-model="keys[index].inserttext" rows="2" placeholder="Text to type into the focused field…"></textarea>
                   </div>
                 </div>
 

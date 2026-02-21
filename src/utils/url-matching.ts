@@ -42,6 +42,7 @@ export interface KeySetting {
   button?: string
   openappid?: string
   trigger?: string
+  inserttext?: string
   smoothScrolling?: boolean
   currentWindow?: boolean
   enabled?: boolean

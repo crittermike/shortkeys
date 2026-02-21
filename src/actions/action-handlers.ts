@@ -92,6 +92,12 @@ const actionHandlers: Record<string, ActionHandler> = {
   // -- Tab management --
   newtab: async () => { await browser.tabs.create({}); return true },
 
+  newtabright: async () => {
+    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
+    await browser.tabs.create({ index: tab.index + 1 })
+    return true
+  },
+
   reopentab: async () => {
     const sessions = await browser.sessions.getRecentlyClosed({ maxResults: 1 })
     if (sessions[0]) {
@@ -175,6 +181,35 @@ const actionHandlers: Record<string, ActionHandler> = {
       // Switch to next tab first, then discard (can't discard active tab)
       await selectTab('next')
       await browser.tabs.discard(tab.id)
+    }
+    return true
+  },
+
+  audibletab: async () => {
+    const tabs = await browser.tabs.query({ audible: true })
+    if (tabs.length > 0) {
+      await browser.tabs.update(tabs[0].id!, { active: true })
+      await browser.windows.update(tabs[0].windowId!, { focused: true })
+    } else {
+      showPageToast('No tabs playing audio')
+    }
+    return true
+  },
+
+  grouptab: async () => {
+    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
+    if (tab.id && chrome.tabs.group) {
+      await chrome.tabs.group({ tabIds: [tab.id] })
+      showPageToast('✓ Tab added to new group')
+    }
+    return true
+  },
+
+  ungrouptab: async () => {
+    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
+    if (tab.id && chrome.tabs.ungroup) {
+      await chrome.tabs.ungroup(tab.id)
+      showPageToast('✓ Tab removed from group')
     }
     return true
   },
@@ -386,64 +421,116 @@ const actionHandlers: Record<string, ActionHandler> = {
   },
 
   // -- Scrolling --
+  // Uses focused scrollable element if available, otherwise window (#300)
   top: async (r) => {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
-    await executeScript((s: string) => window.scrollTo({ left: 0, top: 0, behavior: s as ScrollBehavior }), [s])
+    await executeScript((s: string) => {
+      const el = document.activeElement
+      const t = el && el !== document.body && el.scrollHeight > el.clientHeight ? el : window
+      t.scrollTo({ left: 0, top: 0, behavior: s as ScrollBehavior })
+    }, [s])
     return true
   },
   bottom: async (r) => {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
-    await executeScript((s: string) => window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: s as ScrollBehavior }), [s])
+    await executeScript((s: string) => {
+      const el = document.activeElement
+      if (el && el !== document.body && el.scrollHeight > el.clientHeight) {
+        el.scrollTo({ left: 0, top: el.scrollHeight, behavior: s as ScrollBehavior })
+      } else {
+        window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: s as ScrollBehavior })
+      }
+    }, [s])
     return true
   },
   scrollup: async (r) => {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
-    await executeScript((s: string) => window.scrollBy({ left: 0, top: -50, behavior: s as ScrollBehavior }), [s])
+    await executeScript((s: string) => {
+      const el = document.activeElement
+      const t = el && el !== document.body && el.scrollHeight > el.clientHeight ? el : window
+      t.scrollBy({ left: 0, top: -50, behavior: s as ScrollBehavior })
+    }, [s])
     return true
   },
   scrollupmore: async (r) => {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
-    await executeScript((s: string) => window.scrollBy({ left: 0, top: -500, behavior: s as ScrollBehavior }), [s])
+    await executeScript((s: string) => {
+      const el = document.activeElement
+      const t = el && el !== document.body && el.scrollHeight > el.clientHeight ? el : window
+      t.scrollBy({ left: 0, top: -500, behavior: s as ScrollBehavior })
+    }, [s])
     return true
   },
   pageup: async (r) => {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
-    await executeScript((s: string) => window.scrollBy({ left: 0, top: -window.innerHeight, behavior: s as ScrollBehavior }), [s])
+    await executeScript((s: string) => {
+      const el = document.activeElement
+      const t = el && el !== document.body && el.scrollHeight > el.clientHeight ? el : window
+      t.scrollBy({ left: 0, top: -window.innerHeight, behavior: s as ScrollBehavior })
+    }, [s])
     return true
   },
   scrolldown: async (r) => {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
-    await executeScript((s: string) => window.scrollBy({ left: 0, top: 50, behavior: s as ScrollBehavior }), [s])
+    await executeScript((s: string) => {
+      const el = document.activeElement
+      const t = el && el !== document.body && el.scrollHeight > el.clientHeight ? el : window
+      t.scrollBy({ left: 0, top: 50, behavior: s as ScrollBehavior })
+    }, [s])
     return true
   },
   scrolldownmore: async (r) => {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
-    await executeScript((s: string) => window.scrollBy({ left: 0, top: 500, behavior: s as ScrollBehavior }), [s])
+    await executeScript((s: string) => {
+      const el = document.activeElement
+      const t = el && el !== document.body && el.scrollHeight > el.clientHeight ? el : window
+      t.scrollBy({ left: 0, top: 500, behavior: s as ScrollBehavior })
+    }, [s])
     return true
   },
   pagedown: async (r) => {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
-    await executeScript((s: string) => window.scrollBy({ left: 0, top: window.innerHeight, behavior: s as ScrollBehavior }), [s])
+    await executeScript((s: string) => {
+      const el = document.activeElement
+      const t = el && el !== document.body && el.scrollHeight > el.clientHeight ? el : window
+      t.scrollBy({ left: 0, top: window.innerHeight, behavior: s as ScrollBehavior })
+    }, [s])
     return true
   },
   scrollleft: async (r) => {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
-    await executeScript((s: string) => window.scrollBy({ left: -50, top: 0, behavior: s as ScrollBehavior }), [s])
+    await executeScript((s: string) => {
+      const el = document.activeElement
+      const t = el && el !== document.body && el.scrollWidth > el.clientWidth ? el : window
+      t.scrollBy({ left: -50, top: 0, behavior: s as ScrollBehavior })
+    }, [s])
     return true
   },
   scrollleftmore: async (r) => {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
-    await executeScript((s: string) => window.scrollBy({ left: -500, top: 0, behavior: s as ScrollBehavior }), [s])
+    await executeScript((s: string) => {
+      const el = document.activeElement
+      const t = el && el !== document.body && el.scrollWidth > el.clientWidth ? el : window
+      t.scrollBy({ left: -500, top: 0, behavior: s as ScrollBehavior })
+    }, [s])
     return true
   },
   scrollright: async (r) => {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
-    await executeScript((s: string) => window.scrollBy({ left: 50, top: 0, behavior: s as ScrollBehavior }), [s])
+    await executeScript((s: string) => {
+      const el = document.activeElement
+      const t = el && el !== document.body && el.scrollWidth > el.clientWidth ? el : window
+      t.scrollBy({ left: 50, top: 0, behavior: s as ScrollBehavior })
+    }, [s])
     return true
   },
   scrollrightmore: async (r) => {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
-    await executeScript((s: string) => window.scrollBy({ left: 500, top: 0, behavior: s as ScrollBehavior }), [s])
+    await executeScript((s: string) => {
+      const el = document.activeElement
+      const t = el && el !== document.body && el.scrollWidth > el.clientWidth ? el : window
+      t.scrollBy({ left: 500, top: 0, behavior: s as ScrollBehavior })
+    }, [s])
     return true
   },
 
@@ -525,6 +612,25 @@ const actionHandlers: Record<string, ActionHandler> = {
   openincognito: async () => {
     const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
     await browser.windows.create({ url: tab.url, incognito: true, state: 'maximized' })
+    return true
+  },
+
+  // -- Insert text --
+  inserttext: async (request) => {
+    if (request.inserttext) {
+      await executeScript((text: string) => {
+        const el = document.activeElement as HTMLInputElement | HTMLTextAreaElement | null
+        if (el && ('value' in el)) {
+          const start = el.selectionStart ?? el.value.length
+          const end = el.selectionEnd ?? el.value.length
+          el.value = el.value.slice(0, start) + text + el.value.slice(end)
+          el.selectionStart = el.selectionEnd = start + text.length
+          el.dispatchEvent(new Event('input', { bubbles: true }))
+        } else if (document.activeElement?.isContentEditable) {
+          document.execCommand('insertText', false, text)
+        }
+      }, [request.inserttext])
+    }
     return true
   },
 
