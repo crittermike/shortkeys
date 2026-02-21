@@ -24,9 +24,10 @@ const mockBookmarksCreate = vi.fn()
 const mockBookmarksRemove = vi.fn()
 const mockManagementLaunchApp = vi.fn()
 
-// Mock executeScript globally
+// Mock executeScript and showPageToast globally
 vi.mock('../src/utils/execute-script', () => ({
   executeScript: vi.fn().mockResolvedValue([{ result: null }]),
+  showPageToast: vi.fn().mockResolvedValue(undefined),
 }))
 
 // Set up browser global

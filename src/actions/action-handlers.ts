@@ -1,4 +1,4 @@
-import { executeScript } from '../utils/execute-script'
+import { executeScript, showPageToast } from '../utils/execute-script'
 import type { KeySetting } from '../utils/url-matching'
 
 type ActionHandler = (request: KeySetting) => Promise<boolean> | boolean
@@ -153,6 +153,7 @@ const actionHandlers: Record<string, ActionHandler> = {
       }
     }
     if (toClose.length > 0) await browser.tabs.remove(toClose)
+    showPageToast(toClose.length > 0 ? `✓ Closed ${toClose.length} duplicate tab${toClose.length > 1 ? 's' : ''}` : '✓ No duplicates found')
     return true
   },
 
@@ -164,6 +165,7 @@ const actionHandlers: Record<string, ActionHandler> = {
     for (let i = 0; i < unpinned.length; i++) {
       await browser.tabs.move(unpinned[i].id!, { index: pinned.length + i })
     }
+    showPageToast(`✓ Sorted ${unpinned.length} tabs`)
     return true
   },
 
@@ -192,24 +194,28 @@ const actionHandlers: Record<string, ActionHandler> = {
   copyurl: async () => {
     const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
     copyToClipboard(tab.url!)
+    showPageToast('✓ URL copied')
     return true
   },
 
   copypagetitle: async () => {
     const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
     copyToClipboard(tab.title || '')
+    showPageToast('✓ Title copied')
     return true
   },
 
   copytitleurl: async () => {
     const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
     copyToClipboard(`${tab.title} - ${tab.url}`)
+    showPageToast('✓ Title & URL copied')
     return true
   },
 
   copytitleurlmarkdown: async () => {
     const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
     copyToClipboard(`[${tab.title}](${tab.url})`)
+    showPageToast('✓ Markdown link copied')
     return true
   },
 
@@ -508,8 +514,10 @@ const actionHandlers: Record<string, ActionHandler> = {
     const existing = await browser.bookmarks.search({ url: tab.url! })
     if (existing.length > 0) {
       await browser.bookmarks.remove(existing[0].id)
+      showPageToast('✓ Bookmark removed')
     } else {
       await browser.bookmarks.create({ title: tab.title, url: tab.url })
+      showPageToast('✓ Bookmarked')
     }
     return true
   },
