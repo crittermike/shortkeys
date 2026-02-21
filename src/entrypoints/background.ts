@@ -64,7 +64,19 @@ export default defineBackground(() => {
     }
   }
 
-  chrome.storage.local.onChanged.addListener(registerUserScript)
+  chrome.storage.local.onChanged.addListener(() => {
+    registerUserScript()
+    // Notify all tabs to re-fetch their shortcuts
+    chrome.tabs.query({}).then((tabs) => {
+      for (const tab of tabs) {
+        if (tab.id) {
+          chrome.tabs.sendMessage(tab.id, { action: 'refreshKeys' }).catch(() => {
+            // Tab may not have the content script loaded — ignore
+          })
+        }
+      }
+    })
+  })
 
   chrome.runtime.onInstalled.addListener(async (details) => {
     if (details.reason === 'update') {

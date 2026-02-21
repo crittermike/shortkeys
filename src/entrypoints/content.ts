@@ -50,12 +50,28 @@ export default defineContentScript({
       return shouldStopCallback(element, combo, keys)
     }
 
+    function bindAllKeys() {
+      Mousetrap.reset()
+      keys.forEach(activateKey)
+    }
+
     // Fetch keys from background and activate them
-    browser.runtime.sendMessage({ action: 'getKeys', url: document.URL }).then((response) => {
-      if (response) {
-        keys = response
-        keys.forEach(activateKey)
+    function loadKeys() {
+      browser.runtime.sendMessage({ action: 'getKeys', url: document.URL }).then((response) => {
+        if (response) {
+          keys = response
+          bindAllKeys()
+        }
+      })
+    }
+
+    // Listen for live reload when shortcuts are saved
+    browser.runtime.onMessage.addListener((message) => {
+      if (message.action === 'refreshKeys') {
+        loadKeys()
       }
     })
+
+    loadKeys()
   },
 })
