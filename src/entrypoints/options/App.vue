@@ -351,6 +351,11 @@ onMounted(async () => {
                     <input class="field-input mono" v-model="row.button" placeholder="#submit-btn" />
                   </div>
 
+                  <div v-if="row.action === 'openurl'" class="detail-field">
+                    <label>URL to open</label>
+                    <input class="field-input mono" v-model="row.openurl" placeholder="https://example.com" />
+                  </div>
+
                   <div v-if="row.action === 'openapp'" class="detail-field">
                     <label>App ID <span class="hint">(from extensions page)</span></label>
                     <input class="field-input mono" v-model="row.openappid" />

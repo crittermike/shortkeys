@@ -141,6 +141,42 @@ const actionHandlers: Record<string, ActionHandler> = {
     return true
   },
 
+  closeduplicatetabs: async () => {
+    const tabs = await browser.tabs.query({ currentWindow: true })
+    const seen = new Set<string>()
+    const toClose: number[] = []
+    for (const tab of tabs) {
+      if (tab.url && seen.has(tab.url)) {
+        toClose.push(tab.id!)
+      } else if (tab.url) {
+        seen.add(tab.url)
+      }
+    }
+    if (toClose.length > 0) await browser.tabs.remove(toClose)
+    return true
+  },
+
+  sorttabs: async () => {
+    const tabs = await browser.tabs.query({ currentWindow: true })
+    const pinned = tabs.filter((t) => t.pinned)
+    const unpinned = tabs.filter((t) => !t.pinned)
+    unpinned.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
+    for (let i = 0; i < unpinned.length; i++) {
+      await browser.tabs.move(unpinned[i].id!, { index: pinned.length + i })
+    }
+    return true
+  },
+
+  discardtab: async () => {
+    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
+    if (tab.id) {
+      // Switch to next tab first, then discard (can't discard active tab)
+      await selectTab('next')
+      await browser.tabs.discard(tab.id)
+    }
+    return true
+  },
+
   togglepin: async () => {
     const [tab] = await browser.tabs.query({ active: true, currentWindow: true })
     await browser.tabs.update(tab.id!, { pinned: !tab.pinned })
@@ -156,6 +192,51 @@ const actionHandlers: Record<string, ActionHandler> = {
   copyurl: async () => {
     const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
     copyToClipboard(tab.url!)
+    return true
+  },
+
+  copypagetitle: async () => {
+    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
+    copyToClipboard(tab.title || '')
+    return true
+  },
+
+  copytitleurl: async () => {
+    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
+    copyToClipboard(`${tab.title} - ${tab.url}`)
+    return true
+  },
+
+  copytitleurlmarkdown: async () => {
+    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
+    copyToClipboard(`[${tab.title}](${tab.url})`)
+    return true
+  },
+
+  openclipboardurl: async () => {
+    const results = await executeScript(() => navigator.clipboard.readText())
+    const url = results?.[0]?.result?.trim()
+    if (url) {
+      const fullUrl = url.match(/^https?:\/\//) ? url : `https://${url}`
+      await browser.tabs.update(undefined as any, { url: fullUrl })
+    }
+    return true
+  },
+
+  openclipboardurlnewtab: async () => {
+    const results = await executeScript(() => navigator.clipboard.readText())
+    const url = results?.[0]?.result?.trim()
+    if (url) {
+      const fullUrl = url.match(/^https?:\/\//) ? url : `https://${url}`
+      await browser.tabs.create({ url: fullUrl })
+    }
+    return true
+  },
+
+  openurl: async (request) => {
+    if (request.openurl) {
+      await browser.tabs.update(undefined as any, { url: request.openurl })
+    }
     return true
   },
 
@@ -418,6 +499,24 @@ const actionHandlers: Record<string, ActionHandler> = {
     if (request.openappid) {
       await browser.management.launchApp(request.openappid)
     }
+    return true
+  },
+
+  // -- Misc --
+  togglebookmark: async () => {
+    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
+    const existing = await browser.bookmarks.search({ url: tab.url! })
+    if (existing.length > 0) {
+      await browser.bookmarks.remove(existing[0].id)
+    } else {
+      await browser.bookmarks.create({ title: tab.title, url: tab.url })
+    }
+    return true
+  },
+
+  openincognito: async () => {
+    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
+    await browser.windows.create({ url: tab.url, incognito: true })
     return true
   },
 

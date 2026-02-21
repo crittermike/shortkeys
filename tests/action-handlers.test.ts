@@ -11,6 +11,7 @@ const mockTabsMove = vi.fn()
 const mockTabsGetZoom = vi.fn()
 const mockTabsSetZoom = vi.fn()
 const mockTabsReload = vi.fn()
+const mockTabsDiscard = vi.fn()
 const mockWindowsCreate = vi.fn()
 const mockWindowsRemove = vi.fn()
 const mockWindowsUpdate = vi.fn()
@@ -19,6 +20,8 @@ const mockSessionsGetRecentlyClosed = vi.fn()
 const mockSessionsRestore = vi.fn()
 const mockBrowsingDataRemove = vi.fn()
 const mockBookmarksSearch = vi.fn()
+const mockBookmarksCreate = vi.fn()
+const mockBookmarksRemove = vi.fn()
 const mockManagementLaunchApp = vi.fn()
 
 // Mock executeScript globally
@@ -38,6 +41,7 @@ const browserMock = {
     getZoom: mockTabsGetZoom,
     setZoom: mockTabsSetZoom,
     reload: mockTabsReload,
+    discard: mockTabsDiscard,
     onUpdated: { addListener: vi.fn(), removeListener: vi.fn() },
   },
   windows: {
@@ -51,7 +55,7 @@ const browserMock = {
     restore: mockSessionsRestore,
   },
   browsingData: { remove: mockBrowsingDataRemove },
-  bookmarks: { search: mockBookmarksSearch },
+  bookmarks: { search: mockBookmarksSearch, create: mockBookmarksCreate, remove: mockBookmarksRemove },
   management: { launchApp: mockManagementLaunchApp },
   scripting: { executeScript: vi.fn() },
   debugger: { attach: vi.fn(), detach: vi.fn(), sendCommand: vi.fn() },
@@ -78,6 +82,7 @@ beforeEach(() => {
   mockTabsGetZoom.mockResolvedValue(1.0)
   mockTabsSetZoom.mockResolvedValue(undefined)
   mockTabsReload.mockResolvedValue(undefined)
+  mockTabsDiscard.mockResolvedValue(undefined)
   mockWindowsCreate.mockResolvedValue(undefined)
   mockWindowsRemove.mockResolvedValue(undefined)
   mockWindowsUpdate.mockResolvedValue(undefined)
@@ -86,6 +91,8 @@ beforeEach(() => {
   mockSessionsRestore.mockResolvedValue(undefined)
   mockBrowsingDataRemove.mockResolvedValue(undefined)
   mockBookmarksSearch.mockResolvedValue([])
+  mockBookmarksCreate.mockResolvedValue({ id: 'bm1' })
+  mockBookmarksRemove.mockResolvedValue(undefined)
   mockManagementLaunchApp.mockResolvedValue(undefined)
 })
 
