@@ -410,7 +410,7 @@ onMounted(async () => {
                           </option>
                         </select>
                       </div>
-                      <button class="btn-run" @click="testJavascript(row)" type="button">
+                      <button class="btn-run" @click="testJavascript(keys[index])" type="button">
                         <i class="mdi mdi-play"></i> Run
                       </button>
                     </div>
