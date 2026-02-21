@@ -156,6 +156,15 @@ export default defineBackground(() => {
       return
     }
 
+    // Content-script-only actions — forward to active tab
+    const contentScriptActions = ['showcheatsheet', 'toggledarkmode']
+    if (contentScriptActions.includes(action)) {
+      chrome.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {
+        if (tab?.id) chrome.tabs.sendMessage(tab.id, request).catch(() => {})
+      })
+      return
+    }
+
     handleAction(action, request)
   })
 

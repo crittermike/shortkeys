@@ -175,10 +175,14 @@ export default defineContentScript({
       }).catch(() => {})
     }
 
-    // Listen for live reload when shortcuts are saved
+    // Listen for live reload and forwarded content-script actions
     browser.runtime.onMessage.addListener((message) => {
       if (message.action === 'refreshKeys') {
         loadKeys()
+      } else if (message.action === 'showcheatsheet') {
+        toggleCheatSheet()
+      } else if (message.action === 'toggledarkmode') {
+        toggleDarkMode()
       }
     })
 
