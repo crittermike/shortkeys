@@ -114,17 +114,23 @@ async function testJavascript(row: KeySetting) {
     return
   }
   try {
+    // Switch to the target tab first so user sees the result
+    const tab = openTabs.value.find((t) => t.id === selectedTabId.value)
+    await chrome.tabs.update(selectedTabId.value, { active: true })
+    if (tab) {
+      const tabInfo = await chrome.tabs.get(selectedTabId.value)
+      if (tabInfo.windowId) {
+        await chrome.windows.update(tabInfo.windowId, { focused: true })
+      }
+    }
+
+    // Execute via userScripts-style approach: direct eval in MAIN world
     await chrome.scripting.executeScript({
       target: { tabId: selectedTabId.value },
-      func: (code: string) => {
-        const script = document.createElement('script')
-        script.textContent = code
-        document.documentElement.appendChild(script)
-        script.remove()
-      },
+      world: 'MAIN' as any,
+      func: (code: string) => { eval(code) },
       args: [row.code || ''],
     })
-    const tab = openTabs.value.find((t) => t.id === selectedTabId.value)
     showSnack(`✓ Ran on ${tab ? new URL(tab.url).hostname : 'tab'}`)
   } catch (e: any) {
     showSnack(e.message, 'danger')
@@ -236,6 +242,14 @@ onMounted(async () => {
             <!-- Expanded details -->
             <Transition name="expand">
               <div v-if="expandedRow === index" class="shortcut-details">
+                <!-- Editable label as a title -->
+                <input
+                  class="shortcut-label-input"
+                  type="text"
+                  placeholder="Add a label for this shortcut…"
+                  v-model="row.label"
+                />
+
                 <article v-if="isBuiltInAction(row.action)" class="alert alert-info">
                   <i class="mdi mdi-information-outline"></i>
                   Also available via the browser's native
@@ -243,16 +257,17 @@ onMounted(async () => {
                   <a href="https://github.com/mikecrittenden/shortkeys/wiki/FAQs-and-Troubleshooting#Do_I_use_the_browsers_Keyboard_Shortcuts_settings_or_the_Shortkeys_options_page" target="_blank">Learn more →</a>
                 </article>
 
-                <!-- Full-width code editor FIRST when JS -->
+                <!-- Code editor for JS (full-width, prominent) -->
                 <div v-if="row.action === 'javascript'" class="code-editor-wrap">
                   <div class="code-header">
                     <span class="code-title"><i class="mdi mdi-code-braces"></i> JavaScript</span>
                     <div class="code-actions">
+                      <span class="run-label">Test on:</span>
                       <div class="tab-picker" @click="refreshTabs">
                         <i class="mdi mdi-tab"></i>
                         <select v-model="selectedTabId" class="tab-picker-select">
                           <option v-for="t in openTabs" :key="t.id" :value="t.id">
-                            {{ t.title.substring(0, 40) }}{{ t.title.length > 40 ? '…' : '' }}
+                            {{ t.title.substring(0, 35) }}{{ t.title.length > 35 ? '…' : '' }}
                           </option>
                         </select>
                       </div>
@@ -264,37 +279,20 @@ onMounted(async () => {
                   <CodeEditor :modelValue="row.code || ''" @update:modelValue="row.code = $event" />
                 </div>
 
-                <!-- Settings grid -->
+                <!-- Action-specific settings -->
                 <div class="details-section">
-                  <div class="detail-row">
-                    <div class="detail-field flex-1">
-                      <label>Label <span class="hint">(for your reference)</span></label>
-                      <input class="field-input" type="text" placeholder="e.g. Open Gmail" v-model="row.label" />
-                    </div>
-                    <div class="toggle-row-inline">
-                      <span class="toggle-label-sm">Active in form inputs</span>
-                      <button :class="['toggle', { on: row.activeInInputs }]" @click="row.activeInInputs = !row.activeInInputs" type="button">
-                        <span class="toggle-knob"></span>
-                      </button>
-                    </div>
+                  <div v-if="isScrollAction(row.action)" class="toggle-row-inline">
+                    <span class="toggle-label-sm">Smooth scrolling</span>
+                    <button :class="['toggle', { on: row.smoothScrolling }]" @click="row.smoothScrolling = !row.smoothScrolling" type="button">
+                      <span class="toggle-knob"></span>
+                    </button>
                   </div>
 
-                  <div v-if="isScrollAction(row.action)" class="detail-row">
-                    <div class="toggle-row-inline">
-                      <span class="toggle-label-sm">Smooth scrolling</span>
-                      <button :class="['toggle', { on: row.smoothScrolling }]" @click="row.smoothScrolling = !row.smoothScrolling" type="button">
-                        <span class="toggle-knob"></span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div v-if="row.action === 'gototab' || row.action === 'gototabbytitle'" class="detail-row">
-                    <div class="toggle-row-inline">
-                      <span class="toggle-label-sm">Current window only</span>
-                      <button :class="['toggle', { on: row.currentWindow }]" @click="row.currentWindow = !row.currentWindow" type="button">
-                        <span class="toggle-knob"></span>
-                      </button>
-                    </div>
+                  <div v-if="row.action === 'gototab' || row.action === 'gototabbytitle'" class="toggle-row-inline">
+                    <span class="toggle-label-sm">Current window only</span>
+                    <button :class="['toggle', { on: row.currentWindow }]" @click="row.currentWindow = !row.currentWindow" type="button">
+                      <span class="toggle-knob"></span>
+                    </button>
                   </div>
 
                   <div v-if="isBookmarkAction(row.action)" class="detail-field">
@@ -339,10 +337,17 @@ onMounted(async () => {
                     <label>Shortcut to trigger</label>
                     <input class="field-input shortcut-input" v-model="row.trigger" placeholder="e.g. ctrl+b" />
                   </div>
+                </div>
 
-                  <!-- Website filter -->
-                  <div class="site-filter-section">
-                    <label class="field-label">Website filter</label>
+                <!-- Activation bar: toggle + website filter side by side -->
+                <div class="activation-bar">
+                  <div class="toggle-row-inline">
+                    <span class="toggle-label-sm">Active in form inputs</span>
+                    <button :class="['toggle', { on: row.activeInInputs }]" @click="row.activeInInputs = !row.activeInInputs" type="button">
+                      <span class="toggle-knob"></span>
+                    </button>
+                  </div>
+                  <div class="site-filter-inline">
                     <div class="segmented">
                       <button
                         :class="['seg-btn', { active: !row.blacklist || row.blacklist === 'false' }]"
@@ -363,15 +368,15 @@ onMounted(async () => {
                         <i class="mdi mdi-earth-plus"></i> Only on…
                       </button>
                     </div>
-                    <textarea
-                      v-if="row.blacklist && row.blacklist !== 'false'"
-                      class="field-textarea mono site-patterns"
-                      v-model="row.sites"
-                      rows="3"
-                      :placeholder="row.blacklist === 'whitelist' ? 'Sites to activate on…\n*example.com*' : 'Sites to disable on…\n*example.com*'"
-                    ></textarea>
                   </div>
                 </div>
+                <textarea
+                  v-if="row.blacklist && row.blacklist !== 'false'"
+                  class="field-textarea mono site-patterns"
+                  v-model="row.sites"
+                  rows="3"
+                  :placeholder="row.blacklist === 'whitelist' ? 'Sites to activate on…\n*example.com*' : 'Sites to disable on…\n*example.com*'"
+                ></textarea>
               </div>
             </Transition>
           </div>
@@ -623,6 +628,21 @@ a:hover { text-decoration: underline; }
   border-radius: 0 0 10px 10px;
 }
 
+.shortcut-label-input {
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a2e;
+  outline: none;
+  margin-bottom: 16px;
+}
+
+.shortcut-label-input::placeholder { color: #cbd5e1; font-weight: 400; }
+.shortcut-label-input:focus { border-bottom: 2px solid #4361ee; padding-bottom: 4px; }
+
 .details-section {
   display: flex;
   flex-direction: column;
@@ -638,6 +658,19 @@ a:hover { text-decoration: underline; }
 
 .flex-1 { flex: 1; min-width: 0; }
 
+/* Activation bar: toggle + filter side by side */
+.activation-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #eef2f6;
+}
+
+.site-filter-inline { flex: 1; }
+.site-patterns { margin-top: 8px; }
+
 .toggle-row-inline {
   display: flex;
   align-items: center;
@@ -651,15 +684,6 @@ a:hover { text-decoration: underline; }
 }
 
 .toggle-label-sm { font-size: 13px; font-weight: 500; color: #475569; }
-
-.site-filter-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-top: 4px;
-}
-
-.site-patterns { margin-top: 4px; }
 
 .detail-field {
   margin-bottom: 12px;
@@ -771,6 +795,12 @@ a:hover { text-decoration: underline; }
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.run-label {
+  color: #64748b;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .tab-picker {
