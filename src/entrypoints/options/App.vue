@@ -88,6 +88,11 @@ function isBookmarkAction(action: string): boolean {
   return ['openbookmark', 'openbookmarknewtab', 'openbookmarkbackgroundtab', 'openbookmarkbackgroundtabandclose'].includes(action)
 }
 
+function copyExport() {
+  navigator.clipboard.writeText(JSON.stringify(keys.value, null, 2))
+  showSnack('Copied to clipboard!')
+}
+
 onMounted(async () => {
   const saved = await chrome.storage.local.get('keys')
   if (saved.keys) {
@@ -160,7 +165,7 @@ onMounted(async () => {
         <div class="shortcut-list">
           <div v-for="(row, index) in keys" :key="row.id" class="shortcut-card">
             <div class="shortcut-row">
-              <div class="field-group">
+              <div class="field-group shortcut-col">
                 <label class="field-label">Shortcut</label>
                 <input
                   class="field-input shortcut-input"
@@ -169,11 +174,7 @@ onMounted(async () => {
                   v-model="row.key"
                 />
               </div>
-              <div class="field-group">
-                <label class="field-label">Label</label>
-                <input class="field-input" type="text" placeholder="Optional label" v-model="row.label" />
-              </div>
-              <div class="field-group field-group-grow">
+              <div class="field-group behavior-col">
                 <label class="field-label">Behavior</label>
                 <SearchSelect
                   :modelValue="row.action"
@@ -204,7 +205,12 @@ onMounted(async () => {
 
                 <div class="details-columns">
                   <div class="details-col">
-                    <h4>Shortcut settings</h4>
+                    <h4>Settings</h4>
+
+                    <div class="detail-field">
+                      <label>Label <span class="hint">(optional, for your reference)</span></label>
+                      <input class="field-input" type="text" placeholder="e.g. Open Gmail" v-model="row.label" />
+                    </div>
 
                     <label v-if="isScrollAction(row.action)" class="check-label">
                       <input type="checkbox" v-model="row.smoothScrolling" /> Smooth scrolling
@@ -313,7 +319,12 @@ onMounted(async () => {
 
       <!-- Export Tab -->
       <div v-show="activeTab === 2" class="tab-content">
-        <p class="tab-desc">Copy the JSON below to back up or share your shortcuts.</p>
+        <div class="export-header">
+          <p class="tab-desc">Copy the JSON below to back up or share your shortcuts.</p>
+          <button class="btn btn-secondary" @click="copyExport">
+            <i class="mdi mdi-content-copy"></i> Copy to clipboard
+          </button>
+        </div>
         <pre class="export-pre">{{ JSON.stringify(keys, null, 2) }}</pre>
       </div>
     </main>
@@ -445,7 +456,6 @@ a:hover { text-decoration: underline; }
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-  overflow: hidden;
   transition: box-shadow 0.15s;
 }
 
@@ -463,10 +473,10 @@ a:hover { text-decoration: underline; }
   flex-direction: column;
   gap: 4px;
   min-width: 0;
-  flex: 1;
 }
 
-.field-group-grow { flex: 1.5; }
+.shortcut-col { width: 200px; flex: 0 0 200px; }
+.behavior-col { flex: 1; min-width: 0; }
 
 .field-label {
   font-size: 11px;
@@ -528,6 +538,7 @@ a:hover { text-decoration: underline; }
   border-top: 1px solid #f1f5f9;
   padding: 20px;
   background: #fafbfc;
+  border-radius: 0 0 10px 10px;
 }
 
 .details-columns {
@@ -556,6 +567,8 @@ a:hover { text-decoration: underline; }
   color: #475569;
   margin-bottom: 4px;
 }
+
+.hint { font-weight: 400; color: #94a3b8; }
 
 .check-label {
   display: flex;
@@ -637,6 +650,15 @@ a:hover { text-decoration: underline; }
 .expand-enter-from, .expand-leave-to { opacity: 0; }
 
 /* ── Export ── */
+.export-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.export-header .tab-desc { margin-bottom: 0; }
+
 .export-pre {
   background: #fff;
   border: 1px solid #e2e8f0;
