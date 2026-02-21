@@ -19,9 +19,14 @@ export default defineBackground(() => {
   }
 
   async function registerUserScript(): Promise<void> {
+    // userScripts API requires "Allow User Scripts" to be enabled in extension details
+    if (!chrome.userScripts) return
+
     const raw = (await chrome.storage.local.get('keys')).keys
     const keys = JSON.parse(raw || '[]')
     const jsActions = keys.filter((k: any) => k.action === 'javascript')
+
+    if (jsActions.length === 0) return
 
     const handlersObj =
       jsActions.reduce((acc: string, cur: any) => {
@@ -38,20 +43,24 @@ export default defineBackground(() => {
       })
     }
 
-    const existingScripts = await chrome.userScripts.getScripts({ ids: ['shortkeys-actions'] })
-    const scripts = [
-      {
-        id: 'shortkeys-actions',
-        matches: ['*://*/*'] as string[],
-        world: 'MAIN' as const,
-        js: [{ code: `var handlers = ${handlersObj};\n(${registerHandlers.toString()})();` }],
-      },
-    ]
+    try {
+      const existingScripts = await chrome.userScripts.getScripts({ ids: ['shortkeys-actions'] })
+      const scripts = [
+        {
+          id: 'shortkeys-actions',
+          matches: ['*://*/*'] as string[],
+          world: 'MAIN' as const,
+          js: [{ code: `var handlers = ${handlersObj};\n(${registerHandlers.toString()})();` }],
+        },
+      ]
 
-    if (existingScripts.length) {
-      await chrome.userScripts.update(scripts)
-    } else {
-      await chrome.userScripts.register(scripts)
+      if (existingScripts.length) {
+        await chrome.userScripts.update(scripts)
+      } else {
+        await chrome.userScripts.register(scripts)
+      }
+    } catch (e) {
+      // User hasn't enabled "Allow User Scripts" — silently ignore
     }
   }
 
