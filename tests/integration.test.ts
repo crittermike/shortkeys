@@ -150,9 +150,55 @@ describe('KeySetting type usage', () => {
       button: '#btn',
       openappid: 'app123',
       trigger: 'ctrl+k',
+      enabled: true,
     }
     expect(full.key).toBe('ctrl+j')
     expect(full.action).toBe('javascript')
     expect(full.code).toBe('alert("hi")')
+    expect(full.enabled).toBe(true)
+  })
+
+  it('supports enabled field for toggling shortcuts', () => {
+    const enabled: KeySetting = { key: 'a', action: 'newtab', enabled: true }
+    const disabled: KeySetting = { key: 'b', action: 'closetab', enabled: false }
+    const implicit: KeySetting = { key: 'c', action: 'reload' }
+    expect(enabled.enabled).toBe(true)
+    expect(disabled.enabled).toBe(false)
+    expect(implicit.enabled).toBeUndefined()
+  })
+})
+
+describe('enabled/disabled shortcut filtering', () => {
+  const shortcuts: KeySetting[] = [
+    { key: 'ctrl+a', action: 'newtab', enabled: true },
+    { key: 'ctrl+b', action: 'closetab', enabled: false },
+    { key: 'ctrl+c', action: 'reload' }, // undefined = enabled
+    { key: 'ctrl+d', action: 'forward', enabled: false },
+  ]
+
+  it('filters out disabled shortcuts', () => {
+    const active = shortcuts.filter((k) => k.enabled !== false)
+    expect(active.map((k) => k.key)).toEqual(['ctrl+a', 'ctrl+c'])
+  })
+
+  it('disabled shortcuts are excluded from allowed keys', () => {
+    const url = 'https://example.com'
+    const active = shortcuts.filter((k) => k.enabled !== false && isAllowedSite(k, url))
+    expect(active.map((k) => k.key)).toEqual(['ctrl+a', 'ctrl+c'])
+  })
+})
+
+describe('new action completeness', () => {
+  it('all new actions exist in the registry', () => {
+    const newActions = [
+      'copypagetitle', 'copytitleurl', 'copytitleurlmarkdown',
+      'openclipboardurl', 'openclipboardurlnewtab', 'openurl',
+      'closeduplicatetabs', 'sorttabs', 'discardtab',
+      'togglebookmark', 'openincognito',
+    ]
+    const allValues = getAllActionValues()
+    for (const action of newActions) {
+      expect(allValues, `Missing action: ${action}`).toContain(action)
+    }
   })
 })
