@@ -4,6 +4,7 @@ import { ref, computed, watch, nextTick } from 'vue'
 interface Option {
   value: string
   label: string
+  sublabel?: string
 }
 
 interface GroupedOptions {
@@ -152,7 +153,8 @@ watch(isOpen, (val) => {
               @click="select(opt.value)"
               type="button"
             >
-              {{ opt.label }}
+              <span class="ss-opt-label">{{ opt.label }}</span>
+              <span v-if="opt.sublabel" class="ss-opt-sub">{{ opt.sublabel }}</span>
             </button>
           </template>
         </template>
@@ -241,6 +243,17 @@ watch(isOpen, (val) => {
 }
 .ss-option.highlighted { background: #f1f5f9; }
 .ss-option.selected { color: #4361ee; font-weight: 600; }
+
+.ss-opt-label { display: block; }
+.ss-opt-sub {
+  display: block;
+  font-size: 11px;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
 
 .ss-empty { padding: 16px; text-align: center; color: #94a3b8; font-size: 13px; }
 </style>

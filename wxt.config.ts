@@ -98,6 +98,19 @@ export default defineConfig({
       '68-disable': { description: 'UTILITY: Do nothing (disable browser shortcut)' },
       '69-disable': { description: 'UTILITY: Do nothing (disable browser shortcut)' },
       '70-disable': { description: 'UTILITY: Do nothing (disable browser shortcut)' },
+      // VIDEO
+      '71-videoplaypause': { description: 'VIDEO: Play/pause' },
+      '72-videomute': { description: 'VIDEO: Mute/unmute' },
+      '73-videofullscreen': { description: 'VIDEO: Toggle fullscreen' },
+      '74-videospeedup': { description: 'VIDEO: Speed up (0.25×)' },
+      '75-videospeeddown': { description: 'VIDEO: Slow down (0.25×)' },
+      '76-videospeedreset': { description: 'VIDEO: Reset speed to 1×' },
+      '77-videoskipforward': { description: 'VIDEO: Skip forward 10s' },
+      '78-videoskipback': { description: 'VIDEO: Skip back 10s' },
+      // SEARCH
+      '79-searchyoutube': { description: 'SEARCH: Search YouTube for selected text' },
+      '80-searchwikipedia': { description: 'SEARCH: Search Wikipedia for selected text' },
+      '81-searchgithub': { description: 'SEARCH: Search GitHub for selected text' },
     },
     permissions: [
       'downloads',

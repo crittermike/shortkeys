@@ -42,13 +42,14 @@ describe('shouldStopCallback', () => {
     { key: 'ctrl+shift+l', action: 'reload', activeInInputs: true },
   ]
 
-  function makeElement(tagName, { classList = [], isContentEditable = false } = {}) {
+  function makeElement(tagName, { classList = [], isContentEditable = false, role = null } = {}) {
     return {
       tagName,
       classList: {
         contains: (cls) => classList.includes(cls),
       },
       isContentEditable,
+      getAttribute: (name) => name === 'role' ? role : null,
     }
   }
 
@@ -82,6 +83,21 @@ describe('shouldStopCallback', () => {
 
     it('stops in contentEditable elements', () => {
       const el = makeElement('DIV', { isContentEditable: true })
+      expect(shouldStopCallback(el, 'ctrl+b', keys)).toBe(true)
+    })
+
+    it('stops in elements with role="textbox" (e.g. Reddit)', () => {
+      const el = makeElement('DIV', { role: 'textbox' })
+      expect(shouldStopCallback(el, 'ctrl+b', keys)).toBe(true)
+    })
+
+    it('stops in elements with role="combobox"', () => {
+      const el = makeElement('DIV', { role: 'combobox' })
+      expect(shouldStopCallback(el, 'ctrl+b', keys)).toBe(true)
+    })
+
+    it('stops in elements with role="searchbox"', () => {
+      const el = makeElement('DIV', { role: 'searchbox' })
       expect(shouldStopCallback(el, 'ctrl+b', keys)).toBe(true)
     })
 

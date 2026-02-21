@@ -20,7 +20,7 @@ export function fetchConfig(keys: KeySetting[], keyCombo: string): KeySetting | 
  * the active element and the shortcut's configuration.
  */
 export function shouldStopCallback(
-  element: { tagName: string; classList: { contains(cls: string): boolean }; isContentEditable?: boolean },
+  element: { tagName: string; classList: { contains(cls: string): boolean }; isContentEditable?: boolean; getAttribute?: (name: string) => string | null },
   combo: string,
   keys: KeySetting[],
 ): boolean {
@@ -29,11 +29,15 @@ export function shouldStopCallback(
   if (element.classList && element.classList.contains('mousetrap')) {
     return true
   } else if (!keySetting || !keySetting.activeInInputs) {
+    const role = element.getAttribute?.('role')
     return (
       element.tagName === 'INPUT' ||
       element.tagName === 'SELECT' ||
       element.tagName === 'TEXTAREA' ||
-      element.isContentEditable === true
+      element.isContentEditable === true ||
+      role === 'textbox' ||
+      role === 'combobox' ||
+      role === 'searchbox'
     )
   } else {
     return false

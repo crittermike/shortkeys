@@ -114,7 +114,7 @@ const actionHandlers: Record<string, ActionHandler> = {
 
   movetabtonewwindow: async () => {
     const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
-    await browser.windows.create({ url: tab.url })
+    await browser.windows.create({ url: tab.url, state: 'maximized' })
     await browser.tabs.remove(tab.id!)
     return true
   },
@@ -193,7 +193,7 @@ const actionHandlers: Record<string, ActionHandler> = {
 
   copyurl: async () => {
     const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
-    copyToClipboard(tab.url!)
+    copyToClipboard(tab.url!.trim())
     showPageToast('✓ URL copied')
     return true
   },
@@ -329,8 +329,8 @@ const actionHandlers: Record<string, ActionHandler> = {
   },
 
   // -- Windows --
-  newwindow: async () => { await browser.windows.create(); return true },
-  newprivatewindow: async () => { await browser.windows.create({ incognito: true }); return true },
+  newwindow: async () => { await browser.windows.create({ state: 'maximized' }); return true },
+  newprivatewindow: async () => { await browser.windows.create({ incognito: true, state: 'maximized' }); return true },
 
   closewindow: async () => {
     const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
@@ -524,12 +524,78 @@ const actionHandlers: Record<string, ActionHandler> = {
 
   openincognito: async () => {
     const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
-    await browser.windows.create({ url: tab.url, incognito: true })
+    await browser.windows.create({ url: tab.url, incognito: true, state: 'maximized' })
     return true
   },
 
   // -- Disable (no-op) --
   disable: () => true,
+
+  // -- Video controls --
+  videoplaypause: async () => {
+    await executeScript(() => { const v = document.querySelector('video'); if (v) v.paused ? v.play() : v.pause() })
+    return true
+  },
+  videomute: async () => {
+    await executeScript(() => { const v = document.querySelector('video'); if (v) v.muted = !v.muted })
+    return true
+  },
+  videofullscreen: async () => {
+    await executeScript(() => { const v = document.querySelector('video'); if (v) document.fullscreenElement ? document.exitFullscreen() : v.requestFullscreen() })
+    return true
+  },
+  videospeedup: async () => {
+    await executeScript(() => { const v = document.querySelector('video'); if (v) { v.playbackRate = Math.min(v.playbackRate + 0.25, 16) } })
+    showPageToast('✓ Speed up')
+    return true
+  },
+  videospeeddown: async () => {
+    await executeScript(() => { const v = document.querySelector('video'); if (v) { v.playbackRate = Math.max(v.playbackRate - 0.25, 0.25) } })
+    showPageToast('✓ Speed down')
+    return true
+  },
+  videospeedreset: async () => {
+    await executeScript(() => { const v = document.querySelector('video'); if (v) v.playbackRate = 1 })
+    showPageToast('✓ Speed reset to 1×')
+    return true
+  },
+  videoskipforward: async () => {
+    await executeScript(() => { const v = document.querySelector('video'); if (v) v.currentTime += 10 })
+    return true
+  },
+  videoskipback: async () => {
+    await executeScript(() => { const v = document.querySelector('video'); if (v) v.currentTime -= 10 })
+    return true
+  },
+
+  // -- Search providers --
+  searchyoutube: async () => {
+    const results = await executeScript(() => window.getSelection()?.toString())
+    const selection = results?.[0]?.result
+    if (selection) {
+      const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
+      await browser.tabs.create({ url: `https://www.youtube.com/results?search_query=${encodeURIComponent(selection)}`, index: tab.index + 1 })
+    }
+    return true
+  },
+  searchwikipedia: async () => {
+    const results = await executeScript(() => window.getSelection()?.toString())
+    const selection = results?.[0]?.result
+    if (selection) {
+      const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
+      await browser.tabs.create({ url: `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(selection)}`, index: tab.index + 1 })
+    }
+    return true
+  },
+  searchgithub: async () => {
+    const results = await executeScript(() => window.getSelection()?.toString())
+    const selection = results?.[0]?.result
+    if (selection) {
+      const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
+      await browser.tabs.create({ url: `https://github.com/search?q=${encodeURIComponent(selection)}&type=repositories`, index: tab.index + 1 })
+    }
+    return true
+  },
 }
 
 /**

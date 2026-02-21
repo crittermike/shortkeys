@@ -16,7 +16,7 @@ import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
 
 const activeTab = ref(0)
 const keys = ref<KeySetting[]>([])
-const bookmarks = ref<string[]>([])
+const bookmarks = ref<{ title: string; url: string }[]>([])
 const importJson = ref('')
 const expandedRow = ref<number | null>(null)
 const snackMessage = ref('')
@@ -238,7 +238,7 @@ onMounted(async () => {
   chrome.bookmarks.getTree((tree) => {
     const process = (nodes: chrome.bookmarks.BookmarkTreeNode[]) => {
       for (const node of nodes) {
-        if (node.url) bookmarks.value.push(node.title)
+        if (node.url) bookmarks.value.push({ title: node.title, url: node.url })
         if (node.children) process(node.children)
       }
     }
@@ -439,7 +439,7 @@ onMounted(async () => {
                     <SearchSelect
                       :modelValue="keys[index].bookmark || ''"
                       @update:modelValue="keys[index].bookmark = $event"
-                      :options="{ Bookmarks: bookmarks.map(bm => ({ value: bm, label: bm })) }"
+                      :options="{ Bookmarks: bookmarks.map(bm => ({ value: bm.title, label: bm.title || bm.url, sublabel: bm.url })) }"
                       placeholder="Search bookmarks…"
                     />
                   </div>

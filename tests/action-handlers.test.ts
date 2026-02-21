@@ -197,12 +197,12 @@ describe('handleAction', () => {
   describe('window management', () => {
     it('creates a new window', async () => {
       await handleAction('newwindow')
-      expect(mockWindowsCreate).toHaveBeenCalledWith()
+      expect(mockWindowsCreate).toHaveBeenCalledWith({ state: 'maximized' })
     })
 
     it('creates a new private window', async () => {
       await handleAction('newprivatewindow')
-      expect(mockWindowsCreate).toHaveBeenCalledWith({ incognito: true })
+      expect(mockWindowsCreate).toHaveBeenCalledWith({ incognito: true, state: 'maximized' })
     })
 
     it('closes the current window', async () => {

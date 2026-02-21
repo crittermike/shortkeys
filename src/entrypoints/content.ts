@@ -3,7 +3,7 @@ import { fetchConfig, shouldStopCallback } from '@/utils/content-logic'
 import type { KeySetting } from '@/utils/url-matching'
 
 export default defineContentScript({
-  matches: ['<all_urls>'],
+  matches: ['<all_urls>', 'file:///*'],
   runAt: 'document_end',
   allFrames: false,
 
@@ -45,6 +45,7 @@ export default defineContentScript({
     }
 
     function activateKey(keySetting: KeySetting): void {
+      if (!keySetting.key) return
       Mousetrap.bind(keySetting.key.toLowerCase(), () => {
         doAction(keySetting)
         return false

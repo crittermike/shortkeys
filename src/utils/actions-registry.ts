@@ -37,7 +37,6 @@ export const ACTION_CATEGORIES: Record<string, ActionDefinition[]> = {
     { value: 'opensettings', label: 'Open Settings Page', builtin: true },
     { value: 'openextensions', label: 'Open Extensions Page', builtin: true },
     { value: 'openshortcuts', label: 'Open Keyboard Shortcuts Page', builtin: true },
-    { value: 'searchgoogle', label: 'Search Google for selected text', builtin: true },
   ],
   Bookmarks: [
     { value: 'openbookmark', label: 'Open bookmark/bookmarklet in current tab' },
@@ -98,6 +97,22 @@ export const ACTION_CATEGORIES: Record<string, ActionDefinition[]> = {
     { value: 'capturescreenshot', label: 'Capture current viewport screenshot' },
     { value: 'capturefullsizescreenshot', label: 'Capture full size screenshot (max 16,348px)' },
     { value: 'forcecapturefullsizescreenshot', label: 'Force capture full size screenshot' },
+  ],
+  'Video Controls': [
+    { value: 'videoplaypause', label: 'Play/pause video' },
+    { value: 'videomute', label: 'Mute/unmute video' },
+    { value: 'videofullscreen', label: 'Toggle video fullscreen' },
+    { value: 'videospeedup', label: 'Speed up video (0.25x)' },
+    { value: 'videospeeddown', label: 'Slow down video (0.25x)' },
+    { value: 'videospeedreset', label: 'Reset video speed to 1x' },
+    { value: 'videoskipforward', label: 'Skip forward 10 seconds' },
+    { value: 'videoskipback', label: 'Skip back 10 seconds' },
+  ],
+  'Search Providers': [
+    { value: 'searchgoogle', label: 'Search Google for selected text', builtin: true },
+    { value: 'searchyoutube', label: 'Search YouTube for selected text', builtin: true },
+    { value: 'searchwikipedia', label: 'Search Wikipedia for selected text', builtin: true },
+    { value: 'searchgithub', label: 'Search GitHub for selected text', builtin: true },
   ],
 }
 

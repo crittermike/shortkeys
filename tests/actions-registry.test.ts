@@ -17,7 +17,9 @@ describe('ACTION_CATEGORIES', () => {
     expect(categories).toContain('Windows')
     expect(categories).toContain('Zooming')
     expect(categories).toContain('Miscellaneous')
-    expect(categories).toHaveLength(7)
+    expect(categories).toContain('Video Controls')
+    expect(categories).toContain('Search Providers')
+    expect(categories).toHaveLength(9)
   })
 
   it('has valid structure for every action', () => {
