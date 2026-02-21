@@ -32,13 +32,14 @@ function captureKey(e: KeyboardEvent) {
   if (modifierKeys.includes(e.key)) return
 
   const parts: string[] = []
-  if (e.ctrlKey || e.metaKey) parts.push(e.metaKey && !e.ctrlKey ? 'meta' : 'ctrl')
+  if (e.metaKey) parts.push('meta')
+  if (e.ctrlKey && !e.metaKey) parts.push('ctrl')
   if (e.altKey) parts.push('alt')
   if (e.shiftKey) parts.push('shift')
 
-  // Map special keys to Mousetrap names
-  const keyMap: Record<string, string> = {
-    ' ': 'space',
+  // Use e.code to get the physical key — e.key produces unicode with Alt on Mac
+  const codeMap: Record<string, string> = {
+    'Space': 'space',
     'ArrowUp': 'up',
     'ArrowDown': 'down',
     'ArrowLeft': 'left',
@@ -54,9 +55,36 @@ function captureKey(e: KeyboardEvent) {
     'PageDown': 'pagedown',
     'Insert': 'ins',
     'CapsLock': 'capslock',
+    'Minus': '-',
+    'Equal': '=',
+    'BracketLeft': '[',
+    'BracketRight': ']',
+    'Backslash': '\\',
+    'Semicolon': ';',
+    'Quote': "'",
+    'Comma': ',',
+    'Period': '.',
+    'Slash': '/',
+    'Backquote': '`',
   }
 
-  const key = keyMap[e.key] || e.key.toLowerCase()
+  let key: string
+  const code = e.code
+  if (codeMap[code]) {
+    key = codeMap[code]
+  } else if (code.startsWith('Key')) {
+    key = code.slice(3).toLowerCase() // KeyA → a
+  } else if (code.startsWith('Digit')) {
+    key = code.slice(5) // Digit1 → 1
+  } else if (code.startsWith('Numpad')) {
+    key = code.slice(6).toLowerCase() // Numpad1 → 1
+  } else if (code.startsWith('F') && /^F\d+$/.test(code)) {
+    key = code.toLowerCase() // F1 → f1
+  } else {
+    key = e.key.toLowerCase() // fallback
+  }
+  }
+
   parts.push(key)
 
   emit('update:modelValue', parts.join('+'))
