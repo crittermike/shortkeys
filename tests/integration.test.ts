@@ -228,3 +228,157 @@ describe('App.vue template correctness', () => {
     expect(strayRowBindings, `Found stray row bindings: ${strayRowBindings.join(', ')}`).toHaveLength(0)
   })
 })
+
+describe('v4.x → v5.0 migration compatibility', () => {
+  // Real-world 4.x export data with all possible field combinations
+  const v4ExportData = [
+    {
+      key: 'ctrl+shift+k',
+      action: 'newtab',
+      label: 'Open new tab',
+      sites: '',
+      sitesArray: [''],
+      blacklist: false,
+      activeInInputs: false,
+    },
+    {
+      key: 'j',
+      action: 'scrolldown',
+      smoothScrolling: true,
+      sites: '*youtube.com*',
+      sitesArray: ['*youtube.com*'],
+      blacklist: 'whitelist',
+      activeInInputs: false,
+    },
+    {
+      key: 'ctrl+b',
+      action: 'javascript',
+      label: 'My Script',
+      code: 'document.body.style.background = "red"; console.log("hello world!%");',
+      id: 'abc-123-def',
+      sites: '',
+      sitesArray: [''],
+      blacklist: false,
+      activeInInputs: true,
+    },
+    {
+      key: 'ctrl+shift+g',
+      action: 'openbookmark',
+      bookmark: 'My Bookmarklet',
+      sites: '',
+      sitesArray: [''],
+    },
+    {
+      key: 'ctrl+shift+t',
+      action: 'gototab',
+      matchurl: '*://mail.google.com/*',
+      openurl: 'https://mail.google.com',
+      currentWindow: true,
+      sites: '*facebook.com*\n*twitter.com*',
+      sitesArray: ['*facebook.com*', '*twitter.com*'],
+      blacklist: true,
+    },
+    {
+      key: 'ctrl+1',
+      action: 'gototabbytitle',
+      matchtitle: '*Gmail*',
+      currentWindow: false,
+    },
+    {
+      key: 'ctrl+2',
+      action: 'gototabbyindex',
+      matchindex: '3',
+    },
+    {
+      key: 'ctrl+.',
+      action: 'buttonnexttab',
+      button: '#submit-btn',
+    },
+    {
+      key: 'ctrl+shift+a',
+      action: 'openapp',
+      openappid: 'abcdef123456',
+    },
+    {
+      key: 'ctrl+shift+x',
+      action: 'trigger',
+      trigger: 'ctrl+c',
+    },
+    {
+      key: 'f1',
+      action: 'disable',
+      sites: '',
+      sitesArray: [''],
+    },
+  ]
+
+  it('all v4 action names are recognized by v5 registry', () => {
+    const allActions = getAllActionValues()
+    const v4Actions = v4ExportData.map((k) => k.action)
+    for (const action of v4Actions) {
+      expect(allActions, `v4 action "${action}" missing from v5 registry`).toContain(action)
+    }
+  })
+
+  it('v4 data can be parsed as KeySetting[]', () => {
+    const raw = JSON.stringify(v4ExportData)
+    const parsed: KeySetting[] = JSON.parse(raw)
+
+    expect(parsed).toHaveLength(11)
+    expect(parsed[0].key).toBe('ctrl+shift+k')
+    expect(parsed[0].action).toBe('newtab')
+    expect(parsed[2].code).toContain('hello world!%')
+    expect(parsed[4].matchurl).toBe('*://mail.google.com/*')
+  })
+
+  it('v4 shortcuts are correctly filtered by isAllowedSite', () => {
+    const parsed: KeySetting[] = JSON.parse(JSON.stringify(v4ExportData))
+
+    const fbFiltered = parsed.filter((k) => isAllowedSite(k, 'https://facebook.com/feed'))
+    expect(fbFiltered.find((k) => k.key === 'ctrl+shift+t')).toBeUndefined()
+
+    const ghFiltered = parsed.filter((k) => isAllowedSite(k, 'https://github.com'))
+    expect(ghFiltered.find((k) => k.key === 'j')).toBeUndefined()
+    const ytFiltered = parsed.filter((k) => isAllowedSite(k, 'https://youtube.com/watch'))
+    expect(ytFiltered.find((k) => k.key === 'j')).toBeTruthy()
+  })
+
+  it('v4 shortcuts work with fetchConfig', () => {
+    const parsed: KeySetting[] = JSON.parse(JSON.stringify(v4ExportData))
+    const config = fetchConfig(parsed, 'ctrl+b')
+    expect(config).toBeTruthy()
+    expect((config as KeySetting).action).toBe('javascript')
+    expect((config as KeySetting).code).toContain('background')
+  })
+
+  it('v4 shortcuts work with shouldStopCallback', () => {
+    const parsed: KeySetting[] = JSON.parse(JSON.stringify(v4ExportData))
+    const inputEl = {
+      tagName: 'INPUT',
+      classList: { contains: () => false },
+      isContentEditable: false,
+      getAttribute: () => null,
+    }
+
+    expect(shouldStopCallback(inputEl, 'ctrl+b', parsed)).toBe(false)
+    expect(shouldStopCallback(inputEl, 'j', parsed)).toBe(true)
+  })
+
+  it('v4 data with missing new fields defaults gracefully', () => {
+    const parsed: KeySetting[] = JSON.parse(JSON.stringify(v4ExportData))
+    for (const k of parsed) {
+      expect(k.enabled).toBeUndefined()
+      expect(k.enabled !== false).toBe(true)
+    }
+  })
+
+  it('v4 IDs are preserved', () => {
+    const parsed: KeySetting[] = JSON.parse(JSON.stringify(v4ExportData))
+    expect(parsed[2].id).toBe('abc-123-def')
+  })
+
+  it('v4 empty sitesArray entries do not break filtering', () => {
+    const parsed: KeySetting[] = JSON.parse(JSON.stringify(v4ExportData))
+    expect(isAllowedSite(parsed[0], 'https://any-site.com')).toBe(true)
+  })
+})
