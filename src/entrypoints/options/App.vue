@@ -19,6 +19,20 @@ const expandedRow = ref<number | null>(null)
 const snackMessage = ref('')
 const snackType = ref<'success' | 'danger'>('success')
 
+interface BrowserTab { id: number; title: string; url: string; favIconUrl?: string }
+const openTabs = ref<BrowserTab[]>([])
+const selectedTabId = ref<number | null>(null)
+
+async function refreshTabs() {
+  const tabs = await chrome.tabs.query({})
+  openTabs.value = tabs
+    .filter((t) => t.url && !t.url.startsWith('chrome') && t.id)
+    .map((t) => ({ id: t.id!, title: t.title || '', url: t.url!, favIconUrl: t.favIconUrl }))
+  if (openTabs.value.length > 0 && !selectedTabId.value) {
+    selectedTabId.value = openTabs.value[0].id
+  }
+}
+
 function showSnack(msg: string, type: 'success' | 'danger' = 'success') {
   snackMessage.value = msg
   snackType.value = type
@@ -95,23 +109,25 @@ function copyExport() {
 }
 
 async function testJavascript(row: KeySetting) {
+  if (!selectedTabId.value) {
+    showSnack('Select a tab to test on', 'danger')
+    return
+  }
   try {
-    // Find a real webpage tab (not extension pages)
-    const tabs = await chrome.tabs.query({ currentWindow: true })
-    const tab = tabs.find((t) => t.url && !t.url.startsWith('chrome'))
-    if (!tab?.id) {
-      showSnack('Open a webpage tab first to test your code', 'danger')
-      return
-    }
     await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      func: (code: string) => { eval(code) },
+      target: { tabId: selectedTabId.value },
+      func: (code: string) => {
+        const script = document.createElement('script')
+        script.textContent = code
+        document.documentElement.appendChild(script)
+        script.remove()
+      },
       args: [row.code || ''],
-      world: 'MAIN',
     })
-    showSnack(`Executed on: ${new URL(tab.url!).hostname}`)
+    const tab = openTabs.value.find((t) => t.id === selectedTabId.value)
+    showSnack(`✓ Ran on ${tab ? new URL(tab.url).hostname : 'tab'}`)
   } catch (e: any) {
-    showSnack(`Error: ${e.message}`, 'danger')
+    showSnack(e.message, 'danger')
   }
 }
 
@@ -123,6 +139,8 @@ onMounted(async () => {
   } else {
     addShortcut()
   }
+
+  refreshTabs()
 
   chrome.bookmarks.getTree((tree) => {
     const process = (nodes: chrome.bookmarks.BookmarkTreeNode[]) => {
@@ -225,135 +243,134 @@ onMounted(async () => {
                   <a href="https://github.com/mikecrittenden/shortkeys/wiki/FAQs-and-Troubleshooting#Do_I_use_the_browsers_Keyboard_Shortcuts_settings_or_the_Shortkeys_options_page" target="_blank">Learn more →</a>
                 </article>
 
-                <div class="details-grid">
-                  <!-- Left column: action-specific settings -->
-                  <div class="details-col">
-                    <div class="detail-field">
+                <!-- Full-width code editor FIRST when JS -->
+                <div v-if="row.action === 'javascript'" class="code-editor-wrap">
+                  <div class="code-header">
+                    <span class="code-title"><i class="mdi mdi-code-braces"></i> JavaScript</span>
+                    <div class="code-actions">
+                      <div class="tab-picker" @click="refreshTabs">
+                        <i class="mdi mdi-tab"></i>
+                        <select v-model="selectedTabId" class="tab-picker-select">
+                          <option v-for="t in openTabs" :key="t.id" :value="t.id">
+                            {{ t.title.substring(0, 40) }}{{ t.title.length > 40 ? '…' : '' }}
+                          </option>
+                        </select>
+                      </div>
+                      <button class="btn-run" @click="testJavascript(row)" type="button">
+                        <i class="mdi mdi-play"></i> Run
+                      </button>
+                    </div>
+                  </div>
+                  <CodeEditor :modelValue="row.code || ''" @update:modelValue="row.code = $event" />
+                </div>
+
+                <!-- Settings grid -->
+                <div class="details-section">
+                  <div class="detail-row">
+                    <div class="detail-field flex-1">
                       <label>Label <span class="hint">(for your reference)</span></label>
                       <input class="field-input" type="text" placeholder="e.g. Open Gmail" v-model="row.label" />
                     </div>
-
-                    <div v-if="isScrollAction(row.action)" class="toggle-row">
-                      <div class="toggle-info">
-                        <span class="toggle-label">Smooth scrolling</span>
-                        <span class="toggle-desc">Animate scroll instead of jumping</span>
-                      </div>
-                      <button :class="['toggle', { on: row.smoothScrolling }]" @click="row.smoothScrolling = !row.smoothScrolling" type="button">
-                        <span class="toggle-knob"></span>
-                      </button>
-                    </div>
-
-                    <div v-if="row.action === 'gototab' || row.action === 'gototabbytitle'" class="toggle-row">
-                      <div class="toggle-info">
-                        <span class="toggle-label">Current window only</span>
-                        <span class="toggle-desc">Only search tabs in the focused window</span>
-                      </div>
-                      <button :class="['toggle', { on: row.currentWindow }]" @click="row.currentWindow = !row.currentWindow" type="button">
-                        <span class="toggle-knob"></span>
-                      </button>
-                    </div>
-
-                    <div v-if="isBookmarkAction(row.action)" class="detail-field">
-                      <label>Bookmark</label>
-                      <select class="field-select" v-model="row.bookmark">
-                        <option v-for="bm in bookmarks" :key="bm" :value="bm">{{ bm }}</option>
-                      </select>
-                    </div>
-
-                    <div v-if="row.action === 'gototabbytitle'" class="detail-field">
-                      <label>Title to match <span class="hint">(wildcards accepted)</span></label>
-                      <input class="field-input" v-model="row.matchtitle" placeholder="*Gmail*" />
-                    </div>
-
-                    <div v-if="row.action === 'gototab'" class="detail-field">
-                      <label>URL to match <a class="hint-link" target="_blank" href="https://developer.chrome.com/extensions/match_patterns">pattern help →</a></label>
-                      <input class="field-input" v-model="row.matchurl" placeholder="*://mail.google.com/*" />
-                    </div>
-
-                    <div v-if="row.action === 'gototab'" class="detail-field">
-                      <label>Fallback URL <span class="hint">(if no tab matches)</span></label>
-                      <input class="field-input" v-model="row.openurl" placeholder="https://mail.google.com" />
-                    </div>
-
-                    <div v-if="row.action === 'gototabbyindex'" class="detail-field">
-                      <label>Tab index <span class="hint">(starts from 1)</span></label>
-                      <input class="field-input" type="number" v-model="row.matchindex" min="1" />
-                    </div>
-
-                    <div v-if="row.action === 'buttonnexttab'" class="detail-field">
-                      <label>Button CSS selector</label>
-                      <input class="field-input mono" v-model="row.button" placeholder="#submit-btn" />
-                    </div>
-
-                    <div v-if="row.action === 'openapp'" class="detail-field">
-                      <label>App ID <span class="hint">(from extensions page)</span></label>
-                      <input class="field-input mono" v-model="row.openappid" />
-                    </div>
-
-                    <div v-if="row.action === 'trigger'" class="detail-field">
-                      <label>Shortcut to trigger</label>
-                      <input class="field-input shortcut-input" v-model="row.trigger" placeholder="e.g. ctrl+b" />
-                    </div>
-                  </div>
-
-                  <!-- Right column: activation settings -->
-                  <div class="details-col">
-                    <div class="toggle-row">
-                      <div class="toggle-info">
-                        <span class="toggle-label">Active in form inputs</span>
-                        <span class="toggle-desc">Trigger even when typing in text fields</span>
-                      </div>
+                    <div class="toggle-row-inline">
+                      <span class="toggle-label-sm">Active in form inputs</span>
                       <button :class="['toggle', { on: row.activeInInputs }]" @click="row.activeInInputs = !row.activeInInputs" type="button">
                         <span class="toggle-knob"></span>
                       </button>
                     </div>
+                  </div>
 
-                    <div class="detail-field">
-                      <label>Website filter</label>
-                      <div class="segmented">
-                        <button
-                          :class="['seg-btn', { active: !row.blacklist || row.blacklist === 'false' }]"
-                          @click="row.blacklist = false"
-                          type="button"
-                        >
-                          <i class="mdi mdi-earth"></i> All sites
-                        </button>
-                        <button
-                          :class="['seg-btn', { active: row.blacklist === true || row.blacklist === 'true' }]"
-                          @click="row.blacklist = true"
-                          type="button"
-                        >
-                          <i class="mdi mdi-earth-minus"></i> Except…
-                        </button>
-                        <button
-                          :class="['seg-btn', { active: row.blacklist === 'whitelist' }]"
-                          @click="row.blacklist = 'whitelist'"
-                          type="button"
-                        >
-                          <i class="mdi mdi-earth-plus"></i> Only on…
-                        </button>
-                      </div>
-                    </div>
-
-                    <div v-if="row.blacklist && row.blacklist !== 'false'" class="detail-field">
-                      <label>
-                        {{ row.blacklist === 'whitelist' ? 'Only activate on these sites' : 'Disable on these sites' }}
-                        <span class="hint">(one pattern per line)</span>
-                      </label>
-                      <textarea class="field-textarea mono" v-model="row.sites" rows="4" placeholder="*example.com*&#10;*github.com/*/issues*"></textarea>
+                  <div v-if="isScrollAction(row.action)" class="detail-row">
+                    <div class="toggle-row-inline">
+                      <span class="toggle-label-sm">Smooth scrolling</span>
+                      <button :class="['toggle', { on: row.smoothScrolling }]" @click="row.smoothScrolling = !row.smoothScrolling" type="button">
+                        <span class="toggle-knob"></span>
+                      </button>
                     </div>
                   </div>
-                </div>
 
-                <!-- Full-width code editor (outside the grid) -->
-                <div v-if="row.action === 'javascript'" class="code-editor-wrap">
-                  <div class="code-header">
-                    <span class="code-title"><i class="mdi mdi-code-braces"></i> JavaScript</span>
-                    <button class="btn btn-sm btn-test" @click="testJavascript(row)" type="button">
-                      <i class="mdi mdi-play"></i> Test
-                    </button>
+                  <div v-if="row.action === 'gototab' || row.action === 'gototabbytitle'" class="detail-row">
+                    <div class="toggle-row-inline">
+                      <span class="toggle-label-sm">Current window only</span>
+                      <button :class="['toggle', { on: row.currentWindow }]" @click="row.currentWindow = !row.currentWindow" type="button">
+                        <span class="toggle-knob"></span>
+                      </button>
+                    </div>
                   </div>
-                  <CodeEditor :modelValue="row.code || ''" @update:modelValue="row.code = $event" />
+
+                  <div v-if="isBookmarkAction(row.action)" class="detail-field">
+                    <label>Bookmark</label>
+                    <select class="field-select" v-model="row.bookmark">
+                      <option v-for="bm in bookmarks" :key="bm" :value="bm">{{ bm }}</option>
+                    </select>
+                  </div>
+
+                  <div v-if="row.action === 'gototabbytitle'" class="detail-field">
+                    <label>Title to match <span class="hint">(wildcards accepted)</span></label>
+                    <input class="field-input" v-model="row.matchtitle" placeholder="*Gmail*" />
+                  </div>
+
+                  <div v-if="row.action === 'gototab'" class="detail-row">
+                    <div class="detail-field flex-1">
+                      <label>URL to match <a class="hint-link" target="_blank" href="https://developer.chrome.com/extensions/match_patterns">pattern help →</a></label>
+                      <input class="field-input" v-model="row.matchurl" placeholder="*://mail.google.com/*" />
+                    </div>
+                    <div class="detail-field flex-1">
+                      <label>Fallback URL <span class="hint">(if no match)</span></label>
+                      <input class="field-input" v-model="row.openurl" placeholder="https://mail.google.com" />
+                    </div>
+                  </div>
+
+                  <div v-if="row.action === 'gototabbyindex'" class="detail-field" style="max-width: 200px">
+                    <label>Tab index <span class="hint">(starts from 1)</span></label>
+                    <input class="field-input" type="number" v-model="row.matchindex" min="1" />
+                  </div>
+
+                  <div v-if="row.action === 'buttonnexttab'" class="detail-field">
+                    <label>Button CSS selector</label>
+                    <input class="field-input mono" v-model="row.button" placeholder="#submit-btn" />
+                  </div>
+
+                  <div v-if="row.action === 'openapp'" class="detail-field">
+                    <label>App ID <span class="hint">(from extensions page)</span></label>
+                    <input class="field-input mono" v-model="row.openappid" />
+                  </div>
+
+                  <div v-if="row.action === 'trigger'" class="detail-field" style="max-width: 250px">
+                    <label>Shortcut to trigger</label>
+                    <input class="field-input shortcut-input" v-model="row.trigger" placeholder="e.g. ctrl+b" />
+                  </div>
+
+                  <!-- Website filter -->
+                  <div class="site-filter-section">
+                    <label class="field-label">Website filter</label>
+                    <div class="segmented">
+                      <button
+                        :class="['seg-btn', { active: !row.blacklist || row.blacklist === 'false' }]"
+                        @click="row.blacklist = false" type="button"
+                      >
+                        <i class="mdi mdi-earth"></i> All sites
+                      </button>
+                      <button
+                        :class="['seg-btn', { active: row.blacklist === true || row.blacklist === 'true' }]"
+                        @click="row.blacklist = true" type="button"
+                      >
+                        <i class="mdi mdi-earth-minus"></i> Except…
+                      </button>
+                      <button
+                        :class="['seg-btn', { active: row.blacklist === 'whitelist' }]"
+                        @click="row.blacklist = 'whitelist'" type="button"
+                      >
+                        <i class="mdi mdi-earth-plus"></i> Only on…
+                      </button>
+                    </div>
+                    <textarea
+                      v-if="row.blacklist && row.blacklist !== 'false'"
+                      class="field-textarea mono site-patterns"
+                      v-model="row.sites"
+                      rows="3"
+                      :placeholder="row.blacklist === 'whitelist' ? 'Sites to activate on…\n*example.com*' : 'Sites to disable on…\n*example.com*'"
+                    ></textarea>
+                  </div>
                 </div>
               </div>
             </Transition>
@@ -601,25 +618,48 @@ a:hover { text-decoration: underline; }
 /* ── Details panel ── */
 .shortcut-details {
   border-top: 1px solid #eef2f6;
-  padding: 24px;
+  padding: 20px;
   background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
   border-radius: 0 0 10px 10px;
 }
 
-.details-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
+.details-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
 }
 
-.details-col h4 {
-  margin: 0 0 16px;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: #94a3b8;
+.detail-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
 }
+
+.flex-1 { flex: 1; min-width: 0; }
+
+.toggle-row-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.toggle-label-sm { font-size: 13px; font-weight: 500; color: #475569; }
+
+.site-filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.site-patterns { margin-top: 4px; }
 
 .detail-field {
   margin-bottom: 12px;
@@ -637,21 +677,6 @@ a:hover { text-decoration: underline; }
 .hint-link { font-weight: 400; color: #4361ee; font-size: 12px; }
 
 /* ── Toggle switch ── */
-.toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  margin-bottom: 10px;
-}
-
-.toggle-info { display: flex; flex-direction: column; gap: 2px; }
-.toggle-label { font-size: 14px; font-weight: 500; color: #1a1a2e; }
-.toggle-desc { font-size: 12px; color: #94a3b8; }
-
 .toggle {
   position: relative;
   width: 44px;
@@ -717,15 +742,16 @@ a:hover { text-decoration: underline; }
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid #1e293b;
-  margin-top: 16px;
+  margin-bottom: 4px;
 }
 
 .code-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 14px;
+  padding: 6px 8px 6px 14px;
   background: #1e293b;
+  gap: 8px;
 }
 
 .code-title {
@@ -736,17 +762,46 @@ a:hover { text-decoration: underline; }
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
 }
 
 .code-title .mdi { font-size: 14px; color: #60a5fa; }
 
-.btn-sm {
-  padding: 5px 12px;
-  font-size: 12px;
-  border-radius: 6px;
+.code-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.btn-test {
+.tab-picker {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #334155;
+  border-radius: 6px;
+  padding: 0 8px;
+  height: 30px;
+}
+
+.tab-picker .mdi { color: #94a3b8; font-size: 14px; flex-shrink: 0; }
+
+.tab-picker-select {
+  background: transparent;
+  border: none;
+  color: #e2e8f0;
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+  max-width: 200px;
+  padding: 0;
+}
+
+.tab-picker-select option { background: #1e293b; color: #e2e8f0; }
+
+.btn-run {
+  padding: 5px 14px;
+  font-size: 12px;
+  border-radius: 6px;
   background: #059669;
   color: #fff;
   border: none;
@@ -756,10 +811,12 @@ a:hover { text-decoration: underline; }
   align-items: center;
   gap: 4px;
   transition: background 0.15s;
+  height: 30px;
+  white-space: nowrap;
 }
 
-.btn-test:hover { background: #047857; }
-.btn-test .mdi { font-size: 14px; }
+.btn-run:hover { background: #047857; }
+.btn-run .mdi { font-size: 14px; }
 
 /* ── Alerts ── */
 .alert {
