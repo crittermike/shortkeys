@@ -2,42 +2,54 @@
 
 Custom keyboard shortcuts for your browser
 
-[Donate](https://salt.bountysource.com/teams/chrome-shortkeys) | 
-[Add a Review](https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck/reviews) | 
-[Documentation](https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys) | 
-[Support](https://github.com/mikecrittenden/shortkeys/issues) | 
+[Chrome Webstore](https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck) |
 [Firefox Add-on](https://addons.mozilla.org/firefox/addon/shortkeys/) |
-[Chrome Webstore](https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck)
+[Documentation](https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys) |
+[Support](https://github.com/mikecrittenden/shortkeys/issues)
 
 ## Install
 
-	$ npm install
+    npm install
 
 ## Development
 
-    npm run dev chrome
-    npm run dev firefox
-    npm run dev opera
-    npm run dev edge
+    npm run dev           # Chrome
+    npm run dev:firefox   # Firefox
 
 ## Build
 
-    npm run build chrome
-    npm run build firefox
-    npm run build opera
-    npm run build edge
+    npm run build           # Chrome
+    npm run build:firefox   # Firefox
 
 ## Testing
 
-    npm test
+    npm test              # Run all tests
+    npm run test:watch    # Watch mode
+    npm run test:coverage # With coverage
 
-## Environment
+## Architecture
 
-The build tool also defines a variable named `process.env.NODE_ENV` in your scripts. 
+Built with [WXT](https://wxt.dev/) (Vite-based browser extension framework), Vue 3, and TypeScript.
 
-## Docs
-
-* [webextension-toolbox](https://github.com/HaNdTriX/webextension-toolbox)
+```
+src/
+├── entrypoints/
+│   ├── background.ts        # Service worker
+│   ├── content.ts           # Content script (Mousetrap bindings)
+│   └── options/             # Options page (Vue 3)
+│       ├── App.vue
+│       ├── index.html
+│       └── main.ts
+├── actions/
+│   ├── action-handlers.ts   # Action registry (Map-based dispatch)
+│   ├── capture-screenshot.ts
+│   └── last-used-tab.ts
+└── utils/
+    ├── actions-registry.ts  # Action definitions & metadata
+    ├── content-logic.ts     # Content script pure logic
+    ├── execute-script.ts    # Scripting API wrapper
+    └── url-matching.ts      # Glob/regex URL matching
+```
 
 ## Credits
 

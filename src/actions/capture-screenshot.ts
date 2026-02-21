@@ -16,8 +16,8 @@ async function sendCommand(tabId: number, method: string, params?: any, waitMs =
 }
 
 async function getBodyScrollHeight(): Promise<number> {
-  const height = await executeScript(() => document.body.scrollHeight)
-  return height[0]
+  const result = await executeScript(() => document.body.scrollHeight)
+  return result?.[0]?.result ?? 0
 }
 
 async function downloadBase64File(filename: string, data: string): Promise<void> {
