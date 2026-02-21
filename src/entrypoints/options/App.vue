@@ -124,14 +124,16 @@ async function testJavascript(row: KeySetting) {
       }
     }
 
-    // Inject via script element to bypass page CSP that blocks eval()
+    // Inject via blob URL to bypass even strict CSP that blocks inline scripts
     await chrome.scripting.executeScript({
       target: { tabId: selectedTabId.value },
       func: (code: string) => {
+        const blob = new Blob([code], { type: 'text/javascript' })
+        const url = URL.createObjectURL(blob)
         const s = document.createElement('script')
-        s.textContent = code
+        s.src = url
+        s.onload = () => { URL.revokeObjectURL(url); s.remove() }
         ;(document.head || document.documentElement).appendChild(s)
-        s.remove()
       },
       args: [row.code || ''],
     })
