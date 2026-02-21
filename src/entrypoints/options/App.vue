@@ -10,6 +10,7 @@ import {
 } from '@/utils/actions-registry'
 import type { KeySetting } from '@/utils/url-matching'
 import { detectConflicts, type ShortcutConflict } from '@/utils/shortcut-conflicts'
+import { executeJavascriptOnTab } from '@/utils/test-javascript'
 import SearchSelect from '@/components/SearchSelect.vue'
 import CodeEditor from '@/components/CodeEditor.vue'
 import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
@@ -191,36 +192,11 @@ async function testJavascript(row: KeySetting) {
     showSnack('Select a tab to test on', 'danger')
     return
   }
-  const tabId = selectedTabId.value
-  try {
-    const tab = openTabs.value.find((t) => t.id === tabId)
-    await chrome.tabs.update(tabId, { active: true })
-    if (tab) {
-      const tabInfo = await chrome.tabs.get(tabId)
-      if (tabInfo.windowId) {
-        await chrome.windows.update(tabInfo.windowId, { focused: true })
-      }
-    }
-
-    // Use Chrome DevTools Protocol to execute JS — bypasses page CSP entirely
-    await chrome.debugger.attach({ tabId }, '1.3')
-    try {
-      const result: any = await chrome.debugger.sendCommand(
-        { tabId },
-        'Runtime.evaluate',
-        { expression: row.code || '', userGesture: true, awaitPromise: true },
-      )
-      if (result?.exceptionDetails) {
-        const desc = result.exceptionDetails.exception?.description || result.exceptionDetails.text
-        showSnack(`Error: ${desc}`, 'danger')
-      } else {
-        showSnack(`✓ Ran on ${tab ? new URL(tab.url!).hostname : 'tab'}`)
-      }
-    } finally {
-      await chrome.debugger.detach({ tabId })
-    }
-  } catch (e: any) {
-    showSnack(e.message, 'danger')
+  const result = await executeJavascriptOnTab(selectedTabId.value, row.code || '')
+  if (result.success) {
+    showSnack(`✓ Ran on ${result.hostname}`)
+  } else {
+    showSnack(result.error, 'danger')
   }
 }
 
