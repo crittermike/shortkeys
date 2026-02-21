@@ -5,7 +5,7 @@ import {
   isBuiltInAction,
   SCROLL_ACTIONS,
   WEBSITE_OPTIONS,
-} from '../app/scripts/actions-registry.js'
+} from '../src/utils/actions-registry'
 
 describe('ACTION_CATEGORIES', () => {
   it('contains all expected categories', () => {

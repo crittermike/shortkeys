@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { globToRegex, isAllowedSite } from '../app/scripts/url-matching.js'
+import { globToRegex, isAllowedSite } from '../src/utils/url-matching'
 
 describe('globToRegex', () => {
   it('converts a simple glob with wildcard', () => {

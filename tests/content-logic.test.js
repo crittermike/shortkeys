@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { fetchConfig, shouldStopCallback } from '../app/scripts/content-logic.js'
+import { fetchConfig, shouldStopCallback } from '../src/utils/content-logic'
 
 describe('fetchConfig', () => {
   const keys = [
