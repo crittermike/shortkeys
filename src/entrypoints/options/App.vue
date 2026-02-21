@@ -9,6 +9,7 @@ import {
 } from '@/utils/actions-registry'
 import type { KeySetting } from '@/utils/url-matching'
 import SearchSelect from '@/components/SearchSelect.vue'
+import CodeEditor from '@/components/CodeEditor.vue'
 
 const activeTab = ref(0)
 const keys = ref<KeySetting[]>([])
@@ -95,9 +96,11 @@ function copyExport() {
 
 async function testJavascript(row: KeySetting) {
   try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+    // Find a real webpage tab (not extension pages)
+    const tabs = await chrome.tabs.query({ currentWindow: true })
+    const tab = tabs.find((t) => t.url && !t.url.startsWith('chrome'))
     if (!tab?.id) {
-      showSnack('No active tab found', 'danger')
+      showSnack('Open a webpage tab first to test your code', 'danger')
       return
     }
     await chrome.scripting.executeScript({
@@ -106,7 +109,7 @@ async function testJavascript(row: KeySetting) {
       args: [row.code || ''],
       world: 'MAIN',
     })
-    showSnack('Code executed in active tab!')
+    showSnack(`Executed on: ${new URL(tab.url!).hostname}`)
   } catch (e: any) {
     showSnack(`Error: ${e.message}`, 'danger')
   }
@@ -257,23 +260,6 @@ onMounted(async () => {
                       </select>
                     </div>
 
-                    <!-- Code editor for JavaScript -->
-                    <div v-if="row.action === 'javascript'" class="code-editor-wrap">
-                      <div class="code-header">
-                        <span class="code-title"><i class="mdi mdi-code-braces"></i> JavaScript</span>
-                        <button class="btn btn-sm btn-test" @click="testJavascript(row)" type="button">
-                          <i class="mdi mdi-play"></i> Run in active tab
-                        </button>
-                      </div>
-                      <textarea
-                        class="code-editor"
-                        v-model="row.code"
-                        rows="10"
-                        spellcheck="false"
-                        placeholder="// Your code here&#10;document.body.style.background = 'red';"
-                      ></textarea>
-                    </div>
-
                     <div v-if="row.action === 'gototabbytitle'" class="detail-field">
                       <label>Title to match <span class="hint">(wildcards accepted)</span></label>
                       <input class="field-input" v-model="row.matchtitle" placeholder="*Gmail*" />
@@ -357,6 +343,17 @@ onMounted(async () => {
                       <textarea class="field-textarea mono" v-model="row.sites" rows="4" placeholder="*example.com*&#10;*github.com/*/issues*"></textarea>
                     </div>
                   </div>
+                </div>
+
+                <!-- Full-width code editor (outside the grid) -->
+                <div v-if="row.action === 'javascript'" class="code-editor-wrap">
+                  <div class="code-header">
+                    <span class="code-title"><i class="mdi mdi-code-braces"></i> JavaScript</span>
+                    <button class="btn btn-sm btn-test" @click="testJavascript(row)" type="button">
+                      <i class="mdi mdi-play"></i> Test
+                    </button>
+                  </div>
+                  <CodeEditor :modelValue="row.code || ''" @update:modelValue="row.code = $event" />
                 </div>
               </div>
             </Transition>
@@ -720,7 +717,7 @@ a:hover { text-decoration: underline; }
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid #1e293b;
-  margin-bottom: 12px;
+  margin-top: 16px;
 }
 
 .code-header {
@@ -763,23 +760,6 @@ a:hover { text-decoration: underline; }
 
 .btn-test:hover { background: #047857; }
 .btn-test .mdi { font-size: 14px; }
-
-.code-editor {
-  width: 100%;
-  min-height: 200px;
-  padding: 16px;
-  background: #0f172a;
-  color: #e2e8f0;
-  border: none;
-  font-family: 'SF Mono', Menlo, 'Fira Code', Consolas, monospace;
-  font-size: 13px;
-  line-height: 1.6;
-  resize: vertical;
-  tab-size: 2;
-  outline: none;
-}
-
-.code-editor::placeholder { color: #475569; }
 
 /* ── Alerts ── */
 .alert {
