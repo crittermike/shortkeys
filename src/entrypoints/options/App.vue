@@ -804,10 +804,6 @@ a:hover { text-decoration: underline; }
 .shortcut-label-title::placeholder { color: #cbd5e1; }
 .shortcut-label-title:focus { color: #1a1a2e; }
 
-.toggle-sm { width: 36px; height: 20px; border-radius: 10px; }
-.toggle-sm .toggle-knob { width: 16px; height: 16px; top: 2px; left: 2px; }
-.toggle-sm.on .toggle-knob { transform: translateX(16px); }
-
 .shortcut-row {
   display: flex;
   align-items: flex-end;
@@ -1006,6 +1002,11 @@ a:hover { text-decoration: underline; }
 }
 
 .toggle.on .toggle-knob { transform: translateX(20px); }
+
+/* Small toggle variant (enable/disable) */
+.toggle.toggle-sm { width: 36px; height: 20px; border-radius: 10px; }
+.toggle.toggle-sm .toggle-knob { width: 16px; height: 16px; top: 2px; left: 2px; }
+.toggle.toggle-sm.on .toggle-knob { transform: translateX(16px); }
 
 /* ── Segmented control ── */
 .segmented {
