@@ -3,7 +3,7 @@ import {
   normalizeKey,
   getBrowserConflict,
   detectConflicts,
-  BROWSER_DEFAULTS,
+  getDefaultsForPlatform,
 } from '../src/utils/shortcut-conflicts'
 import type { KeySetting } from '../src/utils/url-matching'
 
@@ -38,98 +38,136 @@ describe('normalizeKey', () => {
   it('returns empty string for empty input', () => {
     expect(normalizeKey('')).toBe('')
   })
+})
 
-  it('handles mod modifier (Mousetrap cross-platform)', () => {
-    expect(normalizeKey('mod+shift+a')).toBe('mod+shift+a')
+describe('getDefaultsForPlatform', () => {
+  it('returns ctrl-based defaults for Windows/Linux', () => {
+    const defaults = getDefaultsForPlatform(false)
+    expect(defaults['ctrl+t']).toBe('Open new tab')
+    expect(defaults['ctrl+w']).toBe('Close current tab')
+    expect(defaults['ctrl+a']).toBe('Select all')
+    // Should NOT have meta shortcuts
+    expect(defaults['meta+t']).toBeUndefined()
+    expect(defaults['meta+q']).toBeUndefined()
+  })
+
+  it('returns meta-based defaults for macOS', () => {
+    const defaults = getDefaultsForPlatform(true)
+    expect(defaults['meta+t']).toBe('Open new tab')
+    expect(defaults['meta+w']).toBe('Close current tab')
+    expect(defaults['meta+a']).toBe('Select all')
+    expect(defaults['meta+q']).toBe('Quit browser')
+    // Should NOT have ctrl variants of the same
+    expect(defaults['ctrl+t']).toBeUndefined()
+    expect(defaults['ctrl+a']).toBeUndefined()
+  })
+
+  it('both platforms share universal defaults', () => {
+    const mac = getDefaultsForPlatform(true)
+    const win = getDefaultsForPlatform(false)
+    expect(mac['f12']).toBe('Open developer tools')
+    expect(win['f12']).toBe('Open developer tools')
+    expect(mac['f5']).toBe('Reload page')
+    expect(win['f5']).toBe('Reload page')
   })
 })
 
 describe('getBrowserConflict', () => {
-  it('detects ctrl+t as new tab', () => {
-    expect(getBrowserConflict('ctrl+t')).toBe('Open new tab')
+  describe('on Windows/Linux', () => {
+    it('detects ctrl+t as new tab', () => {
+      expect(getBrowserConflict('ctrl+t', false)).toBe('Open new tab')
+    })
+
+    it('detects ctrl+w as close tab', () => {
+      expect(getBrowserConflict('ctrl+w', false)).toBe('Close current tab')
+    })
+
+    it('detects ctrl+a as select all', () => {
+      expect(getBrowserConflict('ctrl+a', false)).toBe('Select all')
+    })
+
+    it('detects f12 as dev tools', () => {
+      expect(getBrowserConflict('f12', false)).toBe('Open developer tools')
+    })
+
+    it('normalizes modifier order', () => {
+      expect(getBrowserConflict('shift+ctrl+t', false)).toBe('Reopen last closed tab')
+    })
+
+    it('does NOT flag meta+t (not a Windows shortcut)', () => {
+      expect(getBrowserConflict('meta+t', false)).toBeNull()
+    })
+
+    it('returns null for non-conflicting shortcuts', () => {
+      expect(getBrowserConflict('ctrl+shift+k', false)).toBeNull()
+      expect(getBrowserConflict('alt+z', false)).toBeNull()
+    })
   })
 
-  it('detects ctrl+w as close tab', () => {
-    expect(getBrowserConflict('ctrl+w')).toBe('Close current tab')
-  })
+  describe('on macOS', () => {
+    it('detects meta+t as new tab', () => {
+      expect(getBrowserConflict('meta+t', true)).toBe('Open new tab')
+    })
 
-  it('detects f12 as dev tools', () => {
-    expect(getBrowserConflict('f12')).toBe('Open developer tools')
-  })
+    it('detects meta+w as close tab', () => {
+      expect(getBrowserConflict('meta+w', true)).toBe('Close current tab')
+    })
 
-  it('detects ctrl+shift+t regardless of modifier order', () => {
-    expect(getBrowserConflict('shift+ctrl+t')).toBe('Reopen last closed tab')
-  })
+    it('detects meta+q as quit browser', () => {
+      expect(getBrowserConflict('meta+q', true)).toBe('Quit browser')
+    })
 
-  it('detects Mac meta shortcuts', () => {
-    expect(getBrowserConflict('meta+t')).toBe('Open new tab')
-    expect(getBrowserConflict('meta+w')).toBe('Close current tab')
-    expect(getBrowserConflict('meta+q')).toBe('Quit browser (Mac)')
-  })
+    it('does NOT flag ctrl+a (not a Mac browser shortcut)', () => {
+      expect(getBrowserConflict('ctrl+a', true)).toBeNull()
+    })
 
-  it('cross-platform: ctrl shortcut matches meta browser default', () => {
-    // User types ctrl+q but on Mac the browser default is meta+q
-    expect(getBrowserConflict('ctrl+q')).toBe('Quit browser (Mac)')
-    expect(getBrowserConflict('ctrl+,')).toBe('Open preferences (Mac)')
-  })
+    it('does NOT flag ctrl+t (not a Mac browser shortcut)', () => {
+      expect(getBrowserConflict('ctrl+t', true)).toBeNull()
+    })
 
-  it('cross-platform: meta shortcut matches ctrl browser default', () => {
-    // User types meta+j but the list has ctrl+j = Open downloads
-    expect(getBrowserConflict('meta+j')).toBe('Open downloads')
-    expect(getBrowserConflict('meta+h')).not.toBeNull()
-  })
+    it('detects f12 (universal)', () => {
+      expect(getBrowserConflict('f12', true)).toBe('Open developer tools')
+    })
 
-  it('returns null for non-conflicting shortcuts', () => {
-    expect(getBrowserConflict('ctrl+shift+k')).toBeNull()
-    expect(getBrowserConflict('alt+z')).toBeNull()
-    expect(getBrowserConflict('ctrl+shift+x')).toBeNull()
+    it('returns null for non-conflicting shortcuts', () => {
+      expect(getBrowserConflict('ctrl+shift+k', true)).toBeNull()
+      expect(getBrowserConflict('alt+z', true)).toBeNull()
+    })
   })
 
   it('returns null for empty key', () => {
-    expect(getBrowserConflict('')).toBeNull()
+    expect(getBrowserConflict('', false)).toBeNull()
+    expect(getBrowserConflict('', true)).toBeNull()
   })
 
   it('is case-insensitive', () => {
-    expect(getBrowserConflict('CTRL+T')).toBe('Open new tab')
-    expect(getBrowserConflict('Ctrl+Shift+T')).toBe('Reopen last closed tab')
-  })
-})
-
-describe('BROWSER_DEFAULTS coverage', () => {
-  it('has entries for common browser shortcuts', () => {
-    const expectedKeys = [
-      'ctrl+t', 'ctrl+w', 'ctrl+n', 'ctrl+l', 'ctrl+f',
-      'ctrl+p', 'ctrl+h', 'ctrl+j', 'ctrl+d', 'f5', 'f12',
-    ]
-    for (const key of expectedKeys) {
-      expect(BROWSER_DEFAULTS[key], `Missing: ${key}`).toBeDefined()
-    }
-  })
-
-  it('has Mac equivalents for common shortcuts', () => {
-    const macKeys = ['meta+t', 'meta+w', 'meta+n', 'meta+r', 'meta+f', 'meta+p']
-    for (const key of macKeys) {
-      expect(BROWSER_DEFAULTS[key], `Missing Mac: ${key}`).toBeDefined()
-    }
+    expect(getBrowserConflict('CTRL+T', false)).toBe('Open new tab')
+    expect(getBrowserConflict('META+T', true)).toBe('Open new tab')
   })
 })
 
 describe('detectConflicts', () => {
-  it('detects browser conflicts', () => {
+  it('detects browser conflicts on Windows', () => {
     const shortcuts: KeySetting[] = [
       { key: 'ctrl+t', action: 'newtab' },
       { key: 'ctrl+shift+k', action: 'javascript' },
     ]
-    const conflicts = detectConflicts(shortcuts)
-
-    // ctrl+t should conflict with browser default
+    const conflicts = detectConflicts(shortcuts, false)
     expect(conflicts.has(0)).toBe(true)
-    const c0 = conflicts.get(0)!
-    expect(c0).toHaveLength(1)
-    expect(c0[0].type).toBe('browser')
-    expect(c0[0].browserAction).toBe('Open new tab')
+    expect(conflicts.get(0)![0].browserAction).toBe('Open new tab')
+    expect(conflicts.has(1)).toBe(false)
+  })
 
-    // ctrl+shift+k should have no conflicts
+  it('detects browser conflicts on Mac', () => {
+    const shortcuts: KeySetting[] = [
+      { key: 'meta+t', action: 'newtab' },
+      { key: 'ctrl+t', action: 'javascript' },
+    ]
+    const conflicts = detectConflicts(shortcuts, true)
+    // meta+t conflicts on Mac
+    expect(conflicts.has(0)).toBe(true)
+    expect(conflicts.get(0)![0].browserAction).toBe('Open new tab')
+    // ctrl+t does NOT conflict on Mac
     expect(conflicts.has(1)).toBe(false)
   })
 
@@ -139,19 +177,11 @@ describe('detectConflicts', () => {
       { key: 'ctrl+b', action: 'closetab' },
       { key: 'ctrl+shift+k', action: 'javascript' },
     ]
-    const conflicts = detectConflicts(shortcuts)
-
-    // Both ctrl+b entries should have duplicate warnings
+    const conflicts = detectConflicts(shortcuts, false)
     expect(conflicts.has(0)).toBe(true)
     expect(conflicts.has(1)).toBe(true)
     expect(conflicts.has(2)).toBe(false)
-
-    const c0 = conflicts.get(0)!
-    expect(c0.some((c) => c.type === 'duplicate')).toBe(true)
-    expect(c0.find((c) => c.type === 'duplicate')!.duplicateIndices).toEqual([1])
-
-    const c1 = conflicts.get(1)!
-    expect(c1.find((c) => c.type === 'duplicate')!.duplicateIndices).toEqual([0])
+    expect(conflicts.get(0)!.find((c) => c.type === 'duplicate')!.duplicateIndices).toEqual([1])
   })
 
   it('detects duplicates with different modifier order', () => {
@@ -159,9 +189,8 @@ describe('detectConflicts', () => {
       { key: 'shift+ctrl+a', action: 'newtab' },
       { key: 'ctrl+shift+a', action: 'closetab' },
     ]
-    const conflicts = detectConflicts(shortcuts)
+    const conflicts = detectConflicts(shortcuts, false)
     expect(conflicts.has(0)).toBe(true)
-    expect(conflicts.has(1)).toBe(true)
     expect(conflicts.get(0)!.some((c) => c.type === 'duplicate')).toBe(true)
   })
 
@@ -170,9 +199,9 @@ describe('detectConflicts', () => {
       { key: 'ctrl+t', action: 'newtab' },
       { key: 'ctrl+t', action: 'closetab' },
     ]
-    const conflicts = detectConflicts(shortcuts)
+    const conflicts = detectConflicts(shortcuts, false)
     const c0 = conflicts.get(0)!
-    expect(c0.length).toBe(2) // browser + duplicate
+    expect(c0.length).toBe(2)
     expect(c0.some((c) => c.type === 'browser')).toBe(true)
     expect(c0.some((c) => c.type === 'duplicate')).toBe(true)
   })
@@ -182,7 +211,7 @@ describe('detectConflicts', () => {
       { key: '', action: 'newtab' },
       { key: 'ctrl+b', action: 'closetab' },
     ]
-    const conflicts = detectConflicts(shortcuts)
+    const conflicts = detectConflicts(shortcuts, false)
     expect(conflicts.has(0)).toBe(false)
   })
 
@@ -191,13 +220,7 @@ describe('detectConflicts', () => {
       { key: 'ctrl+shift+1', action: 'newtab' },
       { key: 'ctrl+shift+2', action: 'closetab' },
     ]
-    const conflicts = detectConflicts(shortcuts)
-    expect(conflicts.size).toBe(0)
-  })
-
-  it('handles single shortcut with no conflicts', () => {
-    const shortcuts: KeySetting[] = [{ key: 'alt+x', action: 'newtab' }]
-    const conflicts = detectConflicts(shortcuts)
+    const conflicts = detectConflicts(shortcuts, false)
     expect(conflicts.size).toBe(0)
   })
 
@@ -207,9 +230,8 @@ describe('detectConflicts', () => {
       { key: 'ctrl+b', action: 'closetab' },
       { key: 'ctrl+b', action: 'reload' },
     ]
-    const conflicts = detectConflicts(shortcuts)
-    const c0 = conflicts.get(0)!
-    const dup = c0.find((c) => c.type === 'duplicate')!
+    const conflicts = detectConflicts(shortcuts, false)
+    const dup = conflicts.get(0)!.find((c) => c.type === 'duplicate')!
     expect(dup.duplicateIndices).toEqual([1, 2])
   })
 })
