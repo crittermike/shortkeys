@@ -124,11 +124,15 @@ async function testJavascript(row: KeySetting) {
       }
     }
 
-    // Execute via userScripts-style approach: direct eval in MAIN world
+    // Inject via script element to bypass page CSP that blocks eval()
     await chrome.scripting.executeScript({
       target: { tabId: selectedTabId.value },
-      world: 'MAIN' as any,
-      func: (code: string) => { eval(code) },
+      func: (code: string) => {
+        const s = document.createElement('script')
+        s.textContent = code
+        ;(document.head || document.documentElement).appendChild(s)
+        s.remove()
+      },
       args: [row.code || ''],
     })
     showSnack(`✓ Ran on ${tab ? new URL(tab.url).hostname : 'tab'}`)
