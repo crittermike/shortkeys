@@ -202,3 +202,29 @@ describe('new action completeness', () => {
     }
   })
 })
+
+describe('App.vue template correctness', () => {
+  it('has no stray "row." references in the template (must use keys[index])', async () => {
+    const fs = await import('fs')
+    const content = fs.readFileSync('src/entrypoints/options/App.vue', 'utf-8')
+    const templateMatch = content.match(/<template>([\s\S]*)<\/template>/)
+    expect(templateMatch).toBeTruthy()
+    const template = templateMatch![1]
+
+    // Find all "row." references that aren't inside CSS class names or comments
+    // These would be bugs — the v-for uses indices, not a "row" variable
+    const rowRefs = template.match(/\brow\./g) || []
+    expect(rowRefs, 'Found stray "row." in template — should be "keys[index]."').toHaveLength(0)
+  })
+
+  it('all v-model and bindings in shortcut cards use keys[index] not row', async () => {
+    const fs = await import('fs')
+    const content = fs.readFileSync('src/entrypoints/options/App.vue', 'utf-8')
+    const templateMatch = content.match(/<template>([\s\S]*)<\/template>/)
+    const template = templateMatch![1]
+
+    // Find any @click, v-model, v-if, :modelValue etc that reference bare "row"
+    const strayRowBindings = template.match(/(?:v-model|v-if|:modelValue|@click|:class)="[^"]*\brow\b[^"]*"/g) || []
+    expect(strayRowBindings, `Found stray row bindings: ${strayRowBindings.join(', ')}`).toHaveLength(0)
+  })
+})
