@@ -14,15 +14,13 @@ import productivityPack from './productivity'
 import youtubePack from './youtube'
 import githubPack from './github'
 import keyboardPowerPack from './keyboard-power'
-import gmailPack from './gmail'
-import redditPack from './reddit'
 import developerPack from './developer'
 import readingPack from './reading'
 import tabManagerPack from './tab-manager'
 import emacsPack from './emacs'
 import mediaControlPack from './media-control'
 
-export { vimPack, productivityPack, youtubePack, githubPack, keyboardPowerPack, gmailPack, redditPack, developerPack, readingPack, tabManagerPack, emacsPack, mediaControlPack }
+export { vimPack, productivityPack, youtubePack, githubPack, keyboardPowerPack, developerPack, readingPack, tabManagerPack, emacsPack, mediaControlPack }
 
 export const ALL_PACKS: ShortcutPack[] = [
   vimPack,
@@ -30,8 +28,6 @@ export const ALL_PACKS: ShortcutPack[] = [
   youtubePack,
   githubPack,
   keyboardPowerPack,
-  gmailPack,
-  redditPack,
   developerPack,
   readingPack,
   tabManagerPack,
