@@ -111,13 +111,14 @@
         </div>
       `).join('')
 
-      // The Chrome Web Store extension ID
-      const EXTENSION_ID = 'logpjaacgmcbpdkdchjiaagddngobkck'
+      // Try to detect the extension - Chrome Web Store ID or local dev
+      const STORE_ID = 'logpjaacgmcbpdkdchjiaagddngobkck'
 
       document.getElementById('actions').innerHTML = `
         <button class="btn btn-primary" id="import-btn" onclick="importToExtension()">
           <span style="display:inline-flex;align-items:center;gap:6px">⬇️ Import ${shortcutsData.length} shortcut${shortcutsData.length !== 1 ? 's' : ''}</span>
         </button>
+        <button class="btn btn-secondary" onclick="copyJson()">Copy JSON</button>
       `
 
       document.getElementById('copy-json').style.display = 'block'
@@ -127,36 +128,34 @@
         btn.disabled = true
         btn.innerHTML = 'Importing...'
 
-        try {
-          chrome.runtime.sendMessage(EXTENSION_ID, {
+        // Try sending to the extension
+        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+          chrome.runtime.sendMessage(STORE_ID, {
             action: 'importShortcuts',
             shortcuts: shortcutsData
           }, response => {
             if (chrome.runtime.lastError || !response?.success) {
-              // Extension not installed or didn't respond
-              btn.innerHTML = 'Extension not found'
-              setTimeout(() => {
-                document.getElementById('actions').innerHTML = `
-                  <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/${EXTENSION_ID}" target="_blank">
-                    Install Shortkeys first
-                  </a>
-                  <button class="btn btn-secondary" onclick="copyJson()">Copy JSON</button>
-                `
-              }, 1500)
+              showFallback(btn)
               return
             }
             btn.innerHTML = `✓ Imported ${response.count} shortcuts!`
             btn.style.background = '#059669'
           })
-        } catch {
-          // chrome.runtime not available (Firefox, or not Chrome)
-          document.getElementById('actions').innerHTML = `
-            <button class="btn btn-primary" onclick="copyJson()">Copy JSON to clipboard</button>
-            <a class="btn btn-secondary" href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/${EXTENSION_ID}" target="_blank">
-              Get Shortkeys
-            </a>
-          `
+        } else {
+          showFallback(btn)
         }
+      }
+
+      function showFallback(btn) {
+        btn.innerHTML = 'Could not connect to extension'
+        btn.style.background = '#94a3b8'
+        setTimeout(() => {
+          btn.innerHTML = `⬇️ Import ${shortcutsData.length} shortcut${shortcutsData.length !== 1 ? 's' : ''}`
+          btn.style.background = ''
+          btn.disabled = false
+        }, 2000)
+        // Also copy JSON as fallback
+        copyJson()
       }
     } catch (e) {
       document.getElementById('desc').innerHTML = '<span class="error">Invalid or missing shortcut data in this link.</span>'
