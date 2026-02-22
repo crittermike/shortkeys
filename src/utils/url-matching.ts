@@ -46,6 +46,7 @@ export interface KeySetting {
   smoothScrolling?: boolean
   currentWindow?: boolean
   enabled?: boolean
+  group?: string
 }
 
 /**

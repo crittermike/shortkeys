@@ -68,6 +68,81 @@ const stats = computed(() => {
   return { total, enabled, disabled, withConflicts }
 })
 
+const DEFAULT_GROUP = 'My Shortcuts'
+const collapsedGroups = ref<Set<string>>(new Set())
+const editingGroupName = ref<string | null>(null)
+const newGroupName = ref('')
+
+/** Get ordered list of unique group names */
+const groupNames = computed(() => {
+  const names = new Set<string>()
+  for (const k of keys.value) names.add(k.group || DEFAULT_GROUP)
+  // Always put default group first
+  const ordered = [DEFAULT_GROUP]
+  for (const n of names) {
+    if (n !== DEFAULT_GROUP) ordered.push(n)
+  }
+  return ordered
+})
+
+/** Group indices by group name, respecting search filter */
+const groupedIndices = computed(() => {
+  const map = new Map<string, number[]>()
+  for (const i of filteredIndices.value) {
+    const group = keys.value[i].group || DEFAULT_GROUP
+    if (!map.has(group)) map.set(group, [])
+    map.get(group)!.push(i)
+  }
+  return map
+})
+
+function toggleGroupCollapse(group: string) {
+  if (collapsedGroups.value.has(group)) {
+    collapsedGroups.value.delete(group)
+  } else {
+    collapsedGroups.value.add(group)
+  }
+}
+
+function toggleGroupEnabled(group: string) {
+  const indices = groupedIndices.value.get(group) || []
+  const allEnabled = indices.every((i) => keys.value[i].enabled !== false)
+  for (const i of indices) {
+    keys.value[i].enabled = allEnabled ? false : true
+  }
+}
+
+function isGroupAllEnabled(group: string): boolean {
+  const indices = groupedIndices.value.get(group) || []
+  return indices.length > 0 && indices.every((i) => keys.value[i].enabled !== false)
+}
+
+function deleteGroup(group: string) {
+  if (!confirm(`Delete all ${groupedIndices.value.get(group)?.length || 0} shortcuts in "${group}"?`)) return
+  keys.value = keys.value.filter((k) => (k.group || DEFAULT_GROUP) !== group)
+}
+
+function startRenameGroup(group: string) {
+  editingGroupName.value = group
+  newGroupName.value = group
+}
+
+function finishRenameGroup(oldName: string) {
+  const trimmed = newGroupName.value.trim()
+  if (trimmed && trimmed !== oldName) {
+    for (const k of keys.value) {
+      if ((k.group || DEFAULT_GROUP) === oldName) {
+        k.group = trimmed === DEFAULT_GROUP ? undefined : trimmed
+      }
+    }
+  }
+  editingGroupName.value = null
+}
+
+function addShortcutToGroup(group: string) {
+  keys.value.push({ id: uuid(), enabled: true, group: group === DEFAULT_GROUP ? undefined : group } as KeySetting)
+}
+
 async function refreshTabs() {
   const tabs = await chrome.tabs.query({})
   openTabs.value = tabs
@@ -301,61 +376,102 @@ onMounted(async () => {
           </div>
         </div>
 
-        <!-- Shortcut rows -->
-        <div class="shortcut-list">
-          <div
-            v-for="index in filteredIndices"
-            :key="keys[index].id"
-            :class="['shortcut-card', { disabled: keys[index].enabled === false, dragging: dragIndex === index }]"
-            draggable="true"
-            @dragstart="onDragStart(index)"
-            @dragover="onDragOver($event, index)"
-            @dragend="onDragEnd"
-          >
-            <!-- Editable label above the card -->
-            <div class="shortcut-header">
-              <i class="mdi mdi-drag-vertical drag-handle" title="Drag to reorder"></i>
-              <input
-                class="shortcut-label-title"
-                type="text"
-                placeholder="Untitled shortcut"
-                v-model="keys[index].label"
-              />
-              <button
-                :class="['toggle toggle-sm', { on: keys[index].enabled !== false }]"
-                @click="toggleEnabled(keys[index])"
-                type="button"
-                :title="keys[index].enabled !== false ? 'Enabled — click to disable' : 'Disabled — click to enable'"
-              >
-                <span class="toggle-knob"></span>
+        <!-- Grouped shortcut rows -->
+        <div class="shortcut-groups">
+          <div v-for="group in groupNames" :key="group" class="shortcut-group" v-show="groupedIndices.has(group)">
+            <!-- Group header -->
+            <div class="group-header">
+              <button class="group-collapse" @click="toggleGroupCollapse(group)" type="button">
+                <i :class="collapsedGroups.has(group) ? 'mdi mdi-chevron-right' : 'mdi mdi-chevron-down'"></i>
               </button>
-            </div>
-            <div class="shortcut-row">
-              <div class="field-group shortcut-col">
-                <label class="field-label">Shortcut</label>
-                <ShortcutRecorder
-                  :modelValue="keys[index].key"
-                  @update:modelValue="keys[index].key = $event"
+              <template v-if="editingGroupName === group">
+                <input
+                  class="group-name-input"
+                  v-model="newGroupName"
+                  @keydown.enter="finishRenameGroup(group)"
+                  @blur="finishRenameGroup(group)"
+                  @keydown.escape="editingGroupName = null"
+                  ref="groupNameInput"
+                  autofocus
                 />
-              </div>
-              <div class="field-group behavior-col">
-                <label class="field-label">Behavior</label>
-                <SearchSelect
-                  :modelValue="keys[index].action"
-                  @update:modelValue="onActionChange(keys[index], index, $event)"
-                  :options="ACTION_CATEGORIES"
-                  placeholder="Choose action…"
-                />
-              </div>
-              <div class="shortcut-actions">
-                <button class="btn-icon" @click="toggleDetails(index)" :title="expandedRow === index ? 'Collapse' : 'Settings'">
-                  <i :class="expandedRow === index ? 'mdi mdi-chevron-up' : 'mdi mdi-cog-outline'"></i>
+              </template>
+              <template v-else>
+                <span class="group-name" @dblclick="startRenameGroup(group)">{{ group }}</span>
+              </template>
+              <span class="group-count">{{ groupedIndices.get(group)?.length || 0 }}</span>
+              <div class="group-actions">
+                <button class="btn-icon btn-icon-sm" @click="startRenameGroup(group)" title="Rename group" type="button">
+                  <i class="mdi mdi-pencil-outline"></i>
                 </button>
-                <button class="btn-icon btn-delete" @click="deleteShortcut(index)" title="Delete">
-                  <i class="mdi mdi-close"></i>
+                <button
+                  :class="['toggle toggle-sm', { on: isGroupAllEnabled(group) }]"
+                  @click="toggleGroupEnabled(group)"
+                  type="button"
+                  :title="isGroupAllEnabled(group) ? 'Disable all in group' : 'Enable all in group'"
+                >
+                  <span class="toggle-knob"></span>
+                </button>
+                <button class="btn-icon btn-icon-sm btn-delete" @click="deleteGroup(group)" title="Delete group" type="button" v-if="group !== DEFAULT_GROUP || groupNames.length > 1">
+                  <i class="mdi mdi-delete-outline"></i>
                 </button>
               </div>
             </div>
+
+            <!-- Shortcuts in this group -->
+            <div class="shortcut-list" v-show="!collapsedGroups.has(group)">
+              <div
+                v-for="index in (groupedIndices.get(group) || [])"
+                :key="keys[index].id"
+                :class="['shortcut-card', { disabled: keys[index].enabled === false, dragging: dragIndex === index }]"
+                draggable="true"
+                @dragstart="onDragStart(index)"
+                @dragover="onDragOver($event, index)"
+                @dragend="onDragEnd"
+              >
+                <!-- Editable label above the card -->
+                <div class="shortcut-header">
+                  <i class="mdi mdi-drag-vertical drag-handle" title="Drag to reorder"></i>
+                  <input
+                    class="shortcut-label-title"
+                    type="text"
+                    placeholder="Untitled shortcut"
+                    v-model="keys[index].label"
+                  />
+                  <button
+                    :class="['toggle toggle-sm', { on: keys[index].enabled !== false }]"
+                    @click="toggleEnabled(keys[index])"
+                    type="button"
+                    :title="keys[index].enabled !== false ? 'Enabled — click to disable' : 'Disabled — click to enable'"
+                  >
+                    <span class="toggle-knob"></span>
+                  </button>
+                </div>
+                <div class="shortcut-row">
+                  <div class="field-group shortcut-col">
+                    <label class="field-label">Shortcut</label>
+                    <ShortcutRecorder
+                      :modelValue="keys[index].key"
+                      @update:modelValue="keys[index].key = $event"
+                    />
+                  </div>
+                  <div class="field-group behavior-col">
+                    <label class="field-label">Behavior</label>
+                    <SearchSelect
+                      :modelValue="keys[index].action"
+                      @update:modelValue="onActionChange(keys[index], index, $event)"
+                      :options="ACTION_CATEGORIES"
+                      placeholder="Choose action…"
+                    />
+                  </div>
+                  <div class="shortcut-actions">
+                    <button class="btn-icon" @click="toggleDetails(index)" :title="expandedRow === index ? 'Collapse' : 'Settings'">
+                      <i :class="expandedRow === index ? 'mdi mdi-chevron-up' : 'mdi mdi-cog-outline'"></i>
+                    </button>
+                    <button class="btn-icon btn-delete" @click="deleteShortcut(index)" title="Delete">
+                      <i class="mdi mdi-close"></i>
+                    </button>
+                  </div>
+                </div>
 
             <!-- Conflict warnings -->
             <div v-if="getConflicts(index).length" class="conflict-warnings">
@@ -511,6 +627,12 @@ onMounted(async () => {
                 ></textarea>
               </div>
             </Transition>
+          </div>
+            </div>
+            <!-- Add shortcut to this group -->
+            <button class="btn-add-to-group" @click="addShortcutToGroup(group)" type="button" v-show="!collapsedGroups.has(group)">
+              <i class="mdi mdi-plus"></i> Add shortcut
+            </button>
           </div>
         </div>
 
@@ -738,6 +860,109 @@ a:hover { text-decoration: underline; }
 }
 
 /* ── Shortcut cards ── */
+.shortcut-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.shortcut-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #fff;
+  border-radius: 10px 10px 0 0;
+  border: 1px solid #e2e8f0;
+  border-bottom: none;
+  position: sticky;
+  top: 56px;
+  z-index: 5;
+}
+
+.shortcut-group:first-child .group-header,
+.shortcut-group .group-header { border-radius: 10px; }
+.shortcut-group .shortcut-list:not([style*="none"]) ~ .btn-add-to-group,
+.shortcut-group .shortcut-list { border-top: 1px solid #eef2f6; }
+.shortcut-group:has(.shortcut-list:not([style*="display: none"])) .group-header { border-radius: 10px 10px 0 0; }
+
+.group-collapse {
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  color: #94a3b8;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+
+.group-collapse:hover { color: #475569; }
+
+.group-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+  cursor: default;
+  user-select: none;
+}
+
+.group-name-input {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+  border: 1px solid #4361ee;
+  border-radius: 4px;
+  padding: 2px 6px;
+  outline: none;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(67,97,238,0.12);
+}
+
+.group-count {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.group-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.btn-icon-sm { width: 28px; height: 28px; font-size: 14px; }
+
+.btn-add-to-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px;
+  background: #f8fafc;
+  border: 1px dashed #e2e8f0;
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-add-to-group:hover { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
+.btn-add-to-group .mdi { font-size: 14px; }
 .shortcut-list {
   display: flex;
   flex-direction: column;
