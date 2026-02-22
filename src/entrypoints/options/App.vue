@@ -15,6 +15,7 @@ import { saveKeys, loadKeys } from '@/utils/storage'
 import SearchSelect from '@/components/SearchSelect.vue'
 import CodeEditor from '@/components/CodeEditor.vue'
 import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
+import { ALL_PACKS, type ShortcutPack } from '@/packs'
 
 const activeTab = ref(0)
 const keys = ref<KeySetting[]>([])
@@ -245,12 +246,79 @@ function onDragOver(e: DragEvent, index: number) {
   e.preventDefault()
   if (dragIndex.value === null || dragIndex.value === index) return
   const item = keys.value.splice(dragIndex.value, 1)[0]
+  // Update group to match destination
+  const destGroup = keys.value[Math.min(index, keys.value.length - 1)]?.group
+  item.group = destGroup
   keys.value.splice(index, 0, item)
   dragIndex.value = index
 }
 
+function onDragOverGroup(e: DragEvent, group: string) {
+  e.preventDefault()
+  if (dragIndex.value === null) return
+  // Update dragged item's group
+  keys.value[dragIndex.value].group = group === DEFAULT_GROUP ? undefined : group
+}
+
 function onDragEnd() {
   dragIndex.value = null
+}
+
+function createNewGroup() {
+  const name = prompt('New group name:')
+  if (!name?.trim()) return
+  // Add an empty shortcut in the new group so it appears
+  keys.value.push({ id: uuid(), enabled: true, group: name.trim() } as KeySetting)
+}
+
+// Group header context menu state
+const groupMenuOpen = ref<string | null>(null)
+
+function toggleGroupMenu(group: string) {
+  groupMenuOpen.value = groupMenuOpen.value === group ? null : group
+}
+
+function closeGroupMenus() {
+  groupMenuOpen.value = null
+}
+
+// Pack preview modal
+const previewPack = ref<ShortcutPack | null>(null)
+const packConflictMode = ref<'skip' | 'replace' | 'keep'>('replace')
+
+function getPackConflicts(pack: ShortcutPack): string[] {
+  const existing = new Set(keys.value.map((k) => k.key?.toLowerCase()).filter(Boolean))
+  return pack.shortcuts.filter((s) => existing.has(s.key?.toLowerCase())).map((s) => s.key)
+}
+
+function installPack(pack: ShortcutPack) {
+  const mode = packConflictMode.value
+  const groupName = pack.name
+  const existingKeys = new Set(keys.value.map((k) => k.key?.toLowerCase()).filter(Boolean))
+
+  const newShortcuts = pack.shortcuts.map((s) => ({
+    ...s,
+    id: uuid(),
+    group: groupName,
+    enabled: true,
+  }))
+
+  if (mode === 'skip') {
+    // Only add non-conflicting
+    const toAdd = newShortcuts.filter((s) => !existingKeys.has(s.key?.toLowerCase()))
+    keys.value.push(...toAdd)
+  } else if (mode === 'replace') {
+    // Remove existing conflicting shortcuts, add all from pack
+    const packKeys = new Set(newShortcuts.map((s) => s.key?.toLowerCase()))
+    keys.value = keys.value.filter((k) => !packKeys.has(k.key?.toLowerCase()))
+    keys.value.push(...newShortcuts)
+  } else {
+    // Keep both
+    keys.value.push(...newShortcuts)
+  }
+
+  previewPack.value = null
+  showSnack(`✓ Added "${pack.name}" (${newShortcuts.length} shortcuts)`)
 }
 
 function isScrollAction(action: string): boolean {
@@ -289,6 +357,9 @@ onMounted(async () => {
   }
 
   refreshTabs()
+
+  // Close group menus on outside click
+  document.addEventListener('click', () => { groupMenuOpen.value = null })
 
   chrome.bookmarks.getTree((tree) => {
     const process = (nodes: chrome.bookmarks.BookmarkTreeNode[]) => {
@@ -380,7 +451,7 @@ onMounted(async () => {
         <div class="shortcut-groups">
           <div v-for="group in groupNames" :key="group" class="shortcut-group" v-show="groupedIndices.has(group)">
             <!-- Group header -->
-            <div class="group-header">
+            <div class="group-header" @dragover="onDragOverGroup($event, group)">
               <button class="group-collapse" @click="toggleGroupCollapse(group)" type="button">
                 <i :class="collapsedGroups.has(group) ? 'mdi mdi-chevron-right' : 'mdi mdi-chevron-down'"></i>
               </button>
@@ -400,20 +471,23 @@ onMounted(async () => {
               </template>
               <span class="group-count">{{ groupedIndices.get(group)?.length || 0 }}</span>
               <div class="group-actions">
-                <button class="btn-icon btn-icon-sm" @click="startRenameGroup(group)" title="Rename group" type="button">
-                  <i class="mdi mdi-pencil-outline"></i>
-                </button>
-                <button
-                  :class="['toggle toggle-sm', { on: isGroupAllEnabled(group) }]"
-                  @click="toggleGroupEnabled(group)"
-                  type="button"
-                  :title="isGroupAllEnabled(group) ? 'Disable all in group' : 'Enable all in group'"
-                >
-                  <span class="toggle-knob"></span>
-                </button>
-                <button class="btn-icon btn-icon-sm btn-delete" @click="deleteGroup(group)" title="Delete group" type="button" v-if="group !== DEFAULT_GROUP || groupNames.length > 1">
-                  <i class="mdi mdi-delete-outline"></i>
-                </button>
+                <div class="group-menu-wrap">
+                  <button class="btn-icon btn-icon-sm" @click.stop="toggleGroupMenu(group)" title="Group options" type="button">
+                    <i class="mdi mdi-dots-vertical"></i>
+                  </button>
+                  <div v-if="groupMenuOpen === group" class="group-menu" @click="closeGroupMenus">
+                    <button class="group-menu-item" @click="startRenameGroup(group)">
+                      <i class="mdi mdi-pencil-outline"></i> Rename group
+                    </button>
+                    <button class="group-menu-item" @click="toggleGroupEnabled(group)">
+                      <i :class="isGroupAllEnabled(group) ? 'mdi mdi-pause-circle-outline' : 'mdi mdi-play-circle-outline'"></i>
+                      {{ isGroupAllEnabled(group) ? 'Disable all' : 'Enable all' }}
+                    </button>
+                    <button class="group-menu-item group-menu-danger" @click="deleteGroup(group)">
+                      <i class="mdi mdi-delete-outline"></i> Delete group
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -637,9 +711,14 @@ onMounted(async () => {
         </div>
 
         <div class="action-bar">
-          <button class="btn btn-secondary" @click="addShortcut">
-            <i class="mdi mdi-plus"></i> Add shortcut
-          </button>
+          <div class="action-bar-left">
+            <button class="btn btn-secondary" @click="addShortcut">
+              <i class="mdi mdi-plus"></i> Add shortcut
+            </button>
+            <button class="btn btn-secondary" @click="createNewGroup">
+              <i class="mdi mdi-folder-plus-outline"></i> New group
+            </button>
+          </div>
           <button class="btn btn-primary" @click="saveShortcuts">
             <i class="mdi mdi-content-save"></i> Save shortcuts
           </button>
@@ -648,15 +727,92 @@ onMounted(async () => {
 
       <!-- Import Tab -->
       <div v-show="activeTab === 1" class="tab-content">
+        <!-- Pack Library -->
+        <h3 class="section-title">Shortcut Packs</h3>
+        <p class="tab-desc">One-click install curated shortcut collections. They'll appear as a group you can customize or remove.</p>
+        <div class="pack-grid">
+          <div v-for="pack in ALL_PACKS" :key="pack.id" class="pack-card" :style="{ borderTopColor: pack.color }">
+            <div class="pack-icon">{{ pack.icon }}</div>
+            <div class="pack-info">
+              <div class="pack-name">{{ pack.name }}</div>
+              <div class="pack-desc">{{ pack.description }}</div>
+              <div class="pack-meta">{{ pack.shortcuts.length }} shortcuts</div>
+            </div>
+            <div class="pack-actions">
+              <button class="btn btn-secondary btn-sm" @click="previewPack = pack" type="button">Preview</button>
+              <button class="btn btn-primary btn-sm" @click="previewPack = pack" type="button">
+                <i class="mdi mdi-plus"></i> Add
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- JSON Import -->
+        <h3 class="section-title" style="margin-top: 32px">Import JSON</h3>
         <p class="tab-desc">Paste a JSON array of shortcut objects to import them.</p>
-        <textarea class="field-textarea mono" v-model="importJson" rows="12" placeholder='[{"key":"ctrl+b","action":"newtab"}]'></textarea>
+        <textarea class="field-textarea mono" v-model="importJson" rows="8" placeholder='[{"key":"ctrl+b","action":"newtab"}]'></textarea>
         <div class="action-bar">
           <span></span>
           <button class="btn btn-primary" @click="importKeys">
-            <i class="mdi mdi-import"></i> Import
+            <i class="mdi mdi-import"></i> Import JSON
           </button>
         </div>
       </div>
+
+      <!-- Pack Preview Modal -->
+      <Transition name="modal">
+        <div v-if="previewPack" class="modal-overlay" @click.self="previewPack = null">
+          <div class="modal-panel">
+            <div class="modal-header" :style="{ background: previewPack.color }">
+              <span class="modal-icon">{{ previewPack.icon }}</span>
+              <div>
+                <h2 class="modal-title">{{ previewPack.name }}</h2>
+                <p class="modal-subtitle">{{ previewPack.description }}</p>
+              </div>
+              <button class="modal-close" @click="previewPack = null" type="button">
+                <i class="mdi mdi-close"></i>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="modal-shortcuts">
+                <div v-for="s in previewPack.shortcuts" :key="s.key" class="modal-shortcut-row">
+                  <span class="modal-shortcut-label">{{ s.label || s.action }}</span>
+                  <span class="modal-shortcut-keys">
+                    <kbd v-for="(part, pi) in s.key.split('+')" :key="pi">{{ part }}</kbd>
+                  </span>
+                </div>
+              </div>
+
+              <div v-if="getPackConflicts(previewPack).length > 0" class="modal-conflicts">
+                <div class="modal-conflict-header">
+                  <i class="mdi mdi-alert-outline"></i>
+                  {{ getPackConflicts(previewPack).length }} shortcut{{ getPackConflicts(previewPack).length > 1 ? 's' : '' }} conflict with your existing shortcuts
+                </div>
+                <div class="modal-conflict-options">
+                  <label class="radio-option">
+                    <input type="radio" v-model="packConflictMode" value="replace" />
+                    <span>Replace my shortcuts with pack versions</span>
+                  </label>
+                  <label class="radio-option">
+                    <input type="radio" v-model="packConflictMode" value="skip" />
+                    <span>Skip conflicting shortcuts</span>
+                  </label>
+                  <label class="radio-option">
+                    <input type="radio" v-model="packConflictMode" value="keep" />
+                    <span>Keep both (I'll sort it out later)</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" @click="previewPack = null" type="button">Cancel</button>
+              <button class="btn btn-primary" @click="installPack(previewPack)" type="button">
+                <i class="mdi mdi-plus"></i> Add {{ previewPack.shortcuts.length }} shortcuts
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
 
       <!-- Export Tab -->
       <div v-show="activeTab === 2" class="tab-content">
@@ -943,6 +1099,45 @@ a:hover { text-decoration: underline; }
 }
 
 .btn-icon-sm { width: 28px; height: 28px; font-size: 14px; }
+
+.group-menu-wrap {
+  position: relative;
+}
+
+.group-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  min-width: 180px;
+  z-index: 20;
+  overflow: hidden;
+}
+
+.group-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  color: #334155;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.group-menu-item:hover { background: #f1f5f9; }
+.group-menu-item .mdi { font-size: 16px; color: #64748b; }
+.group-menu-danger { color: #ef4444; }
+.group-menu-danger .mdi { color: #ef4444; }
+.group-menu-danger:hover { background: #fef2f2; }
 
 .btn-add-to-group {
   display: flex;
@@ -1357,6 +1552,11 @@ a:hover { text-decoration: underline; }
   margin-top: 20px;
 }
 
+.action-bar-left {
+  display: flex;
+  gap: 8px;
+}
+
 .btn {
   padding: 10px 20px;
   border: none;
@@ -1425,4 +1625,229 @@ a:hover { text-decoration: underline; }
   color: #64748b;
   margin-bottom: 12px;
 }
+
+/* ── Section titles ── */
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 4px;
+}
+
+/* ── Pack grid ── */
+.pack-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.pack-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-top: 3px solid #4361ee;
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: box-shadow 0.15s;
+}
+
+.pack-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+
+.pack-icon { font-size: 28px; }
+
+.pack-info { flex: 1; }
+
+.pack-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 4px;
+}
+
+.pack-desc {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.pack-meta {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.pack-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-sm { padding: 6px 14px; font-size: 12px; }
+
+/* ── Modal ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-panel {
+  background: #fff;
+  border-radius: 16px;
+  width: 90vw;
+  max-width: 560px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 24px;
+  color: #fff;
+  position: relative;
+}
+
+.modal-icon { font-size: 36px; flex-shrink: 0; }
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.modal-subtitle {
+  font-size: 13px;
+  opacity: 0.85;
+  margin: 4px 0 0;
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.15s;
+}
+
+.modal-close:hover { background: rgba(255,255,255,0.35); }
+
+.modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-shortcuts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.modal-shortcut-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 6px;
+  gap: 12px;
+}
+
+.modal-shortcut-row:nth-child(odd) { background: #f8fafc; }
+
+.modal-shortcut-label {
+  font-size: 13px;
+  color: #334155;
+}
+
+.modal-shortcut-keys {
+  display: flex;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.modal-shortcut-keys kbd {
+  display: inline-block;
+  padding: 2px 7px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-family: 'SF Mono', Menlo, monospace;
+  font-size: 11px;
+  color: #475569;
+  text-transform: capitalize;
+}
+
+.modal-conflicts {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+}
+
+.modal-conflict-header {
+  font-size: 13px;
+  font-weight: 600;
+  color: #92400e;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.modal-conflict-header .mdi { font-size: 16px; }
+
+.modal-conflict-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #475569;
+  cursor: pointer;
+}
+
+.radio-option input[type="radio"] {
+  accent-color: #4361ee;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.modal-enter-active, .modal-leave-active { transition: all 0.2s ease; }
+.modal-enter-from, .modal-leave-to { opacity: 0; }
+.modal-enter-from .modal-panel, .modal-leave-to .modal-panel { transform: scale(0.95); }
 </style>
