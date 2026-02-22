@@ -1084,7 +1084,7 @@ a:hover { text-decoration: underline; }
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
-  background: #eef2f6;
+  background: var(--bg-hover);
   color: var(--text-secondary);
 }
 
@@ -1265,7 +1265,7 @@ a:hover { text-decoration: underline; }
   gap: 4px;
   padding: 8px;
   background: var(--bg-elevated);
-  border: 1px dashed #e2e8f0;
+  border: 1px dashed var(--border);
   border-top: none;
   border-radius: 0 0 10px 10px;
   color: var(--text-muted);
@@ -1404,7 +1404,7 @@ a:hover { text-decoration: underline; }
 .shortcut-details {
   border-top: 1px solid var(--border-light);
   padding: 20px;
-  background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
+  background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-card) 100%);
   border-radius: 0 0 10px 10px;
 }
 

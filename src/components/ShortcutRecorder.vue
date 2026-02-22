@@ -128,7 +128,7 @@ function captureKey(e: KeyboardEvent) {
 }
 
 .recorder-wrap .field-input:focus + .record-btn {
-  border-color: #4361ee;
+  border-color: var(--blue, #4361ee);
 }
 
 .record-btn {
@@ -136,10 +136,10 @@ function captureKey(e: KeyboardEvent) {
   align-items: center;
   gap: 4px;
   padding: 0 10px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border, #e2e8f0);
   border-radius: 0 6px 6px 0;
-  background: #f8fafc;
-  color: #64748b;
+  background: var(--bg-elevated, #f8fafc);
+  color: var(--text-secondary, #64748b);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -148,8 +148,8 @@ function captureKey(e: KeyboardEvent) {
 }
 
 .record-btn:hover {
-  background: #f1f5f9;
-  color: #1a1a2e;
+  background: var(--bg-hover, #f1f5f9);
+  color: var(--text, #1a1a2e);
 }
 
 .record-btn.recording {
