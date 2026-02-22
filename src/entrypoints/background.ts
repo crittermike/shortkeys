@@ -173,4 +173,19 @@ export default defineBackground(() => {
       chrome.runtime.openOptionsPage()
     }
   })
+
+  // Handle imports from shortkeys.app share links
+  chrome.runtime.onMessageExternal.addListener((message, _sender, sendResponse) => {
+    if (message.action === 'importShortcuts' && Array.isArray(message.shortcuts)) {
+      ;(async () => {
+        const raw = await loadKeys()
+        const existing = JSON.parse(raw || '[]')
+        const newShortcuts = message.shortcuts.map((s: any) => ({ ...s, id: s.id || uuid() }))
+        const merged = existing.concat(newShortcuts)
+        await saveKeys(merged)
+        sendResponse({ success: true, count: newShortcuts.length })
+      })()
+      return true
+    }
+  })
 })

@@ -139,6 +139,9 @@ export default defineConfig({
       'userScripts',
     ],
     host_permissions: ['*://*/*'],
+    externally_connectable: {
+      matches: ['https://shortkeys.app/*', 'http://localhost/*'],
+    },
     content_security_policy: {
       extension_pages: "script-src 'self'; object-src 'self'; style-src 'self' 'unsafe-inline'; style-src-elem 'self' 'unsafe-inline' https://cdn.materialdesignicons.com https://cdn.jsdelivr.net;",
     },
