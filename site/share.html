@@ -149,7 +149,7 @@
       function showFallback(btn) {
         // Silently copy JSON and show success
         copyJson()
-        btn.innerHTML = '✓ Copied to clipboard — paste in Import tab'
+        btn.innerHTML = '✓ Copied!'
         btn.style.background = '#059669'
         setTimeout(() => {
           btn.innerHTML = `⬇️ Import ${shortcutsData.length} shortcut${shortcutsData.length !== 1 ? 's' : ''}`
