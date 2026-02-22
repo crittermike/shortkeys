@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "postinstall": "wxt prepare"
+    "postinstall": "wxt prepare",
+    "build:site": "npx tsx scripts/build-catalog.ts && cp -r public/images site/images"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.267",

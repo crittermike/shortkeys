@@ -21,6 +21,7 @@ const activeTab = ref(0)
 const keys = ref<KeySetting[]>([])
 const bookmarks = ref<{ title: string; url: string }[]>([])
 const importJson = ref('')
+const shareLink = ref('')
 const expandedRow = ref<number | null>(null)
 const snackMessage = ref('')
 const snackType = ref<'success' | 'danger'>('success')
@@ -334,6 +335,29 @@ function copyExport() {
   showSnack('Copied to clipboard!')
 }
 
+function generateShareLink() {
+  try {
+    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(keys.value))))
+    shareLink.value = `https://shortkeys.app/share#${encoded}`
+    navigator.clipboard.writeText(shareLink.value)
+    showSnack('Share link copied!')
+  } catch {
+    showSnack('Failed to generate share link', 'danger')
+  }
+}
+
+function shareGroup(group: string) {
+  const groupShortcuts = keys.value.filter((k) => (k.group || DEFAULT_GROUP) === group)
+  try {
+    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(groupShortcuts))))
+    const url = `https://shortkeys.app/share#${encoded}`
+    navigator.clipboard.writeText(url)
+    showSnack(`Share link for "${group}" copied!`)
+  } catch {
+    showSnack('Failed to generate share link', 'danger')
+  }
+}
+
 async function testJavascript(row: KeySetting) {
   if (!selectedTabId.value) {
     showSnack('Select a tab to test on', 'danger')
@@ -482,6 +506,9 @@ onMounted(async () => {
                     <button class="group-menu-item" @click="toggleGroupEnabled(group)">
                       <i :class="isGroupAllEnabled(group) ? 'mdi mdi-pause-circle-outline' : 'mdi mdi-play-circle-outline'"></i>
                       {{ isGroupAllEnabled(group) ? 'Disable all' : 'Enable all' }}
+                    </button>
+                    <button class="group-menu-item" @click="shareGroup(group)">
+                      <i class="mdi mdi-share-variant-outline"></i> Share group
                     </button>
                     <button class="group-menu-item group-menu-danger" @click="deleteGroup(group)">
                       <i class="mdi mdi-delete-outline"></i> Delete group
@@ -818,9 +845,18 @@ onMounted(async () => {
       <div v-show="activeTab === 2" class="tab-content">
         <div class="export-header">
           <p class="tab-desc">Copy the JSON below to back up or share your shortcuts.</p>
-          <button class="btn btn-secondary" @click="copyExport">
-            <i class="mdi mdi-content-copy"></i> Copy to clipboard
-          </button>
+          <div class="export-actions">
+            <button class="btn btn-secondary" @click="copyExport">
+              <i class="mdi mdi-content-copy"></i> Copy JSON
+            </button>
+            <button class="btn btn-primary" @click="generateShareLink">
+              <i class="mdi mdi-share-variant"></i> Share Link
+            </button>
+          </div>
+        </div>
+        <div v-if="shareLink" class="share-link-box">
+          <input class="field-input mono" :value="shareLink" readonly @click="($event.target as HTMLInputElement).select()" />
+          <p class="share-hint">Anyone with Shortkeys can import your shortcuts from this link.</p>
         </div>
         <pre class="export-pre">{{ JSON.stringify(keys, null, 2) }}</pre>
       </div>
@@ -1608,6 +1644,28 @@ a:hover { text-decoration: underline; }
 }
 
 .export-header .tab-desc { margin-bottom: 0; }
+
+.export-actions { display: flex; gap: 8px; }
+
+.share-link-box {
+  margin-bottom: 12px;
+  padding: 12px 16px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+}
+
+.share-link-box .field-input {
+  font-size: 12px;
+  cursor: text;
+  margin-bottom: 6px;
+}
+
+.share-hint {
+  font-size: 12px;
+  color: #4361ee;
+  margin: 0;
+}
 
 .export-pre {
   background: #fff;

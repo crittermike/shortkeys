@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shortkeys — Custom Keyboard Shortcuts for Your Browser</title>
+  <meta name="description" content="Browse and share custom keyboard shortcuts for Chrome, Firefox, and Edge. Install shortcut packs for Vim, YouTube, GitHub, and more. Free and open source." />
+  <meta property="og:title" content="Shortkeys — Custom Keyboard Shortcuts for Your Browser" />
+  <meta property="og:description" content="Browse and share custom keyboard shortcuts. Install shortcut packs for Vim, YouTube, GitHub, and more." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://shortkeys.app" />
+  <link rel="icon" type="image/png" href="/images/icon_16.png" />
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7/css/materialdesignicons.min.css" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #4361ee;
+      --dark: #1a1a2e;
+      --gray: #64748b;
+      --light: #f8fafc;
+      --border: #e2e8f0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: var(--dark);
+      background: var(--light);
+      line-height: 1.6;
+    }
+
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Header */
+    .header {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 800; color: var(--dark); }
+    .brand img { width: 32px; height: 32px; }
+
+    .header-nav { display: flex; gap: 24px; align-items: center; }
+    .header-nav a { color: var(--gray); font-size: 14px; font-weight: 500; }
+    .header-nav a:hover { color: var(--blue); text-decoration: none; }
+
+    .btn-install {
+      background: var(--blue);
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background 0.15s;
+    }
+    .btn-install:hover { background: #3730a3; text-decoration: none; }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 80px 24px 60px;
+      background: linear-gradient(180deg, #fff 0%, var(--light) 100%);
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+      line-height: 1.1;
+    }
+
+    .hero h1 span { color: var(--blue); }
+
+    .hero p {
+      font-size: 18px;
+      color: var(--gray);
+      max-width: 600px;
+      margin: 0 auto 32px;
+    }
+
+    .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+    .btn-hero {
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s;
+    }
+
+    .btn-primary { background: var(--blue); color: #fff; }
+    .btn-primary:hover { background: #3730a3; text-decoration: none; }
+    .btn-secondary { background: #fff; color: var(--dark); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: #cbd5e1; text-decoration: none; }
+
+    .hero-stats {
+      display: flex;
+      gap: 40px;
+      justify-content: center;
+      margin-top: 40px;
+      color: var(--gray);
+      font-size: 14px;
+    }
+
+    .hero-stats strong { display: block; font-size: 28px; color: var(--dark); font-weight: 800; }
+
+    /* Section */
+    .section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 60px 24px;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .section-header h2 {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .section-header p {
+      font-size: 16px;
+      color: var(--gray);
+    }
+
+    /* Pack grid */
+    .pack-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .pack-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      transition: box-shadow 0.2s, transform 0.2s;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pack-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-2px); }
+
+    .pack-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+    }
+
+    .pack-header { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 12px; }
+    .pack-icon { font-size: 36px; flex-shrink: 0; }
+    .pack-title { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+    .pack-desc { font-size: 13px; color: var(--gray); line-height: 1.5; margin-bottom: 16px; }
+
+    .pack-shortcuts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 16px;
+    }
+
+    .pack-shortcuts kbd {
+      display: inline-block;
+      padding: 3px 8px;
+      background: var(--light);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 11px;
+      color: var(--gray);
+    }
+
+    .pack-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .pack-count { font-size: 12px; font-weight: 600; color: var(--gray); }
+
+    .btn-add {
+      padding: 8px 18px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.15s;
+    }
+
+    .btn-add:hover { background: #3730a3; }
+
+    /* Share section */
+    .share-section {
+      background: var(--dark);
+      color: #fff;
+      padding: 80px 24px;
+      text-align: center;
+    }
+
+    .share-section h2 { font-size: 32px; font-weight: 800; margin-bottom: 12px; }
+    .share-section p { color: #94a3b8; font-size: 16px; max-width: 500px; margin: 0 auto 32px; }
+
+    .share-input-wrap {
+      max-width: 500px;
+      margin: 0 auto;
+      display: flex;
+      gap: 8px;
+    }
+
+    .share-input {
+      flex: 1;
+      padding: 14px 18px;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-size: 14px;
+      font-family: 'SF Mono', Menlo, monospace;
+    }
+
+    .share-input::placeholder { color: #475569; }
+
+    .btn-share {
+      padding: 14px 24px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* Features */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .feature {
+      padding: 24px;
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .feature-icon { font-size: 28px; margin-bottom: 12px; }
+    .feature h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+    .feature p { font-size: 13px; color: var(--gray); }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 40px 24px;
+      color: var(--gray);
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer a { color: var(--gray); }
+    .footer a:hover { color: var(--blue); }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: #fff;
+      border-radius: 16px;
+      max-width: 560px;
+      width: 90vw;
+      max-height: 80vh;
+      overflow: hidden;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+    }
+
+    .modal-header {
+      padding: 24px;
+      color: #fff;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      position: relative;
+    }
+
+    .modal-header h2 { font-size: 20px; font-weight: 700; margin: 0; }
+    .modal-header p { font-size: 13px; opacity: 0.85; margin: 4px 0 0; }
+    .modal-icon { font-size: 40px; }
+
+    .modal-body {
+      padding: 20px 24px;
+      overflow-y: auto;
+      max-height: 50vh;
+    }
+
+    .modal-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 6px;
+      gap: 12px;
+    }
+
+    .modal-row:nth-child(odd) { background: var(--light); }
+    .modal-row-label { font-size: 13px; color: #334155; }
+    .modal-row-keys { display: flex; gap: 3px; }
+    .modal-row-keys kbd { display: inline-block; padding: 2px 7px; background: var(--light); border: 1px solid var(--border); border-radius: 4px; font-family: 'SF Mono', Menlo, monospace; font-size: 11px; color: #475569; text-transform: capitalize; }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      background: var(--light);
+    }
+
+    .modal-footer button {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+
+    .modal-cancel { background: #fff; color: var(--gray); border: 1px solid var(--border) !important; }
+    .modal-install { background: var(--blue); color: #fff; }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 32px; }
+      .hero-stats { flex-direction: column; gap: 16px; }
+      .header-nav { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <a href="/" class="brand">
+        <img src="/images/icon_48.png" alt="Shortkeys" />
+        Shortkeys
+      </a>
+      <nav class="header-nav">
+        <a href="#packs">Browse Packs</a>
+        <a href="#features">Features</a>
+        <a href="https://github.com/crittermike/shortkeys" target="_blank">GitHub</a>
+        <a href="https://github.com/crittermike/shortkeys/wiki" target="_blank">Docs</a>
+        <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck" class="btn-install" target="_blank">
+          Install Extension
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <h1>Custom <span>keyboard shortcuts</span><br>for your browser</h1>
+    <p>Create shortcuts for anything — navigate tabs, run JavaScript, control videos, search the web. Browse community packs or build your own.</p>
+    <div class="hero-actions">
+      <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck" class="btn-hero btn-primary" target="_blank">
+        <i class="mdi mdi-google-chrome"></i> Install for Chrome
+      </a>
+      <a href="#packs" class="btn-hero btn-secondary">
+        <i class="mdi mdi-package-variant"></i> Browse Packs
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div><strong>200K+</strong> users</div>
+      <div><strong>10</strong> curated packs</div>
+      <div><strong>70+</strong> built-in actions</div>
+    </div>
+  </section>
+
+  <!-- Packs -->
+  <section class="section" id="packs">
+    <div class="section-header">
+      <h2>Shortcut Packs</h2>
+      <p>One-click install curated shortcut collections. Customize or remove anytime.</p>
+    </div>
+    <div class="pack-grid" id="pack-grid">
+      <!-- Populated by JavaScript -->
+      <div style="text-align:center;padding:40px;color:var(--gray)">Loading packs...</div>
+    </div>
+  </section>
+
+  <!-- Share -->
+  <section class="share-section" id="share">
+    <h2>Share your shortcuts</h2>
+    <p>Paste your exported JSON to generate a shareable link that anyone can import with one click.</p>
+    <div class="share-input-wrap">
+      <input class="share-input" id="share-input" placeholder='Paste your shortcut JSON here...' />
+      <button class="btn-share" id="share-btn" onclick="generateShareLink()">Generate Link</button>
+    </div>
+    <p id="share-result" style="margin-top:16px;font-size:13px;color:#94a3b8"></p>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features">
+    <div class="section-header">
+      <h2>Why Shortkeys?</h2>
+      <p>The most powerful keyboard shortcut extension for your browser.</p>
+    </div>
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">⌨️</div>
+        <h3>70+ Built-in Actions</h3>
+        <p>Tab management, scrolling, navigation, zoom, bookmarks, downloads, video controls, and more.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔤</div>
+        <h3>Custom JavaScript</h3>
+        <p>Run any JavaScript with a keyboard shortcut. Full CodeMirror editor with syntax highlighting and test button.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📦</div>
+        <h3>Shortcut Packs</h3>
+        <p>Browse and install curated shortcut collections. Vim, Emacs, YouTube, GitHub — or create your own.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">☁️</div>
+        <h3>Cloud Sync</h3>
+        <p>Shortcuts sync across all your Chrome instances via your Google account. No account needed.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📂</div>
+        <h3>Groups</h3>
+        <p>Organize shortcuts into collapsible groups. Enable/disable, rename, or delete entire groups at once.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">⏺️</div>
+        <h3>Shortcut Recorder</h3>
+        <p>Click Record and press your key combo — supports multi-key sequences like vim's <kbd>g</kbd><kbd>g</kbd>.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">⚠️</div>
+        <h3>Conflict Detection</h3>
+        <p>Warns when your shortcuts conflict with browser defaults or other extensions.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔍</div>
+        <h3>Command Palette</h3>
+        <p>Click the extension icon for an instant searchable palette of all your shortcuts.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🌙</div>
+        <h3>Dark Mode & Cheat Sheet</h3>
+        <p>One-key dark mode for any site. Press a key to see all your active shortcuts overlaid on the page.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>
+      Shortkeys is free and <a href="https://github.com/crittermike/shortkeys" target="_blank">open source</a>.
+      Made by <a href="https://github.com/crittermike" target="_blank">Mike Crittenden</a>.
+    </p>
+  </footer>
+
+  <!-- Pack Preview Modal -->
+  <div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-header" id="modal-header">
+        <span class="modal-icon" id="modal-icon"></span>
+        <div>
+          <h2 id="modal-title"></h2>
+          <p id="modal-desc"></p>
+        </div>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer">
+        <button class="modal-cancel" onclick="closeModal()">Close</button>
+        <button class="modal-install" id="modal-install-btn">
+          <i class="mdi mdi-download"></i> Install Extension to Add
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let catalogData = null
+
+    // Load catalog
+    fetch('/catalog.json')
+      .then(r => r.json())
+      .then(data => {
+        catalogData = data
+        renderPacks(data.packs)
+      })
+      .catch(() => {
+        document.getElementById('pack-grid').innerHTML = '<p style="color:var(--gray)">Failed to load packs. <a href="https://github.com/crittermike/shortkeys">View on GitHub</a></p>'
+      })
+
+    function renderPacks(packs) {
+      const grid = document.getElementById('pack-grid')
+      grid.innerHTML = packs.map(pack => `
+        <div class="pack-card" onclick="showPackModal('${pack.id}')" style="--accent:${pack.color}">
+          <style>.pack-card[style*="${pack.color}"]::before { background: ${pack.color}; }</style>
+          <div class="pack-header">
+            <span class="pack-icon">${pack.icon}</span>
+            <div>
+              <div class="pack-title">${pack.name}</div>
+            </div>
+          </div>
+          <div class="pack-desc">${pack.description}</div>
+          <div class="pack-shortcuts">
+            ${pack.shortcuts.slice(0, 6).map(s =>
+              s.key.split('+').map(k => `<kbd>${k}</kbd>`).join('')
+            ).join(' ')}
+            ${pack.shortcuts.length > 6 ? '<kbd>+' + (pack.shortcuts.length - 6) + ' more</kbd>' : ''}
+          </div>
+          <div class="pack-footer">
+            <span class="pack-count">${pack.shortcutCount} shortcuts</span>
+            <button class="btn-add" onclick="event.stopPropagation();showPackModal('${pack.id}')">
+              <i class="mdi mdi-eye-outline"></i> Preview
+            </button>
+          </div>
+        </div>
+      `).join('')
+    }
+
+    function showPackModal(packId) {
+      const pack = catalogData.packs.find(p => p.id === packId)
+      if (!pack) return
+
+      document.getElementById('modal-icon').textContent = pack.icon
+      document.getElementById('modal-title').textContent = pack.name
+      document.getElementById('modal-desc').textContent = pack.description
+      document.getElementById('modal-header').style.background = pack.color
+
+      document.getElementById('modal-body').innerHTML = pack.shortcuts.map(s => `
+        <div class="modal-row">
+          <span class="modal-row-label">${s.label}</span>
+          <span class="modal-row-keys">
+            ${s.key.split('+').map(k => `<kbd>${k}</kbd>`).join('')}
+          </span>
+        </div>
+      `).join('')
+
+      // Install button links to Chrome Web Store
+      document.getElementById('modal-install-btn').onclick = () => {
+        window.open('https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck', '_blank')
+      }
+
+      document.getElementById('modal-overlay').classList.add('active')
+    }
+
+    function closeModal() {
+      document.getElementById('modal-overlay').classList.remove('active')
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal() })
+
+    function generateShareLink() {
+      const input = document.getElementById('share-input')
+      const result = document.getElementById('share-result')
+      try {
+        const data = JSON.parse(input.value)
+        const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))))
+        const url = `${window.location.origin}/share#${encoded}`
+        result.innerHTML = `<a href="${url}" target="_blank" style="color:#60a5fa;word-break:break-all">${url}</a><br><small>Share this link — anyone with Shortkeys can import it.</small>`
+        navigator.clipboard.writeText(url).catch(() => {})
+      } catch {
+        result.textContent = 'Invalid JSON. Export your shortcuts from the extension and paste them here.'
+        result.style.color = '#ef4444'
+      }
+    }
+  </script>
+</body>
+</html>
