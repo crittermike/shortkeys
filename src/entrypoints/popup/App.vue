@@ -65,10 +65,12 @@ function openSettings() {
   window.close()
 }
 
+import { loadKeys } from '@/utils/storage'
+
 onMounted(async () => {
-  const saved = await chrome.storage.local.get('keys')
-  if (saved.keys) {
-    keys.value = JSON.parse(saved.keys)
+  const saved = await loadKeys()
+  if (saved) {
+    keys.value = JSON.parse(saved)
   }
   await nextTick()
   searchInput.value?.focus()

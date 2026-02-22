@@ -11,6 +11,7 @@ import {
 import type { KeySetting } from '@/utils/url-matching'
 import { detectConflicts, type ShortcutConflict } from '@/utils/shortcut-conflicts'
 import { executeJavascriptOnTab } from '@/utils/test-javascript'
+import { saveKeys, loadKeys } from '@/utils/storage'
 import SearchSelect from '@/components/SearchSelect.vue'
 import CodeEditor from '@/components/CodeEditor.vue'
 import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
@@ -113,11 +114,8 @@ async function saveShortcuts() {
     key.sites = key.sites || ''
     key.sitesArray = key.sites.split('\n')
   })
-  await chrome.storage.local.set({
-    keys: JSON.stringify(keys.value),
-    random: Math.random(),
-  })
-  showSnack('Shortcuts saved!')
+  const area = await saveKeys(keys.value)
+  showSnack(area === 'sync' ? 'Shortcuts saved & synced!' : 'Shortcuts saved (local only — too large to sync)')
 }
 
 function importKeys() {
@@ -207,9 +205,9 @@ async function testJavascript(row: KeySetting) {
 }
 
 onMounted(async () => {
-  const saved = await chrome.storage.local.get('keys')
-  if (saved.keys) {
-    keys.value = JSON.parse(saved.keys)
+  const saved = await loadKeys()
+  if (saved) {
+    keys.value = JSON.parse(saved)
     ensureIds()
   } else {
     addShortcut()

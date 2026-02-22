@@ -3,26 +3,27 @@ import { isAllowedSite } from '@/utils/url-matching'
 import { handleAction } from '@/actions/action-handlers'
 import { initLastUsedTabTracking, switchToLastUsedTab } from '@/actions/last-used-tab'
 import captureScreenshot from '@/actions/capture-screenshot'
+import { loadKeys, saveKeys, migrateLocalToSync, onKeysChanged } from '@/utils/storage'
 
 export default defineBackground(() => {
   initLastUsedTabTracking()
 
   async function checkKeys(): Promise<void> {
-    const raw = (await chrome.storage.local.get('keys')).keys
+    const raw = await loadKeys()
     const keys = JSON.parse(raw || '[]')
     for (const key of keys) {
       if (!key.id) {
         key.id = uuid()
       }
     }
-    await chrome.storage.local.set({ keys: JSON.stringify(keys) })
+    await saveKeys(keys)
   }
 
   async function registerUserScript(): Promise<void> {
     // userScripts API requires "Allow User Scripts" to be enabled in extension details
     if (!chrome.userScripts) return
 
-    const raw = (await chrome.storage.local.get('keys')).keys
+    const raw = await loadKeys()
     const keys = JSON.parse(raw || '[]')
     const jsActions = keys.filter((k: any) => k.action === 'javascript')
 
@@ -64,15 +65,13 @@ export default defineBackground(() => {
     }
   }
 
-  chrome.storage.local.onChanged.addListener(() => {
+  onKeysChanged(() => {
     registerUserScript()
     // Notify all tabs to re-fetch their shortcuts
     chrome.tabs.query({}).then((tabs) => {
       for (const tab of tabs) {
         if (tab.id) {
-          chrome.tabs.sendMessage(tab.id, { action: 'refreshKeys' }).catch(() => {
-            // Tab may not have the content script loaded — ignore
-          })
+          chrome.tabs.sendMessage(tab.id, { action: 'refreshKeys' }).catch(() => {})
         }
       }
     })
@@ -80,6 +79,7 @@ export default defineBackground(() => {
 
   chrome.runtime.onInstalled.addListener(async (details) => {
     if (details.reason === 'update') {
+      await migrateLocalToSync()
       await checkKeys()
       registerUserScript()
     } else if (details.reason === 'install') {
@@ -117,7 +117,7 @@ export default defineBackground(() => {
     if (action === 'getKeys') {
       ;(async () => {
         const currentUrl = request.url
-        const raw = (await chrome.storage.local.get('keys')).keys
+        const raw = await loadKeys()
         if (!raw) {
           chrome.notifications.create('settingsNotification', {
             type: 'basic',
