@@ -147,15 +147,15 @@
       }
 
       function showFallback(btn) {
-        btn.innerHTML = 'Could not connect to extension'
-        btn.style.background = '#94a3b8'
+        // Silently copy JSON and show success
+        copyJson()
+        btn.innerHTML = '✓ Copied to clipboard — paste in Import tab'
+        btn.style.background = '#059669'
         setTimeout(() => {
           btn.innerHTML = `⬇️ Import ${shortcutsData.length} shortcut${shortcutsData.length !== 1 ? 's' : ''}`
           btn.style.background = ''
           btn.disabled = false
-        }, 2000)
-        // Also copy JSON as fallback
-        copyJson()
+        }, 3000)
       }
     } catch (e) {
       document.getElementById('desc').innerHTML = '<span class="error">Invalid or missing shortcut data in this link.</span>'
