@@ -990,6 +990,7 @@ a:hover { text-decoration: underline; }
 .header-links {
   display: flex;
   gap: 20px;
+  align-items: center;
 }
 
 .header-links a {
