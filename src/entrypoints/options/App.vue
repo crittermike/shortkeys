@@ -1207,9 +1207,6 @@ a:hover { text-decoration: underline; }
   padding: 10px 12px;
   background: var(--bg-card);
   border-bottom: 1px solid var(--border-light);
-  position: sticky;
-  top: 56px;
-  z-index: 5;
 }
 
 .shortcut-group .shortcut-list { border-top: none; }
