@@ -1323,7 +1323,7 @@ a:hover { text-decoration: underline; }
 .shortcut-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
 }
 
 .shortcut-card {
