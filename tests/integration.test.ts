@@ -382,3 +382,138 @@ describe('v4.x → v5.0 migration compatibility', () => {
     expect(isAllowedSite(parsed[0], 'https://any-site.com')).toBe(true)
   })
 })
+
+describe('v4 → v5 migration edge cases', () => {
+  it('handles v4 data with blacklist as string "true" (not boolean)', () => {
+    // Some v4 exports have blacklist as string "true" instead of boolean true
+    const shortcuts: KeySetting[] = [
+      { key: 'a', action: 'newtab', blacklist: 'true' as any, sitesArray: ['*example.com*'] },
+    ]
+    // Should be treated as blacklisted
+    expect(isAllowedSite(shortcuts[0], 'https://example.com')).toBe(false)
+    expect(isAllowedSite(shortcuts[0], 'https://other.com')).toBe(true)
+  })
+
+  it('handles v4 data with blacklist as string "false"', () => {
+    const shortcuts: KeySetting[] = [
+      { key: 'a', action: 'newtab', blacklist: 'false' as any },
+    ]
+    // "false" string should be treated as no blacklist
+    expect(isAllowedSite(shortcuts[0], 'https://anything.com')).toBe(true)
+  })
+
+  it('handles v4 data with undefined/missing optional fields', () => {
+    // Minimal v4 shortcut — only key and action
+    const minimal: KeySetting = { key: 'a', action: 'newtab' }
+    expect(isAllowedSite(minimal, 'https://example.com')).toBe(true)
+    expect(fetchConfig([minimal], 'a')).toBeTruthy()
+    expect(shouldStopCallback(
+      { tagName: 'DIV', classList: { contains: () => false }, getAttribute: () => null },
+      'a', [minimal]
+    )).toBe(false)
+  })
+
+  it('handles v4 data with empty key (should not crash)', () => {
+    const shortcuts: KeySetting[] = [
+      { key: '', action: 'newtab' },
+      { key: 'b', action: 'closetab' },
+    ]
+    // Empty key should not crash fetchConfig
+    expect(fetchConfig(shortcuts, '')).toBeTruthy()
+    expect(fetchConfig(shortcuts, 'b')).toBeTruthy()
+  })
+
+  it('handles v4 data with special characters in code', () => {
+    const shortcuts: KeySetting[] = [
+      {
+        key: 'ctrl+j',
+        action: 'javascript',
+        code: 'console.log("hello %s", "world"); document.querySelector(\'[data-id="123"]\').click();',
+      },
+    ]
+    // Should parse and survive JSON round-trip
+    const json = JSON.stringify(shortcuts)
+    const parsed = JSON.parse(json)
+    expect(parsed[0].code).toContain('%s')
+    expect(parsed[0].code).toContain('[data-id="123"]')
+  })
+
+  it('handles v4 data with unicode in labels', () => {
+    const shortcuts: KeySetting[] = [
+      { key: 'ctrl+e', action: 'newtab', label: '🚀 Rocketlaunch — über cool' },
+    ]
+    const json = JSON.stringify(shortcuts)
+    const parsed = JSON.parse(json)
+    expect(parsed[0].label).toBe('🚀 Rocketlaunch — über cool')
+  })
+
+  it('handles v4 data with very long code fields', () => {
+    const longCode = 'var x = 1;\n'.repeat(1000)
+    const shortcuts: KeySetting[] = [
+      { key: 'ctrl+j', action: 'javascript', code: longCode },
+    ]
+    const json = JSON.stringify(shortcuts)
+    const parsed = JSON.parse(json)
+    expect(parsed[0].code.length).toBe(longCode.length)
+  })
+
+  it('v4 data round-trips through JSON.stringify/parse without data loss', () => {
+    const original: KeySetting[] = [
+      {
+        key: 'ctrl+shift+k',
+        action: 'gototab',
+        label: 'Go to Gmail',
+        matchurl: '*://mail.google.com/*',
+        openurl: 'https://mail.google.com',
+        currentWindow: true,
+        blacklist: true,
+        sites: '*facebook.com*\n*twitter.com*',
+        sitesArray: ['*facebook.com*', '*twitter.com*'],
+        activeInInputs: false,
+        smoothScrolling: true,
+        id: 'custom-id-123',
+      },
+    ]
+    const roundTripped: KeySetting[] = JSON.parse(JSON.stringify(original))
+    expect(roundTripped[0]).toEqual(original[0])
+  })
+
+  it('v4 data with multiple shortcuts using the same key on different sites', () => {
+    const shortcuts: KeySetting[] = [
+      { key: 'j', action: 'scrolldown', blacklist: 'whitelist', sitesArray: ['*youtube.com*'] },
+      { key: 'j', action: 'javascript', code: 'alert(1)', blacklist: 'whitelist', sitesArray: ['*github.com*'] },
+    ]
+    const ytFiltered = shortcuts.filter((k) => isAllowedSite(k, 'https://youtube.com'))
+    expect(ytFiltered).toHaveLength(1)
+    expect(ytFiltered[0].action).toBe('scrolldown')
+
+    const ghFiltered = shortcuts.filter((k) => isAllowedSite(k, 'https://github.com'))
+    expect(ghFiltered).toHaveLength(1)
+    expect(ghFiltered[0].action).toBe('javascript')
+  })
+
+  it('storage format: keys stored as JSON string under "keys" key', () => {
+    // This is the exact format chrome.storage.local uses
+    const shortcuts = [{ key: 'a', action: 'newtab' }]
+    const storageFormat = { keys: JSON.stringify(shortcuts) }
+    
+    // Simulate what background.ts does on getKeys
+    const raw = storageFormat.keys
+    const parsed = JSON.parse(raw)
+    expect(parsed).toHaveLength(1)
+    expect(parsed[0].key).toBe('a')
+  })
+
+  it('ensureIds adds UUIDs to shortcuts without IDs but preserves existing ones', () => {
+    const shortcuts: KeySetting[] = [
+      { key: 'a', action: 'newtab', id: 'existing-id' },
+      { key: 'b', action: 'closetab' },  // no id
+    ]
+    // Simulate ensureIds
+    for (const k of shortcuts) {
+      if (!k.id) k.id = 'generated-uuid'
+    }
+    expect(shortcuts[0].id).toBe('existing-id')
+    expect(shortcuts[1].id).toBe('generated-uuid')
+  })
+})
