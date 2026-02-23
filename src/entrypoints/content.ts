@@ -1,5 +1,6 @@
 import Mousetrap from 'mousetrap'
 import { fetchConfig, shouldStopCallback } from '@/utils/content-logic'
+import { ACTION_CATEGORIES } from '@/utils/actions-registry'
 import type { KeySetting } from '@/utils/url-matching'
 
 export default defineContentScript({
@@ -9,6 +10,12 @@ export default defineContentScript({
 
   main() {
     let keys: KeySetting[] = []
+
+    // Build action → label lookup for cheat sheet
+    const actionLabels: Record<string, string> = {}
+    for (const actions of Object.values(ACTION_CATEGORIES)) {
+      for (const a of actions) actionLabels[a.value] = a.label
+    }
 
     /** Check if the extension context is still valid (not orphaned after reload). */
     function isContextValid(): boolean {
@@ -121,7 +128,7 @@ export default defineContentScript({
           })
           const label = document.createElement('span')
           Object.assign(label.style, { fontSize: '13px', color: '#cbd5e1', flex: '1', minWidth: '0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' })
-          label.textContent = k.label || k.action
+          label.textContent = k.label || actionLabels[k.action] || k.action
           const kbd = document.createElement('span')
           Object.assign(kbd.style, { flexShrink: '0' })
           kbd.innerHTML = k.key.split('+').map((p) =>
