@@ -82,7 +82,11 @@ export default defineBackground(() => {
       await migrateLocalToSync()
       await checkKeys()
       registerUserScript()
+      // Show what's new page
+      chrome.tabs.create({ url: 'https://shortkeys.app/welcome' })
     } else if (details.reason === 'install') {
+      // Open welcome page and then options
+      chrome.tabs.create({ url: 'https://shortkeys.app/welcome' })
       chrome.runtime.openOptionsPage()
     }
   })

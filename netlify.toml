@@ -15,6 +15,11 @@
   to = "/share.html"
   status = 200
 
+[[redirects]]
+  from = "/welcome"
+  to = "/welcome.html"
+  status = 200
+
 [[headers]]
   for = "/catalog.json"
   [headers.values]

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to Shortkeys v5</title>
+  <meta name="description" content="Shortkeys v5 is the biggest update ever — command palette, shortcut packs, cloud sync, groups, dark mode, Firefox support, and more." />
+  <meta property="og:title" content="Welcome to Shortkeys v5" />
+  <meta property="og:description" content="The biggest update ever. Command palette, shortcut packs, cloud sync, and more." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://shortkeys.app/welcome" />
+  <link rel="icon" type="image/png" href="/images/icon_16.png" />
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7/css/materialdesignicons.min.css" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #4361ee;
+      --dark: #1a1a2e;
+      --gray: #64748b;
+      --light: #f8fafc;
+      --border: #e2e8f0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: var(--dark);
+      background: var(--light);
+      line-height: 1.6;
+    }
+
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Header */
+    .header {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 800; color: var(--dark); }
+    .brand img { width: 32px; height: 32px; }
+
+    .header-nav { display: flex; gap: 24px; align-items: center; }
+    .header-nav a { color: var(--gray); font-size: 14px; font-weight: 500; }
+    .header-nav a:hover { color: var(--blue); text-decoration: none; }
+
+    .btn-install {
+      background: var(--blue);
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background 0.15s;
+    }
+    .btn-install:hover { background: #3730a3; text-decoration: none; }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 100px 24px 80px;
+      background: linear-gradient(135deg, #4361ee 0%, #7c3aed 50%, #ec4899 100%);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 30% 50%, rgba(255,255,255,0.1) 0%, transparent 60%),
+                  radial-gradient(circle at 70% 80%, rgba(255,255,255,0.08) 0%, transparent 50%);
+    }
+
+    .hero > * { position: relative; z-index: 1; }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(8px);
+      padding: 6px 16px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      animation: fadeInDown 0.6s ease;
+    }
+
+    .hero h1 {
+      font-size: 56px;
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      margin-bottom: 16px;
+      line-height: 1.1;
+      animation: fadeInDown 0.6s ease 0.1s both;
+    }
+
+    .hero p {
+      font-size: 20px;
+      opacity: 0.9;
+      max-width: 600px;
+      margin: 0 auto;
+      animation: fadeInDown 0.6s ease 0.2s both;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Section */
+    .section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 80px 24px;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .section-header h2 {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      letter-spacing: -0.5px;
+    }
+
+    .section-header p {
+      font-size: 17px;
+      color: var(--gray);
+      max-width: 550px;
+      margin: 0 auto;
+    }
+
+    /* Feature cards */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      transition: box-shadow 0.25s, transform 0.25s;
+      animation: fadeInUp 0.5s ease both;
+    }
+
+    .feature-card:hover {
+      box-shadow: 0 12px 32px rgba(67, 97, 238, 0.1);
+      transform: translateY(-3px);
+    }
+
+    .feature-card:nth-child(1) { animation-delay: 0.05s; }
+    .feature-card:nth-child(2) { animation-delay: 0.1s; }
+    .feature-card:nth-child(3) { animation-delay: 0.15s; }
+    .feature-card:nth-child(4) { animation-delay: 0.2s; }
+    .feature-card:nth-child(5) { animation-delay: 0.25s; }
+    .feature-card:nth-child(6) { animation-delay: 0.3s; }
+    .feature-card:nth-child(7) { animation-delay: 0.35s; }
+    .feature-card:nth-child(8) { animation-delay: 0.4s; }
+    .feature-card:nth-child(9) { animation-delay: 0.45s; }
+    .feature-card:nth-child(10) { animation-delay: 0.5s; }
+    .feature-card:nth-child(11) { animation-delay: 0.55s; }
+    .feature-card:nth-child(12) { animation-delay: 0.6s; }
+
+    .feature-emoji {
+      font-size: 32px;
+      margin-bottom: 14px;
+      display: block;
+    }
+
+    .feature-card h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .feature-card p {
+      font-size: 14px;
+      color: var(--gray);
+      line-height: 1.6;
+    }
+
+    /* Highlight card (spans full width) */
+    .feature-card.highlight {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, #4361ee, #7c3aed);
+      color: #fff;
+      border: none;
+      text-align: center;
+      padding: 40px 28px;
+    }
+
+    .feature-card.highlight h3 { font-size: 20px; }
+    .feature-card.highlight p { color: rgba(255,255,255,0.85); max-width: 600px; margin: 0 auto; }
+
+    /* Migration section */
+    .migration {
+      background: #fff;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .migration-inner {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 60px 24px;
+      text-align: center;
+    }
+
+    .migration-icon {
+      width: 64px;
+      height: 64px;
+      background: #ecfdf5;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin: 0 auto 20px;
+    }
+
+    .migration-inner h2 {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .migration-inner p {
+      font-size: 16px;
+      color: var(--gray);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    /* CTA */
+    .cta {
+      text-align: center;
+      padding: 80px 24px;
+      background: linear-gradient(180deg, var(--light) 0%, #fff 100%);
+    }
+
+    .cta h2 {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    .cta p {
+      font-size: 16px;
+      color: var(--gray);
+      max-width: 460px;
+      margin: 0 auto 32px;
+    }
+
+    .btn-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 36px;
+      background: var(--blue);
+      color: #fff;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 700;
+      transition: background 0.15s, transform 0.15s;
+    }
+
+    .btn-cta:hover {
+      background: #3730a3;
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+
+    .cta-hint {
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--gray);
+    }
+
+    .cta-hint code {
+      background: #e2e8f0;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 12px;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 40px 24px;
+      color: var(--gray);
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer a { color: var(--gray); }
+    .footer a:hover { color: var(--blue); }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 36px; }
+      .hero p { font-size: 17px; }
+      .section-header h2 { font-size: 28px; }
+      .cta h2 { font-size: 28px; }
+      .header-nav { display: none; }
+      .feature-grid { grid-template-columns: 1fr; }
+      .feature-card.highlight { grid-column: auto; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <a href="/" class="brand">
+        <img src="/images/icon_48.png" alt="Shortkeys" />
+        Shortkeys
+      </a>
+      <nav class="header-nav">
+        <a href="/">Home</a>
+        <a href="https://github.com/crittermike/shortkeys" target="_blank">GitHub</a>
+        <a href="https://github.com/crittermike/shortkeys/wiki" target="_blank">Docs</a>
+        <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck" class="btn-install" target="_blank">
+          Install Extension
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-badge">✨ New Release</div>
+    <h1>Welcome to Shortkeys v5</h1>
+    <p>The biggest update ever. A completely rebuilt experience with powerful new features you've been asking for.</p>
+  </section>
+
+  <!-- What's New -->
+  <section class="section">
+    <div class="section-header">
+      <h2>What's New</h2>
+      <p>v5 is a ground-up rewrite packed with features that make Shortkeys more powerful and delightful than ever.</p>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <span class="feature-emoji">🎯</span>
+        <h3>Command Palette</h3>
+        <p>Click the extension icon for an instant, searchable popup of all your shortcuts. Find and trigger any action without remembering keys.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-emoji">📦</span>
+        <h3>Shortcut Packs</h3>
+        <p>One-click install curated shortcut collections — Vim, Emacs, YouTube, GitHub, and more. Customize or remove anytime.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-emoji">☁️</span>
+        <h3>Cloud Sync</h3>
+        <p>Your shortcuts now sync across all devices via your browser account. Set up once, use everywhere — no extra account needed.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-emoji">📂</span>
+        <h3>Groups</h3>
+        <p>Organize shortcuts into collapsible groups. Enable, disable, rename, or delete entire groups at once for better control.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-emoji">📜</span>
+        <h3>26 Page Scripts</h3>
+        <p>Pre-built JavaScript actions available as one-click shortcuts — auto-scroll, readability mode, highlight text, and more.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-emoji">⏺️</span>
+        <h3>Shortcut Recorder</h3>
+        <p>Click Record and press your key combo. Supports multi-key sequences like Vim's <kbd style="padding:2px 6px;background:#e2e8f0;border-radius:4px;font-family:monospace;font-size:12px;">g g</kbd> — no more guessing key names.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-emoji">⚠️</span>
+        <h3>Conflict Detection</h3>
+        <p>Instantly see when your shortcuts conflict with browser defaults or other shortcuts. No more mysterious broken bindings.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-emoji">🌙</span>
+        <h3>Dark Mode</h3>
+        <p>Toggle dark mode on any website with a single key. Plus the settings UI itself supports dark mode for late-night tinkering.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-emoji">🔗</span>
+        <h3>Share Shortcuts via Link</h3>
+        <p>Export any shortcuts as a shareable URL. Send it to a friend or teammate — they can import with one click.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-emoji">🔥</span>
+        <h3>Firefox Support</h3>
+        <p>Shortkeys now works on Firefox too. Same great features, same shortcuts — across browsers.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-emoji">🔄</span>
+        <h3>Live Reload</h3>
+        <p>No more refreshing tabs after changing shortcuts. Edits take effect immediately across all open pages.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-emoji">🎬</span>
+        <h3>Video Controls &amp; Search Providers</h3>
+        <p>Control video playback speed, skip, and picture-in-picture. Plus search any provider — Google, DuckDuckGo, YouTube — with a keystroke.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Migration -->
+  <section class="migration">
+    <div class="migration-inner">
+      <div class="migration-icon">✅</div>
+      <h2>Your shortcuts are safe</h2>
+      <p>All your existing v4 shortcuts have been automatically migrated. Everything works just like before — plus all the new features above.</p>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <h2>Ready to explore?</h2>
+    <p>Open the Shortkeys settings to try out the new features, browse packs, and set up your shortcuts.</p>
+    <a href="chrome-extension://logpjaacgmcbpdkdchjiaagddngobkck/options.html" class="btn-cta" id="open-settings">
+      <i class="mdi mdi-cog"></i> Open Shortkeys Settings
+    </a>
+    <p class="cta-hint">
+      Or right-click the Shortkeys icon in your toolbar and select <code>Options</code>
+    </p>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>
+      Shortkeys is free and <a href="https://github.com/crittermike/shortkeys" target="_blank">open source</a>.
+      Made by <a href="https://github.com/crittermike" target="_blank">Mike Crittenden</a>.
+    </p>
+  </footer>
+</body>
+</html>
