@@ -58,7 +58,7 @@
     .header-nav a { color: var(--gray); font-size: 14px; font-weight: 500; }
     .header-nav a:hover { color: var(--blue); text-decoration: none; }
 
-    .btn-install {
+    a.btn-install {
       background: var(--blue);
       color: #fff;
       padding: 8px 20px;
@@ -67,7 +67,7 @@
       font-weight: 600;
       transition: background 0.15s;
     }
-    .btn-install:hover { background: #3730a3; text-decoration: none; }
+    a.btn-install:hover { background: #3730a3; text-decoration: none; color: #fff; }
 
     /* Hero */
     .hero {
@@ -283,6 +283,32 @@
     .feature h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
     .feature p { font-size: 13px; color: var(--gray); }
 
+    /* Actions Accordion */
+    .actions-accordion { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .action-category + .action-category { border-top: 1px solid var(--border); }
+    .action-category-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      background: var(--light);
+      border: none;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--dark);
+      font-family: inherit;
+    }
+    .action-category-header:hover { background: #eef1f6; }
+    .action-count { font-size: 12px; font-weight: 500; color: var(--gray); margin-left: 8px; }
+    .action-chevron { font-size: 20px; color: var(--gray); transition: transform 0.2s; }
+    .action-category.open .action-chevron { transform: rotate(180deg); }
+    .action-list { padding: 0; }
+    .action-item { padding: 8px 20px 8px 36px; font-size: 13px; color: #334155; }
+    .action-item:nth-child(odd) { background: #fff; }
+    .action-item:nth-child(even) { background: var(--light); }
+
     /* Footer */
     .footer {
       text-align: center;
@@ -415,31 +441,8 @@
     <div class="hero-stats">
       <div><strong>200K+</strong> users</div>
       <div><strong>10</strong> curated packs</div>
-      <div><strong>70+</strong> built-in actions</div>
+      <div><strong>90+</strong> built-in actions</div>
     </div>
-  </section>
-
-  <!-- Packs -->
-  <section class="section" id="packs">
-    <div class="section-header">
-      <h2>Shortcut Packs</h2>
-      <p>One-click install curated shortcut collections. Customize or remove anytime.</p>
-    </div>
-    <div class="pack-grid" id="pack-grid">
-      <!-- Populated by JavaScript -->
-      <div style="text-align:center;padding:40px;color:var(--gray)">Loading packs...</div>
-    </div>
-  </section>
-
-  <!-- Share -->
-  <section class="share-section" id="share">
-    <h2>Share your shortcuts</h2>
-    <p>Paste your exported JSON to generate a shareable link that anyone can import with one click.</p>
-    <div class="share-input-wrap">
-      <input class="share-input" id="share-input" placeholder='Paste your shortcut JSON here...' />
-      <button class="btn-share" id="share-btn" onclick="generateShareLink()">Generate Link</button>
-    </div>
-    <p id="share-result" style="margin-top:16px;font-size:13px;color:#94a3b8"></p>
   </section>
 
   <!-- Features -->
@@ -451,7 +454,7 @@
     <div class="features">
       <div class="feature">
         <div class="feature-icon">⌨️</div>
-        <h3>70+ Built-in Actions</h3>
+        <h3>90+ Built-in Actions</h3>
         <p>Tab management, scrolling, navigation, zoom, bookmarks, downloads, video controls, and more.</p>
       </div>
       <div class="feature">
@@ -495,6 +498,225 @@
         <p>One-key dark mode for any site. Press a key to see all your active shortcuts overlaid on the page.</p>
       </div>
     </div>
+  </section>
+
+  <!-- Built-in Actions -->
+  <section class="section" id="actions">
+    <div class="section-header">
+      <h2>90+ Built-in Actions</h2>
+      <p>Every action you can assign to a keyboard shortcut, organized by category.</p>
+    </div>
+    <div class="actions-accordion" id="actions-accordion">
+      <div class="action-category" data-category="Scrolling">
+        <button class="action-category-header" onclick="toggleCategory(this)">
+          <span>Scrolling <span class="action-count">12 actions</span></span>
+          <i class="mdi mdi-chevron-down action-chevron"></i>
+        </button>
+        <div class="action-list" hidden>
+          <div class="action-item">Scroll to top</div>
+          <div class="action-item">Scroll to bottom</div>
+          <div class="action-item">Scroll down</div>
+          <div class="action-item">Scroll down more</div>
+          <div class="action-item">Page down</div>
+          <div class="action-item">Scroll up</div>
+          <div class="action-item">Scroll up more</div>
+          <div class="action-item">Page up</div>
+          <div class="action-item">Scroll right</div>
+          <div class="action-item">Scroll right more</div>
+          <div class="action-item">Scroll left</div>
+          <div class="action-item">Scroll left more</div>
+        </div>
+      </div>
+      <div class="action-category" data-category="Navigation">
+        <button class="action-category-header" onclick="toggleCategory(this)">
+          <span>Navigation <span class="action-count">18 actions</span></span>
+          <i class="mdi mdi-chevron-down action-chevron"></i>
+        </button>
+        <div class="action-list" hidden>
+          <div class="action-item">Go back</div>
+          <div class="action-item">Go forward</div>
+          <div class="action-item">Reload page</div>
+          <div class="action-item">Hard reload (bypass cache)</div>
+          <div class="action-item">Copy URL</div>
+          <div class="action-item">Copy page title</div>
+          <div class="action-item">Copy title and URL</div>
+          <div class="action-item">Copy as markdown link</div>
+          <div class="action-item">Open URL from clipboard</div>
+          <div class="action-item">Open clipboard URL in new tab</div>
+          <div class="action-item">Navigate to specific URL</div>
+          <div class="action-item">Open settings</div>
+          <div class="action-item">Open extensions</div>
+          <div class="action-item">Open keyboard shortcuts</div>
+          <div class="action-item">Search Google</div>
+          <div class="action-item">Search YouTube</div>
+          <div class="action-item">Search Wikipedia</div>
+          <div class="action-item">Search GitHub</div>
+        </div>
+      </div>
+      <div class="action-category" data-category="Tabs">
+        <button class="action-category-header" onclick="toggleCategory(this)">
+          <span>Tabs <span class="action-count">29 actions</span></span>
+          <i class="mdi mdi-chevron-down action-chevron"></i>
+        </button>
+        <div class="action-list" hidden>
+          <div class="action-item">New tab</div>
+          <div class="action-item">New tab to right</div>
+          <div class="action-item">Close tab</div>
+          <div class="action-item">Close other tabs</div>
+          <div class="action-item">Close left tabs</div>
+          <div class="action-item">Close right tabs</div>
+          <div class="action-item">Close duplicates</div>
+          <div class="action-item">Duplicate tab</div>
+          <div class="action-item">Move to new window</div>
+          <div class="action-item">Reopen closed tab</div>
+          <div class="action-item">Next tab</div>
+          <div class="action-item">Previous tab</div>
+          <div class="action-item">First tab</div>
+          <div class="action-item">Last tab</div>
+          <div class="action-item">Last used tab</div>
+          <div class="action-item">Jump to audible tab</div>
+          <div class="action-item">Jump by URL</div>
+          <div class="action-item">Jump by title</div>
+          <div class="action-item">Jump by index</div>
+          <div class="action-item">Pin/unpin</div>
+          <div class="action-item">Mute/unmute</div>
+          <div class="action-item">Move left</div>
+          <div class="action-item">Move right</div>
+          <div class="action-item">Move to first</div>
+          <div class="action-item">Move to last</div>
+          <div class="action-item">Sort alphabetically</div>
+          <div class="action-item">Suspend tab</div>
+          <div class="action-item">Add to group</div>
+          <div class="action-item">Remove from group</div>
+        </div>
+      </div>
+      <div class="action-category" data-category="Windows">
+        <button class="action-category-header" onclick="toggleCategory(this)">
+          <span>Windows <span class="action-count">4 actions</span></span>
+          <i class="mdi mdi-chevron-down action-chevron"></i>
+        </button>
+        <div class="action-list" hidden>
+          <div class="action-item">New window</div>
+          <div class="action-item">New private window</div>
+          <div class="action-item">Close window</div>
+          <div class="action-item">Toggle fullscreen</div>
+        </div>
+      </div>
+      <div class="action-category" data-category="Zoom">
+        <button class="action-category-header" onclick="toggleCategory(this)">
+          <span>Zoom <span class="action-count">3 actions</span></span>
+          <i class="mdi mdi-chevron-down action-chevron"></i>
+        </button>
+        <div class="action-list" hidden>
+          <div class="action-item">Zoom in</div>
+          <div class="action-item">Zoom out</div>
+          <div class="action-item">Reset zoom</div>
+        </div>
+      </div>
+      <div class="action-category" data-category="Bookmarks">
+        <button class="action-category-header" onclick="toggleCategory(this)">
+          <span>Bookmarks <span class="action-count">5 actions</span></span>
+          <i class="mdi mdi-chevron-down action-chevron"></i>
+        </button>
+        <div class="action-list" hidden>
+          <div class="action-item">Open bookmark (current tab)</div>
+          <div class="action-item">Open in new tab</div>
+          <div class="action-item">Open in background tab</div>
+          <div class="action-item">Open in bg tab and close</div>
+          <div class="action-item">Toggle bookmark</div>
+        </div>
+      </div>
+      <div class="action-category" data-category="Video Controls">
+        <button class="action-category-header" onclick="toggleCategory(this)">
+          <span>Video Controls <span class="action-count">8 actions</span></span>
+          <i class="mdi mdi-chevron-down action-chevron"></i>
+        </button>
+        <div class="action-list" hidden>
+          <div class="action-item">Play/pause</div>
+          <div class="action-item">Mute/unmute</div>
+          <div class="action-item">Toggle fullscreen</div>
+          <div class="action-item">Speed up</div>
+          <div class="action-item">Slow down</div>
+          <div class="action-item">Reset speed</div>
+          <div class="action-item">Skip forward 10s</div>
+          <div class="action-item">Skip back 10s</div>
+        </div>
+      </div>
+      <div class="action-category" data-category="Page Scripts">
+        <button class="action-category-header" onclick="toggleCategory(this)">
+          <span>Page Scripts <span class="action-count">23 actions</span></span>
+          <i class="mdi mdi-chevron-down action-chevron"></i>
+        </button>
+        <div class="action-list" hidden>
+          <div class="action-item">Dark mode</div>
+          <div class="action-item">Reader mode</div>
+          <div class="action-item">Hide sticky banners</div>
+          <div class="action-item">Bigger text</div>
+          <div class="action-item">Highlight links</div>
+          <div class="action-item">Make page editable</div>
+          <div class="action-item">Copy all links</div>
+          <div class="action-item">Word count</div>
+          <div class="action-item">Extract emails</div>
+          <div class="action-item">Table to CSV</div>
+          <div class="action-item">QR code</div>
+          <div class="action-item">Remove images</div>
+          <div class="action-item">Show image sizes</div>
+          <div class="action-item">Page outline</div>
+          <div class="action-item">Reading progress bar</div>
+          <div class="action-item">Layout grid</div>
+          <div class="action-item">Clear storage</div>
+          <div class="action-item">Performance metrics</div>
+          <div class="action-item">Log events</div>
+          <div class="action-item">Pretty-print JSON</div>
+          <div class="action-item">Picture-in-picture</div>
+          <div class="action-item">Video speed 2x</div>
+          <div class="action-item">List image URLs</div>
+        </div>
+      </div>
+      <div class="action-category" data-category="Utilities">
+        <button class="action-category-header" onclick="toggleCategory(this)">
+          <span>Utilities <span class="action-count">12 actions</span></span>
+          <i class="mdi mdi-chevron-down action-chevron"></i>
+        </button>
+        <div class="action-list" hidden>
+          <div class="action-item">Run JavaScript</div>
+          <div class="action-item">Show latest download</div>
+          <div class="action-item">Clear downloads</div>
+          <div class="action-item">View source</div>
+          <div class="action-item">Disable shortcut</div>
+          <div class="action-item">Trigger another shortcut</div>
+          <div class="action-item">Insert text</div>
+          <div class="action-item">Print page</div>
+          <div class="action-item">Open app</div>
+          <div class="action-item">Open in incognito</div>
+          <div class="action-item">Screenshots</div>
+          <div class="action-item">Cheat sheet overlay</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Packs -->
+  <section class="section" id="packs">
+    <div class="section-header">
+      <h2>Shortcut Packs</h2>
+      <p>One-click install curated shortcut collections. Customize or remove anytime.</p>
+    </div>
+    <div class="pack-grid" id="pack-grid">
+      <!-- Populated by JavaScript -->
+      <div style="text-align:center;padding:40px;color:var(--gray)">Loading packs...</div>
+    </div>
+  </section>
+
+  <!-- Share -->
+  <section class="share-section" id="share">
+    <h2>Share your shortcuts</h2>
+    <p>Paste your exported JSON to generate a shareable link that anyone can import with one click.</p>
+    <div class="share-input-wrap">
+      <input class="share-input" id="share-input" placeholder='Paste your shortcut JSON here...' />
+      <button class="btn-share" id="share-btn" onclick="generateShareLink()">Generate Link</button>
+    </div>
+    <p id="share-result" style="margin-top:16px;font-size:13px;color:#94a3b8"></p>
   </section>
 
   <!-- Footer -->
@@ -551,12 +773,6 @@
             </div>
           </div>
           <div class="pack-desc">${pack.description}</div>
-          <div class="pack-shortcuts">
-            ${pack.shortcuts.slice(0, 6).map(s =>
-              s.key.split('+').map(k => `<kbd>${k}</kbd>`).join('')
-            ).join(' ')}
-            ${pack.shortcuts.length > 6 ? '<kbd>+' + (pack.shortcuts.length - 6) + ' more</kbd>' : ''}
-          </div>
           <div class="pack-footer">
             <span class="pack-count">${pack.shortcutCount} shortcuts</span>
             <button class="btn-add" onclick="event.stopPropagation();showPackModal('${pack.id}')">
@@ -598,6 +814,13 @@
     }
 
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal() })
+
+    function toggleCategory(btn) {
+      const category = btn.closest('.action-category')
+      const list = category.querySelector('.action-list')
+      const isOpen = category.classList.toggle('open')
+      list.hidden = !isOpen
+    }
 
     function generateShareLink() {
       const input = document.getElementById('share-input')
