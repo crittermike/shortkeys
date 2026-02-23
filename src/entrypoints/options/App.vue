@@ -1189,6 +1189,11 @@ a:hover { text-decoration: underline; }
   display: flex;
   flex-direction: column;
   gap: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px var(--shadow);
 }
 
 .group-header {
@@ -1197,19 +1202,13 @@ a:hover { text-decoration: underline; }
   gap: 8px;
   padding: 10px 12px;
   background: var(--bg-card);
-  border-radius: 10px 10px 0 0;
-  border: 1px solid var(--border);
-  border-bottom: none;
+  border-bottom: 1px solid var(--border-light);
   position: sticky;
   top: 56px;
   z-index: 5;
 }
 
-.shortcut-group:first-child .group-header,
-.shortcut-group .group-header { border-radius: 10px; }
-.shortcut-group .shortcut-list:not([style*="none"]) ~ .btn-add-to-group,
-.shortcut-group .shortcut-list { border-top: 1px solid var(--border-light); }
-.shortcut-group:has(.shortcut-list:not([style*="display: none"])) .group-header { border-radius: 10px 10px 0 0; }
+.shortcut-group .shortcut-list { border-top: none; }
 
 .group-collapse {
   background: none;
@@ -1308,10 +1307,10 @@ a:hover { text-decoration: underline; }
   justify-content: center;
   gap: 4px;
   padding: 8px;
-  background: var(--bg-elevated);
-  border: 1px dashed var(--border);
-  border-top: none;
-  border-radius: 0 0 10px 10px;
+  background: transparent;
+  border: none;
+  border-top: 1px dashed var(--border-light);
+  border-radius: 0;
   color: var(--text-muted);
   font-size: 12px;
   font-weight: 500;
@@ -1319,7 +1318,7 @@ a:hover { text-decoration: underline; }
   transition: all 0.15s;
 }
 
-.btn-add-to-group:hover { background: var(--bg-hover); color: var(--text-secondary); border-color: var(--text-placeholder); }
+.btn-add-to-group:hover { background: var(--bg-hover); color: var(--text-secondary); }
 .btn-add-to-group .mdi { font-size: 14px; }
 .shortcut-list {
   display: flex;
@@ -1329,12 +1328,13 @@ a:hover { text-decoration: underline; }
 
 .shortcut-card {
   background: var(--bg-card);
-  border-radius: 10px;
-  box-shadow: 0 1px 3px var(--shadow);
+  border-radius: 0;
+  box-shadow: none;
+  border-bottom: 1px solid var(--border-light);
   transition: box-shadow 0.15s;
 }
 
-.shortcut-card:hover { box-shadow: 0 2px 8px var(--shadow-hover); }
+.shortcut-card:hover { background: var(--bg-elevated); }
 .shortcut-card.disabled { opacity: 0.5; }
 .shortcut-card.dragging { opacity: 0.4; box-shadow: 0 4px 16px rgba(67,97,238,0.2); }
 
