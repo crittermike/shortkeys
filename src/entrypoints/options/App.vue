@@ -1339,11 +1339,13 @@ a:hover { text-decoration: underline; }
   background: var(--bg-card);
   border-radius: 0;
   box-shadow: none;
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border);
   transition: box-shadow 0.15s;
+  padding-bottom: 4px;
 }
 
 .shortcut-card:hover { background: var(--bg-elevated); }
+.shortcut-card:last-child { border-bottom: none; padding-bottom: 0; }
 .shortcut-card.disabled { opacity: 0.5; }
 .shortcut-card.dragging { opacity: 0.4; box-shadow: 0 4px 16px rgba(67,97,238,0.2); }
 
@@ -1504,6 +1506,10 @@ a:hover { text-decoration: underline; }
   display: flex;
   gap: 12px;
   align-items: flex-end;
+}
+
+.detail-row > .toggle-row-inline {
+  margin-bottom: 1px;
 }
 
 .flex-1 { flex: 1; min-width: 0; }
