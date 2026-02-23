@@ -528,7 +528,8 @@ onMounted(async () => {
 
         <!-- Grouped shortcut rows -->
         <div class="shortcut-groups">
-          <div v-for="group in groupNames" :key="group" class="shortcut-group" v-if="groupedIndices.has(group)">
+          <template v-for="group in groupNames" :key="group">
+          <div v-if="groupedIndices.has(group)" class="shortcut-group">
             <!-- Group header -->
             <div class="group-header" @dragover="onDragOverGroup($event, group)">
               <button class="group-collapse" @click="toggleGroupCollapse(group)" type="button">
@@ -805,6 +806,7 @@ onMounted(async () => {
               <i class="mdi mdi-plus"></i> Add shortcut
             </button>
           </div>
+          </template>
         </div>
 
         <div class="action-bar">
