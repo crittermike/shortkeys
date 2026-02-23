@@ -695,13 +695,6 @@ onMounted(async () => {
                     </button>
                   </div>
 
-                  <div v-if="keys[index].action === 'gototab' || keys[index].action === 'gototabbytitle'" class="toggle-row-inline">
-                    <span class="toggle-label-sm">Current window only</span>
-                    <button :class="['toggle', { on: keys[index].currentWindow }]" @click="keys[index].currentWindow = !keys[index].currentWindow" type="button">
-                      <span class="toggle-knob"></span>
-                    </button>
-                  </div>
-
                   <div v-if="isBookmarkAction(keys[index].action)" class="detail-field">
                     <label>Bookmark</label>
                     <SearchSelect
@@ -712,9 +705,17 @@ onMounted(async () => {
                     />
                   </div>
 
-                  <div v-if="keys[index].action === 'gototabbytitle'" class="detail-field">
-                    <label>Title to match <span class="hint">(wildcards accepted)</span></label>
-                    <input class="field-input" v-model="keys[index].matchtitle" placeholder="*Gmail*" />
+                  <div v-if="keys[index].action === 'gototabbytitle'" class="detail-row">
+                    <div class="detail-field flex-1">
+                      <label>Title to match <span class="hint">(wildcards)</span></label>
+                      <input class="field-input" v-model="keys[index].matchtitle" placeholder="*Gmail*" />
+                    </div>
+                    <div class="toggle-row-inline">
+                      <span class="toggle-label-sm">Current window only</span>
+                      <button :class="['toggle', { on: keys[index].currentWindow }]" @click="keys[index].currentWindow = !keys[index].currentWindow" type="button">
+                        <span class="toggle-knob"></span>
+                      </button>
+                    </div>
                   </div>
 
                   <div v-if="keys[index].action === 'gototab'" class="detail-row">
@@ -726,11 +727,19 @@ onMounted(async () => {
                       <label>Fallback URL <span class="hint">(if no match)</span></label>
                       <input class="field-input" v-model="keys[index].openurl" placeholder="https://mail.google.com" />
                     </div>
+                    <div class="toggle-row-inline">
+                      <span class="toggle-label-sm">Current window</span>
+                      <button :class="['toggle', { on: keys[index].currentWindow }]" @click="keys[index].currentWindow = !keys[index].currentWindow" type="button">
+                        <span class="toggle-knob"></span>
+                      </button>
+                    </div>
                   </div>
 
-                  <div v-if="keys[index].action === 'gototabbyindex'" class="detail-field" style="max-width: 200px">
-                    <label>Tab index <span class="hint">(starts from 1)</span></label>
-                    <input class="field-input" type="number" v-model="keys[index].matchindex" min="1" />
+                  <div v-if="keys[index].action === 'gototabbyindex'" class="detail-row">
+                    <div class="detail-field" style="max-width: 160px">
+                      <label>Tab index <span class="hint">(from 1)</span></label>
+                      <input class="field-input" type="number" v-model="keys[index].matchindex" min="1" />
+                    </div>
                   </div>
 
                   <div v-if="keys[index].action === 'buttonnexttab'" class="detail-field">
@@ -1447,7 +1456,7 @@ a:hover { text-decoration: underline; }
 /* ── Details panel ── */
 .shortcut-details {
   border-top: 1px solid var(--border-light);
-  padding: 16px 20px;
+  padding: 12px 20px;
   background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-card) 100%);
 }
 
@@ -1493,7 +1502,7 @@ a:hover { text-decoration: underline; }
 
 .detail-row {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   align-items: flex-end;
 }
 
@@ -1504,8 +1513,8 @@ a:hover { text-decoration: underline; }
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 16px;
-  padding-top: 16px;
+  margin-top: 12px;
+  padding-top: 12px;
   border-top: 1px solid var(--border-light);
 }
 
@@ -1527,7 +1536,7 @@ a:hover { text-decoration: underline; }
 .toggle-label-sm { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
 
 .detail-field {
-  margin-bottom: 12px;
+  margin-bottom: 0;
 }
 
 .detail-field label {
