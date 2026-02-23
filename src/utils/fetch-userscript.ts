@@ -3,7 +3,7 @@
  * Handles Greasyfork, OpenUserJS, and raw .user.js URLs.
  */
 export function resolveUserscriptUrl(url: string): string {
-  const greasyforkMatch = url.match(/greasyfork\.org\/\w+\/scripts\/(\d+)/)
+  const greasyforkMatch = url.match(/greasyfork\.org\/(?:[\w-]+\/)?scripts\/(\d+)/)
   if (greasyforkMatch) {
     return `https://greasyfork.org/scripts/${greasyforkMatch[1]}/code/script.user.js`
   }

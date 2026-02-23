@@ -16,7 +16,6 @@ import SearchSelect from '@/components/SearchSelect.vue'
 import CodeEditor from '@/components/CodeEditor.vue'
 import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
 import { ALL_PACKS, type ShortcutPack } from '@/packs'
-import { JS_SNIPPETS, SNIPPET_CATEGORIES, type JsSnippet } from '@/utils/js-snippets'
 import { resolveUserscriptUrl, parseUserscript } from '@/utils/fetch-userscript'
 
 const activeTab = ref(0)
@@ -316,32 +315,6 @@ function closeGroupMenus() {
 // Pack preview modal
 const previewPack = ref<ShortcutPack | null>(null)
 const packConflictMode = ref<'skip' | 'replace' | 'keep'>('replace')
-const snippetModal = ref(false)
-const snippetTarget = ref<number | null>(null)
-const snippetFilter = ref('')
-
-const filteredSnippets = computed(() => {
-  const q = snippetFilter.value.toLowerCase().trim()
-  if (!q) return JS_SNIPPETS
-  return JS_SNIPPETS.filter((s) =>
-    s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q) || s.category.toLowerCase().includes(q)
-  )
-})
-
-function openSnippetBrowser(index: number) {
-  snippetTarget.value = index
-  snippetFilter.value = ''
-  snippetModal.value = true
-}
-
-function insertSnippet(snippet: JsSnippet) {
-  if (snippetTarget.value !== null) {
-    keys.value[snippetTarget.value].code = snippet.code
-    keys.value[snippetTarget.value].label = keys.value[snippetTarget.value].label || snippet.name
-  }
-  snippetModal.value = false
-  showSnack(`Inserted "${snippet.name}"`)
-}
 
 function getPackConflicts(pack: ShortcutPack): string[] {
   const existing = new Set(keys.value.map((k) => k.key?.toLowerCase()).filter(Boolean))
@@ -680,9 +653,6 @@ onMounted(async () => {
                   <div class="code-header">
                     <span class="code-title"><i class="mdi mdi-code-braces"></i> JavaScript</span>
                     <div class="code-actions">
-                      <button class="btn-snippets" @click="openSnippetBrowser(index)" type="button">
-                        <i class="mdi mdi-book-open-variant"></i> Snippets
-                      </button>
                       <span class="run-label">Test on:</span>
                       <div class="tab-picker" @click="refreshTabs">
                         <i class="mdi mdi-tab"></i>
@@ -698,20 +668,21 @@ onMounted(async () => {
                     </div>
                   </div>
                   <CodeEditor :modelValue="keys[index].code || ''" @update:modelValue="keys[index].code = $event" />
-                  <div class="import-userscript">
-                    <div class="import-userscript-row">
-                      <input
-                        v-model="userscriptUrl"
-                        class="import-userscript-input"
-                        placeholder="Paste a userscript URL (e.g. Greasyfork)"
-                        @keydown.enter="importUserscript(index)"
-                      />
-                      <button class="btn-fetch" @click="importUserscript(index)" type="button" :disabled="userscriptLoading">
-                        <i :class="['mdi', userscriptLoading ? 'mdi-loading mdi-spin' : 'mdi-download']"></i> Fetch
-                      </button>
-                    </div>
-                    <span v-if="userscriptMessage" class="import-userscript-msg">{{ userscriptMessage }}</span>
+                </div>
+                <div class="import-userscript">
+                  <div class="import-userscript-row">
+                    <i class="mdi mdi-link-variant import-icon"></i>
+                    <input
+                      v-model="userscriptUrl"
+                      class="import-userscript-input"
+                      placeholder="Paste a Greasyfork or userscript URL to import…"
+                      @keydown.enter="importUserscript(index)"
+                    />
+                    <button class="btn-fetch" @click="importUserscript(index)" type="button" :disabled="userscriptLoading">
+                      <i :class="['mdi', userscriptLoading ? 'mdi-loading mdi-spin' : 'mdi-download']"></i> Fetch
+                    </button>
                   </div>
+                  <span v-if="userscriptMessage" class="import-userscript-msg">{{ userscriptMessage }}</span>
                 </div>
 
                 <!-- Action-specific settings -->
@@ -961,46 +932,6 @@ onMounted(async () => {
       </div>
     </main>
 
-    <!-- Snippet Browser Modal -->
-    <Transition name="modal">
-      <div v-if="snippetModal" class="modal-overlay" @click.self="snippetModal = false">
-        <div class="modal-panel" style="max-width:640px">
-          <div class="modal-header" style="background:#f59e0b">
-            <span class="modal-icon">📜</span>
-            <div>
-              <h2 class="modal-title">JavaScript Snippets</h2>
-              <p class="modal-subtitle">Ready-to-use scripts. Click one to insert it into the editor.</p>
-            </div>
-            <button class="modal-close" @click="snippetModal = false" type="button">
-              <i class="mdi mdi-close"></i>
-            </button>
-          </div>
-          <div style="padding:12px 24px 0">
-            <input class="field-input" v-model="snippetFilter" placeholder="Search snippets…" autofocus />
-          </div>
-          <div class="modal-body" style="padding-top:12px">
-            <template v-for="cat in SNIPPET_CATEGORIES" :key="cat">
-              <div v-if="filteredSnippets.some(s => s.category === cat)" class="snippet-category">{{ cat }}</div>
-              <div
-                v-for="snippet in filteredSnippets.filter(s => s.category === cat)"
-                :key="snippet.id"
-                class="snippet-row"
-                @click="insertSnippet(snippet)"
-              >
-                <div class="snippet-info">
-                  <div class="snippet-name">{{ snippet.name }}</div>
-                  <div class="snippet-desc">{{ snippet.description }}</div>
-                </div>
-                <i class="mdi mdi-plus-circle-outline snippet-add"></i>
-              </div>
-            </template>
-            <div v-if="filteredSnippets.length === 0" style="text-align:center;padding:24px;color:var(--text-muted)">
-              No snippets match "{{ snippetFilter }}"
-            </div>
-          </div>
-        </div>
-      </div>
-    </Transition>
   </div>
 </template>
 
@@ -1763,31 +1694,9 @@ a:hover { text-decoration: underline; }
 .btn-run:hover { background: #047857; }
 .btn-run .mdi { font-size: 14px; }
 
-.btn-snippets {
-  padding: 5px 12px;
-  font-size: 12px;
-  border-radius: 6px;
-  background: #334155;
-  color: #e2e8f0;
-  border: 1px solid #475569;
-  cursor: pointer;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  transition: background 0.15s;
-  height: 30px;
-  white-space: nowrap;
-}
-
-.btn-snippets:hover { background: #475569; }
-.btn-snippets .mdi { font-size: 14px; color: #f59e0b; }
-
 /* ── Import userscript ── */
 .import-userscript {
-  padding: 6px 14px 8px;
-  background: #1e293b;
-  border-top: 1px solid #334155;
+  padding: 10px 0 0;
 }
 
 .import-userscript-row {
@@ -1796,28 +1705,35 @@ a:hover { text-decoration: underline; }
   align-items: center;
 }
 
+.import-icon {
+  color: var(--text-muted);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
 .import-userscript-input {
   flex: 1;
-  background: #334155;
-  border: 1px solid #475569;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
   border-radius: 6px;
-  color: #e2e8f0;
+  color: var(--text);
   font-size: 12px;
-  padding: 5px 10px;
+  padding: 7px 10px;
   outline: none;
 }
 
-.import-userscript-input:focus { border-color: #60a5fa; }
+.import-userscript-input:focus { border-color: var(--blue); }
+.import-userscript-input::placeholder { color: var(--text-placeholder); }
 
 .btn-fetch {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 5px 12px;
+  padding: 7px 14px;
   border-radius: 6px;
-  border: none;
-  background: #334155;
-  color: #e2e8f0;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
   font-size: 12px;
   cursor: pointer;
   white-space: nowrap;
@@ -1834,49 +1750,6 @@ a:hover { text-decoration: underline; }
   color: var(--text-muted);
 }
 
-.snippet-category {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-muted);
-  padding: 12px 0 4px;
-}
-
-.snippet-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.1s;
-}
-
-.snippet-row:hover { background: var(--bg-hover); }
-
-.snippet-info { flex: 1; min-width: 0; }
-
-.snippet-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.snippet-desc {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-
-.snippet-add {
-  font-size: 22px;
-  color: var(--text-muted);
-  flex-shrink: 0;
-  transition: color 0.15s;
-}
-
-.snippet-row:hover .snippet-add { color: var(--blue); }
 
 /* ── Alerts ── */
 .alert {
