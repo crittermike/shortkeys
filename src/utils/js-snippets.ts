@@ -18,7 +18,7 @@ export const JS_SNIPPETS: JsSnippet[] = [
   // -- Page Tools --
   {
     id: 'dark-mode',
-    name: 'Dark Mode',
+    name: 'Dark mode',
     description: 'Invert page colors for comfortable reading. Images stay normal.',
     category: 'Page Tools',
     code: `(function() {
@@ -33,7 +33,7 @@ export const JS_SNIPPETS: JsSnippet[] = [
   },
   {
     id: 'reader-mode',
-    name: 'Reader Mode',
+    name: 'Reader mode',
     description: 'Strip everything except the main content for distraction-free reading.',
     category: 'Page Tools',
     code: `(function() {
@@ -45,7 +45,7 @@ export const JS_SNIPPETS: JsSnippet[] = [
   },
   {
     id: 'hide-sticky',
-    name: 'Hide Sticky Headers & Banners',
+    name: 'Hide sticky headers & banners',
     description: 'Remove all fixed/sticky positioned elements (cookie banners, nav bars, etc.).',
     category: 'Page Tools',
     code: `document.querySelectorAll('*').forEach(el => {
@@ -55,7 +55,7 @@ export const JS_SNIPPETS: JsSnippet[] = [
   },
   {
     id: 'bigger-text',
-    name: 'Increase Text Size',
+    name: 'Increase text size',
     description: 'Make all text on the page 20% larger.',
     category: 'Page Tools',
     code: `document.querySelectorAll('*').forEach(el => {
@@ -65,7 +65,7 @@ export const JS_SNIPPETS: JsSnippet[] = [
   },
   {
     id: 'highlight-links',
-    name: 'Highlight All Links',
+    name: 'Highlight all links',
     description: 'Add a bright yellow background to every link on the page.',
     category: 'Page Tools',
     code: `document.querySelectorAll('a').forEach(a => {
@@ -77,7 +77,7 @@ export const JS_SNIPPETS: JsSnippet[] = [
   },
   {
     id: 'edit-page',
-    name: 'Make Page Editable',
+    name: 'Make page editable',
     description: 'Turn the entire page into an editable document. Click anywhere to type.',
     category: 'Page Tools',
     code: `document.designMode = document.designMode === 'on' ? 'off' : 'on';`,
@@ -85,15 +85,8 @@ export const JS_SNIPPETS: JsSnippet[] = [
 
   // -- Productivity --
   {
-    id: 'copy-markdown-link',
-    name: 'Copy as Markdown Link',
-    description: 'Copy the current page title and URL as a markdown link [title](url).',
-    category: 'Productivity',
-    code: `navigator.clipboard.writeText('[' + document.title + '](' + location.href + ')');`,
-  },
-  {
     id: 'copy-all-links',
-    name: 'Copy All Links on Page',
+    name: 'Copy all links on page',
     description: 'Extract and copy every link URL on the page to your clipboard.',
     category: 'Productivity',
     code: `const links = [...new Set([...document.querySelectorAll('a[href]')].map(a => a.href))].join('\\n');
@@ -102,7 +95,7 @@ alert(links.split('\\n').length + ' links copied!');`,
   },
   {
     id: 'word-count',
-    name: 'Word Count',
+    name: 'Word count',
     description: 'Count the words on the current page and display the result.',
     category: 'Productivity',
     code: `const text = document.body.innerText;
@@ -112,7 +105,7 @@ alert('Words: ' + words + '\\nCharacters: ' + chars);`,
   },
   {
     id: 'extract-emails',
-    name: 'Extract Email Addresses',
+    name: 'Extract email addresses',
     description: 'Find and copy all email addresses visible on the page.',
     category: 'Productivity',
     code: `const emails = [...new Set(document.body.innerText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/g) || [])];
@@ -121,7 +114,7 @@ else alert('No emails found on this page.');`,
   },
   {
     id: 'table-to-csv',
-    name: 'Export Table to CSV',
+    name: 'Export table to CSV',
     description: 'Convert the first table on the page to CSV and copy to clipboard.',
     category: 'Productivity',
     code: `const table = document.querySelector('table');
@@ -133,7 +126,7 @@ if (!table) { alert('No table found'); } else {
   },
   {
     id: 'qr-code',
-    name: 'Show QR Code for This Page',
+    name: 'Show QR code for this page',
     description: 'Generate and display a QR code for the current URL.',
     category: 'Productivity',
     code: `const url = encodeURIComponent(location.href);
@@ -147,14 +140,14 @@ document.body.appendChild(img);`,
   // -- Content --
   {
     id: 'remove-images',
-    name: 'Remove All Images',
+    name: 'Remove all images',
     description: 'Hide every image on the page for faster reading or less distraction.',
     category: 'Content',
     code: `document.querySelectorAll('img, picture, svg, video, canvas').forEach(el => el.style.display = 'none');`,
   },
   {
     id: 'show-image-sizes',
-    name: 'Show Image Sizes',
+    name: 'Show image sizes',
     description: 'Overlay the dimensions and file info on every image.',
     category: 'Content',
     code: `document.querySelectorAll('img').forEach(img => {
@@ -168,7 +161,7 @@ document.body.appendChild(img);`,
   },
   {
     id: 'extract-headings',
-    name: 'Show Page Outline',
+    name: 'Show page outline',
     description: 'Display a table of contents from all headings (h1-h6) on the page.',
     category: 'Content',
     code: `const headings = [...document.querySelectorAll('h1,h2,h3,h4,h5,h6')];
@@ -177,7 +170,7 @@ alert('Page Outline:\\n\\n' + outline);`,
   },
   {
     id: 'scroll-progress',
-    name: 'Reading Progress Bar',
+    name: 'Reading progress bar',
     description: 'Add a thin progress bar at the top showing how far you\'ve scrolled.',
     category: 'Content',
     code: `(function() {
@@ -193,7 +186,7 @@ alert('Page Outline:\\n\\n' + outline);`,
   // -- Developer --
   {
     id: 'show-grid',
-    name: 'Show Layout Grid',
+    name: 'Show layout grid',
     description: 'Outline every element on the page to visualize the layout structure.',
     category: 'Developer',
     code: `document.querySelectorAll('*').forEach(el => {
@@ -203,7 +196,7 @@ alert('Page Outline:\\n\\n' + outline);`,
   },
   {
     id: 'clear-storage',
-    name: 'Clear Site Storage',
+    name: 'Clear site storage',
     description: 'Clear localStorage, sessionStorage, and cookies for this site.',
     category: 'Developer',
     code: `localStorage.clear();
@@ -215,7 +208,7 @@ alert('Storage and cookies cleared for ' + location.hostname);`,
   },
   {
     id: 'perf-metrics',
-    name: 'Show Performance Metrics',
+    name: 'Show performance metrics',
     description: 'Display page load time, DOM size, and resource count.',
     category: 'Developer',
     code: `const perf = performance.getEntriesByType('navigation')[0];
@@ -225,7 +218,7 @@ alert('Page Load: ' + Math.round(perf.loadEventEnd - perf.startTime) + 'ms\\nDOM
   },
   {
     id: 'log-events',
-    name: 'Log All Events',
+    name: 'Log all events',
     description: 'Log every DOM event to the console for debugging.',
     category: 'Developer',
     code: `const events = ['click','input','change','submit','keydown','keyup','focus','blur','scroll','mouseover'];
@@ -234,7 +227,7 @@ console.log('Logging events:', events.join(', '));`,
   },
   {
     id: 'json-viewer',
-    name: 'Pretty Print JSON',
+    name: 'Pretty print JSON',
     description: 'If the page contains JSON, format and display it nicely.',
     category: 'Developer',
     code: `try {
@@ -255,14 +248,14 @@ else alert('No video found on this page.');`,
   },
   {
     id: 'video-speed',
-    name: 'Set Video Speed (2x)',
+    name: 'Set video speed (2x)',
     description: 'Set all videos on the page to 2x playback speed.',
     category: 'Media',
     code: `document.querySelectorAll('video').forEach(v => v.playbackRate = 2);`,
   },
   {
     id: 'download-images',
-    name: 'List All Image URLs',
+    name: 'List all image URLs',
     description: 'Copy URLs of all images on the page to clipboard.',
     category: 'Media',
     code: `const urls = [...new Set([...document.querySelectorAll('img[src]')].map(i => i.src))].join('\\n');
@@ -271,7 +264,7 @@ alert(urls.split('\\n').length + ' image URLs copied!');`,
   },
   {
     id: 'audio-visualizer',
-    name: 'Show Audio Volume',
+    name: 'Show audio volume',
     description: 'Display the current volume level of all media elements.',
     category: 'Media',
     code: `document.querySelectorAll('video,audio').forEach((m,i) => {

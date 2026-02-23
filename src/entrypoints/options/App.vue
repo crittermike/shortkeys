@@ -669,7 +669,7 @@ onMounted(async () => {
                   </div>
                   <CodeEditor :modelValue="keys[index].code || ''" @update:modelValue="keys[index].code = $event" />
                 </div>
-                <div class="import-userscript">
+                <div v-if="keys[index].action === 'javascript'" class="import-userscript">
                   <div class="import-userscript-row">
                     <i class="mdi mdi-link-variant import-icon"></i>
                     <input
@@ -1342,7 +1342,7 @@ a:hover { text-decoration: underline; }
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 8px 12px 0 8px;
+  padding: 10px 16px 0 8px;
 }
 
 .drag-handle {
