@@ -1,3 +1,5 @@
+import { JS_SNIPPETS } from './js-snippets'
+
 export interface ActionDefinition {
   value: string
   label: string
@@ -123,6 +125,7 @@ export const ACTION_CATEGORIES: Record<string, ActionDefinition[]> = {
     { value: 'showcheatsheet', label: 'Show shortcut cheat sheet overlay' },
     { value: 'toggledarkmode', label: 'Toggle dark mode on current page' },
   ],
+  'Page Scripts': JS_SNIPPETS.map((s) => ({ value: 'script-' + s.id, label: s.name })),
 }
 
 /** Get a flat list of all valid action values. */

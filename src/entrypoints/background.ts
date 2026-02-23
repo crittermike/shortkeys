@@ -114,6 +114,14 @@ export default defineBackground(() => {
   browser.runtime.onMessage.addListener((request: any, _sender, sendResponse) => {
     const action = request.action
 
+    if (action === 'fetchUrl') {
+      fetch(request.url)
+        .then(r => r.text())
+        .then(text => sendResponse({ text }))
+        .catch(e => sendResponse({ error: e.message }))
+      return true
+    }
+
     if (action === 'getKeys') {
       ;(async () => {
         const currentUrl = request.url

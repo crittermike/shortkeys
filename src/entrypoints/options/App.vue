@@ -17,6 +17,7 @@ import CodeEditor from '@/components/CodeEditor.vue'
 import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
 import { ALL_PACKS, type ShortcutPack } from '@/packs'
 import { JS_SNIPPETS, SNIPPET_CATEGORIES, type JsSnippet } from '@/utils/js-snippets'
+import { resolveUserscriptUrl, parseUserscript } from '@/utils/fetch-userscript'
 
 const activeTab = ref(0)
 const keys = ref<KeySetting[]>([])
@@ -29,6 +30,9 @@ const snackType = ref<'success' | 'danger'>('success')
 const searchQuery = ref('')
 const dragIndex = ref<number | null>(null)
 const darkMode = ref(false)
+const userscriptUrl = ref('')
+const userscriptLoading = ref(false)
+const userscriptMessage = ref('')
 
 function initTheme() {
   const saved = localStorage.getItem('shortkeys-theme')
@@ -423,6 +427,29 @@ async function testJavascript(row: KeySetting) {
   }
 }
 
+async function importUserscript(index: number) {
+  const url = userscriptUrl.value.trim()
+  if (!url) return
+  userscriptLoading.value = true
+  userscriptMessage.value = ''
+  try {
+    const codeUrl = resolveUserscriptUrl(url)
+    const resp: any = await browser.runtime.sendMessage({ action: 'fetchUrl', url: codeUrl })
+    if (resp?.error) {
+      userscriptMessage.value = '❌ ' + resp.error
+      return
+    }
+    const { code, name } = parseUserscript(resp.text)
+    keys.value[index].code = code
+    userscriptMessage.value = '✓ Imported: ' + name
+    userscriptUrl.value = ''
+  } catch (e: any) {
+    userscriptMessage.value = '❌ ' + (e.message || 'Failed to fetch')
+  } finally {
+    userscriptLoading.value = false
+  }
+}
+
 onMounted(async () => {
   const saved = await loadKeys()
   if (saved) {
@@ -671,6 +698,20 @@ onMounted(async () => {
                     </div>
                   </div>
                   <CodeEditor :modelValue="keys[index].code || ''" @update:modelValue="keys[index].code = $event" />
+                  <div class="import-userscript">
+                    <div class="import-userscript-row">
+                      <input
+                        v-model="userscriptUrl"
+                        class="import-userscript-input"
+                        placeholder="Paste a userscript URL (e.g. Greasyfork)"
+                        @keydown.enter="importUserscript(index)"
+                      />
+                      <button class="btn-fetch" @click="importUserscript(index)" type="button" :disabled="userscriptLoading">
+                        <i :class="['mdi', userscriptLoading ? 'mdi-loading mdi-spin' : 'mdi-download']"></i> Fetch
+                      </button>
+                    </div>
+                    <span v-if="userscriptMessage" class="import-userscript-msg">{{ userscriptMessage }}</span>
+                  </div>
                 </div>
 
                 <!-- Action-specific settings -->
@@ -1741,6 +1782,57 @@ a:hover { text-decoration: underline; }
 
 .btn-snippets:hover { background: #475569; }
 .btn-snippets .mdi { font-size: 14px; color: #f59e0b; }
+
+/* ── Import userscript ── */
+.import-userscript {
+  padding: 6px 14px 8px;
+  background: #1e293b;
+  border-top: 1px solid #334155;
+}
+
+.import-userscript-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.import-userscript-input {
+  flex: 1;
+  background: #334155;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  color: #e2e8f0;
+  font-size: 12px;
+  padding: 5px 10px;
+  outline: none;
+}
+
+.import-userscript-input:focus { border-color: #60a5fa; }
+
+.btn-fetch {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: none;
+  background: #334155;
+  color: #e2e8f0;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-fetch:hover { background: #475569; }
+.btn-fetch:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-fetch .mdi { font-size: 14px; }
+
+.import-userscript-msg {
+  display: block;
+  font-size: 11px;
+  margin-top: 4px;
+  color: var(--text-muted);
+}
 
 .snippet-category {
   font-size: 11px;

@@ -1,4 +1,5 @@
 import { executeScript, showPageToast } from '../utils/execute-script'
+import { JS_SNIPPETS } from '../utils/js-snippets'
 import type { KeySetting } from '../utils/url-matching'
 
 type ActionHandler = (request: KeySetting) => Promise<boolean> | boolean
@@ -711,6 +712,15 @@ const actionHandlers: Record<string, ActionHandler> = {
     }
     return true
   },
+}
+
+// Register snippet-based actions
+for (const snippet of JS_SNIPPETS) {
+  const code = snippet.code
+  actionHandlers['script-' + snippet.id] = async () => {
+    await executeScript((c: string) => new Function(c)(), [code])
+    return true
+  }
 }
 
 /**
