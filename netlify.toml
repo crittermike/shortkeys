@@ -1,6 +1,27 @@
 [build]
-  command = "npm run build chrome"
-  publish = "."
+  command = "npm run build:site"
+  publish = "site"
 
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "20"
+
+[[redirects]]
+  from = "/share"
+  to = "/share.html"
+  status = 200
+
+[[redirects]]
+  from = "/share/*"
+  to = "/share.html"
+  status = 200
+
+[[redirects]]
+  from = "/welcome"
+  to = "/welcome.html"
+  status = 200
+
+[[headers]]
+  for = "/catalog.json"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Cache-Control = "public, max-age=3600"

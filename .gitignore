@@ -10,3 +10,7 @@ packages
 .DS_Store
 coverage
 tests/setup.js
+.wxt
+.output
+site/catalog.json
+site/images/

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to Shortkeys v5</title>
+  <meta name="description" content="Shortkeys v5 — the biggest update ever. 90+ actions, command palette, shortcut packs, cloud sync, groups, dark mode, Firefox support, and much more." />
+  <meta property="og:title" content="Welcome to Shortkeys v5" />
+  <meta property="og:description" content="The biggest update ever. 90+ actions, command palette, shortcut packs, cloud sync, and more." />
+  <link rel="icon" type="image/png" href="/images/icon_16.png" />
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7/css/materialdesignicons.min.css" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a2e; background: #fff; line-height: 1.6; }
+    a { color: #4361ee; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .header { background: #fff; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 10; }
+    .header-inner { max-width: 1100px; margin: 0 auto; padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 800; color: #1a1a2e; }
+    .brand img { width: 32px; height: 32px; }
+    .header-nav { display: flex; gap: 24px; align-items: center; }
+    .header-nav a { color: #64748b; font-size: 14px; font-weight: 500; }
+    .header-nav a:hover { color: #4361ee; text-decoration: none; }
+
+    /* Hero — clean, not templatey */
+    .hero { text-align: center; padding: 80px 24px 60px; background: #fff; }
+    .hero-version { display: inline-block; background: #eef2ff; color: #4361ee; font-size: 13px; font-weight: 700; padding: 5px 14px; border-radius: 100px; margin-bottom: 20px; letter-spacing: 0.5px; }
+    .hero h1 { font-size: 52px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 16px; }
+    .hero h1 span { color: #4361ee; }
+    .hero p { font-size: 19px; color: #64748b; max-width: 640px; margin: 0 auto 36px; }
+    .hero-cta { display: inline-flex; align-items: center; gap: 10px; padding: 14px 32px; background: #4361ee; color: #fff; border-radius: 10px; font-size: 16px; font-weight: 700; transition: background 0.15s; }
+    .hero-cta:hover { background: #3730a3; text-decoration: none; }
+
+    /* Stats */
+    .stats { display: flex; justify-content: center; gap: 48px; padding: 32px 24px; border-bottom: 1px solid #e2e8f0; }
+    .stat { text-align: center; }
+    .stat-num { font-size: 32px; font-weight: 800; color: #1a1a2e; }
+    .stat-label { font-size: 13px; color: #94a3b8; font-weight: 500; }
+
+    /* Section */
+    .section { max-width: 1100px; margin: 0 auto; padding: 64px 24px; }
+    .section-title { font-size: 28px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+    .section-sub { font-size: 15px; color: #64748b; margin-bottom: 32px; max-width: 550px; }
+
+    /* Feature list — two columns of compact cards */
+    .features { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .feat { display: flex; gap: 14px; padding: 16px 18px; border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; transition: box-shadow 0.2s; }
+    .feat:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+    .feat-icon { font-size: 24px; flex-shrink: 0; width: 36px; text-align: center; }
+    .feat-text h3 { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+    .feat-text p { font-size: 13px; color: #64748b; line-height: 1.5; }
+
+    /* Highlight row — full width */
+    .highlight-row { grid-column: 1 / -1; background: #1e293b; color: #e2e8f0; border: none; padding: 24px; border-radius: 12px; text-align: center; }
+    .highlight-row h3 { color: #fff; font-size: 16px; }
+    .highlight-row p { color: #94a3b8; max-width: 500px; margin: 0 auto; }
+
+    /* Migration */
+    .migration { background: #f0fdf4; border-top: 1px solid #bbf7d0; border-bottom: 1px solid #bbf7d0; padding: 48px 24px; text-align: center; }
+    .migration h2 { font-size: 24px; font-weight: 800; margin-bottom: 8px; color: #166534; }
+    .migration p { color: #15803d; font-size: 15px; max-width: 500px; margin: 0 auto; }
+
+    /* CTA */
+    .cta { text-align: center; padding: 64px 24px 80px; }
+    .cta h2 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+    .cta p { color: #64748b; margin-bottom: 28px; }
+    .cta-hint { margin-top: 14px; font-size: 13px; color: #94a3b8; }
+    .cta-hint code { background: #e2e8f0; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 12px; }
+
+    .footer { text-align: center; padding: 32px 24px; color: #94a3b8; font-size: 13px; border-top: 1px solid #e2e8f0; }
+    .footer a { color: #94a3b8; }
+    .footer a:hover { color: #4361ee; }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 36px; }
+      .features { grid-template-columns: 1fr; }
+      .stats { flex-direction: column; gap: 16px; }
+      .header-nav { display: none; }
+      .highlight-row { grid-column: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <a href="/" class="brand"><img src="/images/icon_48.png" alt="" /> Shortkeys</a>
+      <nav class="header-nav">
+        <a href="/">Home</a>
+        <a href="https://github.com/crittermike/shortkeys" target="_blank">GitHub</a>
+        <a href="https://github.com/crittermike/shortkeys/wiki" target="_blank">Docs</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-version">VERSION 5.0</div>
+    <h1>The <span>biggest update</span> ever.</h1>
+    <p>Shortkeys v5 is a complete rewrite — faster, more powerful, and packed with features you've been asking for.</p>
+    <a href="chrome-extension://logpjaacgmcbpdkdchjiaagddngobkck/options.html" class="hero-cta">
+      <i class="mdi mdi-cog"></i> Open Shortkeys Settings
+    </a>
+  </section>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-num">90+</div><div class="stat-label">Built-in actions</div></div>
+  </div>
+
+  <section class="section">
+    <h2 class="section-title">Everything that's new</h2>
+    <p class="section-sub">Here's what we've been working on. Every feature was the result of user feedback.</p>
+
+    <div class="features">
+      <div class="feat">
+        <div class="feat-icon">🎯</div>
+        <div class="feat-text"><h3>Command palette</h3><p>Click the extension icon for an instant searchable list of all your shortcuts. Navigate with arrows, trigger with Enter.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📦</div>
+        <div class="feat-text"><h3>Shortcut packs</h3><p>One-click install curated collections — Vim, Emacs, YouTube, Tab Manager, and more. Customize or remove anytime.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">☁️</div>
+        <div class="feat-text"><h3>Cloud sync</h3><p>Shortcuts automatically sync across all your Chrome instances via your Google account. No extra account needed.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📂</div>
+        <div class="feat-text"><h3>Shortcut groups</h3><p>Organize into collapsible groups. Enable/disable, rename, or delete entire groups at once. Packs import as groups.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">⏺️</div>
+        <div class="feat-text"><h3>Shortcut recorder</h3><p>Click Record and press your keys. Supports multi-key sequences like Vim's <kbd style="background:#e2e8f0;padding:1px 5px;border-radius:3px;font-family:monospace;font-size:11px">g g</kbd>. No more guessing key names.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">⚠️</div>
+        <div class="feat-text"><h3>Conflict detection</h3><p>Warns when your shortcuts conflict with browser defaults or duplicates. Platform-aware — knows Mac vs Windows shortcuts.</p></div>
+      </div>
+
+      <div class="highlight-row">
+        <div class="feat-icon" style="font-size:28px">🚀</div>
+        <h3>40+ new actions</h3>
+        <p>Reader mode, dark mode, QR codes, picture-in-picture, video speed controls, tab sorting, search YouTube/Wikipedia/GitHub, and much more.</p>
+      </div>
+
+      <div class="feat">
+        <div class="feat-icon">��</div>
+        <div class="feat-text"><h3>Dark mode</h3><p>The settings page follows your system preference with a manual toggle. Plus a one-key dark mode action for any website.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🔗</div>
+        <div class="feat-text"><h3>Share via link</h3><p>Generate a shareable URL for any shortcut or group. Anyone with Shortkeys can import it with one click.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🔄</div>
+        <div class="feat-text"><h3>Live reload</h3><p>Save your shortcuts and they take effect immediately in all open tabs. No more refreshing every page.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🔥</div>
+        <div class="feat-text"><h3>Firefox support</h3><p>Shortkeys now works on Firefox. Same features, same shortcuts, same sync — across browsers.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🎬</div>
+        <div class="feat-text"><h3>Video controls</h3><p>Play/pause, speed up/down, skip forward/back, mute, fullscreen — control any video on any site with keyboard shortcuts.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📖</div>
+        <div class="feat-text"><h3>Reader mode</h3><p>Strip ads and clutter from any page with one keypress. Just the content, beautifully formatted.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📋</div>
+        <div class="feat-text"><h3>Smart copy</h3><p>Copy page title, URL, or both as a markdown link. Copy all links on a page. Extract email addresses. Export tables as CSV.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🔍</div>
+        <div class="feat-text"><h3>Search & filter</h3><p>Find any shortcut instantly by typing in the filter bar. Search by label, key, or action name.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">⏸️</div>
+        <div class="feat-text"><h3>Enable/disable toggle</h3><p>Temporarily disable any shortcut or entire group without deleting it. One click to toggle.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">↕️</div>
+        <div class="feat-text"><h3>Drag to reorder</h3><p>Drag shortcuts to reorder within or between groups. Your order is saved.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📊</div>
+        <div class="feat-text"><h3>Stats bar</h3><p>See your total shortcuts, disabled count, and conflict count at a glance.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">⌨️</div>
+        <div class="feat-text"><h3>Cheat sheet overlay</h3><p>Press a key to see all your active shortcuts overlaid on the current page. Press Escape to dismiss.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📝</div>
+        <div class="feat-text"><h3>Insert text action</h3><p>Type configured text into the focused field with a shortcut. Great for email templates, code snippets, signatures.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🔖</div>
+        <div class="feat-text"><h3>Toggle bookmark</h3><p>Add or remove the current page from your bookmarks with a single keypress.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🗂️</div>
+        <div class="feat-text"><h3>Tab superpowers</h3><p>Close duplicates, sort alphabetically, suspend inactive tabs, group/ungroup, jump to audible tab, new tab to the right.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🔐</div>
+        <div class="feat-text"><h3>Open in incognito</h3><p>Open the current page in a private window with one key. Quick, no clicking through menus.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📸</div>
+        <div class="feat-text"><h3>QR code generator</h3><p>Generate a QR code for the current page URL, displayed as a floating overlay you can scan from your phone.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🔧</div>
+        <div class="feat-text"><h3>Greasyfork import</h3><p>Paste a Greasyfork or OpenUserJS URL and bind any userscript to a keyboard shortcut. No other extensions needed.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🏗️</div>
+        <div class="feat-text"><h3>Developer tools</h3><p>Show layout grid, clear site storage, performance metrics, pretty-print JSON, log all events — built right in.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">✅</div>
+        <div class="feat-text"><h3>Action feedback toasts</h3><p>Subtle confirmations when copying, sorting, or toggling — so you always know your shortcut worked.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="migration">
+    <h2>✅ Your shortcuts are safe</h2>
+    <p>All your existing shortcuts were automatically migrated. Everything works just like before — plus everything above.</p>
+  </section>
+
+  <section class="cta">
+    <h2>Ready to explore?</h2>
+    <p>Open settings to browse packs, try the new features, and customize your shortcuts.</p>
+    <a href="chrome-extension://logpjaacgmcbpdkdchjiaagddngobkck/options.html" class="hero-cta">
+      <i class="mdi mdi-cog"></i> Open Shortkeys Settings
+    </a>
+    <p class="cta-hint">Or right-click the Shortkeys icon → <code>Options</code></p>
+  </section>
+
+  <footer class="footer">
+    <p>Shortkeys is free and <a href="https://github.com/crittermike/shortkeys" target="_blank">open source</a>. Made by <a href="https://github.com/crittermike" target="_blank">Mike Crittenden</a>.</p>
+  </footer>
+</body>
+</html>
