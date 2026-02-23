@@ -528,7 +528,7 @@ onMounted(async () => {
 
         <!-- Grouped shortcut rows -->
         <div class="shortcut-groups">
-          <div v-for="group in groupNames" :key="group" class="shortcut-group" v-show="groupedIndices.has(group)">
+          <div v-for="group in groupNames" :key="group" class="shortcut-group" v-if="groupedIndices.has(group)">
             <!-- Group header -->
             <div class="group-header" @dragover="onDragOverGroup($event, group)">
               <button class="group-collapse" @click="toggleGroupCollapse(group)" type="button">
@@ -1182,7 +1182,7 @@ a:hover { text-decoration: underline; }
 .shortcut-groups {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .shortcut-group {
@@ -1195,6 +1195,8 @@ a:hover { text-decoration: underline; }
   overflow: hidden;
   box-shadow: 0 1px 3px var(--shadow);
 }
+
+.shortcut-group[style*="display: none"] + .shortcut-group { margin-top: 0; }
 
 .group-header {
   display: flex;
@@ -1447,9 +1449,8 @@ a:hover { text-decoration: underline; }
 /* ── Details panel ── */
 .shortcut-details {
   border-top: 1px solid var(--border-light);
-  padding: 20px;
+  padding: 16px 20px;
   background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-card) 100%);
-  border-radius: 0 0 10px 10px;
 }
 
 /* ── Conflict warnings ── */
@@ -1488,8 +1489,9 @@ a:hover { text-decoration: underline; }
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 16px;
 }
+
+.details-section:empty { display: none; }
 
 .detail-row {
   display: flex;
