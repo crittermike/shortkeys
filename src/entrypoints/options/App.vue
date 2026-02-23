@@ -1333,19 +1333,20 @@ a:hover { text-decoration: underline; }
   display: flex;
   flex-direction: column;
   gap: 0;
+  padding: 8px;
 }
 
 .shortcut-card {
-  background: var(--bg-card);
-  border-radius: 0;
+  background: var(--bg-elevated);
+  border-radius: 8px;
   box-shadow: none;
-  border-bottom: 1px solid var(--border);
-  transition: box-shadow 0.15s;
-  padding-bottom: 4px;
+  border: none;
+  transition: background 0.15s;
+  margin-bottom: 6px;
 }
 
-.shortcut-card:hover { background: var(--bg-elevated); }
-.shortcut-card:last-child { border-bottom: none; padding-bottom: 0; }
+.shortcut-card:last-child { margin-bottom: 0; }
+.shortcut-card:hover { background: var(--bg-hover); }
 .shortcut-card.disabled { opacity: 0.5; }
 .shortcut-card.dragging { opacity: 0.4; box-shadow: 0 4px 16px rgba(67,97,238,0.2); }
 
