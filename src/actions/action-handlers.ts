@@ -39,6 +39,12 @@ async function selectTab(direction: string): Promise<void> {
   }
 }
 
+/** Check if a URL is safe to navigate to (block data: and vbscript: schemes). */
+function isSafeUrl(url: string): boolean {
+  const lower = url.toLowerCase().trim()
+  return !lower.startsWith('data:') && !lower.startsWith('vbscript:')
+}
+
 function copyToClipboard(text: string): void {
   executeScript(
     (text: string) => {
@@ -556,7 +562,7 @@ const actionHandlers: Record<string, ActionHandler> = {
             document.dispatchEvent(new CustomEvent('shortkeys_js_run', { detail: code })),
           [code],
         )
-      } else {
+      } else if (isSafeUrl(openNode.url)) {
         await browser.tabs.update(undefined as any, { url: openNode.url })
       }
     }
@@ -566,7 +572,7 @@ const actionHandlers: Record<string, ActionHandler> = {
   openbookmarknewtab: async (request) => {
     const nodes = await browser.bookmarks.search({ title: request.bookmark! })
     const openNode = nodes.reverse().find((n) => n.url && n.title === request.bookmark)
-    if (openNode?.url) {
+    if (openNode?.url && isSafeUrl(openNode.url)) {
       await browser.tabs.create({ url: openNode.url })
     }
     return true
@@ -575,7 +581,7 @@ const actionHandlers: Record<string, ActionHandler> = {
   openbookmarkbackgroundtab: async (request) => {
     const nodes = await browser.bookmarks.search({ title: request.bookmark! })
     const openNode = nodes.reverse().find((n) => n.url && n.title === request.bookmark)
-    if (openNode?.url) {
+    if (openNode?.url && isSafeUrl(openNode.url)) {
       await browser.tabs.create({ url: openNode.url, active: false })
     }
     return true
@@ -584,7 +590,7 @@ const actionHandlers: Record<string, ActionHandler> = {
   openbookmarkbackgroundtabandclose: async (request) => {
     const nodes = await browser.bookmarks.search({ title: request.bookmark! })
     const openNode = nodes.reverse().find((n) => n.url && n.title === request.bookmark)
-    if (openNode?.url) {
+    if (openNode?.url && isSafeUrl(openNode.url)) {
       const createdTab = await browser.tabs.create({ url: openNode.url, active: false })
       const closeListener = (tabId: number, changeInfo: browser.Tabs.OnUpdatedChangeInfoType) => {
         if (tabId === createdTab.id && changeInfo.status === 'complete') {
