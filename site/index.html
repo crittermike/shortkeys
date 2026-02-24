@@ -321,6 +321,19 @@
     .footer a { color: var(--gray); }
     .footer a:hover { color: var(--blue); }
 
+    .footer-support {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    .footer-support span { font-weight: 600; color: var(--dark); }
+    .footer-support a { color: var(--blue); font-weight: 500; }
+
     /* Modal */
     .modal-overlay {
       display: none;
@@ -721,6 +734,12 @@
 
   <!-- Footer -->
   <footer class="footer">
+    <div class="footer-support">
+      <span>Love Shortkeys?</span>
+      <a href="https://github.com/sponsors/crittermike" target="_blank">💛 Sponsor</a>
+      <a href="https://buymeacoffee.com/crittermike" target="_blank">☕ Buy me a coffee</a>
+      <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck/reviews" target="_blank">⭐ Leave a review</a>
+    </div>
     <p>
       Shortkeys is free and <a href="https://github.com/crittermike/shortkeys" target="_blank">open source</a>.
       Made by <a href="https://github.com/crittermike" target="_blank">Mike Crittenden</a>.

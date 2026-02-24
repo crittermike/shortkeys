@@ -52,7 +52,8 @@
     .feat-text p { font-size: 13px; color: #64748b; line-height: 1.5; }
 
     /* Highlight row — full width */
-    .highlight-row { grid-column: 1 / -1; background: #1e293b; color: #e2e8f0; border: none; padding: 24px; border-radius: 12px; text-align: center; }
+    .highlight-row { grid-column: 1 / -1; background: #1e293b; color: #e2e8f0; border: none; padding: 24px; border-radius: 12px; text-align: center; display: block; }
+    .highlight-row .feat-icon { text-align: center; margin-bottom: 8px; }
     .highlight-row h3 { color: #fff; font-size: 16px; }
     .highlight-row p { color: #94a3b8; max-width: 500px; margin: 0 auto; }
 
@@ -67,6 +68,18 @@
     .cta p { color: #64748b; margin-bottom: 28px; }
     .cta-hint { margin-top: 14px; font-size: 13px; color: #94a3b8; }
     .cta-hint code { background: #e2e8f0; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 12px; }
+
+    .actions-section { max-width: 800px; margin: 0 auto; padding: 48px 24px; }
+    .actions-section h2 { font-size: 28px; font-weight: 800; text-align: center; margin-bottom: 8px; }
+    .actions-section .section-sub { text-align: center; color: #64748b; margin-bottom: 24px; }
+    .action-cat { background: #f1f5f9; padding: 12px 16px; font-size: 14px; font-weight: 700; color: #1a1a2e; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; user-select: none; }
+    .action-cat:first-child { border-radius: 8px 8px 0 0; }
+    .action-cat:hover { background: #e2e8f0; }
+    .action-cat .chevron { transition: transform 0.2s; font-size: 18px; color: #94a3b8; }
+    .action-cat.open .chevron { transform: rotate(90deg); }
+    .action-items { display: none; }
+    .action-items.open { display: block; }
+    .action-item { padding: 8px 16px 8px 24px; font-size: 13px; color: #475569; border-bottom: 1px solid #f1f5f9; }
 
     .footer { text-align: center; padding: 32px 24px; color: #94a3b8; font-size: 13px; border-top: 1px solid #e2e8f0; }
     .footer a { color: #94a3b8; }
@@ -137,13 +150,12 @@
       </div>
 
       <div class="highlight-row">
-        <div class="feat-icon" style="font-size:28px">🚀</div>
         <h3>40+ new actions</h3>
         <p>Reader mode, dark mode, QR codes, picture-in-picture, video speed controls, tab sorting, search YouTube/Wikipedia/GitHub, and much more.</p>
       </div>
 
       <div class="feat">
-        <div class="feat-icon">��</div>
+        <div class="feat-icon">🌙</div>
         <div class="feat-text"><h3>Dark mode</h3><p>The settings page follows your system preference with a manual toggle. Plus a one-key dark mode action for any website.</p></div>
       </div>
       <div class="feat">
@@ -225,6 +237,37 @@
     </div>
   </section>
 
+  <section class="actions-section">
+    <h2>90+ built-in actions</h2>
+    <div id="actions-accordion"></div>
+  </section>
+
+  <script>
+  const actionData = {
+    'Scrolling (12)': ['Scroll to top','Scroll to bottom','Scroll down','Scroll down more','Page down','Scroll up','Scroll up more','Page up','Scroll right','Scroll right more','Scroll left','Scroll left more'],
+    'Navigation (18)': ['Go back','Go forward','Reload page','Hard reload','Copy URL','Copy page title','Copy title and URL','Copy as markdown link','Open URL from clipboard','Open clipboard URL in new tab','Navigate to specific URL','Open settings','Open extensions','Open keyboard shortcuts','Search Google','Search YouTube','Search Wikipedia','Search GitHub'],
+    'Tabs (29)': ['New tab','New tab to right','Close tab','Close other tabs','Close left tabs','Close right tabs','Close duplicates','Duplicate tab','Move to new window','Reopen closed tab','Next tab','Previous tab','First tab','Last tab','Last used tab','Jump to audible tab','Jump by URL','Jump by title','Jump by index','Pin/unpin','Mute/unmute','Move left','Move right','Move to first','Move to last','Sort alphabetically','Suspend tab','Add to group','Remove from group'],
+    'Windows (4)': ['New window','New private window','Close window','Toggle fullscreen'],
+    'Zoom (3)': ['Zoom in','Zoom out','Reset zoom'],
+    'Bookmarks (5)': ['Open bookmark','Open in new tab','Open in background tab','Open in bg tab and close','Toggle bookmark'],
+    'Video Controls (8)': ['Play/pause','Mute/unmute','Toggle fullscreen','Speed up','Slow down','Reset speed','Skip forward 10s','Skip back 10s'],
+    'Page Scripts (24)': ['Dark mode','Reader mode','Hide sticky banners','Bigger text','Highlight links','Make page editable','Copy all links','Word count','Extract emails','Table to CSV','QR code','Remove images','Show image sizes','Page outline','Reading progress bar','Layout grid','Clear storage','Performance metrics','Log events','Pretty-print JSON','Picture-in-picture','Video speed 2x','List image URLs','Show audio volume'],
+    'Utilities (12)': ['Run JavaScript','Show latest download','Clear downloads','View source','Disable shortcut','Trigger another shortcut','Insert text','Print page','Open app','Open in incognito','Capture screenshot','Cheat sheet overlay'],
+  };
+  const container = document.getElementById('actions-accordion');
+  for (const [cat, items] of Object.entries(actionData)) {
+    const header = document.createElement('div');
+    header.className = 'action-cat';
+    header.innerHTML = cat + '<span class="chevron">›</span>';
+    const list = document.createElement('div');
+    list.className = 'action-items';
+    list.innerHTML = items.map(i => '<div class="action-item">' + i + '</div>').join('');
+    header.onclick = () => { header.classList.toggle('open'); list.classList.toggle('open'); };
+    container.appendChild(header);
+    container.appendChild(list);
+  }
+  </script>
+
   <section class="migration">
     <h2>✅ Your shortcuts are safe</h2>
     <p>All your existing shortcuts were automatically migrated. Everything works just like before — plus everything above.</p>
@@ -240,6 +283,12 @@
   </section>
 
   <footer class="footer">
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;font-size:14px">
+      <span style="font-weight:600">Love Shortkeys?</span>
+      <a href="https://github.com/sponsors/crittermike" target="_blank">💛 Sponsor</a>
+      <a href="https://buymeacoffee.com/crittermike" target="_blank">☕ Buy me a coffee</a>
+      <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck/reviews" target="_blank">⭐ Leave a review</a>
+    </div>
     <p>Shortkeys is free and <a href="https://github.com/crittermike/shortkeys" target="_blank">open source</a>. Made by <a href="https://github.com/crittermike" target="_blank">Mike Crittenden</a>.</p>
   </footer>
 </body>
