@@ -31,10 +31,12 @@ const { getConflicts } = useConflicts()
 const { searchQuery, filteredIndices, stats } = useSearch()
 const {
   collapsedGroups, editingGroupName, newGroupName, groupMenuOpen,
-  groupNames, groupedIndices,
+  groupNames, groupedIndices, groupSettings, expandedGroupSiteFilter,
   toggleGroupCollapse, toggleGroupEnabled, isGroupAllEnabled,
   deleteGroup, startRenameGroup, finishRenameGroup,
   addShortcutToGroup, createNewGroup, toggleGroupMenu, closeGroupMenus,
+  toggleGroupSiteFilter, hasGroupSiteRules,
+  loadGroupSettingsFromStorage, persistGroupSettings,
 } = useGroups()
 const { convertToMacro } = useMacros()
 const { dragIndex, onDragStart, onDragOver, onDragOverGroup, onDragEnd } = useDragDrop()
@@ -48,6 +50,7 @@ const activeTab = ref(0)
 
 onMounted(async () => {
   await loadSavedKeys()
+  await loadGroupSettingsFromStorage()
   refreshTabs()
   document.addEventListener('click', () => { groupMenuOpen.value = null })
   loadBookmarks()
@@ -158,6 +161,7 @@ onMounted(async () => {
                 <span class="group-name" @dblclick="startRenameGroup(group)">{{ group }}</span>
               </template>
               <span class="group-count">{{ groupedIndices.get(group)?.length || 0 }}</span>
+              <i v-if="hasGroupSiteRules(group)" class="mdi mdi-earth group-site-indicator" title="Site rules active"></i>
               <div class="group-actions">
                 <div class="group-menu-wrap">
                   <button class="btn-icon btn-icon-sm" @click.stop="toggleGroupMenu(group)" title="Group options" type="button">
@@ -171,6 +175,9 @@ onMounted(async () => {
                       <i :class="isGroupAllEnabled(group) ? 'mdi mdi-pause-circle-outline' : 'mdi mdi-play-circle-outline'"></i>
                       {{ isGroupAllEnabled(group) ? 'Disable all' : 'Enable all' }}
                     </button>
+                    <button class="group-menu-item" @click="toggleGroupSiteFilter(group)">
+                      <i class="mdi mdi-earth"></i> Site rules
+                    </button>
                     <button class="group-menu-item" @click="shareGroup(group)">
                       <i class="mdi mdi-share-variant-outline"></i> Share group
                     </button>
@@ -181,6 +188,37 @@ onMounted(async () => {
                 </div>
               </div>
             </div>
+
+            <!-- Group site rules panel -->
+            <Transition name="expand">
+              <div v-if="expandedGroupSiteFilter === group" class="group-site-panel">
+                <div class="group-site-fields">
+                  <div class="group-site-field">
+                    <label class="group-site-label"><i class="mdi mdi-earth-plus"></i> Only activate on</label>
+                    <textarea
+                      class="field-textarea mono group-site-textarea"
+                      v-model="groupSettings[group].activateOn"
+                      @blur="persistGroupSettings()"
+                      rows="2"
+                      placeholder="URL patterns (one per line)&#10;*example.com*"
+                    ></textarea>
+                  </div>
+                  <div class="group-site-field">
+                    <label class="group-site-label"><i class="mdi mdi-earth-minus"></i> Deactivate on</label>
+                    <textarea
+                      class="field-textarea mono group-site-textarea"
+                      v-model="groupSettings[group].deactivateOn"
+                      @blur="persistGroupSettings()"
+                      rows="2"
+                      placeholder="URL patterns (one per line)&#10;*example.com*"
+                    ></textarea>
+                  </div>
+                </div>
+                <p class="group-site-hint">
+                  Use <code>*</code> as wildcard. Leave both empty to activate everywhere.
+                </p>
+              </div>
+            </Transition>
 
             <!-- Shortcuts in this group -->
             <div class="shortcut-list" v-show="!collapsedGroups.has(group)">
@@ -1604,4 +1642,59 @@ a:hover { text-decoration: underline; }
 .modal-enter-active, .modal-leave-active { transition: all 0.2s ease; }
 .modal-enter-from, .modal-leave-to { opacity: 0; }
 .modal-enter-from .modal-panel, .modal-leave-to .modal-panel { transform: scale(0.95); }
+
+/* ── Group site rules ── */
+.group-site-indicator {
+  font-size: 14px;
+  color: var(--blue);
+  opacity: 0.7;
+}
+
+.group-site-panel {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-elevated);
+}
+
+.group-site-fields {
+  display: flex;
+  gap: 12px;
+}
+
+.group-site-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.group-site-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.group-site-label .mdi {
+  font-size: 13px;
+  margin-right: 3px;
+}
+
+.group-site-textarea {
+  font-size: 12px !important;
+  padding: 6px 10px !important;
+  resize: vertical;
+}
+
+.group-site-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 8px 0 0;
+}
+
+.group-site-hint code {
+  background: var(--bg-hover);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 11px;
+}
 </style>

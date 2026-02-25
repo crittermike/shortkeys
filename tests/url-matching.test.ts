@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { globToRegex, isAllowedSite } from '../src/utils/url-matching'
+import { globToRegex, isAllowedSite, isGroupAllowed } from '../src/utils/url-matching'
 
 describe('globToRegex', () => {
   it('converts a simple glob with wildcard', () => {
@@ -160,5 +160,97 @@ describe('isAllowedSite', () => {
     }
     // Starts allowed (blacklist=true), first match toggles to not allowed, second toggles back
     expect(isAllowedSite(key, 'https://example.com')).toBe(true)
+  })
+})
+
+describe('isGroupAllowed', () => {
+  it('allows all URLs when no group settings exist', () => {
+    expect(isGroupAllowed('Vim', 'https://example.com', {})).toBe(true)
+  })
+
+  it('allows all URLs when group has no settings entry', () => {
+    const settings = { 'Other Group': { activateOn: '*google.com*' } }
+    expect(isGroupAllowed('Vim', 'https://example.com', settings)).toBe(true)
+  })
+
+  it('allows all URLs when settings are empty strings', () => {
+    const settings = { 'Vim': { activateOn: '', deactivateOn: '' } }
+    expect(isGroupAllowed('Vim', 'https://example.com', settings)).toBe(true)
+  })
+
+  it('uses default group name when groupName is undefined', () => {
+    const settings = { 'My Shortcuts': { activateOn: '*google.com*' } }
+    expect(isGroupAllowed(undefined, 'https://google.com/search', settings)).toBe(true)
+    expect(isGroupAllowed(undefined, 'https://example.com', settings)).toBe(false)
+  })
+
+  describe('activateOn (whitelist)', () => {
+    it('allows matching URLs', () => {
+      const settings = { 'Vim': { activateOn: '*github.com*' } }
+      expect(isGroupAllowed('Vim', 'https://github.com/repo', settings)).toBe(true)
+    })
+
+    it('blocks non-matching URLs', () => {
+      const settings = { 'Vim': { activateOn: '*github.com*' } }
+      expect(isGroupAllowed('Vim', 'https://example.com', settings)).toBe(false)
+    })
+
+    it('supports multiple patterns (newline-separated)', () => {
+      const settings = { 'Dev': { activateOn: '*github.com*\n*gitlab.com*' } }
+      expect(isGroupAllowed('Dev', 'https://github.com/repo', settings)).toBe(true)
+      expect(isGroupAllowed('Dev', 'https://gitlab.com/repo', settings)).toBe(true)
+      expect(isGroupAllowed('Dev', 'https://example.com', settings)).toBe(false)
+    })
+
+    it('ignores empty lines in patterns', () => {
+      const settings = { 'Dev': { activateOn: '*github.com*\n\n*gitlab.com*\n' } }
+      expect(isGroupAllowed('Dev', 'https://github.com/repo', settings)).toBe(true)
+      expect(isGroupAllowed('Dev', 'https://example.com', settings)).toBe(false)
+    })
+  })
+
+  describe('deactivateOn (blacklist)', () => {
+    it('blocks matching URLs', () => {
+      const settings = { 'Vim': { deactivateOn: '*facebook.com*' } }
+      expect(isGroupAllowed('Vim', 'https://facebook.com/page', settings)).toBe(false)
+    })
+
+    it('allows non-matching URLs', () => {
+      const settings = { 'Vim': { deactivateOn: '*facebook.com*' } }
+      expect(isGroupAllowed('Vim', 'https://example.com', settings)).toBe(true)
+    })
+
+    it('supports multiple patterns', () => {
+      const settings = { 'Nav': { deactivateOn: '*facebook.com*\n*twitter.com*' } }
+      expect(isGroupAllowed('Nav', 'https://facebook.com', settings)).toBe(false)
+      expect(isGroupAllowed('Nav', 'https://twitter.com', settings)).toBe(false)
+      expect(isGroupAllowed('Nav', 'https://example.com', settings)).toBe(true)
+    })
+  })
+
+  describe('combined activateOn + deactivateOn', () => {
+    it('both must pass: URL must match activateOn AND not match deactivateOn', () => {
+      const settings = {
+        'Dev': {
+          activateOn: '*github.com*',
+          deactivateOn: '*github.com/settings*',
+        },
+      }
+      expect(isGroupAllowed('Dev', 'https://github.com/repo', settings)).toBe(true)
+      expect(isGroupAllowed('Dev', 'https://github.com/settings', settings)).toBe(false)
+      expect(isGroupAllowed('Dev', 'https://example.com', settings)).toBe(false)
+    })
+  })
+
+  it('handles regex patterns in activateOn', () => {
+    const settings = { 'Dev': { activateOn: '/^https:\\/\\/github\\.com/' } }
+    expect(isGroupAllowed('Dev', 'https://github.com/repo', settings)).toBe(true)
+    expect(isGroupAllowed('Dev', 'http://github.com/repo', settings)).toBe(false)
+  })
+
+  it('handles invalid regex patterns gracefully', () => {
+    const settings = { 'Dev': { activateOn: '/[invalid/' } }
+    // Invalid regex should not crash, just not match
+    expect(isGroupAllowed('Dev', 'https://example.com', settings)).toBe(false)
   })
 })

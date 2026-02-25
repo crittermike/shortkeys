@@ -29,6 +29,11 @@ export interface MacroStep {
   delay?: number
 }
 
+export interface GroupSettings {
+  activateOn?: string
+  deactivateOn?: string
+}
+
 
 export interface KeySetting {
   key: string
@@ -74,4 +79,50 @@ export function isAllowedSite(keySetting: KeySetting, url: string): boolean {
     })
   }
   return allowed
+}
+
+/**
+ * Determine if a shortcut is allowed on the given URL based on its
+ * group-level activation/deactivation patterns.
+ * Group settings use the same glob syntax as per-shortcut site filters.
+ *
+ * - activateOn: group shortcuts only active on matching URLs (whitelist)
+ * - deactivateOn: group shortcuts disabled on matching URLs (blacklist)
+ * - If both are set, activateOn takes precedence (must match AND not be deactivated)
+ * - If neither is set, all URLs are allowed (default behavior)
+ */
+export function isGroupAllowed(
+  groupName: string | undefined,
+  url: string,
+  allGroupSettings: Record<string, GroupSettings>,
+): boolean {
+  const DEFAULT_GROUP = 'My Shortcuts'
+  const name = groupName || DEFAULT_GROUP
+  const settings = allGroupSettings[name]
+  if (!settings) return true
+
+  const activatePatterns = settings.activateOn
+    ? settings.activateOn.split('\n').map(s => s.trim()).filter(Boolean)
+    : []
+  const deactivatePatterns = settings.deactivateOn
+    ? settings.deactivateOn.split('\n').map(s => s.trim()).filter(Boolean)
+    : []
+
+  // If activateOn patterns exist, URL must match at least one
+  if (activatePatterns.length > 0) {
+    const matchesActivate = activatePatterns.some(pattern => {
+      try { return globToRegex(pattern).test(url) } catch { return false }
+    })
+    if (!matchesActivate) return false
+  }
+
+  // If deactivateOn patterns exist, URL must NOT match any
+  if (deactivatePatterns.length > 0) {
+    const matchesDeactivate = deactivatePatterns.some(pattern => {
+      try { return globToRegex(pattern).test(url) } catch { return false }
+    })
+    if (matchesDeactivate) return false
+  }
+
+  return true
 }

@@ -109,3 +109,40 @@ export function onKeysChanged(callback: () => void): void {
     }
   })
 }
+
+import type { GroupSettings } from './url-matching'
+
+/**
+ * Save group settings to synced storage alongside keys.
+ * Group settings are small (just URL patterns per group), so they always fit in sync.
+ */
+export async function saveGroupSettings(settings: Record<string, GroupSettings>): Promise<void> {
+  const json = JSON.stringify(settings)
+  if (chrome.storage.sync) {
+    try {
+      await chrome.storage.sync.set({ groupSettings: json })
+      await chrome.storage.local.set({ groupSettings: json })
+      return
+    } catch {
+      // Sync failed — fall back to local
+    }
+  }
+  await chrome.storage.local.set({ groupSettings: json })
+}
+
+/**
+ * Load group settings from storage. Checks sync first, then local.
+ */
+export async function loadGroupSettings(): Promise<Record<string, GroupSettings>> {
+  if (chrome.storage.sync) {
+    try {
+      const syncData = await chrome.storage.sync.get('groupSettings')
+      if (syncData.groupSettings) return JSON.parse(syncData.groupSettings)
+    } catch {
+      // Sync unavailable — try local
+    }
+  }
+  const localData = await chrome.storage.local.get('groupSettings')
+  if (localData.groupSettings) return JSON.parse(localData.groupSettings)
+  return {}
+}
