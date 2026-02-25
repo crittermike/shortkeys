@@ -2,11 +2,52 @@
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { ACTION_CATEGORIES } from '@/utils/actions-registry'
 import type { KeySetting } from '@/utils/url-matching'
+import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
+import SearchSelect from '@/components/SearchSelect.vue'
 
 const query = ref('')
 const keys = ref<KeySetting[]>([])
 const selectedIndex = ref(0)
 const searchInput = ref<HTMLInputElement | null>(null)
+
+const creating = ref(false)
+const newKey = ref('')
+const newAction = ref('')
+
+function startCreating() {
+  creating.value = true
+  newKey.value = ''
+  newAction.value = ''
+}
+
+function cancelCreating() {
+  creating.value = false
+  newKey.value = ''
+  newAction.value = ''
+  nextTick(() => {
+    searchInput.value?.focus()
+  })
+}
+
+async function saveNewShortcut() {
+  if (!newKey.value || !newAction.value) return
+  
+  const saved = await loadKeys()
+  const currentKeys: KeySetting[] = saved ? JSON.parse(saved) : []
+  
+  const newShortcut: KeySetting = {
+    id: crypto.randomUUID(),
+    key: newKey.value,
+    action: newAction.value,
+    enabled: true
+  }
+  
+  currentKeys.push(newShortcut)
+  await saveKeys(currentKeys)
+  
+  keys.value = currentKeys
+  cancelCreating()
+}
 
 const actionLabels = computed(() => {
   const map: Record<string, string> = {}
@@ -46,6 +87,7 @@ async function triggerShortcut(k: KeySetting) {
 }
 
 function onKeydown(e: KeyboardEvent) {
+  if (creating.value) return
   if (e.key === 'ArrowDown') {
     e.preventDefault()
     selectedIndex.value = Math.min(selectedIndex.value + 1, filtered.value.length - 1)
@@ -65,7 +107,7 @@ function openSettings() {
   window.close()
 }
 
-import { loadKeys } from '@/utils/storage'
+import { loadKeys, saveKeys } from '@/utils/storage'
 
 onMounted(async () => {
   const saved = await loadKeys()
@@ -89,7 +131,21 @@ onMounted(async () => {
         autofocus
       />
     </div>
-    <div class="results" v-if="filtered.length > 0">
+    <div v-if="creating" class="quick-add">
+      <div class="quick-add-field">
+        <label class="quick-add-label">Shortcut</label>
+        <ShortcutRecorder v-model="newKey" />
+      </div>
+      <div class="quick-add-field">
+        <label class="quick-add-label">Action</label>
+        <SearchSelect v-model="newAction" :options="ACTION_CATEGORIES" placeholder="Choose an action…" />
+      </div>
+      <div class="quick-add-actions">
+        <button class="quick-add-cancel" @click="cancelCreating" type="button">Cancel</button>
+        <button class="quick-add-save" @click="saveNewShortcut" type="button" :disabled="!newKey || !newAction">Save</button>
+      </div>
+    </div>
+    <div class="results" v-if="filtered.length > 0 && !creating">
       <button
         v-for="(k, i) in filtered"
         :key="k.id"
@@ -106,15 +162,20 @@ onMounted(async () => {
         </div>
       </button>
     </div>
-    <div v-else class="empty">
+    <div v-else-if="!creating" class="empty">
       <span v-if="keys.length === 0">No shortcuts configured</span>
       <span v-else>No matching shortcuts</span>
     </div>
     <div class="footer">
       <span class="hint"><kbd>↑↓</kbd> navigate <kbd>↵</kbd> trigger</span>
-      <a class="settings-link" @click="openSettings">
-        <i class="mdi mdi-cog-outline"></i> Settings
-      </a>
+      <div class="footer-links">
+        <a class="settings-link" @click="startCreating" v-if="!creating">
+          <i class="mdi mdi-plus"></i> New
+        </a>
+        <a class="settings-link" @click="openSettings">
+          <i class="mdi mdi-cog-outline"></i> Settings
+        </a>
+      </div>
     </div>
   </div>
 </template>
@@ -264,4 +325,65 @@ body {
 
 .settings-link:hover { color: #4361ee; }
 .settings-link .mdi { font-size: 14px; }
+
+.footer-links {
+  display: flex;
+  gap: 12px;
+}
+
+.quick-add {
+  padding: 12px 14px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.quick-add-field {
+  margin-bottom: 8px;
+}
+
+.quick-add-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.quick-add-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.quick-add-cancel {
+  padding: 6px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: white;
+  color: #64748b;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.quick-add-save {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background: #4361ee;
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.quick-add-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quick-add-save:hover:not(:disabled) {
+  background: #3451d1;
+}
 </style>
