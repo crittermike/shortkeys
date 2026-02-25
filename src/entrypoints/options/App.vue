@@ -137,8 +137,27 @@ onMounted(async () => {
           </div>
         </div>
 
+        <!-- Empty state (no shortcuts yet) -->
+        <div v-if="keys.length === 0" class="empty-state">
+          <div class="empty-state-icon">
+            <i class="mdi mdi-keyboard-outline"></i>
+          </div>
+          <h2 class="empty-state-title">No shortcuts yet</h2>
+          <p class="empty-state-desc">
+            Create custom keyboard shortcuts for 90+ browser actions — tab management, scrolling, navigation, running JavaScript, and more.
+          </p>
+          <div class="empty-state-actions">
+            <button class="btn btn-primary" @click="addShortcut">
+              <i class="mdi mdi-plus"></i> Create your first shortcut
+            </button>
+            <button class="btn btn-secondary" @click="activeTab = 1">
+              <i class="mdi mdi-package-variant"></i> Browse shortcut packs
+            </button>
+          </div>
+        </div>
+
         <!-- Grouped shortcut rows -->
-        <div class="shortcut-groups">
+        <div v-if="keys.length > 0" class="shortcut-groups">
           <template v-for="group in groupNames" :key="group">
           <div v-if="groupedIndices.has(group)" class="shortcut-group">
             <!-- Group header -->
@@ -310,7 +329,7 @@ onMounted(async () => {
           </template>
         </div>
 
-        <div class="action-bar">
+        <div v-if="keys.length > 0" class="action-bar">
           <div class="action-bar-left">
             <button class="btn btn-secondary" @click="addShortcut">
               <i class="mdi mdi-plus"></i> Add shortcut
@@ -1030,7 +1049,7 @@ a:hover { text-decoration: underline; }
   flex-shrink: 0;
 }
 
-.btn-sm {
+.macro-step-controls .btn-icon {
   width: 26px !important;
   height: 26px !important;
   font-size: 14px !important;
@@ -1428,57 +1447,166 @@ a:hover { text-decoration: underline; }
   margin-bottom: 4px;
 }
 
+/* ── Import Tab ── */
+.import-tab-container {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.import-section .section-header {
+  margin-bottom: 16px;
+}
+
+.import-divider {
+  height: 1px;
+  background: var(--border-light);
+  margin: 0;
+}
+
 /* ── Pack grid ── */
 .pack-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 12px;
+  gap: 16px;
 }
 
 .pack-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-top: 3px solid #4361ee;
-  border-radius: 10px;
-  padding: 16px;
+  border-top: 4px solid var(--pack-color, #4361ee);
+  border-radius: 12px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  transition: box-shadow 0.15s;
+  gap: 14px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
 }
 
-.pack-card:hover { box-shadow: 0 4px 16px var(--shadow-hover); }
+.pack-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, var(--pack-color) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  z-index: 0;
+}
 
-.pack-icon { font-size: 28px; }
+.pack-card:hover { 
+  box-shadow: 0 8px 24px var(--shadow-hover); 
+  transform: translateY(-2px);
+  border-color: var(--border-light);
+}
 
-.pack-info { flex: 1; }
+.pack-card:hover::before {
+  opacity: 0.04;
+}
+
+.pack-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.pack-icon { 
+  font-size: 32px; 
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+  transition: transform 0.2s ease;
+}
+
+.pack-card:hover .pack-icon {
+  transform: scale(1.1) rotate(-5deg);
+}
+
+.pack-info { 
+  flex: 1; 
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
 
 .pack-name {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--text);
-  margin-bottom: 4px;
-}
-
-.pack-desc {
-  font-size: 12px;
-  color: var(--text-secondary);
-  line-height: 1.5;
-  margin-bottom: 6px;
+  letter-spacing: -0.01em;
 }
 
 .pack-meta {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pack-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  flex: 1;
+  position: relative;
+  z-index: 1;
 }
 
 .pack-actions {
   display: flex;
   gap: 8px;
+  margin-top: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.pack-actions .btn {
+  flex: 1;
+  justify-content: center;
 }
 
 .btn-sm { padding: 6px 14px; font-size: 12px; }
+
+/* ── JSON Import ── */
+.json-import-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.json-textarea {
+  min-height: 160px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.json-action-bar {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--border-light);
+}
+
+.json-hint {
+  font-size: 13px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.json-hint .mdi {
+  font-size: 16px;
+  color: var(--text-secondary);
+}
 
 /* ── Modal ── */
 .modal-overlay {
@@ -1698,5 +1826,47 @@ a:hover { text-decoration: underline; }
   padding: 1px 5px;
   border-radius: 3px;
   font-size: 11px;
+}
+
+/* ── Empty state ── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 56px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-state-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 8px;
+}
+
+.empty-state-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  max-width: 440px;
+  line-height: 1.5;
+  margin: 0 0 24px;
+}
+
+.empty-state-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.empty-state-actions .btn {
+  font-size: 14px;
+  padding: 10px 20px;
 }
 </style>

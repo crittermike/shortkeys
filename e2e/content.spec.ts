@@ -6,7 +6,8 @@ test.describe('Content Script', () => {
     const page = await context.newPage()
     await page.goto(`chrome-extension://${extensionId}/options.html`)
 
-    // Wait for the default shortcut card to load
+    // Create first shortcut from blank slate
+    await page.locator('.empty-state .btn-primary', { hasText: 'Create your first shortcut' }).click()
     await expect(page.locator('.shortcut-card')).toHaveCount(1, { timeout: 5000 })
 
     // Fill in the default shortcut with a label and key

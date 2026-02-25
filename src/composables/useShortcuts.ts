@@ -37,10 +37,11 @@ async function saveShortcuts() {
   showSnack(area === 'sync' ? 'Shortcuts saved & synced!' : 'Shortcuts saved (local only — too large to sync)')
 }
 
-function deleteShortcut(index: number) {
+async function deleteShortcut(index: number) {
   if (confirm('Delete this shortcut?')) {
     keys.value.splice(index, 1)
     if (expandedRow.value === index) expandedRow.value = null
+    await saveShortcuts()
   }
 }
 
@@ -78,8 +79,6 @@ async function loadSavedKeys() {
   if (saved) {
     keys.value = JSON.parse(saved)
     ensureIds()
-  } else {
-    addShortcut()
   }
 }
 

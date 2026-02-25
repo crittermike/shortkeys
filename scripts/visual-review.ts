@@ -124,13 +124,33 @@ async function main() {
 
   await analyticsPage.close()
 
+  // 9. Screenshot: Options page — Import tab
+  console.log('Capturing options page (Import tab)...')
+  const importPage = await context.newPage()
+  await importPage.setViewportSize({ width: 1280, height: 800 })
+  await importPage.goto(`chrome-extension://${extensionId}/options.html`)
+  await importPage.waitForSelector('.app-main', { timeout: 5000 })
+  await importPage.waitForTimeout(500)
+  // Click the Import tab (2nd tab button, index 1)
+  const importTabButtons = importPage.locator('.tab-btn')
+  await importTabButtons.nth(1).click()
+  await importPage.waitForTimeout(500)
+  await importPage.screenshot({
+    path: path.join(SCREENSHOT_DIR, 'options-import.png'),
+    fullPage: false,
+  })
+
+  await importPage.close()
+
   await context.close()
 
   console.log(`\nDone! Screenshots saved to ${SCREENSHOT_DIR}/`)
   console.log('  - popup-empty.png')
   console.log('  - popup-quick-add.png')
   console.log('  - popup-quick-add-dropdown.png')
+  console.log('  - options-page.png')
   console.log('  - options-analytics.png')
+  console.log('  - options-import.png')
 }
 
 main().catch((err) => {

@@ -1,4 +1,11 @@
 import { test, expect } from './fixtures'
+import type { Page } from '@playwright/test'
+
+/** Click "Create your first shortcut" on the blank slate to add an empty shortcut card. */
+async function createFirstShortcut(page: Page) {
+  await page.locator('.empty-state .btn-primary', { hasText: 'Create your first shortcut' }).click()
+  await expect(page.locator('.shortcut-card')).toHaveCount(1, { timeout: 5000 })
+}
 
 test.describe('Options Page', () => {
 
@@ -23,14 +30,25 @@ test.describe('Options Page', () => {
     await expect(tabs.nth(3)).toContainText('Analytics')
   })
 
+  test('shows empty state when no shortcuts exist', async ({ context, extensionId }) => {
+    const page = await context.newPage()
+    await page.goto(`chrome-extension://${extensionId}/options.html`)
+
+    // Empty state should be visible with CTA buttons
+    await expect(page.locator('.empty-state')).toBeVisible({ timeout: 5000 })
+    await expect(page.locator('.empty-state-title')).toHaveText('No shortcuts yet')
+    await expect(page.locator('.empty-state .btn-primary')).toContainText('Create your first shortcut')
+    await expect(page.locator('.empty-state .btn-secondary')).toContainText('Browse shortcut packs')
+  })
+
   test('can add a new shortcut', async ({ context, extensionId }) => {
     const page = await context.newPage()
     await page.goto(`chrome-extension://${extensionId}/options.html`)
 
-    // The page auto-creates one default empty shortcut on first load
-    await expect(page.locator('.shortcut-card')).toHaveCount(1, { timeout: 5000 })
+    // Click "Create your first shortcut" from the blank slate
+    await createFirstShortcut(page)
 
-    // Fill in the default shortcut
+    // Fill in the shortcut
     await page.locator('.shortcut-label-title').first().fill('Test Shortcut')
 
     // Open the behavior dropdown and select an action
@@ -48,8 +66,8 @@ test.describe('Options Page', () => {
     const page = await context.newPage()
     await page.goto(`chrome-extension://${extensionId}/options.html`)
 
-    // Use the default shortcut card
-    await expect(page.locator('.shortcut-card')).toHaveCount(1, { timeout: 5000 })
+    // Create first shortcut from blank slate
+    await createFirstShortcut(page)
     await page.locator('.shortcut-label-title').first().fill('Persist Test')
     await page.locator('.ss-trigger').first().click()
     await page.locator('.ss-option', { hasText: 'New tab' }).first().click()
@@ -65,26 +83,35 @@ test.describe('Options Page', () => {
     const page = await context.newPage()
     await page.goto(`chrome-extension://${extensionId}/options.html`)
 
-    // The default shortcut should be present
-    await expect(page.locator('.shortcut-card')).toHaveCount(1, { timeout: 5000 })
+    // Create first shortcut from blank slate and save it
+    await createFirstShortcut(page)
+    await page.locator('.shortcut-label-title').first().fill('Delete Me')
+    // Must select an action so the shortcut isn't stripped as empty on save
+    await page.locator('.ss-trigger').first().click()
+    await page.locator('.ss-option', { hasText: 'New tab' }).first().click()
+    await page.locator('.btn-primary', { hasText: 'Save shortcuts' }).click()
+    await expect(page.locator('.toast')).toBeVisible({ timeout: 5000 })
 
     // Set up dialog handler before clicking delete
     page.on('dialog', (dialog) => dialog.accept())
     await page.locator('.btn-delete').click()
     await expect(page.locator('.shortcut-card')).toHaveCount(0)
 
-    // Save and reload to confirm deletion persists
-    await page.locator('.btn-primary', { hasText: 'Save shortcuts' }).click()
+    // After deleting the only shortcut, the empty state shows
+    await expect(page.locator('.empty-state')).toBeVisible()
+
+    // Deletion auto-saves, so reload should confirm it persisted
     await page.reload()
     await expect(page.locator('.shortcut-card')).toHaveCount(0)
+    await expect(page.locator('.empty-state')).toBeVisible()
   })
 
   test('can toggle shortcut enabled/disabled', async ({ context, extensionId }) => {
     const page = await context.newPage()
     await page.goto(`chrome-extension://${extensionId}/options.html`)
 
-    // Wait for the default shortcut card
-    await expect(page.locator('.shortcut-card')).toHaveCount(1, { timeout: 5000 })
+    // Create first shortcut from blank slate
+    await createFirstShortcut(page)
 
     // The toggle should default to "on"
     const toggle = page.locator('.toggle').first()
@@ -102,8 +129,8 @@ test.describe('Options Page', () => {
     const page = await context.newPage()
     await page.goto(`chrome-extension://${extensionId}/options.html`)
 
-    // Wait for the default shortcut to load (creates My Shortcuts group)
-    await expect(page.locator('.shortcut-card')).toHaveCount(1, { timeout: 5000 })
+    // Create first shortcut from blank slate (creates My Shortcuts group)
+    await createFirstShortcut(page)
 
     // Handle the prompt dialog that createNewGroup() triggers
     page.on('dialog', (dialog) => dialog.accept('Test Group'))
@@ -131,17 +158,18 @@ test.describe('Options Page', () => {
 
     // Click back to Shortcuts tab
     await page.locator('.tab-btn', { hasText: 'Shortcuts' }).click()
-    await expect(page.locator('.action-bar').first()).toBeVisible()
+    // With no shortcuts, the empty state should show
+    await expect(page.locator('.empty-state')).toBeVisible()
   })
 
   test('search filters shortcuts', async ({ context, extensionId }) => {
     const page = await context.newPage()
     await page.goto(`chrome-extension://${extensionId}/options.html`)
 
-    // Wait for the default shortcut to load
-    await expect(page.locator('.shortcut-card')).toHaveCount(1, { timeout: 5000 })
+    // Create first shortcut from blank slate
+    await createFirstShortcut(page)
 
-    // Fill the default one
+    // Fill the first one
     await page.locator('.shortcut-label-title').first().fill('Alpha Shortcut')
 
     // Add a second shortcut
@@ -163,8 +191,8 @@ test.describe('Options Page', () => {
     const page = await context.newPage()
     await page.goto(`chrome-extension://${extensionId}/options.html`)
 
-    // Use the default shortcut card
-    await expect(page.locator('.shortcut-card')).toHaveCount(1, { timeout: 5000 })
+    // Create first shortcut from blank slate
+    await createFirstShortcut(page)
     await page.locator('.shortcut-label-title').first().fill('Round Trip Test')
     await page.locator('.ss-trigger').first().click()
     await page.locator('.ss-option', { hasText: 'New tab' }).first().click()
@@ -178,12 +206,11 @@ test.describe('Options Page', () => {
     const exportedJson = await exportPre.textContent()
     expect(exportedJson).toContain('Round Trip Test')
 
-    // Delete the shortcut
+    // Delete the shortcut (auto-saves)
     await page.locator('.tab-btn', { hasText: 'Shortcuts' }).click()
     page.on('dialog', (dialog) => dialog.accept())
     await page.locator('.btn-delete').click()
-    await page.locator('.btn-primary', { hasText: 'Save shortcuts' }).click()
-    await expect(page.locator('.toast')).toBeVisible({ timeout: 5000 })
+    await expect(page.locator('.shortcut-card')).toHaveCount(0)
 
     // Import the JSON
     await page.locator('.tab-btn', { hasText: 'Import' }).click()
@@ -214,8 +241,8 @@ test.describe('Options Page', () => {
     const page = await context.newPage()
     await page.goto(`chrome-extension://${extensionId}/options.html`)
 
-    // Wait for the default shortcut card
-    await expect(page.locator('.shortcut-card')).toHaveCount(1, { timeout: 5000 })
+    // Create first shortcut from blank slate
+    await createFirstShortcut(page)
 
     // Click the settings (cog) button to expand details
     await page.locator('.shortcut-actions .btn-icon').first().click()

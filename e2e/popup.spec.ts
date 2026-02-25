@@ -23,10 +23,11 @@ test.describe('Popup Command Palette', () => {
     const optionsPage = await context.newPage()
     await optionsPage.goto(`chrome-extension://${extensionId}/options.html`)
 
-    // Wait for the default shortcut card to load
+    // Create first shortcut from blank slate
+    await optionsPage.locator('.empty-state .btn-primary', { hasText: 'Create your first shortcut' }).click()
     await expect(optionsPage.locator('.shortcut-card')).toHaveCount(1, { timeout: 5000 })
 
-    // Fill in the default shortcut
+    // Fill in the shortcut
     await optionsPage.locator('.shortcut-label-title').first().fill('Popup Test Action')
 
     // Set a key via input field
@@ -55,10 +56,11 @@ test.describe('Popup Command Palette', () => {
     const optionsPage = await context.newPage()
     await optionsPage.goto(`chrome-extension://${extensionId}/options.html`)
 
-    // Wait for the default shortcut card
+    // Create first shortcut from blank slate
+    await optionsPage.locator('.empty-state .btn-primary', { hasText: 'Create your first shortcut' }).click()
     await expect(optionsPage.locator('.shortcut-card')).toHaveCount(1, { timeout: 5000 })
 
-    // Fill the default shortcut
+    // Fill the first shortcut
     await optionsPage.locator('.shortcut-label-title').first().fill('Navigate Home')
     await optionsPage.locator('.shortcut-input').first().fill('h')
     await optionsPage.locator('.ss-trigger').first().click()
