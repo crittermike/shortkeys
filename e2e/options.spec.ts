@@ -9,17 +9,18 @@ test.describe('Options Page', () => {
     await expect(page.locator('.brand-text')).toHaveText('Shortkeys')
   })
 
-  test('shows tab bar with Shortcuts, Import, and Export tabs', async ({
+  test('shows tab bar with Shortcuts, Import, Export, and Analytics tabs', async ({
     context,
     extensionId,
   }) => {
     const page = await context.newPage()
     await page.goto(`chrome-extension://${extensionId}/options.html`)
     const tabs = page.locator('.tab-btn')
-    await expect(tabs).toHaveCount(3)
+    await expect(tabs).toHaveCount(4)
     await expect(tabs.nth(0)).toContainText('Shortcuts')
     await expect(tabs.nth(1)).toContainText('Import')
     await expect(tabs.nth(2)).toContainText('Export')
+    await expect(tabs.nth(3)).toContainText('Analytics')
   })
 
   test('can add a new shortcut', async ({ context, extensionId }) => {
