@@ -57,14 +57,14 @@ function timeAgo(ts: number): string {
           <input type="checkbox" :checked="trackingEnabled" @change="toggleTracking" />
           <span>Track usage</span>
         </label>
-        <button class="btn btn-secondary btn-sm" @click="clearAnalytics" type="button">
+        <button class="btn-clear" @click="clearAnalytics" type="button">
           <i class="mdi mdi-delete-outline"></i> Clear data
         </button>
       </div>
     </div>
 
     <!-- Usage over time chart -->
-    <div class="analytics-section">
+    <div class="analytics-section" v-if="totalUsage > 0 || mostUsed.length > 0">
       <div class="section-header">
         <h3 class="section-title">Usage over time</h3>
         <div class="chart-period-toggle">
@@ -106,9 +106,6 @@ function timeAgo(ts: number): string {
             v-show="chartPeriod === 7 || i % 5 === 0 || i === chartData.length - 1"
           >{{ bar.label }}</span>
         </div>
-      </div>
-      <div v-if="totalUsage === 0" class="chart-empty">
-        No usage data yet. Start using your shortcuts!
       </div>
     </div>
 
@@ -197,32 +194,32 @@ function timeAgo(ts: number): string {
 .analytics-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
   flex-wrap: wrap;
 }
 
 .analytics-summary {
   display: flex;
-  gap: 24px;
+  gap: 32px;
 }
 
 .summary-stat {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .summary-number {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
   color: var(--text);
   line-height: 1;
 }
 
 .summary-label {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-muted);
   font-weight: 500;
 }
@@ -230,14 +227,14 @@ function timeAgo(ts: number): string {
 .analytics-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .toggle-label {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-secondary);
   cursor: pointer;
   user-select: none;
@@ -248,6 +245,30 @@ function timeAgo(ts: number): string {
   height: 16px;
   accent-color: var(--blue);
   cursor: pointer;
+}
+.btn-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.btn-clear:hover {
+  background: var(--bg-hover);
+  color: var(--danger, #ef4444);
+  border-color: var(--danger, #ef4444);
+}
+
+.btn-clear .mdi {
+  font-size: 15px;
 }
 
 .analytics-section {
@@ -338,17 +359,11 @@ function timeAgo(ts: number): string {
 .chart-label {
   position: absolute;
   transform: translateX(-50%);
-  font-size: 10px;
-  color: var(--text-muted);
+  font-size: 11px;
+  color: var(--text-secondary);
   white-space: nowrap;
 }
 
-.chart-empty {
-  text-align: center;
-  padding: 12px 0 0;
-  color: var(--text-muted);
-  font-size: 13px;
-}
 
 .analytics-table {
   background: var(--bg-elevated);
