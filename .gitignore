@@ -14,3 +14,6 @@ tests/setup.js
 .output
 site/catalog.json
 site/images/
+screenshots/
+playwright-report/
+test-results/
