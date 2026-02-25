@@ -3,30 +3,31 @@ import { ACTION_CATEGORIES } from '@/utils/actions-registry'
 import { useShortcuts } from './useShortcuts'
 import { useConflicts } from './useConflicts'
 
+// Module-level state (singleton) so all callers share the same searchQuery
+const searchQuery = ref('')
+
+/** Build a lookup from action value → label */
+const actionLabels = computed(() => {
+  const map: Record<string, string> = {}
+  for (const actions of Object.values(ACTION_CATEGORIES)) {
+    for (const a of actions) map[a.value] = a.label
+  }
+  return map
+})
+
+/** ACTION_CATEGORIES without 'macro' to prevent recursive macros */
+const macroActionOptions = computed(() => {
+  const filtered: Record<string, { value: string; label: string }[]> = {}
+  for (const [category, actions] of Object.entries(ACTION_CATEGORIES)) {
+    const withoutMacro = actions.filter((a) => a.value !== 'macro')
+    if (withoutMacro.length > 0) filtered[category] = withoutMacro
+  }
+  return filtered
+})
+
 export function useSearch() {
   const { keys } = useShortcuts()
   const { conflicts } = useConflicts()
-
-  const searchQuery = ref('')
-
-  /** Build a lookup from action value → label */
-  const actionLabels = computed(() => {
-    const map: Record<string, string> = {}
-    for (const actions of Object.values(ACTION_CATEGORIES)) {
-      for (const a of actions) map[a.value] = a.label
-    }
-    return map
-  })
-
-  /** ACTION_CATEGORIES without 'macro' to prevent recursive macros */
-  const macroActionOptions = computed(() => {
-    const filtered: Record<string, { value: string; label: string }[]> = {}
-    for (const [category, actions] of Object.entries(ACTION_CATEGORIES)) {
-      const withoutMacro = actions.filter((a) => a.value !== 'macro')
-      if (withoutMacro.length > 0) filtered[category] = withoutMacro
-    }
-    return filtered
-  })
 
   /** Indices of shortcuts that match the search query */
   const filteredIndices = computed(() => {
