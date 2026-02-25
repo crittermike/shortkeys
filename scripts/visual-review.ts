@@ -106,14 +106,31 @@ async function main() {
     fullPage: false, // Just viewport — options page can be very tall
   })
 
-  await optionsPage.close()
+  // 8. Screenshot: Options page — Analytics tab
+  console.log('Capturing options page (Analytics tab)...')
+  const analyticsPage = await context.newPage()
+  await analyticsPage.setViewportSize({ width: 1280, height: 800 })
+  await analyticsPage.goto(`chrome-extension://${extensionId}/options.html`)
+  await analyticsPage.waitForSelector('.app-main', { timeout: 5000 })
+  await analyticsPage.waitForTimeout(500)
+  // Click the Analytics tab (4th tab button)
+  const tabButtons = analyticsPage.locator('.tab-btn')
+  await tabButtons.nth(3).click()
+  await analyticsPage.waitForTimeout(500)
+  await analyticsPage.screenshot({
+    path: path.join(SCREENSHOT_DIR, 'options-analytics.png'),
+    fullPage: false,
+  })
+
+  await analyticsPage.close()
+
   await context.close()
 
   console.log(`\nDone! Screenshots saved to ${SCREENSHOT_DIR}/`)
   console.log('  - popup-empty.png')
   console.log('  - popup-quick-add.png')
   console.log('  - popup-quick-add-dropdown.png')
-  console.log('  - options-page.png')
+  console.log('  - options-analytics.png')
 }
 
 main().catch((err) => {

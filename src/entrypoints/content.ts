@@ -32,20 +32,24 @@ export default defineContentScript({
       // Custom JS runs via event dispatch to MAIN world
       if (action === 'javascript') {
         document.dispatchEvent(new CustomEvent('shortkeys_js_run', { detail: keySetting.id }))
+        trackContentAction(keySetting)
         return
       }
 
       if (action === 'trigger' && keySetting.trigger) {
         Mousetrap.trigger(keySetting.trigger)
+        trackContentAction(keySetting)
       }
 
       // Content-script-only actions (need direct DOM access)
       if (action === 'showcheatsheet') {
         toggleCheatSheet()
+        trackContentAction(keySetting)
         return
       }
       if (action === 'toggledarkmode') {
         toggleDarkMode()
+        trackContentAction(keySetting)
         return
       }
 
@@ -58,7 +62,14 @@ export default defineContentScript({
       }
 
       if (!isContextValid()) return
+      // Usage tracking for these actions happens in background.ts when it receives the message
       browser.runtime.sendMessage(message).catch(() => {})
+    }
+
+    /** Send a tracking message to background for actions handled entirely in content script. */
+    function trackContentAction(keySetting: KeySetting): void {
+      if (!keySetting.id || !isContextValid()) return
+      browser.runtime.sendMessage({ action: 'trackUsage', shortcutId: keySetting.id }).catch(() => {})
     }
 
     function activateKey(keySetting: KeySetting): void {
