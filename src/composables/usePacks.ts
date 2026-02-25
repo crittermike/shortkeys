@@ -4,12 +4,13 @@ import type { ShortcutPack } from '@/packs'
 import { useShortcuts } from './useShortcuts'
 import { useToast } from './useToast'
 
+// Module-level state so all callers share the same refs
+const previewPack = ref<ShortcutPack | null>(null)
+const packConflictMode = ref<'skip' | 'replace' | 'keep'>('replace')
+
 export function usePacks() {
   const { keys, saveShortcuts } = useShortcuts()
   const { showSnack } = useToast()
-
-  const previewPack = ref<ShortcutPack | null>(null)
-  const packConflictMode = ref<'skip' | 'replace' | 'keep'>('replace')
 
   function getPackConflicts(pack: ShortcutPack): string[] {
     const existing = new Set(keys.value.map((k) => k.key?.toLowerCase()).filter(Boolean))
