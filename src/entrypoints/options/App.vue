@@ -8,7 +8,7 @@ import {
   isBuiltInAction,
   getAllActionValues,
 } from '@/utils/actions-registry'
-import type { KeySetting } from '@/utils/url-matching'
+import type { KeySetting, MacroStep } from '@/utils/url-matching'
 import { detectConflicts, type ShortcutConflict } from '@/utils/shortcut-conflicts'
 import { executeJavascriptOnTab } from '@/utils/test-javascript'
 import { saveKeys, loadKeys } from '@/utils/storage'
@@ -17,6 +17,7 @@ import CodeEditor from '@/components/CodeEditor.vue'
 import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
 import { ALL_PACKS, type ShortcutPack } from '@/packs'
 import { resolveUserscriptUrl, parseUserscript } from '@/utils/fetch-userscript'
+import { MAX_MACRO_STEPS } from '@/actions/action-handlers'
 
 const activeTab = ref(0)
 const keys = ref<KeySetting[]>([])
@@ -75,6 +76,16 @@ const actionLabels = computed(() => {
   }
   return map
 })
+/** ACTION_CATEGORIES without 'macro' to prevent recursive macros */
+const macroActionOptions = computed(() => {
+  const filtered: Record<string, { value: string; label: string }[]> = {}
+  for (const [category, actions] of Object.entries(ACTION_CATEGORIES)) {
+    const withoutMacro = actions.filter((a) => a.value !== 'macro')
+    if (withoutMacro.length > 0) filtered[category] = withoutMacro
+  }
+  return filtered
+})
+
 
 /** Indices of shortcuts that match the search query */
 const filteredIndices = computed(() => {
@@ -254,11 +265,48 @@ function toggleDetails(index: number) {
 const ACTIONS_NEEDING_EXPANSION = [
   'javascript', 'openbookmark', 'openbookmarknewtab', 'openbookmarkbackgroundtab',
   'openbookmarkbackgroundtabandclose', 'gototab', 'gototabbytitle', 'gototabbyindex',
-  'buttonnexttab', 'openapp', 'trigger', 'openurl', 'inserttext',
+  'buttonnexttab', 'openapp', 'trigger', 'openurl', 'inserttext', 'macro',
 ]
+
+function initMacroSteps(row: KeySetting) {
+  if (!row.macroSteps) row.macroSteps = []
+}
+
+function addMacroStep(row: KeySetting) {
+  initMacroSteps(row)
+  if (row.macroSteps!.length >= MAX_MACRO_STEPS) return
+  row.macroSteps!.push({ action: '' })
+}
+
+function removeMacroStep(row: KeySetting, stepIndex: number) {
+  if (row.macroSteps) row.macroSteps.splice(stepIndex, 1)
+}
+
+function moveMacroStep(row: KeySetting, stepIndex: number, direction: 'up' | 'down') {
+  if (!row.macroSteps) return
+  const target = direction === 'up' ? stepIndex - 1 : stepIndex + 1
+  if (target < 0 || target >= row.macroSteps.length) return
+  const temp = row.macroSteps[stepIndex]
+  row.macroSteps[stepIndex] = row.macroSteps[target]
+  row.macroSteps[target] = temp
+}
+
+function convertToMacro(row: KeySetting, index: number) {
+  const previousAction = row.action
+  row.action = 'macro'
+  row.macroSteps = previousAction ? [{ action: previousAction }] : []
+  expandedRow.value = index
+}
+
+function convertToSingleAction(row: KeySetting) {
+  const firstAction = row.macroSteps?.[0]?.action || ''
+  row.action = firstAction
+  row.macroSteps = undefined
+}
 
 function onActionChange(row: KeySetting, index: number, action: string) {
   row.action = action
+  if (action === 'macro') initMacroSteps(row)
   if (ACTIONS_NEEDING_EXPANSION.includes(action)) {
     expandedRow.value = index
   }
@@ -612,7 +660,17 @@ onMounted(async () => {
                     />
                   </div>
                   <div class="field-group behavior-col">
-                    <label class="field-label">Behavior</label>
+                    <div class="field-label-row">
+                      <label class="field-label">Behavior</label>
+                      <button
+                        v-if="keys[index].action && keys[index].action !== 'macro'"
+                        class="btn-chain-link"
+                        @click="convertToMacro(keys[index], index)"
+                        type="button"
+                      >
+                        <i class="mdi mdi-link-variant"></i> Chain multiple actions
+                      </button>
+                    </div>
                     <SearchSelect
                       :modelValue="keys[index].action"
                       @update:modelValue="onActionChange(keys[index], index, $event)"
@@ -765,6 +823,61 @@ onMounted(async () => {
                   <div v-if="keys[index].action === 'inserttext'" class="detail-field">
                     <label>Text to insert</label>
                     <textarea class="field-textarea mono" v-model="keys[index].inserttext" rows="2" placeholder="Text to type into the focused field…"></textarea>
+                  </div>
+                  <div v-if="keys[index].action === 'macro'" class="macro-builder">
+                    <div class="field-label-row">
+                      <label class="macro-label"><i class="mdi mdi-playlist-play"></i> Macro steps <span class="hint">(max {{ MAX_MACRO_STEPS }})</span></label>
+                      <button class="btn-chain-link" @click="convertToSingleAction(keys[index])" type="button">
+                        <i class="mdi mdi-arrow-left"></i> Use single action
+                      </button>
+                    </div>
+                    <div class="macro-steps">
+                      <div v-for="(step, si) in (keys[index].macroSteps || [])" :key="si" class="macro-step">
+                        <span class="macro-step-num">{{ si + 1 }}</span>
+                        <div class="macro-step-action">
+                          <SearchSelect
+                            :modelValue="step.action"
+                            @update:modelValue="step.action = $event"
+                            :options="macroActionOptions"
+                            placeholder="Choose action…"
+                          />
+                        </div>
+                        <div class="macro-step-delay">
+                          <input
+                            type="number"
+                            class="field-input delay-input"
+                            :value="step.delay || 0"
+                            @input="step.delay = parseInt(($event.target as HTMLInputElement).value) || 0"
+                            min="0"
+                            step="100"
+                            title="Delay before this step (ms)"
+                          />
+                          <span class="delay-unit">ms</span>
+                        </div>
+                        <div class="macro-step-controls">
+                          <button class="btn-icon btn-sm" @click="moveMacroStep(keys[index], si, 'up')" :disabled="si === 0" title="Move up" type="button">
+                            <i class="mdi mdi-arrow-up"></i>
+                          </button>
+                          <button class="btn-icon btn-sm" @click="moveMacroStep(keys[index], si, 'down')" :disabled="si === (keys[index].macroSteps || []).length - 1" title="Move down" type="button">
+                            <i class="mdi mdi-arrow-down"></i>
+                          </button>
+                          <button class="btn-icon btn-sm btn-delete" @click="removeMacroStep(keys[index], si)" title="Remove step" type="button">
+                            <i class="mdi mdi-close"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      v-if="(keys[index].macroSteps || []).length < MAX_MACRO_STEPS"
+                      class="btn-add-step"
+                      @click="addMacroStep(keys[index])"
+                      type="button"
+                    >
+                      <i class="mdi mdi-plus"></i> Add step
+                    </button>
+                    <p v-if="(keys[index].macroSteps || []).length === 0" class="macro-empty">
+                      No steps yet. Add actions that will run sequentially when this shortcut is pressed.
+                    </p>
                   </div>
                 </div>
 
@@ -1556,6 +1669,141 @@ a:hover { text-decoration: underline; }
 
 .hint { font-weight: 400; color: var(--text-muted); }
 .hint-link { font-weight: 400; color: var(--blue); font-size: 12px; }
+
+/* ── Macro builder ── */
+.macro-builder {
+  width: 100%;
+}
+
+.macro-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.macro-label i {
+  margin-right: 4px;
+}
+
+.macro-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.macro-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border, #e0e0e0);
+  border-radius: 8px;
+}
+
+.macro-step-num {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  min-width: 18px;
+  text-align: center;
+}
+
+.macro-step-action {
+  flex: 1;
+  min-width: 0;
+}
+
+.macro-step-delay {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.delay-input {
+  width: 70px !important;
+  text-align: right;
+  padding: 4px 6px !important;
+  font-size: 12px !important;
+}
+
+.delay-unit {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.macro-step-controls {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.btn-sm {
+  width: 26px !important;
+  height: 26px !important;
+  font-size: 14px !important;
+}
+
+.btn-add-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--blue, #4361ee);
+  background: transparent;
+  border: 1px dashed var(--blue, #4361ee);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-add-step:hover {
+  background: var(--bg-hover, rgba(67, 97, 238, 0.06));
+}
+
+.macro-empty {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+  padding: 8px 0;
+}
+
+.field-label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.btn-chain-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--blue, #4361ee);
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+
+.btn-chain-link:hover {
+  opacity: 1;
+}
+
+.btn-chain-link i {
+  font-size: 12px;
+}
 
 /* ── Toggle switch ── */
 .toggle {
