@@ -4,6 +4,13 @@ import type { KeySetting } from '../utils/url-matching'
 
 type ActionHandler = (request: KeySetting) => Promise<boolean> | boolean
 
+/** Actions handled in the content script, not the background action registry. */
+const CONTENT_SCRIPT_ACTIONS = ['javascript', 'showcheatsheet', 'toggledarkmode', 'trigger']
+
+/** Maximum number of steps allowed in a macro. */
+const MAX_MACRO_STEPS = 10
+
+
 /** Select a tab by direction or index. */
 async function selectTab(direction: string): Promise<void> {
   const tabs = await browser.tabs.query({ currentWindow: true })
@@ -720,6 +727,30 @@ const actionHandlers: Record<string, ActionHandler> = {
   },
 }
 
+// -- Macro (chained actions) --
+actionHandlers.macro = async (request) => {
+  const steps = request.macroSteps
+  if (!steps || steps.length === 0) return true
+
+  const capped = steps.slice(0, MAX_MACRO_STEPS)
+  for (const step of capped) {
+    if (step.delay && step.delay > 0) {
+      await new Promise((resolve) => setTimeout(resolve, step.delay))
+    }
+
+    if (CONTENT_SCRIPT_ACTIONS.includes(step.action)) {
+      // Forward content-script-only actions to the active tab
+      const [tab] = await browser.tabs.query({ active: true, currentWindow: true })
+      if (tab?.id) {
+        await browser.tabs.sendMessage(tab.id, { ...request, action: step.action }).catch(() => {})
+      }
+    } else {
+      await handleAction(step.action, request)
+    }
+  }
+  return true
+}
+
 // Register snippet-based actions
 for (const snippet of JS_SNIPPETS) {
   const code = snippet.code
@@ -741,4 +772,4 @@ export async function handleAction(action: string, request: KeySetting = {} as K
   return false
 }
 
-export { selectTab }
+export { selectTab, CONTENT_SCRIPT_ACTIONS, MAX_MACRO_STEPS }

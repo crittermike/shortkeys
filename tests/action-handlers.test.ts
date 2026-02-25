@@ -23,6 +23,7 @@ const mockBookmarksSearch = vi.fn()
 const mockBookmarksCreate = vi.fn()
 const mockBookmarksRemove = vi.fn()
 const mockManagementLaunchApp = vi.fn()
+const mockTabsSendMessage = vi.fn()
 
 // Mock executeScript and showPageToast globally
 vi.mock('../src/utils/execute-script', () => ({
@@ -44,6 +45,7 @@ const browserMock = {
     reload: mockTabsReload,
     discard: mockTabsDiscard,
     onUpdated: { addListener: vi.fn(), removeListener: vi.fn() },
+    sendMessage: mockTabsSendMessage,
   },
   windows: {
     create: mockWindowsCreate,
@@ -485,6 +487,127 @@ describe('handleAction', () => {
         url: 'https://github.com/search?q=react%20hooks&type=repositories',
         index: 3,
       })
+    })
+  })
+
+  describe('macro (chained actions)', () => {
+    it('returns true with no macroSteps', async () => {
+      const result = await handleAction('macro', { key: 'a', action: 'macro' })
+      expect(result).toBe(true)
+    })
+
+    it('returns true with empty macroSteps', async () => {
+      const result = await handleAction('macro', { key: 'a', action: 'macro', macroSteps: [] })
+      expect(result).toBe(true)
+    })
+
+    it('executes background actions sequentially', async () => {
+      const callOrder: string[] = []
+      mockTabsCreate.mockImplementation(async () => { callOrder.push('newtab'); return { id: 99 } })
+      mockTabsQuery.mockImplementation(async () => { callOrder.push('query'); return [defaultTab] })
+
+      await handleAction('macro', {
+        key: 'a',
+        action: 'macro',
+        macroSteps: [
+          { action: 'newtab' },
+          { action: 'closetab' },
+        ],
+      })
+
+      expect(mockTabsCreate).toHaveBeenCalled()
+      expect(mockTabsRemove).toHaveBeenCalled()
+    })
+
+    it('forwards content-script-only actions to the active tab', async () => {
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, id: 42 }])
+      mockTabsSendMessage.mockResolvedValue(undefined)
+
+      await handleAction('macro', {
+        key: 'a',
+        action: 'macro',
+        macroSteps: [
+          { action: 'showcheatsheet' },
+          { action: 'toggledarkmode' },
+        ],
+      })
+
+      expect(mockTabsSendMessage).toHaveBeenCalledTimes(2)
+      expect(mockTabsSendMessage).toHaveBeenCalledWith(42, expect.objectContaining({ action: 'showcheatsheet' }))
+      expect(mockTabsSendMessage).toHaveBeenCalledWith(42, expect.objectContaining({ action: 'toggledarkmode' }))
+    })
+
+    it('handles mix of background and content-script actions', async () => {
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, id: 5 }])
+      mockTabsSendMessage.mockResolvedValue(undefined)
+
+      await handleAction('macro', {
+        key: 'a',
+        action: 'macro',
+        macroSteps: [
+          { action: 'newtab' },
+          { action: 'showcheatsheet' },
+          { action: 'closetab' },
+        ],
+      })
+
+      expect(mockTabsCreate).toHaveBeenCalled()
+      expect(mockTabsSendMessage).toHaveBeenCalledWith(5, expect.objectContaining({ action: 'showcheatsheet' }))
+      expect(mockTabsRemove).toHaveBeenCalled()
+    })
+
+    it('respects delay between steps', async () => {
+      vi.useFakeTimers()
+      const start = Date.now()
+
+      const promise = handleAction('macro', {
+        key: 'a',
+        action: 'macro',
+        macroSteps: [
+          { action: 'newtab', delay: 200 },
+          { action: 'closetab', delay: 100 },
+        ],
+      })
+
+      // Advance past both delays
+      await vi.advanceTimersByTimeAsync(300)
+      await promise
+
+      expect(mockTabsCreate).toHaveBeenCalled()
+      expect(mockTabsRemove).toHaveBeenCalled()
+
+      vi.useRealTimers()
+    })
+
+    it('caps steps at MAX_MACRO_STEPS', async () => {
+      const steps = Array.from({ length: 15 }, () => ({ action: 'newtab' }))
+
+      await handleAction('macro', {
+        key: 'a',
+        action: 'macro',
+        macroSteps: steps,
+      })
+
+      // MAX_MACRO_STEPS is 10, so only 10 calls
+      expect(mockTabsCreate).toHaveBeenCalledTimes(10)
+    })
+
+    it('gracefully handles sendMessage failure for content-script actions', async () => {
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, id: 7 }])
+      mockTabsSendMessage.mockRejectedValue(new Error('No receiver'))
+
+      // Should not throw
+      const result = await handleAction('macro', {
+        key: 'a',
+        action: 'macro',
+        macroSteps: [
+          { action: 'javascript' },
+          { action: 'newtab' },
+        ],
+      })
+
+      expect(result).toBe(true)
+      expect(mockTabsCreate).toHaveBeenCalled()
     })
   })
 
