@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { isAllowedSite } from '../src/utils/url-matching'
-import type { KeySetting } from '../src/utils/url-matching'
+import { isAllowedSite, isGroupAllowed } from '../src/utils/url-matching'
+import type { KeySetting, GroupSettings } from '../src/utils/url-matching'
 
 /**
  * Tests for the shortcut groups feature.
@@ -233,5 +233,97 @@ describe('group search/filter interaction', () => {
 
     expect(grouped.has('Vim')).toBe(true)
     expect(grouped.has(DEFAULT_GROUP)).toBe(false) // "New tab" not in results
+  })
+})
+
+describe('group site activation filtering', () => {
+  /** Simulate the background.ts filtering logic */
+  function filterKeys(
+    keys: KeySetting[],
+    url: string,
+    groupSettingsData: Record<string, GroupSettings>,
+  ): KeySetting[] {
+    return keys.filter((key) =>
+      key.enabled !== false &&
+      isGroupAllowed(key.group, url, groupSettingsData) &&
+      isAllowedSite(key, url)
+    )
+  }
+
+  it('filters shortcuts by group activateOn pattern', () => {
+    const keys: KeySetting[] = [
+      { key: 'j', action: 'scrolldown', group: 'GitHub' },
+      { key: 'k', action: 'scrollup', group: 'GitHub' },
+      { key: 'a', action: 'newtab' },
+    ]
+    const groupSettings = { 'GitHub': { activateOn: '*github.com*' } }
+
+    const onGitHub = filterKeys(keys, 'https://github.com/repo', groupSettings)
+    expect(onGitHub).toHaveLength(3)
+
+    const onOther = filterKeys(keys, 'https://example.com', groupSettings)
+    expect(onOther).toHaveLength(1)
+    expect(onOther[0].key).toBe('a')
+  })
+
+  it('filters shortcuts by group deactivateOn pattern', () => {
+    const keys: KeySetting[] = [
+      { key: 'j', action: 'scrolldown', group: 'Nav' },
+      { key: 'a', action: 'newtab' },
+    ]
+    const groupSettings = { 'Nav': { deactivateOn: '*facebook.com*' } }
+
+    const onFacebook = filterKeys(keys, 'https://facebook.com', groupSettings)
+    expect(onFacebook).toHaveLength(1)
+    expect(onFacebook[0].key).toBe('a')
+
+    const onOther = filterKeys(keys, 'https://example.com', groupSettings)
+    expect(onOther).toHaveLength(2)
+  })
+
+  it('group filtering works alongside per-shortcut site filtering', () => {
+    const keys: KeySetting[] = [
+      {
+        key: 'j', action: 'scrolldown', group: 'Dev',
+        blacklist: 'whitelist', sitesArray: ['*github.com*'],
+      },
+      { key: 'a', action: 'newtab' },
+    ]
+    const groupSettings = { 'Dev': { activateOn: '*github.com*\n*gitlab.com*' } }
+
+    // On GitHub: group allows it, per-shortcut whitelist allows it
+    const onGitHub = filterKeys(keys, 'https://github.com/repo', groupSettings)
+    expect(onGitHub).toHaveLength(2)
+
+    // On GitLab: group allows it, but per-shortcut whitelist blocks it (only github.com)
+    const onGitLab = filterKeys(keys, 'https://gitlab.com/repo', groupSettings)
+    expect(onGitLab).toHaveLength(1)
+    expect(onGitLab[0].key).toBe('a')
+  })
+
+  it('disabled shortcuts are excluded regardless of group settings', () => {
+    const keys: KeySetting[] = [
+      { key: 'j', action: 'scrolldown', group: 'Vim', enabled: false },
+      { key: 'k', action: 'scrollup', group: 'Vim', enabled: true },
+    ]
+    const groupSettings = {}
+
+    const result = filterKeys(keys, 'https://example.com', groupSettings)
+    expect(result).toHaveLength(1)
+    expect(result[0].key).toBe('k')
+  })
+
+  it('ungrouped shortcuts use default group for filtering', () => {
+    const keys: KeySetting[] = [
+      { key: 'a', action: 'newtab' }, // no group = My Shortcuts
+      { key: 'b', action: 'closetab' },
+    ]
+    const groupSettings = { 'My Shortcuts': { activateOn: '*youtube.com*' } }
+
+    const onYouTube = filterKeys(keys, 'https://youtube.com/watch', groupSettings)
+    expect(onYouTube).toHaveLength(2)
+
+    const onOther = filterKeys(keys, 'https://example.com', groupSettings)
+    expect(onOther).toHaveLength(0)
   })
 })

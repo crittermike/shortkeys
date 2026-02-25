@@ -1,8 +1,9 @@
-import { ref, computed } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { v4 as uuid } from 'uuid'
-import type { KeySetting } from '@/utils/url-matching'
+import type { KeySetting, GroupSettings } from '@/utils/url-matching'
 import { useShortcuts } from './useShortcuts'
 import { useSearch } from './useSearch'
+import { saveGroupSettings, loadGroupSettings } from '@/utils/storage'
 
 export const DEFAULT_GROUP = 'My Shortcuts'
 
@@ -14,6 +15,8 @@ export function useGroups() {
   const editingGroupName = ref<string | null>(null)
   const newGroupName = ref('')
   const groupMenuOpen = ref<string | null>(null)
+  const groupSettings = reactive<Record<string, GroupSettings>>({})
+  const expandedGroupSiteFilter = ref<string | null>(null)
 
   /** Get ordered list of unique group names */
   const groupNames = computed(() => {
@@ -37,6 +40,33 @@ export function useGroups() {
     }
     return map
   })
+
+  /** Load group settings from storage */
+  async function loadGroupSettingsFromStorage() {
+    const loaded = await loadGroupSettings()
+    // Clear existing and merge loaded settings
+    for (const key of Object.keys(groupSettings)) delete groupSettings[key]
+    Object.assign(groupSettings, loaded)
+  }
+
+  /** Save group settings to storage */
+  async function persistGroupSettings() {
+    // Only save groups that have non-empty settings
+    const toSave: Record<string, GroupSettings> = {}
+    for (const [name, settings] of Object.entries(groupSettings)) {
+      if (settings.activateOn?.trim() || settings.deactivateOn?.trim()) {
+        toSave[name] = settings
+      }
+    }
+    await saveGroupSettings(toSave)
+  }
+
+  /** Check if a group has site activation rules configured */
+  function hasGroupSiteRules(group: string): boolean {
+    const settings = groupSettings[group]
+    if (!settings) return false
+    return !!(settings.activateOn?.trim() || settings.deactivateOn?.trim())
+  }
 
   function toggleGroupCollapse(group: string) {
     if (collapsedGroups.value.has(group)) {
@@ -62,6 +92,11 @@ export function useGroups() {
   function deleteGroup(group: string) {
     if (!confirm(`Delete all ${groupedIndices.value.get(group)?.length || 0} shortcuts in "${group}"?`)) return
     keys.value = keys.value.filter((k) => (k.group || DEFAULT_GROUP) !== group)
+    // Clean up group settings
+    if (groupSettings[group]) {
+      delete groupSettings[group]
+      persistGroupSettings()
+    }
   }
 
   function startRenameGroup(group: string) {
@@ -76,6 +111,12 @@ export function useGroups() {
         if ((k.group || DEFAULT_GROUP) === oldName) {
           k.group = trimmed === DEFAULT_GROUP ? undefined : trimmed
         }
+      }
+      // Migrate group settings to new name
+      if (groupSettings[oldName]) {
+        groupSettings[trimmed] = { ...groupSettings[oldName] }
+        delete groupSettings[oldName]
+        persistGroupSettings()
       }
     }
     editingGroupName.value = null
@@ -100,6 +141,18 @@ export function useGroups() {
     groupMenuOpen.value = null
   }
 
+  function toggleGroupSiteFilter(group: string) {
+    if (expandedGroupSiteFilter.value === group) {
+      expandedGroupSiteFilter.value = null
+    } else {
+      expandedGroupSiteFilter.value = group
+      // Initialize settings object if it doesn't exist
+      if (!groupSettings[group]) {
+        groupSettings[group] = {}
+      }
+    }
+  }
+
   return {
     DEFAULT_GROUP,
     collapsedGroups,
@@ -108,6 +161,8 @@ export function useGroups() {
     groupMenuOpen,
     groupNames,
     groupedIndices,
+    groupSettings,
+    expandedGroupSiteFilter,
     toggleGroupCollapse,
     toggleGroupEnabled,
     isGroupAllEnabled,
@@ -118,5 +173,9 @@ export function useGroups() {
     createNewGroup,
     toggleGroupMenu,
     closeGroupMenus,
+    toggleGroupSiteFilter,
+    hasGroupSiteRules,
+    loadGroupSettingsFromStorage,
+    persistGroupSettings,
   }
 }

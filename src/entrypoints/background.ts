@@ -1,9 +1,9 @@
 import { v4 as uuid } from 'uuid'
-import { isAllowedSite } from '@/utils/url-matching'
+import { isAllowedSite, isGroupAllowed } from '@/utils/url-matching'
 import { handleAction } from '@/actions/action-handlers'
 import { initLastUsedTabTracking, switchToLastUsedTab } from '@/actions/last-used-tab'
 import captureScreenshot from '@/actions/capture-screenshot'
-import { loadKeys, saveKeys, migrateLocalToSync, onKeysChanged } from '@/utils/storage'
+import { loadKeys, saveKeys, migrateLocalToSync, onKeysChanged, loadGroupSettings } from '@/utils/storage'
 import { trackUsage } from '@/utils/usage-tracking'
 
 export default defineBackground(() => {
@@ -149,7 +149,12 @@ export default defineBackground(() => {
         }
 
         const keys = JSON.parse(raw)
-        const allowedKeys = keys.filter((key: any) => key.enabled !== false && isAllowedSite(key, currentUrl))
+        const groupSettingsData = await loadGroupSettings()
+        const allowedKeys = keys.filter((key: any) =>
+          key.enabled !== false &&
+          isGroupAllowed(key.group, currentUrl, groupSettingsData) &&
+          isAllowedSite(key, currentUrl)
+        )
         sendResponse(allowedKeys)
       })()
       return true
