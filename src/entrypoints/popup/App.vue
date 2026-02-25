@@ -343,24 +343,25 @@ body {
 
 .quick-add-label {
   display: block;
-  font-size: 11px;
-  font-weight: 600;
-  color: #64748b;
-  margin-bottom: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #94a3b8;
+  margin-bottom: 3px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
 }
 
 .quick-add-actions {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
+  margin-top: 4px;
 }
 
 .quick-add-cancel {
-  padding: 6px 12px;
+  padding: 5px 10px;
   border: 1px solid #e2e8f0;
-  border-radius: 6px;
+  border-radius: 5px;
   background: white;
   color: #64748b;
   font-size: 12px;
@@ -368,9 +369,9 @@ body {
 }
 
 .quick-add-save {
-  padding: 6px 12px;
+  padding: 5px 10px;
   border: none;
-  border-radius: 6px;
+  border-radius: 5px;
   background: #4361ee;
   color: white;
   font-size: 12px;
@@ -385,5 +386,108 @@ body {
 
 .quick-add-save:hover:not(:disabled) {
   background: #3451d1;
+}
+
+/* ShortcutRecorder overrides for compact popup */
+.quick-add .field-input {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 5px 0 0 5px;
+  border-right: none;
+  font-size: 13px;
+  font-family: 'SF Mono', Menlo, Consolas, monospace;
+  font-weight: 500;
+  color: #1a1a2e;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.quick-add .field-input:focus {
+  border-color: #4361ee;
+  box-shadow: none;
+}
+
+.quick-add .field-input::placeholder {
+  color: #cbd5e1;
+  font-weight: 400;
+}
+
+.quick-add .record-btn {
+  padding: 0 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 0 5px 5px 0;
+  background: #f8fafc;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 400;
+  gap: 3px;
+}
+
+.quick-add .record-btn:hover {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.quick-add .field-input:focus + .record-btn {
+  border-color: #4361ee;
+}
+
+.quick-add .record-btn .mdi {
+  font-size: 12px;
+}
+
+.quick-add .record-btn .record-text {
+  font-size: 11px;
+}
+
+/* SearchSelect overrides for compact popup */
+.quick-add .ss-trigger {
+  padding: 6px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 5px;
+  font-size: 13px;
+  color: #1a1a2e;
+  background: #fff;
+  transition: border-color 0.15s;
+}
+
+.quick-add .ss-trigger:hover {
+  border-color: #cbd5e1;
+}
+
+.quick-add .ss-trigger:focus {
+  border-color: #4361ee;
+  box-shadow: none;
+  outline: none;
+}
+
+.quick-add .ss-trigger-text.placeholder {
+  color: #cbd5e1;
+}
+
+.quick-add .ss-search {
+  padding: 6px 10px;
+  border: 1px solid #4361ee;
+  border-radius: 5px 5px 0 0;
+  font-size: 13px;
+  box-shadow: none;
+}
+
+.quick-add .ss-dropdown {
+  max-height: 200px;
+  border-radius: 0 0 5px 5px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.quick-add .ss-group-label {
+  padding: 4px 10px 3px;
+  font-size: 10px;
+}
+
+.quick-add .ss-option {
+  padding: 5px 10px 5px 16px;
+  font-size: 12px;
 }
 </style>
