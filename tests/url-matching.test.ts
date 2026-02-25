@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { globToRegex, isAllowedSite, isGroupAllowed } from '../src/utils/url-matching'
+import { globToRegex, isAllowedSite, isGroupAllowed, normalizeUrlPattern } from '../src/utils/url-matching'
 
 describe('globToRegex', () => {
   it('converts a simple glob with wildcard', () => {
@@ -252,5 +252,47 @@ describe('isGroupAllowed', () => {
     const settings = { 'Dev': { activateOn: '/[invalid/' } }
     // Invalid regex should not crash, just not match
     expect(isGroupAllowed('Dev', 'https://example.com', settings)).toBe(false)
+  })
+})
+
+describe('normalizeUrlPattern', () => {
+  it('wraps bare domains with wildcards', () => {
+    expect(normalizeUrlPattern('gmail.com')).toBe('*gmail.com*')
+    expect(normalizeUrlPattern('github.com/myorg')).toBe('*github.com/myorg*')
+  })
+
+  it('leaves patterns with wildcards unchanged', () => {
+    expect(normalizeUrlPattern('*gmail.com*')).toBe('*gmail.com*')
+    expect(normalizeUrlPattern('*.github.com/*')).toBe('*.github.com/*')
+  })
+
+  it('leaves regex patterns unchanged', () => {
+    expect(normalizeUrlPattern('/^https:\\/\\/github\\.com/')).toBe('/^https:\\/\\/github\\.com/')
+  })
+
+  it('handles single word patterns', () => {
+    expect(normalizeUrlPattern('localhost')).toBe('*localhost*')
+  })
+})
+
+describe('isGroupAllowed with bare domains', () => {
+  it('matches bare domain in activateOn against full URL', () => {
+    const settings = { 'Work': { activateOn: 'gmail.com' } }
+    expect(isGroupAllowed('Work', 'https://mail.google.com', settings)).toBe(false)
+    expect(isGroupAllowed('Work', 'https://gmail.com/inbox', settings)).toBe(true)
+    expect(isGroupAllowed('Work', 'https://gmail.com', settings)).toBe(true)
+  })
+
+  it('matches bare domain in deactivateOn against full URL', () => {
+    const settings = { 'Work': { deactivateOn: 'settings' } }
+    expect(isGroupAllowed('Work', 'https://gmail.com/inbox', settings)).toBe(true)
+    expect(isGroupAllowed('Work', 'https://gmail.com/settings', settings)).toBe(false)
+  })
+
+  it('works with bare domain in both fields', () => {
+    const settings = { 'Work': { activateOn: 'github.com', deactivateOn: 'settings' } }
+    expect(isGroupAllowed('Work', 'https://github.com/repo', settings)).toBe(true)
+    expect(isGroupAllowed('Work', 'https://github.com/settings', settings)).toBe(false)
+    expect(isGroupAllowed('Work', 'https://example.com', settings)).toBe(false)
   })
 })

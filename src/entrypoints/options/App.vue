@@ -200,7 +200,7 @@ onMounted(async () => {
                       v-model="groupSettings[group].activateOn"
                       @blur="persistGroupSettings()"
                       rows="2"
-                      placeholder="URL patterns (one per line)&#10;*example.com*"
+                      placeholder="e.g. gmail.com&#10;*github.com/myorg*"
                     ></textarea>
                   </div>
                   <div class="group-site-field">
@@ -210,12 +210,14 @@ onMounted(async () => {
                       v-model="groupSettings[group].deactivateOn"
                       @blur="persistGroupSettings()"
                       rows="2"
-                      placeholder="URL patterns (one per line)&#10;*example.com*"
+                      placeholder="e.g. mail.google.com/settings*"
                     ></textarea>
                   </div>
                 </div>
                 <p class="group-site-hint">
-                  Use <code>*</code> as wildcard. Leave both empty to activate everywhere.
+                  Applies to all shortcuts in this group. Individual shortcuts can still override with their own site filter.
+                  Simple domains like <code>gmail.com</code> work automatically, or use <code>*</code> as a wildcard.
+                  If both fields are set, the URL must match "activate" and not match "deactivate".
                 </p>
               </div>
             </Transition>

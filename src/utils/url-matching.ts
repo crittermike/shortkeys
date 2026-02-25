@@ -24,6 +24,18 @@ export function globToRegex(glob: string): RegExp {
   return new RegExp(regexChars.join(''))
 }
 
+/**
+ * Normalize a URL pattern for intuitive matching.
+ * If the pattern has no wildcards and isn't a regex (wrapped in /.../),
+ * wrap it with * on both sides so bare domains like "gmail.com" match
+ * full URLs like "https://mail.google.com/...".
+ */
+export function normalizeUrlPattern(pattern: string): string {
+  if (/^\/.+\/$/.test(pattern)) return pattern
+  if (pattern.includes('*')) return pattern
+  return `*${pattern}*`
+}
+
 export interface MacroStep {
   action: string
   delay?: number
@@ -88,7 +100,7 @@ export function isAllowedSite(keySetting: KeySetting, url: string): boolean {
  *
  * - activateOn: group shortcuts only active on matching URLs (whitelist)
  * - deactivateOn: group shortcuts disabled on matching URLs (blacklist)
- * - If both are set, activateOn takes precedence (must match AND not be deactivated)
+ * - If both are set, URL must match activateOn AND not match deactivateOn
  * - If neither is set, all URLs are allowed (default behavior)
  */
 export function isGroupAllowed(
@@ -111,7 +123,7 @@ export function isGroupAllowed(
   // If activateOn patterns exist, URL must match at least one
   if (activatePatterns.length > 0) {
     const matchesActivate = activatePatterns.some(pattern => {
-      try { return globToRegex(pattern).test(url) } catch { return false }
+      try { return globToRegex(normalizeUrlPattern(pattern)).test(url) } catch { return false }
     })
     if (!matchesActivate) return false
   }
@@ -119,7 +131,7 @@ export function isGroupAllowed(
   // If deactivateOn patterns exist, URL must NOT match any
   if (deactivatePatterns.length > 0) {
     const matchesDeactivate = deactivatePatterns.some(pattern => {
-      try { return globToRegex(pattern).test(url) } catch { return false }
+      try { return globToRegex(normalizeUrlPattern(pattern)).test(url) } catch { return false }
     })
     if (matchesDeactivate) return false
   }
