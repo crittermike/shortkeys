@@ -104,6 +104,7 @@ export const ACTION_CATEGORIES: Record<string, ActionDefinition[]> = {
     { value: 'capturescreenshot', label: 'Capture current viewport screenshot' },
     { value: 'capturefullsizescreenshot', label: 'Capture full size screenshot (max 16,348px)' },
     { value: 'forcecapturefullsizescreenshot', label: 'Force capture full size screenshot' },
+    { value: 'macro', label: 'Run a macro (chain multiple actions)' },
   ],
   'Video Controls': [
     { value: 'videoplaypause', label: 'Play/pause video' },

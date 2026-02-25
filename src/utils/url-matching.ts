@@ -24,6 +24,12 @@ export function globToRegex(glob: string): RegExp {
   return new RegExp(regexChars.join(''))
 }
 
+export interface MacroStep {
+  action: string
+  delay?: number
+}
+
+
 export interface KeySetting {
   key: string
   action: string
@@ -47,6 +53,7 @@ export interface KeySetting {
   currentWindow?: boolean
   enabled?: boolean
   group?: string
+  macroSteps?: MacroStep[]
 }
 
 /**

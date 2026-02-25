@@ -57,6 +57,7 @@ describe('getAllActionValues', () => {
     expect(values).toContain('top')
     expect(values).toContain('bottom')
     expect(values).toContain('capturescreenshot')
+    expect(values).toContain('macro')
   })
 
   it('includes all core tab actions', () => {
