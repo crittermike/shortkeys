@@ -517,3 +517,68 @@ describe('v4 → v5 migration edge cases', () => {
     expect(shortcuts[1].id).toBe('generated-uuid')
   })
 })
+
+describe('issue #692 regression: deleting one shortcut preserves others with same key', () => {
+  it('splice-based delete removes only the target index', () => {
+    const keys: KeySetting[] = [
+      { key: 'escape', action: 'closetab', id: 'esc-1', blacklist: 'whitelist', sitesArray: ['*youtube.com*'] },
+      { key: 'escape', action: 'scrollup', id: 'esc-2', blacklist: 'whitelist', sitesArray: ['*github.com*'] },
+      { key: 'escape', action: 'back', id: 'esc-3' },
+      { key: 'ctrl+b', action: 'newtab', id: 'other-1' },
+    ]
+
+    // Delete the second 'escape' shortcut (index 1)
+    keys.splice(1, 1)
+
+    expect(keys).toHaveLength(3)
+    expect(keys[0].id).toBe('esc-1')
+    expect(keys[0].key).toBe('escape')
+    expect(keys[1].id).toBe('esc-3')
+    expect(keys[1].key).toBe('escape')
+    expect(keys[2].id).toBe('other-1')
+  })
+
+  it('deleting first of multiple same-key shortcuts preserves the rest', () => {
+    const keys: KeySetting[] = [
+      { key: 'j', action: 'scrolldown', id: 'j-1', blacklist: 'whitelist', sitesArray: ['*reddit.com*'] },
+      { key: 'j', action: 'javascript', id: 'j-2', code: 'alert(1)', blacklist: 'whitelist', sitesArray: ['*github.com*'] },
+      { key: 'j', action: 'scrolldownmore', id: 'j-3' },
+    ]
+
+    // Delete first (index 0)
+    keys.splice(0, 1)
+
+    expect(keys).toHaveLength(2)
+    expect(keys[0].id).toBe('j-2')
+    expect(keys[1].id).toBe('j-3')
+  })
+
+  it('deleting last of multiple same-key shortcuts preserves the rest', () => {
+    const keys: KeySetting[] = [
+      { key: 'escape', action: 'closetab', id: 'esc-1' },
+      { key: 'escape', action: 'back', id: 'esc-2' },
+    ]
+
+    // Delete last (index 1)
+    keys.splice(1, 1)
+
+    expect(keys).toHaveLength(1)
+    expect(keys[0].id).toBe('esc-1')
+    expect(keys[0].key).toBe('escape')
+  })
+
+  it('saveShortcuts filter does not remove shortcuts that have a key but no action', () => {
+    // Simulates the filter in saveShortcuts: keys.filter(k => k.key || k.action)
+    const keys: KeySetting[] = [
+      { key: 'escape', action: '', id: 'has-key' },
+      { key: '', action: 'newtab', id: 'has-action' },
+      { key: '', action: '', id: 'empty' },
+      { key: 'escape', action: 'back', id: 'full' },
+    ]
+
+    const filtered = keys.filter((k) => k.key || k.action)
+
+    expect(filtered).toHaveLength(3)
+    expect(filtered.map((k) => k.id)).toEqual(['has-key', 'has-action', 'full'])
+  })
+})

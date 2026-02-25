@@ -141,3 +141,65 @@ describe('shouldStopCallback', () => {
     })
   })
 })
+
+describe('issue #688 regression: activeInInputs with browser shortcut combos', () => {
+  function makeElement(tagName, { classList = [], isContentEditable = false, role = null } = {}) {
+    return {
+      tagName,
+      classList: {
+        contains: (cls) => classList.includes(cls),
+      },
+      isContentEditable,
+      getAttribute: (name) => name === 'role' ? role : null,
+    }
+  }
+
+  it('activeInInputs works for meta+number combos (cmd+1, cmd+2, etc.)', () => {
+    const keys = [
+      { key: 'meta+1', action: 'gototabbyindex', matchindex: '1', activeInInputs: true },
+      { key: 'meta+2', action: 'gototabbyindex', matchindex: '2', activeInInputs: true },
+      { key: 'meta+e', action: 'openbookmark', bookmark: 'test', activeInInputs: true },
+    ]
+    const el = makeElement('INPUT')
+
+    // All should NOT stop because activeInInputs is true
+    expect(shouldStopCallback(el, 'meta+1', keys)).toBe(false)
+    expect(shouldStopCallback(el, 'meta+2', keys)).toBe(false)
+    expect(shouldStopCallback(el, 'meta+e', keys)).toBe(false)
+  })
+
+  it('activeInInputs false blocks meta+number combos in inputs', () => {
+    const keys = [
+      { key: 'meta+1', action: 'gototabbyindex', matchindex: '1', activeInInputs: false },
+    ]
+    const el = makeElement('INPUT')
+    expect(shouldStopCallback(el, 'meta+1', keys)).toBe(true)
+  })
+
+  it('fetchConfig finds the correct shortcut for meta+number combos', () => {
+    const keys = [
+      { key: 'meta+1', action: 'gototabbyindex', matchindex: '1', activeInInputs: true },
+      { key: 'ctrl+b', action: 'newtab', activeInInputs: false },
+    ]
+    const config = fetchConfig(keys, 'meta+1')
+    expect(config).toBeTruthy()
+    expect(config.action).toBe('gototabbyindex')
+    expect(config.activeInInputs).toBe(true)
+  })
+
+  it('activeInInputs works in contentEditable elements', () => {
+    const keys = [
+      { key: 'meta+e', action: 'openbookmark', bookmark: 'test', activeInInputs: true },
+    ]
+    const el = makeElement('DIV', { isContentEditable: true })
+    expect(shouldStopCallback(el, 'meta+e', keys)).toBe(false)
+  })
+
+  it('activeInInputs works in elements with role="textbox"', () => {
+    const keys = [
+      { key: 'meta+1', action: 'gototabbyindex', matchindex: '1', activeInInputs: true },
+    ]
+    const el = makeElement('DIV', { role: 'textbox' })
+    expect(shouldStopCallback(el, 'meta+1', keys)).toBe(false)
+  })
+})
