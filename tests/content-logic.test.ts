@@ -203,3 +203,46 @@ describe('issue #688 regression: activeInInputs with browser shortcut combos', (
     expect(shouldStopCallback(el, 'meta+1', keys)).toBe(false)
   })
 })
+
+describe('issue #663 regression: ctrl+shift+c should not match shift+c', () => {
+  it('fetchConfig does not match ctrl+shift+c when combo is shift+c', () => {
+    const keys = [
+      { key: 'ctrl+shift+c', action: 'copyurl' },
+    ]
+    // Mousetrap sends 'shift+c' when user presses Shift+C (capital C)
+    // fetchConfig should NOT match this against 'ctrl+shift+c'
+    expect(fetchConfig(keys, 'shift+c')).toBe(false)
+  })
+
+  it('fetchConfig correctly matches ctrl+shift+c when all modifiers present', () => {
+    const keys = [
+      { key: 'ctrl+shift+c', action: 'copyurl' },
+    ]
+    expect(fetchConfig(keys, 'ctrl+shift+c')).toBeTruthy()
+    expect(fetchConfig(keys, 'ctrl+shift+c').action).toBe('copyurl')
+  })
+
+  it('modifier key combinations are exact matches', () => {
+    const keys = [
+      { key: 'ctrl+shift+c', action: 'copyurl' },
+      { key: 'shift+c', action: 'newtab' },
+      { key: 'ctrl+c', action: 'closetab' },
+      { key: 'c', action: 'scrolldown' },
+    ]
+
+    expect(fetchConfig(keys, 'ctrl+shift+c').action).toBe('copyurl')
+    expect(fetchConfig(keys, 'shift+c').action).toBe('newtab')
+    expect(fetchConfig(keys, 'ctrl+c').action).toBe('closetab')
+    expect(fetchConfig(keys, 'c').action).toBe('scrolldown')
+  })
+
+  it('partial modifier combos do not cross-match', () => {
+    const keys = [
+      { key: 'ctrl+shift+k', action: 'newtab' },
+    ]
+    expect(fetchConfig(keys, 'ctrl+k')).toBe(false)
+    expect(fetchConfig(keys, 'shift+k')).toBe(false)
+    expect(fetchConfig(keys, 'k')).toBe(false)
+    expect(fetchConfig(keys, 'ctrl+shift+k')).toBeTruthy()
+  })
+})
