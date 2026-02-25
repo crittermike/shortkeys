@@ -14,7 +14,8 @@
     "test:coverage": "vitest run --coverage",
     "postinstall": "wxt prepare || true",
     "build:site": "npx tsx scripts/build-catalog.ts && cp -r public/images site/images",
-    "test:e2e": "npx playwright test"
+    "test:e2e": "npx playwright test",
+    "visual-review": "npx tsx scripts/visual-review.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
