@@ -5,7 +5,7 @@ import { useShortcuts } from './useShortcuts'
 import { useToast } from './useToast'
 
 export function usePacks() {
-  const { keys } = useShortcuts()
+  const { keys, saveShortcuts } = useShortcuts()
   const { showSnack } = useToast()
 
   const previewPack = ref<ShortcutPack | null>(null)
@@ -16,7 +16,7 @@ export function usePacks() {
     return pack.shortcuts.filter((s) => existing.has(s.key?.toLowerCase())).map((s) => s.key)
   }
 
-  function installPack(pack: ShortcutPack) {
+  async function installPack(pack: ShortcutPack) {
     const mode = packConflictMode.value
     const groupName = pack.name
     const existingKeys = new Set(keys.value.map((k) => k.key?.toLowerCase()).filter(Boolean))
@@ -43,6 +43,7 @@ export function usePacks() {
     }
 
     previewPack.value = null
+    await saveShortcuts()
     showSnack(`✓ Added "${pack.name}" (${newShortcuts.length} shortcuts)`)
   }
 
