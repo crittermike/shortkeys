@@ -7,6 +7,7 @@ import ShortcutDetails from '@/components/ShortcutDetails.vue'
 import ImportTab from '@/components/ImportTab.vue'
 import PackPreviewModal from '@/components/PackPreviewModal.vue'
 import ExportTab from '@/components/ExportTab.vue'
+import AnalyticsTab from '@/components/AnalyticsTab.vue'
 import { useTheme } from '@/composables/useTheme'
 import { useToast } from '@/composables/useToast'
 import { useShortcuts } from '@/composables/useShortcuts'
@@ -92,6 +93,9 @@ onMounted(async () => {
         </button>
         <button :class="['tab-btn', { active: activeTab === 2 }]" @click="activeTab = 2">
           <i class="mdi mdi-export"></i> Export
+        </button>
+        <button :class="['tab-btn', { active: activeTab === 3 }]" @click="activeTab = 3">
+          <i class="mdi mdi-chart-line"></i> Analytics
         </button>
       </div>
 
@@ -292,6 +296,11 @@ onMounted(async () => {
       <!-- Export Tab -->
       <div v-show="activeTab === 2" class="tab-content">
         <ExportTab />
+      </div>
+
+      <!-- Analytics Tab -->
+      <div v-show="activeTab === 3" class="tab-content">
+        <AnalyticsTab />
       </div>
     </main>
 

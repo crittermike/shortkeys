@@ -4,6 +4,7 @@ import { handleAction } from '@/actions/action-handlers'
 import { initLastUsedTabTracking, switchToLastUsedTab } from '@/actions/last-used-tab'
 import captureScreenshot from '@/actions/capture-screenshot'
 import { loadKeys, saveKeys, migrateLocalToSync, onKeysChanged } from '@/utils/storage'
+import { trackUsage } from '@/utils/usage-tracking'
 
 export default defineBackground(() => {
   initLastUsedTabTracking()
@@ -94,6 +95,10 @@ export default defineBackground(() => {
   browser.commands.onCommand.addListener((command) => {
     const action = command.split('-')[1]
 
+    // Track usage for manifest command shortcuts (no shortcut ID available from commands API)
+    // Commands don't carry the full KeySetting, so we can't track by ID here.
+    // Usage tracking for these is handled when they route through the message listener instead.
+
     // Handle special actions that need direct imports
     if (action === 'lastusedtab') {
       switchToLastUsedTab()
@@ -148,6 +153,17 @@ export default defineBackground(() => {
         sendResponse(allowedKeys)
       })()
       return true
+    }
+
+    // Handle usage tracking messages from content scripts
+    if (action === 'trackUsage') {
+      trackUsage(request.shortcutId)
+      return
+    }
+
+    // Track usage for all dispatched actions (if shortcut has an ID)
+    if (request.id) {
+      trackUsage(request.id)
     }
 
     // Handle special actions
