@@ -4,13 +4,13 @@ import { useToast } from './useToast'
 import { DEFAULT_GROUP } from './useGroups'
 
 export function useImportExport() {
-  const { keys, ensureIds } = useShortcuts()
+  const { keys, ensureIds, saveShortcuts } = useShortcuts()
   const { showSnack } = useToast()
 
   const importJson = ref('')
   const shareLink = ref('')
 
-  function importKeys() {
+  async function importKeys() {
     try {
       const parsed = JSON.parse(importJson.value)
       // Filter out empty/invalid shortcuts (#472/#598)
@@ -19,6 +19,7 @@ export function useImportExport() {
       )
       keys.value = keys.value.concat(valid)
       ensureIds()
+      await saveShortcuts()
       showSnack('Imported successfully!')
     } catch {
       showSnack('Invalid JSON. Please check and try again.', 'danger')
