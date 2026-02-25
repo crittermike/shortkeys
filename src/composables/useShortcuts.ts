@@ -78,8 +78,6 @@ async function loadSavedKeys() {
   if (saved) {
     keys.value = JSON.parse(saved)
     ensureIds()
-  } else {
-    addShortcut()
   }
 }
 

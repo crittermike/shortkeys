@@ -137,8 +137,27 @@ onMounted(async () => {
           </div>
         </div>
 
+        <!-- Empty state (no shortcuts yet) -->
+        <div v-if="keys.length === 0" class="empty-state">
+          <div class="empty-state-icon">
+            <i class="mdi mdi-keyboard-outline"></i>
+          </div>
+          <h2 class="empty-state-title">No shortcuts yet</h2>
+          <p class="empty-state-desc">
+            Create custom keyboard shortcuts for 90+ browser actions — tab management, scrolling, navigation, running JavaScript, and more.
+          </p>
+          <div class="empty-state-actions">
+            <button class="btn btn-primary" @click="addShortcut">
+              <i class="mdi mdi-plus"></i> Create your first shortcut
+            </button>
+            <button class="btn btn-secondary" @click="activeTab = 1">
+              <i class="mdi mdi-package-variant"></i> Browse shortcut packs
+            </button>
+          </div>
+        </div>
+
         <!-- Grouped shortcut rows -->
-        <div class="shortcut-groups">
+        <div v-if="keys.length > 0" class="shortcut-groups">
           <template v-for="group in groupNames" :key="group">
           <div v-if="groupedIndices.has(group)" class="shortcut-group">
             <!-- Group header -->
@@ -310,7 +329,7 @@ onMounted(async () => {
           </template>
         </div>
 
-        <div class="action-bar">
+        <div v-if="keys.length > 0" class="action-bar">
           <div class="action-bar-left">
             <button class="btn btn-secondary" @click="addShortcut">
               <i class="mdi mdi-plus"></i> Add shortcut
@@ -1698,5 +1717,47 @@ a:hover { text-decoration: underline; }
   padding: 1px 5px;
   border-radius: 3px;
   font-size: 11px;
+}
+
+/* ── Empty state ── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 56px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-state-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 8px;
+}
+
+.empty-state-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  max-width: 440px;
+  line-height: 1.5;
+  margin: 0 0 24px;
+}
+
+.empty-state-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.empty-state-actions .btn {
+  font-size: 14px;
+  padding: 10px 20px;
 }
 </style>
