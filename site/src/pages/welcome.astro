@@ -1,88 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to Shortkeys v5</title>
-  <meta name="description" content="Shortkeys v5 — the biggest update ever. 90+ actions, command palette, shortcut packs, cloud sync, groups, dark mode, Firefox support, and much more." />
-  <meta property="og:title" content="Welcome to Shortkeys v5" />
-  <meta property="og:description" content="The biggest update ever. 90+ actions, command palette, shortcut packs, cloud sync, and more." />
-  <link rel="icon" type="image/png" href="/images/icon_16.png" />
-  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7/css/materialdesignicons.min.css" rel="stylesheet" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+---
+
+<BaseLayout
+  title="Welcome to Shortkeys v5"
+  description="Shortkeys v5 — the biggest update ever. 90+ actions, command palette, shortcut packs, cloud sync, groups, dark mode, Firefox support, and much more."
+  currentPage="welcome"
+>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --blue: #4361ee;
-      --blue-hover: #3730a3;
-      --dark: #0f172a;
-      --darker: #020617;
-      --gray: #64748b;
-      --gray-light: #cbd5e1;
-      --light: #f8fafc;
-      --white: #ffffff;
-      --border: #e2e8f0;
-      --accent: #f59e0b;
-      --green: #10b981;
-      --green-light: #d1fae5;
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      color: var(--dark);
-      background: var(--white);
-      line-height: 1.6;
-      overflow-x: hidden;
-    }
-
-    h1, h2, h3, h4, .brand, .font-display, .btn, .stat-num {
-      font-family: 'Outfit', sans-serif;
-    }
-
-    a { color: var(--blue); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-
-    /* Header */
-    .header {
-      background: rgba(255, 255, 255, 0.9);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(0,0,0,0.05);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .header-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 24px;
-      height: 72px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 24px;
-      font-weight: 800;
-      color: var(--dark);
-      letter-spacing: -0.5px;
-    }
-
-    .brand img { width: 36px; height: 36px; }
-
-    .header-nav { display: flex; gap: 32px; align-items: center; }
-    .header-nav a { color: var(--gray); font-size: 15px; font-weight: 600; transition: color 0.2s; }
-    .header-nav a:hover { color: var(--dark); text-decoration: none; }
-
     /* Hero */
     .hero {
       padding: 100px 24px 80px;
@@ -99,35 +24,6 @@
       margin: 0 auto;
     }
 
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(67, 97, 238, 0.1);
-      color: var(--blue);
-      padding: 8px 16px;
-      border-radius: 100px;
-      font-weight: 700;
-      font-size: 14px;
-      margin-bottom: 32px;
-      font-family: 'Outfit', sans-serif;
-    }
-
-    .pulse-dot {
-      width: 8px;
-      height: 8px;
-      background: var(--blue);
-      border-radius: 50%;
-      box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.4);
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.4); }
-      70% { box-shadow: 0 0 0 10px rgba(67, 97, 238, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0); }
-    }
-
     .hero h1 {
       font-size: 72px;
       font-weight: 900;
@@ -137,8 +33,6 @@
       color: var(--darker);
     }
 
-    .text-blue { color: var(--blue); }
-
     .hero-subtitle {
       font-size: 20px;
       color: var(--gray);
@@ -147,30 +41,11 @@
       line-height: 1.6;
     }
 
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 14px 28px;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 16px;
-      text-decoration: none;
-      transition: all 0.2s ease;
-      cursor: pointer;
-      border: none;
-    }
-
-    .btn-primary { 
-      background: var(--blue); 
-      color: var(--white); 
-      box-shadow: 0 8px 16px rgba(67, 97, 238, 0.2); 
-    }
-    .btn-primary:hover { 
-      background: var(--blue-hover); 
-      transform: translateY(-2px); 
-      text-decoration: none; 
-      color: var(--white); 
+    .hero-downloads {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
     }
 
     /* Stats */
@@ -203,79 +78,20 @@
       font-weight: 500;
     }
 
-    /* Sections */
-    .section { padding: 100px 24px; }
-    .bg-light { background: var(--light); }
-    .bg-white { background: var(--white); }
-
-    .section-header { text-align: center; margin-bottom: 64px; }
-    .section-header h2 { font-size: 48px; font-weight: 800; margin-bottom: 16px; letter-spacing: -1px; }
-    .section-header p { font-size: 20px; color: var(--gray); max-width: 600px; margin: 0 auto; }
-
-    /* Bento Features */
-    .bento-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .bento-item {
-      background: var(--white);
-      border-radius: 24px;
-      padding: 28px;
-      border: 1px solid var(--border);
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .bento-item:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    }
-    .bento-icon {
-      font-size: 32px;
-      color: var(--blue);
-      margin-bottom: 16px;
-      background: rgba(67, 97, 238, 0.1);
-      width: 64px;
-      height: 64px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 16px;
-    }
-
-    .bento-item h3 { font-size: 20px; margin-bottom: 10px; }
-    .bento-item p { color: var(--gray); font-size: 15px; margin-bottom: 0; line-height: 1.5; }
-
-    kbd {
-      background: var(--light);
-      border: 1px solid var(--border);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: 'SF Mono', monospace;
-      font-size: 13px;
-      color: var(--dark);
-    }
-
     /* Secondary Features */
     .secondary-features-header {
       text-align: center;
       margin: 80px auto 48px;
       max-width: 800px;
     }
-    
+
     .secondary-features-header h3 {
       font-size: 32px;
       font-weight: 800;
       margin-bottom: 16px;
       letter-spacing: -0.5px;
     }
-    
+
     .secondary-features-header p {
       font-size: 18px;
       color: var(--gray);
@@ -365,96 +181,6 @@
       font-size: 18px;
     }
 
-    /* Actions Accordion */
-    .actions-accordion {
-      max-width: 800px;
-      margin: 0 auto;
-      background: var(--white);
-      border-radius: 16px;
-      box-shadow: 0 20px 40px -10px rgba(0,0,0,0.05);
-      border: 1px solid var(--border);
-      overflow: hidden;
-    }
-
-    .action-category { border-bottom: 1px solid var(--border); }
-    .action-category:last-child { border-bottom: none; }
-
-    .action-category-header {
-      width: 100%;
-      background: var(--white);
-      padding: 20px 24px;
-      font-family: 'Outfit', sans-serif;
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--dark);
-      border: none;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .action-category-header:hover { background: var(--light); }
-
-    .action-count {
-      font-size: 14px;
-      color: var(--gray);
-      font-weight: 500;
-      margin-left: 12px;
-      background: var(--light);
-      padding: 4px 10px;
-      border-radius: 100px;
-      border: 1px solid var(--border);
-    }
-
-    .action-chevron {
-      font-size: 24px;
-      color: var(--gray);
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .action-category.open .action-chevron { transform: rotate(180deg); }
-
-    [hidden] { display: none !important; }
-
-    .action-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 12px;
-      padding: 20px 24px;
-      background: #f8fafc;
-      border-top: 1px solid var(--border);
-    }
-
-    .action-item {
-      background: var(--white);
-      border: 1px solid var(--border);
-      padding: 12px 16px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--dark);
-      display: flex;
-      align-items: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-      transition: transform 0.2s, border-color 0.2s;
-    }
-
-    .action-item:hover {
-      transform: translateY(-2px);
-      border-color: var(--blue);
-    }
-
-    .action-item::before {
-      content: '\F0E1E';
-      font-family: "Material Design Icons";
-      margin-right: 10px;
-      font-size: 16px;
-      color: var(--blue);
-      opacity: 0.7;
-    }
-
     /* CTA Section */
     .cta-section {
       text-align: center;
@@ -496,98 +222,12 @@
       border: 1px solid var(--border);
     }
 
-    /* Footer */
-    .footer {
-      background: var(--white);
-      padding: 64px 24px;
-      text-align: center;
-      border-top: 1px solid var(--border);
-    }
-
-    .footer-brand {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      font-size: 20px;
-      font-weight: 800;
-      font-family: 'Outfit', sans-serif;
-      margin-bottom: 24px;
-      color: var(--dark);
-    }
-
-    .footer-brand img { width: 32px; height: 32px; }
-
-    .footer-links {
-      display: flex;
-      justify-content: center;
-      gap: 24px;
-      margin-bottom: 32px;
-      flex-wrap: wrap;
-    }
-
-    .footer-links a { color: var(--gray); font-weight: 600; text-decoration: none; transition: color 0.2s; }
-    .footer-links a:hover { color: var(--blue); }
-
-    .footer-support {
-      display: flex;
-      justify-content: center;
-      gap: 16px;
-      margin-bottom: 32px;
-      flex-wrap: wrap;
-    }
-
-    .support-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      background: var(--light);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--dark);
-      text-decoration: none;
-      transition: all 0.2s;
-    }
-
-    .support-badge:hover {
-      background: var(--white);
-      border-color: var(--blue);
-      color: var(--blue);
-      transform: translateY(-2px);
-      text-decoration: none;
-    }
-
-    .footer-copy { color: var(--gray); font-size: 14px; }
-    .footer-copy a { color: var(--dark); font-weight: 600; text-decoration: none; }
-    .footer-copy a:hover { color: var(--blue); }
-
     @media (max-width: 900px) {
-      .bento-grid { grid-template-columns: 1fr; }
       .stats-grid { grid-template-columns: 1fr; gap: 24px; }
       .hero h1 { font-size: 48px; }
-      .header-nav { display: none; }
       .compact-grid { grid-template-columns: 1fr; }
     }
   </style>
-</head>
-<body>
-  <!-- Header -->
-  <header class="header">
-    <div class="header-inner">
-      <a href="/" class="brand">
-        <img src="/images/icon_48.png" alt="Shortkeys" />
-        Shortkeys
-      </a>
-      <nav class="header-nav">
-        <a href="/">Home</a>
-        <a href="https://github.com/crittermike/shortkeys" target="_blank">GitHub</a>
-        <a href="https://github.com/crittermike/shortkeys/wiki" target="_blank">Docs</a>
-      </nav>
-    </div>
-  </header>
 
   <!-- Hero -->
   <section class="hero">
@@ -597,7 +237,7 @@
       </div>
       <h1>The <span class="text-blue">biggest update</span> ever.</h1>
       <p class="hero-subtitle">Shortkeys v5 is a complete rewrite — faster, more powerful, and packed with features you've been asking for.</p>
-      
+
       <div class="hero-downloads">
         <a href="chrome-extension://logpjaacgmcbpdkdchjiaagddngobkck/options.html" class="btn btn-primary">
           <i class="mdi mdi-cog"></i> Open Shortkeys Settings
@@ -619,7 +259,7 @@
       </div>
       <div class="stat-item">
         <div class="stat-num">100%</div>
-        <div class="stat-label">Rewritten & Optimized</div>
+        <div class="stat-label">Rewritten &amp; Optimized</div>
       </div>
     </div>
   </section>
@@ -630,7 +270,7 @@
       <h2>Everything that's new</h2>
       <p>Here's what we've been working on. Every feature was the result of user feedback.</p>
     </div>
-    
+
     <div class="bento-grid">
       <div class="bento-item">
         <div class="bento-icon"><i class="mdi mdi-playlist-play"></i></div>
@@ -643,7 +283,7 @@
         <h3>Command Palette</h3>
         <p>Click the extension icon for an instant searchable list of all your shortcuts. Navigate with arrows, trigger with Enter.</p>
       </div>
-      
+
       <div class="bento-item">
         <div class="bento-icon"><i class="mdi mdi-package-variant-closed"></i></div>
         <h3>Shortcut Packs</h3>
@@ -655,13 +295,13 @@
         <h3>Cloud Sync</h3>
         <p>Shortcuts automatically sync across all your Chrome instances via your Google account. No extra account needed.</p>
       </div>
-      
+
       <div class="bento-item">
         <div class="bento-icon"><i class="mdi mdi-alert-circle-outline"></i></div>
         <h3>Conflict Detection</h3>
         <p>Warns when your shortcuts conflict with browser defaults or duplicates. Platform-aware — knows Mac vs Windows shortcuts.</p>
       </div>
-      
+
       <div class="bento-item">
         <div class="bento-icon"><i class="mdi mdi-folder-outline"></i></div>
         <h3>Shortcut Groups</h3>
@@ -745,7 +385,7 @@
       <div class="compact-feat">
         <div class="compact-icon"><i class="mdi mdi-filter-variant"></i></div>
         <div>
-          <h4>Search & filter</h4>
+          <h4>Search &amp; filter</h4>
           <p>Find any shortcut instantly by typing in the filter bar. Search by label, key, or action name.</p>
         </div>
       </div>
@@ -885,39 +525,11 @@
       <a href="chrome-extension://logpjaacgmcbpdkdchjiaagddngobkck/options.html" class="btn btn-primary">
         <i class="mdi mdi-cog"></i> Open Shortkeys Settings
       </a>
-      <p class="cta-hint">Or right-click the Shortkeys icon → <code>Options</code></p>
+      <p class="cta-hint">Or right-click the Shortkeys icon &rarr; <code>Options</code></p>
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <a href="/" class="footer-brand">
-      <img src="/images/icon_48.png" alt="Shortkeys" />
-      Shortkeys
-    </a>
-    <div class="footer-links">
-      <a href="/">Home</a>
-      <a href="https://github.com/crittermike/shortkeys" target="_blank">GitHub</a>
-      <a href="https://github.com/crittermike/shortkeys/wiki" target="_blank">Documentation</a>
-    </div>
-    <div class="footer-support">
-      <a href="https://github.com/sponsors/crittermike" class="support-badge" target="_blank">
-        <i class="mdi mdi-heart" style="color:#ef4444"></i> Sponsor
-      </a>
-      <a href="https://buymeacoffee.com/crittermike" class="support-badge" target="_blank">
-        <i class="mdi mdi-coffee" style="color:#f59e0b"></i> Buy me a coffee
-      </a>
-      <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck/reviews" class="support-badge" target="_blank">
-        <i class="mdi mdi-star" style="color:#eab308"></i> Leave a review
-      </a>
-    </div>
-    <p class="footer-copy">
-      Shortkeys is free and <a href="https://github.com/crittermike/shortkeys" target="_blank">open source</a>.
-      Made by <a href="https://github.com/crittermike" target="_blank">Mike Crittenden</a>.
-    </p>
-  </footer>
-
-  <script>
+  <script is:inline>
     const actionData = {
       'Scrolling': ['Scroll to top','Scroll to bottom','Scroll down','Scroll down more','Page down','Scroll up','Scroll up more','Page up','Scroll right','Scroll right more','Scroll left','Scroll left more'],
       'Navigation': ['Go back','Go forward','Reload page','Hard reload','Copy URL','Copy page title','Copy title and URL','Copy as markdown link','Open URL from clipboard','Open clipboard URL in new tab','Navigate to specific URL','Open settings','Open extensions','Open keyboard shortcuts','Search Google','Search YouTube','Search Wikipedia','Search GitHub'],
@@ -934,7 +546,7 @@
     for (const [cat, items] of Object.entries(actionData)) {
       const categoryDiv = document.createElement('div');
       categoryDiv.className = 'action-category';
-      
+
       const header = document.createElement('button');
       header.className = 'action-category-header';
       header.onclick = () => toggleCategory(header);
@@ -942,12 +554,12 @@
         <span>${cat} <span class="action-count">${items.length} actions</span></span>
         <i class="mdi mdi-chevron-down action-chevron"></i>
       `;
-      
+
       const list = document.createElement('div');
       list.className = 'action-list';
       list.hidden = true;
       list.innerHTML = items.map(i => `<div class="action-item">${i}</div>`).join('');
-      
+
       categoryDiv.appendChild(header);
       categoryDiv.appendChild(list);
       container.appendChild(categoryDiv);
@@ -960,5 +572,4 @@
       list.hidden = !isOpen;
     }
   </script>
-</body>
-</html>
+</BaseLayout>

@@ -29,7 +29,7 @@ const catalog = {
   })),
 }
 
-const outDir = resolve(__dirname, '../site')
+const outDir = resolve(__dirname, '../site/public')
 mkdirSync(outDir, { recursive: true })
 writeFileSync(resolve(outDir, 'catalog.json'), JSON.stringify(catalog, null, 2))
 console.log(`Generated catalog.json with ${catalog.packs.length} packs`)
