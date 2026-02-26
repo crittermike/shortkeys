@@ -7,7 +7,6 @@ export default defineConfig({
     name: 'Shortkeys (Custom Keyboard Shortcuts)',
     short_name: 'Shortkeys',
     description: 'Custom keyboard shortcuts for your browser',
-    version: '5.0.0-alpha.3',
     default_locale: 'en',
     browser_specific_settings: {
       gecko: {
