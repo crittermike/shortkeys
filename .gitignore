@@ -14,7 +14,6 @@ tests/setup.js
 .output
 site/public/catalog.json
 site/public/community.json
-site/public/images/icon_*.png
 site/public/images/allowscripts.png
 site/public/images/browser-*.png
 site/public/images/screenshot.png
