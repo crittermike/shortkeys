@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { useShortcuts } from './useShortcuts'
 import { useToast } from './useToast'
+import { useUndoRedo } from './useUndoRedo'
 import { DEFAULT_GROUP } from './useGroups'
 import { getActionLabel } from '../utils/actions-registry'
 
@@ -13,11 +14,13 @@ export function useImportExport() {
 
   async function importKeys() {
     try {
+      const { pushUndo } = useUndoRedo()
       const parsed = JSON.parse(importJson.value)
       // Filter out empty/invalid shortcuts (#472/#598)
       const valid = (Array.isArray(parsed) ? parsed : [parsed]).filter(
         (k: any) => k && (k.key || k.action),
       )
+      pushUndo('Shortcuts imported')
       keys.value = keys.value.concat(valid)
       ensureIds()
       await saveShortcuts()

@@ -3,6 +3,8 @@ import { v4 as uuid } from 'uuid'
 import type { KeySetting, GroupSettings } from '@/utils/url-matching'
 import { useShortcuts } from './useShortcuts'
 import { useSearch } from './useSearch'
+import { useToast } from './useToast'
+import { useUndoRedo } from './useUndoRedo'
 import { saveGroupSettings, loadGroupSettings } from '@/utils/storage'
 
 export const DEFAULT_GROUP = 'My Shortcuts'
@@ -77,6 +79,8 @@ export function useGroups() {
   }
 
   function toggleGroupEnabled(group: string) {
+    const { pushUndo } = useUndoRedo()
+    pushUndo('Group toggled')
     const indices = groupedIndices.value.get(group) || []
     const allEnabled = indices.every((i) => keys.value[i].enabled !== false)
     for (const i of indices) {
@@ -90,13 +94,17 @@ export function useGroups() {
   }
 
   function deleteGroup(group: string) {
-    if (!confirm(`Delete all ${groupedIndices.value.get(group)?.length || 0} shortcuts in "${group}"?`)) return
+    const { pushUndo, undo } = useUndoRedo()
+    const { showSnack } = useToast()
+    const count = groupedIndices.value.get(group)?.length || 0
+    pushUndo('Group deleted')
     keys.value = keys.value.filter((k) => (k.group || DEFAULT_GROUP) !== group)
     // Clean up group settings
     if (groupSettings[group]) {
       delete groupSettings[group]
       persistGroupSettings()
     }
+    showSnack(`Deleted ${count} shortcut${count !== 1 ? 's' : ''} in "${group}"`, 'success', { label: 'Undo', handler: undo })
   }
 
   function startRenameGroup(group: string) {
