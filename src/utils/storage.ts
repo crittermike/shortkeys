@@ -16,9 +16,32 @@ function getStorage(): chrome.storage.SyncStorageArea | chrome.storage.LocalStor
   return chrome.storage.sync || chrome.storage.local
 }
 
+export class StorageError extends Error {
+  constructor(message: string, public readonly cause?: unknown) {
+    super(message)
+    this.name = 'StorageError'
+  }
+}
+
+/**
+ * Verify that data was actually persisted by reading it back.
+ * Returns true if the stored value matches what we wrote.
+ */
+async function verifyWrite(area: 'sync' | 'local', key: string, expected: string): Promise<boolean> {
+  try {
+    const storage = area === 'sync' ? chrome.storage.sync : chrome.storage.local
+    const data = await storage.get(key)
+    return data[key] === expected
+  } catch (e) {
+    console.error(`[Shortkeys] Failed to verify ${area} write for "${key}":`, e)
+    return false
+  }
+}
+
 /**
  * Save keys to synced storage. Falls back to local if too large.
  * Returns 'sync' or 'local' indicating where data was saved.
+ * Throws StorageError if data could not be verified in any storage area.
  */
 export async function saveKeys(keys: any[]): Promise<'sync' | 'local'> {
   const json = JSON.stringify(keys)
@@ -30,15 +53,37 @@ export async function saveKeys(keys: any[]): Promise<'sync' | 'local'> {
       await chrome.storage.sync.set({ keys: json })
       // Also keep a local copy as backup
       await chrome.storage.local.set({ keys: json })
+
+      // Verify at least local write succeeded
+      const verified = await verifyWrite('local', 'keys', json)
+      if (!verified) {
+        console.error('[Shortkeys] Save appeared to succeed but verification failed (sync path). Data may not persist.')
+        throw new StorageError('Write verification failed after sync save')
+      }
+
       return 'sync'
-    } catch {
-      // Sync failed (quota, network, etc.) — fall back to local
+    } catch (e) {
+      if (e instanceof StorageError) throw e
+      console.error('[Shortkeys] Sync save failed, falling back to local:', e)
     }
   }
 
   // Fallback: local only
-  await chrome.storage.local.set({ keys: json })
-  return 'local'
+  try {
+    await chrome.storage.local.set({ keys: json })
+
+    const verified = await verifyWrite('local', 'keys', json)
+    if (!verified) {
+      console.error('[Shortkeys] Local save appeared to succeed but verification failed. Data may not persist.')
+      throw new StorageError('Write verification failed after local save')
+    }
+
+    return 'local'
+  } catch (e) {
+    if (e instanceof StorageError) throw e
+    console.error('[Shortkeys] Local save failed:', e)
+    throw new StorageError('Failed to save shortcuts to any storage area', e)
+  }
 }
 
 /**
@@ -50,14 +95,19 @@ export async function loadKeys(): Promise<string | undefined> {
     try {
       const syncData = await chrome.storage.sync.get('keys')
       if (syncData.keys) return syncData.keys
-    } catch {
-      // Sync unavailable — try local
+    } catch (e) {
+      console.error('[Shortkeys] Failed to load from sync storage, trying local:', e)
     }
   }
 
   // Fallback to local
-  const localData = await chrome.storage.local.get('keys')
-  return localData.keys
+  try {
+    const localData = await chrome.storage.local.get('keys')
+    return localData.keys
+  } catch (e) {
+    console.error('[Shortkeys] Failed to load from local storage:', e)
+    return undefined
+  }
 }
 
 /**
@@ -81,19 +131,19 @@ export async function migrateLocalToSync(): Promise<void> {
 
     const syncData = await chrome.storage.sync.get('keys')
     if (syncData.keys) {
-      // Sync already has data — don't overwrite (user may have set up on another device)
+      // Sync already has data -- don't overwrite (user may have set up on another device)
       await chrome.storage.local.set({ [MIGRATED_KEY]: true })
       return
     }
 
-    // Migrate local → sync
+    // Migrate local -> sync
     const byteSize = new Blob([localData.keys]).size
     if (byteSize < SYNC_QUOTA - 1024) {
       await chrome.storage.sync.set({ keys: localData.keys })
     }
     await chrome.storage.local.set({ [MIGRATED_KEY]: true })
-  } catch {
-    // Migration failed — not critical, local data still works
+  } catch (e) {
+    console.error('[Shortkeys] Migration from local to sync failed (non-critical):', e)
   }
 }
 
@@ -123,11 +173,15 @@ export async function saveGroupSettings(settings: Record<string, GroupSettings>)
       await chrome.storage.sync.set({ groupSettings: json })
       await chrome.storage.local.set({ groupSettings: json })
       return
-    } catch {
-      // Sync failed — fall back to local
+    } catch (e) {
+      console.error('[Shortkeys] Sync save failed for group settings, falling back to local:', e)
     }
   }
-  await chrome.storage.local.set({ groupSettings: json })
+  try {
+    await chrome.storage.local.set({ groupSettings: json })
+  } catch (e) {
+    console.error('[Shortkeys] Local save failed for group settings:', e)
+  }
 }
 
 /**
@@ -138,11 +192,15 @@ export async function loadGroupSettings(): Promise<Record<string, GroupSettings>
     try {
       const syncData = await chrome.storage.sync.get('groupSettings')
       if (syncData.groupSettings) return JSON.parse(syncData.groupSettings)
-    } catch {
-      // Sync unavailable — try local
+    } catch (e) {
+      console.error('[Shortkeys] Failed to load group settings from sync, trying local:', e)
     }
   }
-  const localData = await chrome.storage.local.get('groupSettings')
-  if (localData.groupSettings) return JSON.parse(localData.groupSettings)
+  try {
+    const localData = await chrome.storage.local.get('groupSettings')
+    if (localData.groupSettings) return JSON.parse(localData.groupSettings)
+  } catch (e) {
+    console.error('[Shortkeys] Failed to load group settings from local:', e)
+  }
   return {}
 }

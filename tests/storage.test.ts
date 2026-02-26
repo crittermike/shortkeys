@@ -20,7 +20,7 @@ globalThis.Blob = class Blob {
   get size() { return this.parts.join('').length }
 }
 
-const { saveKeys, loadKeys, migrateLocalToSync, onKeysChanged } = await import('../src/utils/storage')
+const { saveKeys, loadKeys, migrateLocalToSync, onKeysChanged, StorageError } = await import('../src/utils/storage')
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -30,8 +30,21 @@ beforeEach(() => {
   mockLocalSet.mockResolvedValue(undefined)
 })
 
+/** Helper: make local.get return the written value on verification read-back */
+function mockLocalVerification() {
+  let storedKeys: string | undefined
+  mockLocalSet.mockImplementation(async (data: any) => {
+    if (data.keys !== undefined) storedKeys = data.keys
+  })
+  mockLocalGet.mockImplementation(async (key: string) => {
+    if (key === 'keys' && storedKeys !== undefined) return { keys: storedKeys }
+    return {}
+  })
+}
+
 describe('saveKeys', () => {
   it('saves to sync when data fits', async () => {
+    mockLocalVerification()
     const keys = [{ key: 'ctrl+b', action: 'newtab' }]
     const result = await saveKeys(keys)
 
@@ -43,6 +56,7 @@ describe('saveKeys', () => {
 
   it('falls back to local when sync fails', async () => {
     mockSyncSet.mockRejectedValue(new Error('quota exceeded'))
+    mockLocalVerification()
     const keys = [{ key: 'a', action: 'newtab' }]
     const result = await saveKeys(keys)
 
@@ -51,6 +65,7 @@ describe('saveKeys', () => {
   })
 
   it('falls back to local when data is too large for sync', async () => {
+    mockLocalVerification()
     // Create data larger than 100KB
     const bigCode = 'x'.repeat(110_000)
     const keys = [{ key: 'a', action: 'javascript', code: bigCode }]
@@ -59,6 +74,61 @@ describe('saveKeys', () => {
     expect(result).toBe('local')
     expect(mockSyncSet).not.toHaveBeenCalled()
     expect(mockLocalSet).toHaveBeenCalled()
+  })
+
+  it('throws StorageError when write verification fails on sync path', async () => {
+    // sync.set succeeds, local.set succeeds, but local.get returns wrong data
+    mockLocalGet.mockResolvedValue({ keys: 'wrong data' })
+    const keys = [{ key: 'a', action: 'newtab' }]
+
+    await expect(saveKeys(keys)).rejects.toThrow(StorageError)
+    await expect(saveKeys(keys)).rejects.toThrow('Write verification failed')
+  })
+
+  it('throws StorageError when write verification fails on local fallback path', async () => {
+    // sync.set fails, local.set succeeds, but local.get returns empty
+    mockSyncSet.mockRejectedValue(new Error('sync unavailable'))
+    mockLocalGet.mockResolvedValue({})
+    const keys = [{ key: 'a', action: 'newtab' }]
+
+    await expect(saveKeys(keys)).rejects.toThrow(StorageError)
+    await expect(saveKeys(keys)).rejects.toThrow('Write verification failed')
+  })
+
+  it('throws StorageError when local.set throws on fallback path', async () => {
+    mockSyncSet.mockRejectedValue(new Error('sync unavailable'))
+    mockLocalSet.mockRejectedValue(new Error('local write failed'))
+    const keys = [{ key: 'a', action: 'newtab' }]
+
+    await expect(saveKeys(keys)).rejects.toThrow(StorageError)
+    await expect(saveKeys(keys)).rejects.toThrow('Failed to save shortcuts to any storage area')
+  })
+
+  it('logs errors to console.error on sync failure', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    mockSyncSet.mockRejectedValue(new Error('quota exceeded'))
+    mockLocalVerification()
+    const keys = [{ key: 'a', action: 'newtab' }]
+    await saveKeys(keys)
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[Shortkeys] Sync save failed'),
+      expect.any(Error)
+    )
+    consoleSpy.mockRestore()
+  })
+
+  it('logs errors to console.error on verification failure', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    mockLocalGet.mockResolvedValue({ keys: 'wrong' })
+    const keys = [{ key: 'a', action: 'newtab' }]
+
+    try { await saveKeys(keys) } catch {}
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('verification failed')
+    )
+    consoleSpy.mockRestore()
   })
 })
 
@@ -93,6 +163,20 @@ describe('loadKeys', () => {
     const result = await loadKeys()
 
     expect(result).toBeUndefined()
+  })
+
+  it('returns undefined and logs error if both sync and local throw', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    mockSyncGet.mockRejectedValue(new Error('sync unavailable'))
+    mockLocalGet.mockRejectedValue(new Error('local unavailable'))
+    const result = await loadKeys()
+
+    expect(result).toBeUndefined()
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[Shortkeys] Failed to load from local storage'),
+      expect.any(Error)
+    )
+    consoleSpy.mockRestore()
   })
 })
 
@@ -138,6 +222,19 @@ describe('migrateLocalToSync', () => {
 
     expect(mockSyncSet).not.toHaveBeenCalled()
     expect(mockLocalSet).toHaveBeenCalledWith({ __shortkeys_migrated_to_sync: true })
+  })
+
+  it('logs error on migration failure', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    mockLocalGet.mockRejectedValue(new Error('storage broken'))
+
+    await migrateLocalToSync()
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[Shortkeys] Migration from local to sync failed'),
+      expect.any(Error)
+    )
+    consoleSpy.mockRestore()
   })
 })
 

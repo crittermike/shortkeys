@@ -36,6 +36,15 @@ beforeEach(() => {
   mockSyncSet.mockResolvedValue(undefined)
   mockLocalGet.mockResolvedValue({})
   mockLocalSet.mockResolvedValue(undefined)
+  // Set up verification read-back: local.get returns what local.set wrote
+  let storedKeys: string | undefined
+  mockLocalSet.mockImplementation(async (data: any) => {
+    if (data.keys !== undefined) storedKeys = data.keys
+  })
+  mockLocalGet.mockImplementation(async (key: string) => {
+    if (key === 'keys' && storedKeys !== undefined) return { keys: storedKeys }
+    return {}
+  })
 })
 
 describe('popup quick-add shortcut flow', () => {
@@ -85,8 +94,15 @@ describe('popup quick-add shortcut flow', () => {
 
   it('creates shortcut with empty storage (first shortcut)', async () => {
     mockSyncGet.mockResolvedValue({})
-    mockLocalGet.mockResolvedValue({})
-
+    // Override local mock to return empty initially, then return stored data after write
+    let storedKeys: string | undefined
+    mockLocalSet.mockImplementation(async (data: any) => {
+      if (data.keys !== undefined) storedKeys = data.keys
+    })
+    mockLocalGet.mockImplementation(async (key: string) => {
+      if (key === 'keys' && storedKeys !== undefined) return { keys: storedKeys }
+      return {}
+    })
     const saved = await loadKeys()
     const currentKeys: KeySetting[] = saved ? JSON.parse(saved) : []
 

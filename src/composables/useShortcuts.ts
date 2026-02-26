@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { v4 as uuid } from 'uuid'
 import type { KeySetting } from '@/utils/url-matching'
-import { saveKeys, loadKeys } from '@/utils/storage'
+import { saveKeys, loadKeys, StorageError } from '@/utils/storage'
 import { useToast } from './useToast'
 import { useUndoRedo } from './useUndoRedo'
 
@@ -34,8 +34,16 @@ async function saveShortcuts() {
     key.sites = key.sites || ''
     key.sitesArray = key.sites.split('\n')
   })
-  const area = await saveKeys(keys.value)
-  showSnack(area === 'sync' ? 'Shortcuts saved & synced!' : 'Shortcuts saved (local only — too large to sync)')
+  try {
+    const area = await saveKeys(keys.value)
+    showSnack(area === 'sync' ? 'Shortcuts saved & synced!' : 'Shortcuts saved (local only -- too large to sync)')
+  } catch (e) {
+    console.error('[Shortkeys] Failed to save shortcuts:', e)
+    showSnack(
+      'Failed to save shortcuts. Your browser may not support storage in this mode. Check the browser console for details.',
+      'danger'
+    )
+  }
 }
 
 async function deleteShortcut(index: number) {
