@@ -12,21 +12,18 @@ export const test = base.extend<{
     const context = await chromium.launchPersistentContext('', {
       headless: false,
       args: [
-        // In CI, xvfb-run provides a virtual display so we don't need --headless=new.
-        // Locally, --headless=new allows running without a visible browser window.
-        ...(process.env.CI ? [] : ['--headless=new']),
+        '--headless=new',
         `--disable-extensions-except=${pathToExtension}`,
         `--load-extension=${pathToExtension}`,
         '--no-first-run',
         '--disable-default-apps',
-        '--disable-dev-shm-usage',
       ],
     })
 
     // Wait for the extension service worker to start
     let [sw] = context.serviceWorkers()
     if (!sw) {
-      sw = await context.waitForEvent('serviceworker', { timeout: 10_000 })
+      sw = await context.waitForEvent('serviceworker')
     }
 
     // The extension opens welcome + options pages on first install.
@@ -43,22 +40,12 @@ export const test = base.extend<{
     }
 
     await use(context)
-
-    // Teardown: close all pages first, then race context.close() against a
-    // timeout. MV3 service workers can prevent graceful shutdown, causing
-    // context.close() to hang indefinitely.
-    for (const p of context.pages()) {
-      await p.close().catch(() => {})
-    }
-    await Promise.race([
-      context.close().catch(() => {}),
-      new Promise<void>((resolve) => setTimeout(resolve, 5_000)),
-    ])
+    await context.close()
   },
   extensionId: async ({ context }, use) => {
     let [background] = context.serviceWorkers()
     if (!background) {
-      background = await context.waitForEvent('serviceworker', { timeout: 10_000 })
+      background = await context.waitForEvent('serviceworker')
     }
     const extensionId = background.url().split('/')[2]
     await use(extensionId)
