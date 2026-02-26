@@ -23,6 +23,7 @@ const POPULAR_ACTIONS = [
   { id: 'forward', label: 'Go forward', icon: 'mdi-arrow-right' },
   { id: 'copyurl', label: 'Copy URL', icon: 'mdi-content-copy' },
   { id: 'toggledarkmode', label: 'Toggle dark mode on current page', icon: 'mdi-theme-light-dark' },
+  { id: 'reload', label: 'Reload page', icon: 'mdi-refresh' },
 ]
 
 describe('OnboardingWizard', () => {
