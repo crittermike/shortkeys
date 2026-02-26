@@ -224,7 +224,7 @@
     .bento-item {
       background: var(--white);
       border-radius: 24px;
-      padding: 32px;
+      padding: 28px;
       border: 1px solid var(--border);
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
       transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
@@ -236,9 +236,6 @@
       transform: translateY(-4px);
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
-
-    .bento-large { grid-column: span 2; }
-
     .bento-icon {
       font-size: 32px;
       color: var(--blue);
@@ -252,8 +249,8 @@
       border-radius: 16px;
     }
 
-    .bento-item h3 { font-size: 24px; margin-bottom: 12px; }
-    .bento-item p { color: var(--gray); font-size: 16px; margin-bottom: 0; }
+    .bento-item h3 { font-size: 20px; margin-bottom: 10px; }
+    .bento-item p { color: var(--gray); font-size: 15px; margin-bottom: 0; line-height: 1.5; }
 
     kbd {
       background: var(--light);
@@ -569,7 +566,6 @@
 
     @media (max-width: 900px) {
       .bento-grid { grid-template-columns: 1fr; }
-      .bento-large { grid-column: span 1; }
       .stats-grid { grid-template-columns: 1fr; gap: 24px; }
       .hero h1 { font-size: 48px; }
       .header-nav { display: none; }
@@ -636,7 +632,13 @@
     </div>
     
     <div class="bento-grid">
-      <div class="bento-item bento-large">
+      <div class="bento-item">
+        <div class="bento-icon"><i class="mdi mdi-playlist-play"></i></div>
+        <h3>Macros &amp; chaining</h3>
+        <p>Chain multiple actions into a single shortcut. Open a tab, scroll down, and click — all from one key combo. Add delays between steps for precise automation.</p>
+      </div>
+
+      <div class="bento-item">
         <div class="bento-icon"><i class="mdi mdi-magnify"></i></div>
         <h3>Command Palette</h3>
         <p>Click the extension icon for an instant searchable list of all your shortcuts. Navigate with arrows, trigger with Enter.</p>
@@ -647,23 +649,11 @@
         <h3>Shortcut Packs</h3>
         <p>One-click install curated collections — Vim, Emacs, YouTube, Tab Manager, and more. Customize or remove anytime.</p>
       </div>
-      
+
       <div class="bento-item">
         <div class="bento-icon"><i class="mdi mdi-cloud-sync"></i></div>
         <h3>Cloud Sync</h3>
         <p>Shortcuts automatically sync across all your Chrome instances via your Google account. No extra account needed.</p>
-      </div>
-      
-      <div class="bento-item bento-large">
-        <div class="bento-icon"><i class="mdi mdi-folder-outline"></i></div>
-        <h3>Shortcut Groups</h3>
-        <p>Organize into collapsible groups. Enable/disable, rename, or delete entire groups at once. Packs import as groups.</p>
-      </div>
-      
-      <div class="bento-item">
-        <div class="bento-icon"><i class="mdi mdi-record-circle-outline"></i></div>
-        <h3>Shortcut Recorder</h3>
-        <p>Click Record and press your keys. Supports multi-key sequences like Vim's <kbd>g</kbd> <kbd>g</kbd>. No more guessing key names.</p>
       </div>
       
       <div class="bento-item">
@@ -671,11 +661,35 @@
         <h3>Conflict Detection</h3>
         <p>Warns when your shortcuts conflict with browser defaults or duplicates. Platform-aware — knows Mac vs Windows shortcuts.</p>
       </div>
+      
+      <div class="bento-item">
+        <div class="bento-icon"><i class="mdi mdi-folder-outline"></i></div>
+        <h3>Shortcut Groups</h3>
+        <p>Organize into collapsible groups. Enable/disable, rename, or delete entire groups at once. Packs import as groups.</p>
+      </div>
+
+      <div class="bento-item">
+        <div class="bento-icon"><i class="mdi mdi-code-braces"></i></div>
+        <h3>Custom JavaScript</h3>
+        <p>Run any JavaScript with a keyboard shortcut. Full syntax-highlighted editor with autocomplete.</p>
+      </div>
+
+      <div class="bento-item">
+        <div class="bento-icon"><i class="mdi mdi-record-circle-outline"></i></div>
+        <h3>Shortcut Recorder</h3>
+        <p>Click Record and press your keys. Supports multi-key sequences like Vim's <kbd>g</kbd> <kbd>g</kbd>. No more guessing key names.</p>
+      </div>
+
+      <div class="bento-item">
+        <div class="bento-icon"><i class="mdi mdi-chart-line"></i></div>
+        <h3>Usage analytics</h3>
+        <p>Track how often you use each shortcut. See your most-used actions and discover shortcuts you've forgotten about.</p>
+      </div>
     </div>
 
     <div class="secondary-features-header">
-      <h3>Plus 40+ more improvements</h3>
-      <p>Reader mode, dark mode, QR codes, picture-in-picture, video speed controls, tab sorting, search YouTube/Wikipedia/GitHub, and much more.</p>
+      <h3>Plus 50+ more improvements</h3>
+      <p>Macros, usage analytics, reader mode, dark mode, QR codes, picture-in-picture, video speed controls, tab sorting, search YouTube/Wikipedia/GitHub, and much more.</p>
     </div>
 
     <div class="compact-grid">
@@ -810,6 +824,27 @@
         <div>
           <h4>Developer tools</h4>
           <p>Show layout grid, clear site storage, performance metrics, pretty-print JSON, log all events — built right in.</p>
+        </div>
+      </div>
+      <div class="compact-feat">
+        <div class="compact-icon"><i class="mdi mdi-web"></i></div>
+        <div>
+          <h4>Per-site activation</h4>
+          <p>Restrict shortcut groups to specific websites. Your GitHub shortcuts only fire on GitHub, YouTube shortcuts only on YouTube.</p>
+        </div>
+      </div>
+      <div class="compact-feat">
+        <div class="compact-icon"><i class="mdi mdi-plus-circle-outline"></i></div>
+        <div>
+          <h4>Quick-add shortcut</h4>
+          <p>Add a new shortcut right from the command palette popup. Pick an action and record your keys without opening settings.</p>
+        </div>
+      </div>
+      <div class="compact-feat">
+        <div class="compact-icon"><i class="mdi mdi-rocket-launch-outline"></i></div>
+        <div>
+          <h4>Getting started guide</h4>
+          <p>New users see a friendly welcome with quick-start options — create a shortcut, browse packs, or import existing shortcuts.</p>
         </div>
       </div>
       <div class="compact-feat">
