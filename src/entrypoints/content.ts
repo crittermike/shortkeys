@@ -2,6 +2,7 @@ import Mousetrap from 'mousetrap'
 import { fetchConfig, shouldStopCallback } from '@/utils/content-logic'
 import { ACTION_CATEGORIES } from '@/utils/actions-registry'
 import type { KeySetting } from '@/utils/url-matching'
+import { getSiteShortcuts } from '@/site-shortcuts'
 
 export default defineContentScript({
   matches: ['<all_urls>', 'file:///*'],
@@ -93,6 +94,99 @@ export default defineContentScript({
       const existing = document.getElementById('__shortkeys-cheatsheet')
       if (existing) { existing.remove(); return }
 
+      const siteData = getSiteShortcuts(document.URL)
+      const activeKeys = keys.filter((k) => k.key && k.action && k.enabled !== false)
+      const hasSiteShortcuts = !!siteData
+      const hasUserShortcuts = activeKeys.length > 0
+
+      // --- Shared styles ---
+      const kbdStyle = 'display:inline-block;padding:2px 7px;background:#475569;border-radius:5px;font-size:11px;font-family:SF Mono,Menlo,monospace;color:#f1f5f9;margin-left:3px;text-transform:capitalize'
+
+      function renderKbd(parts: string[]): string {
+        return parts.map((p) => `<span style="${kbdStyle}">${p}</span>`).join('')
+      }
+
+      function createShortcutRow(labelText: string, kbdHtml: string): HTMLElement {
+        const row = document.createElement('div')
+        Object.assign(row.style, {
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          padding: '8px 12px', background: '#334155', borderRadius: '8px', gap: '12px',
+        })
+        const label = document.createElement('span')
+        Object.assign(label.style, { fontSize: '13px', color: '#cbd5e1', flex: '1', minWidth: '0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' })
+        label.textContent = labelText
+        const kbd = document.createElement('span')
+        Object.assign(kbd.style, { flexShrink: '0' })
+        kbd.innerHTML = kbdHtml
+        row.appendChild(label)
+        row.appendChild(kbd)
+        return row
+      }
+
+      function createEmptyMessage(text: string): HTMLElement {
+        const empty = document.createElement('div')
+        Object.assign(empty.style, { padding: '16px', textAlign: 'center', color: '#94a3b8' })
+        empty.textContent = text
+        return empty
+      }
+
+      // --- Build user shortcuts content ---
+      function buildUserContent(): HTMLElement {
+        const container = document.createElement('div')
+        const grid = document.createElement('div')
+        Object.assign(grid.style, { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' })
+        if (!hasUserShortcuts) {
+          grid.style.gridTemplateColumns = '1fr'
+          grid.appendChild(createEmptyMessage('No active shortcuts on this page'))
+        } else {
+          for (const k of activeKeys) {
+            const labelText = k.label || actionLabels[k.action] || k.action
+            grid.appendChild(createShortcutRow(labelText, renderKbd(k.key.split('+'))))
+          }
+        }
+        container.appendChild(grid)
+        return container
+      }
+
+      // --- Build site shortcuts content ---
+      function buildSiteContent(): HTMLElement {
+        const container = document.createElement('div')
+        if (!siteData) return container
+        for (const section of siteData.sections) {
+          const header = document.createElement('div')
+          Object.assign(header.style, {
+            fontSize: '12px', fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase',
+            letterSpacing: '0.05em', padding: '12px 0 6px', marginTop: '4px',
+          })
+          header.textContent = section.name
+          container.appendChild(header)
+
+          const grid = document.createElement('div')
+          Object.assign(grid.style, { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' })
+          for (const s of section.shortcuts) {
+            grid.appendChild(createShortcutRow(s.description, renderKbd(s.keys)))
+          }
+          container.appendChild(grid)
+        }
+
+        // Reference link
+        const refLink = document.createElement('a')
+        Object.assign(refLink.style, {
+          display: 'block', textAlign: 'center', marginTop: '16px',
+          fontSize: '12px', color: '#60a5fa', textDecoration: 'none',
+        })
+        refLink.href = siteData.referenceUrl
+        refLink.target = '_blank'
+        refLink.rel = 'noopener noreferrer'
+        refLink.textContent = `View all ${siteData.title} keyboard shortcuts ↗`
+        refLink.addEventListener('mouseenter', () => { refLink.style.textDecoration = 'underline' })
+        refLink.addEventListener('mouseleave', () => { refLink.style.textDecoration = 'none' })
+        container.appendChild(refLink)
+
+        return container
+      }
+
+      // --- Overlay ---
       const overlay = document.createElement('div')
       overlay.id = '__shortkeys-cheatsheet'
       Object.assign(overlay.style, {
@@ -103,54 +197,84 @@ export default defineContentScript({
       })
       overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove() })
 
+      // --- Panel ---
       const panel = document.createElement('div')
       Object.assign(panel.style, {
         background: '#1e293b', color: '#e2e8f0', borderRadius: '16px',
-        padding: '24px 32px', maxWidth: '600px', width: '90vw',
+        padding: '24px 32px', maxWidth: '700px', width: '90vw',
         maxHeight: '70vh', overflowY: 'auto',
         boxShadow: '0 25px 50px rgba(0,0,0,0.4)',
       })
 
+      // --- Title bar ---
       const title = document.createElement('div')
       Object.assign(title.style, {
         fontSize: '16px', fontWeight: '700', marginBottom: '16px',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         color: '#f1f5f9',
       })
-      title.innerHTML = '<span>⌨️ Shortkeys — Active Shortcuts</span><span style="color:#64748b;font-size:12px;font-weight:400">Press Esc or click outside to close</span>'
+      title.innerHTML = '<span>⌨️ Keyboard Shortcuts</span><span style="color:#64748b;font-size:12px;font-weight:400">Press Esc or click outside to close</span>'
       panel.appendChild(title)
 
-      const grid = document.createElement('div')
-      Object.assign(grid.style, { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' })
+      // --- Content area ---
+      const contentArea = document.createElement('div')
 
-      const activeKeys = keys.filter((k) => k.key && k.action && k.enabled !== false)
-      if (activeKeys.length === 0) {
-        grid.style.gridTemplateColumns = '1fr'
-        const empty = document.createElement('div')
-        Object.assign(empty.style, { padding: '16px', textAlign: 'center', color: '#94a3b8' })
-        empty.textContent = 'No active shortcuts on this page'
-        grid.appendChild(empty)
-      } else {
-        for (const k of activeKeys) {
-          const row = document.createElement('div')
-          Object.assign(row.style, {
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            padding: '8px 12px', background: '#334155', borderRadius: '8px', gap: '12px',
+      if (hasSiteShortcuts) {
+        // Tabbed UI
+        const tabBar = document.createElement('div')
+        Object.assign(tabBar.style, {
+          display: 'flex', gap: '0', marginBottom: '16px',
+          borderBottom: '2px solid #334155',
+        })
+
+        const tabs: { label: string; build: () => HTMLElement }[] = [
+          { label: 'Your shortcuts', build: buildUserContent },
+          { label: `${siteData!.title} shortcuts`, build: buildSiteContent },
+        ]
+
+        const tabButtons: HTMLElement[] = []
+
+        function activateTab(index: number) {
+          contentArea.innerHTML = ''
+          contentArea.appendChild(tabs[index].build())
+          tabButtons.forEach((btn, i) => {
+            if (i === index) {
+              Object.assign(btn.style, {
+                color: '#60a5fa', borderBottomColor: '#60a5fa',
+              })
+            } else {
+              Object.assign(btn.style, {
+                color: '#94a3b8', borderBottomColor: 'transparent',
+              })
+            }
           })
-          const label = document.createElement('span')
-          Object.assign(label.style, { fontSize: '13px', color: '#cbd5e1', flex: '1', minWidth: '0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' })
-          label.textContent = k.label || actionLabels[k.action] || k.action
-          const kbd = document.createElement('span')
-          Object.assign(kbd.style, { flexShrink: '0' })
-          kbd.innerHTML = k.key.split('+').map((p) =>
-            `<span style="display:inline-block;padding:2px 7px;background:#475569;border-radius:5px;font-size:11px;font-family:SF Mono,Menlo,monospace;color:#f1f5f9;margin-left:3px;text-transform:capitalize">${p}</span>`
-          ).join('')
-          row.appendChild(label)
-          row.appendChild(kbd)
-          grid.appendChild(row)
         }
+
+        tabs.forEach((tab, i) => {
+          const btn = document.createElement('button')
+          Object.assign(btn.style, {
+            background: 'none', border: 'none', borderBottom: '2px solid transparent',
+            padding: '8px 16px', cursor: 'pointer', fontSize: '13px', fontWeight: '600',
+            color: '#94a3b8', marginBottom: '-2px', transition: 'color 0.15s, border-color 0.15s',
+            fontFamily: 'inherit',
+          })
+          btn.textContent = tab.label
+          btn.addEventListener('click', () => activateTab(i))
+          btn.addEventListener('mouseenter', () => { if (btn.style.color !== 'rgb(96, 165, 250)') btn.style.color = '#cbd5e1' })
+          btn.addEventListener('mouseleave', () => { if (btn.style.color !== 'rgb(96, 165, 250)') btn.style.color = '#94a3b8' })
+          tabBar.appendChild(btn)
+          tabButtons.push(btn)
+        })
+
+        panel.appendChild(tabBar)
+        // Default to user shortcuts tab
+        activateTab(0)
+      } else {
+        // No site shortcuts, show user shortcuts directly (no tabs)
+        contentArea.appendChild(buildUserContent())
       }
-      panel.appendChild(grid)
+
+      panel.appendChild(contentArea)
       overlay.appendChild(panel)
       document.body.appendChild(overlay)
 

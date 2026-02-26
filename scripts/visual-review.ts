@@ -142,6 +142,92 @@ async function main() {
 
   await importPage.close()
 
+  // 10. Screenshot: Cheat sheet on a supported site (GitHub)
+  console.log('Capturing cheat sheet on GitHub...')
+  // Set test shortcuts in storage so content script picks them up
+  const setupPage = await context.newPage()
+  await setupPage.goto(`chrome-extension://${extensionId}/options.html`)
+  await setupPage.waitForSelector('.app-main', { timeout: 5000 })
+  await setupPage.evaluate(() => {
+    return new Promise<void>((resolve) => {
+      chrome.storage.sync.set({
+        keys: JSON.stringify([
+          { id: 'cs-1', key: 'shift+/', action: 'showcheatsheet', enabled: true, label: 'Show cheat sheet' },
+          { id: 'cs-2', key: 'alt+t', action: 'newtab', enabled: true, label: 'Open new tab' },
+          { id: 'cs-3', key: 'alt+w', action: 'closetab', enabled: true, label: 'Close current tab' },
+          { id: 'cs-4', key: 'j', action: 'scrolldown', enabled: true, label: 'Scroll down' },
+          { id: 'cs-5', key: 'k', action: 'scrollup', enabled: true, label: 'Scroll up' },
+        ]),
+      }, () => resolve())
+    })
+  })
+  await setupPage.close()
+
+  const ghPage = await context.newPage()
+  await ghPage.setViewportSize({ width: 1280, height: 800 })
+  await ghPage.goto('https://github.com/crittermike/shortkeys', { waitUntil: 'load', timeout: 20000 })
+  await ghPage.waitForTimeout(3000) // Let content script load + bind keys
+
+  // Trigger cheat sheet via message from background (most reliable method)
+  // The content script listens for { action: 'showcheatsheet' } messages
+  const ghPageTabId = await ghPage.evaluate(() => {
+    return new Promise<number>((resolve) => {
+      // Trigger via dispatching to the content script through the extension's runtime
+      const event = new KeyboardEvent('keydown', { key: '?', shiftKey: true, bubbles: true })
+      document.dispatchEvent(event)
+      resolve(0)
+    })
+  })
+
+  // Also try pressing keyboard directly
+  await ghPage.keyboard.press('Shift+/')
+  await ghPage.waitForTimeout(1000)
+
+  // Check if cheat sheet appeared
+  let cheatsheetVisible = await ghPage.$('#__shortkeys-cheatsheet')
+
+  if (!cheatsheetVisible) {
+    // Last resort: send message from extension context to trigger cheat sheet
+    const triggerPage = await context.newPage()
+    await triggerPage.goto(`chrome-extension://${extensionId}/options.html`)
+    await triggerPage.waitForSelector('.app-main', { timeout: 5000 })
+    // Get the tab ID of the GitHub page and send it a message
+    await triggerPage.evaluate(async () => {
+      const tabs = await chrome.tabs.query({ url: '*://github.com/*' })
+      if (tabs[0]?.id) {
+        await chrome.tabs.sendMessage(tabs[0].id, { action: 'showcheatsheet' })
+      }
+    })
+    await triggerPage.close()
+    await ghPage.waitForTimeout(1000)
+    cheatsheetVisible = await ghPage.$('#__shortkeys-cheatsheet')
+  }
+
+  if (cheatsheetVisible) {
+    // Screenshot: User shortcuts tab
+    await ghPage.screenshot({
+      path: path.join(SCREENSHOT_DIR, 'cheatsheet-user-tab.png'),
+      fullPage: false,
+    })
+
+    // Click the site shortcuts tab (2nd button in tab bar)
+    const siteTab = await ghPage.$('#__shortkeys-cheatsheet button:nth-child(2)')
+    if (siteTab) {
+      await siteTab.click()
+      await ghPage.waitForTimeout(300)
+      await ghPage.screenshot({
+        path: path.join(SCREENSHOT_DIR, 'cheatsheet-site-tab.png'),
+        fullPage: false,
+      })
+    } else {
+      console.warn('  \u26a0 Site shortcuts tab not found')
+    }
+  } else {
+    console.warn('  \u26a0 Cheat sheet did not appear \u2014 skipping cheat sheet screenshots')
+  }
+
+  await ghPage.close()
+
   await context.close()
 
   console.log(`\nDone! Screenshots saved to ${SCREENSHOT_DIR}/`)
@@ -151,6 +237,10 @@ async function main() {
   console.log('  - options-page.png')
   console.log('  - options-analytics.png')
   console.log('  - options-import.png')
+  if (cheatsheetVisible) {
+    console.log('  - cheatsheet-user-tab.png')
+    console.log('  - cheatsheet-site-tab.png')
+  }
 }
 
 main().catch((err) => {
