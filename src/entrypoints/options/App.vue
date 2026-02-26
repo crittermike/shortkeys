@@ -6,6 +6,8 @@ import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
 import ShortcutDetails from '@/components/ShortcutDetails.vue'
 import ImportTab from '@/components/ImportTab.vue'
 import PackPreviewModal from '@/components/PackPreviewModal.vue'
+import CommunityPackModal from '@/components/CommunityPackModal.vue'
+import JsWarningDialog from '@/components/JsWarningDialog.vue'
 import ExportTab from '@/components/ExportTab.vue'
 import AnalyticsTab from '@/components/AnalyticsTab.vue'
 import { useTheme } from '@/composables/useTheme'
@@ -40,7 +42,7 @@ const {
 } = useGroups()
 const { convertToMacro } = useMacros()
 const { dragIndex, onDragStart, onDragOver, onDragOverGroup, onDragEnd } = useDragDrop()
-const { shareGroup } = useImportExport()
+const { shareGroup, publishToCommunity } = useImportExport()
 const { refreshTabs, loadBookmarks } = useJsTools()
 
 // --- Lifecycle ---
@@ -200,6 +202,9 @@ onMounted(async () => {
                     <button class="group-menu-item" @click="shareGroup(group)">
                       <i class="mdi mdi-share-variant-outline"></i> Share group
                     </button>
+                    <button class="group-menu-item" @click="publishToCommunity(group)">
+                      <i class="mdi mdi-upload-outline"></i> Publish to community
+                    </button>
                     <button class="group-menu-item group-menu-danger" @click="deleteGroup(group)">
                       <i class="mdi mdi-delete-outline"></i> Delete group
                     </button>
@@ -351,6 +356,8 @@ onMounted(async () => {
 
       <!-- Pack Preview Modal -->
       <PackPreviewModal />
+      <CommunityPackModal />
+      <JsWarningDialog />
 
       <!-- Export Tab -->
       <div v-show="activeTab === 2" class="tab-content">
