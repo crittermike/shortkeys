@@ -9,16 +9,15 @@ export interface ShortcutPack {
   shortcuts: KeySetting[]
 }
 
-import vimPack from './vim'
-import productivityPack from './productivity'
-import youtubePack from './youtube'
-import keyboardPowerPack from './keyboard-power'
-import developerPack from './developer'
-import readingPack from './reading'
-import tabManagerPack from './tab-manager'
-import emacsPack from './emacs'
-import mediaControlPack from './media-control'
-
+import vimPack from '../../packs/official/vim.json'
+import productivityPack from '../../packs/official/productivity.json'
+import youtubePack from '../../packs/official/youtube.json'
+import keyboardPowerPack from '../../packs/official/keyboard-power.json'
+import developerPack from '../../packs/official/developer.json'
+import readingPack from '../../packs/official/reading.json'
+import tabManagerPack from '../../packs/official/tab-manager.json'
+import emacsPack from '../../packs/official/emacs.json'
+import mediaControlPack from '../../packs/official/media-control.json'
 
 export const ALL_PACKS: ShortcutPack[] = [
   vimPack,
@@ -30,4 +29,4 @@ export const ALL_PACKS: ShortcutPack[] = [
   tabManagerPack,
   emacsPack,
   mediaControlPack,
-]
+] as ShortcutPack[]
