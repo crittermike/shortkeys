@@ -71,14 +71,10 @@ export function useImportExport() {
     }
 
     const packData = {
-      id: `community-${group.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
       name: group,
       icon: '📦',
       description: '',
-      color: '#4361ee',
       author: '',
-      category: 'uncategorized',
-      tags: [],
       shortcuts: groupShortcuts.map((s) => ({
         key: s.key,
         action: s.action,
@@ -88,9 +84,9 @@ export function useImportExport() {
     }
 
     const json = JSON.stringify(packData, null, 2)
-    const fileName = `${packData.id}.json`
+    const fileName = `${group.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.json`
     const title = encodeURIComponent(`Community pack: ${group}`)
-    const body = encodeURIComponent(`## New community pack submission\n\n**Pack name:** ${group}\n**File name:** \`community-packs/${fileName}\`\n\n### Pack JSON\n\n\`\`\`json\n${json}\n\`\`\`\n\nPlease fill in the \`description\`, \`author\`, \`icon\`, \`color\`, \`category\`, and \`tags\` fields before submitting.`)
+    const body = encodeURIComponent(`## New community pack submission\n\n**Pack name:** ${group}\n**File name:** \`packs/community/${fileName}\`\n\n### Pack JSON\n\n\`\`\`json\n${json}\n\`\`\`\n\nPlease fill in the \`description\`, \`author\`, and \`icon\` fields before submitting.`)
     const url = `https://github.com/crittermike/shortkeys/issues/new?title=${title}&body=${body}&labels=community-pack`
     window.open(url, '_blank')
     showSnack('GitHub issue opened — fill in the details and submit!')

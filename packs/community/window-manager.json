@@ -1,12 +1,8 @@
 {
-  "id": "community-window-manager",
   "name": "Window Manager",
   "icon": "🪟",
   "description": "Quickly manage browser windows and move tabs between them. Perfect for multi-monitor setups.",
-  "color": "#d97706",
   "author": "shortkeys",
-  "category": "productivity",
-  "tags": ["windows", "multi-monitor", "workspace", "organization"],
   "shortcuts": [
     { "key": "alt+shift+w", "action": "newwindow", "label": "New window" },
     { "key": "alt+shift+i", "action": "newprivatewindow", "label": "New private window" },

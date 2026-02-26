@@ -1,0 +1,412 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+---
+
+<BaseLayout
+  title="Shortcut Packs — Shortkeys"
+  description="Browse and install curated keyboard shortcut collections for Chrome, Firefox, and Edge. Official and community packs for Vim, YouTube, productivity, and more."
+  currentPage="packs"
+>
+  <style>
+    /* Page hero */
+    .packs-hero {
+      padding: 100px 24px 60px;
+      text-align: center;
+      background: radial-gradient(circle at top center, #ffffff 0%, var(--light) 100%);
+    }
+
+    .packs-hero h1 {
+      font-size: 56px;
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -2px;
+      margin-bottom: 16px;
+      color: var(--darker);
+    }
+
+    .packs-hero p {
+      font-size: 20px;
+      color: var(--gray);
+      max-width: 600px;
+      margin: 0 auto 40px;
+    }
+
+    /* Search bar */
+    .search-wrap {
+      max-width: 480px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .search-wrap i {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gray);
+      font-size: 20px;
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 14px 16px 14px 48px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      font-size: 16px;
+      font-family: inherit;
+      background: var(--white);
+      color: var(--dark);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    }
+
+    .search-input::placeholder { color: var(--gray-light); }
+
+    /* Section headers */
+    .packs-section {
+      padding: 60px 24px;
+    }
+
+    .packs-section-header {
+      max-width: 1200px;
+      margin: 0 auto 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .packs-section-header h2 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .packs-section-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .badge-official {
+      background: rgba(67, 97, 238, 0.1);
+      color: var(--blue);
+    }
+
+    .badge-community {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--green);
+    }
+
+    .packs-empty {
+      text-align: center;
+      padding: 60px 24px;
+      color: var(--gray);
+      font-size: 18px;
+      grid-column: 1 / -1;
+    }
+
+    .packs-empty i {
+      font-size: 48px;
+      display: block;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    /* Community note */
+    .community-note {
+      max-width: 1200px;
+      margin: 0 auto 32px;
+      padding: 20px 24px;
+      background: rgba(16, 185, 129, 0.05);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 15px;
+      color: var(--dark);
+    }
+
+    .community-note i {
+      font-size: 24px;
+      color: var(--green);
+      flex-shrink: 0;
+    }
+
+    .community-note a {
+      color: var(--blue);
+      font-weight: 600;
+    }
+
+    /* Pack author badge */
+    .pack-author {
+      font-size: 13px;
+      color: var(--gray);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pack-author i { font-size: 14px; }
+
+    .pack-badge-community {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--green);
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .pack-badge-js {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(245, 158, 11, 0.1);
+      color: #d97706;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* Contribute CTA */
+    .contribute-section {
+      padding: 80px 24px;
+      text-align: center;
+      background: var(--light);
+    }
+
+    .contribute-inner {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .contribute-inner h2 {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    .contribute-inner p {
+      font-size: 18px;
+      color: var(--gray);
+      margin-bottom: 32px;
+    }
+
+    @media (max-width: 900px) {
+      .packs-hero h1 { font-size: 40px; }
+      .community-note { flex-direction: column; text-align: center; }
+    }
+  </style>
+
+  <!-- Hero -->
+  <section class="packs-hero">
+    <h1>Shortcut <span class="text-blue">Packs</span></h1>
+    <p>Browse and install curated keyboard shortcut collections. One click to add, easy to customize or remove.</p>
+    <div class="search-wrap">
+      <i class="mdi mdi-magnify"></i>
+      <input class="search-input" id="search-input" type="text" placeholder="Search packs..." />
+    </div>
+  </section>
+
+  <!-- Official Packs -->
+  <section class="packs-section bg-white">
+    <div class="packs-section-header">
+      <h2>Official Packs</h2>
+      <span class="packs-section-badge badge-official"><i class="mdi mdi-check-decagram"></i> Curated</span>
+    </div>
+    <div class="pack-grid" id="official-grid">
+      <div style="text-align:center;padding:40px;color:var(--gray);grid-column:1/-1;">Loading packs...</div>
+    </div>
+  </section>
+
+  <!-- Community Packs -->
+  <section class="packs-section bg-light">
+    <div class="packs-section-header">
+      <h2>Community Packs</h2>
+      <span class="packs-section-badge badge-community"><i class="mdi mdi-account-group"></i> User-created</span>
+    </div>
+    <div class="community-note">
+      <i class="mdi mdi-information-outline"></i>
+      <span>Community packs are created and maintained by Shortkeys users. <a href="https://github.com/crittermike/shortkeys/blob/master/packs/README.md" target="_blank">Learn how to contribute your own pack</a>.</span>
+    </div>
+    <div class="pack-grid" id="community-grid">
+      <div style="text-align:center;padding:40px;color:var(--gray);grid-column:1/-1;">Loading community packs...</div>
+    </div>
+  </section>
+
+  <!-- Contribute CTA -->
+  <section class="contribute-section">
+    <div class="contribute-inner">
+      <h2>Share your shortcuts</h2>
+      <p>Created a useful set of shortcuts? Submit a pull request and share them with the community.</p>
+      <a href="https://github.com/crittermike/shortkeys/blob/master/packs/README.md" class="btn btn-primary" target="_blank">
+        <i class="mdi mdi-github"></i> Contribute a Pack
+      </a>
+    </div>
+  </section>
+
+  <!-- Pack Preview Modal -->
+  <div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-header" id="modal-header">
+        <span class="modal-icon" id="modal-icon"></span>
+        <div>
+          <h2 id="modal-title"></h2>
+          <p id="modal-desc"></p>
+        </div>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer">
+        <button class="modal-cancel" onclick="closeModal()">Close</button>
+        <button class="modal-install" id="modal-install-btn">
+          <i class="mdi mdi-download"></i> Install Extension to Add
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script is:inline>
+    let officialData = null
+    let communityData = null
+
+    // Load both catalogs in parallel
+    Promise.all([
+      fetch('/catalog.json').then(r => r.json()),
+      fetch('/community.json').then(r => r.json()).catch(() => ({ packs: [] }))
+    ]).then(([catalog, community]) => {
+      officialData = catalog
+      communityData = community
+      renderOfficialPacks(catalog.packs)
+      renderCommunityPacks(community.packs)
+    }).catch(() => {
+      document.getElementById('official-grid').innerHTML = '<p class="packs-empty"><i class="mdi mdi-alert-circle-outline"></i>Failed to load packs. <a href="https://github.com/crittermike/shortkeys">View on GitHub</a></p>'
+    })
+
+    function renderOfficialPacks(packs) {
+      const grid = document.getElementById('official-grid')
+      if (!packs.length) {
+        grid.innerHTML = '<p class="packs-empty"><i class="mdi mdi-package-variant"></i>No official packs found.</p>'
+        return
+      }
+      grid.innerHTML = packs.map(pack => packCardHtml(pack, false)).join('')
+    }
+
+    function renderCommunityPacks(packs) {
+      const grid = document.getElementById('community-grid')
+      if (!packs.length) {
+        grid.innerHTML = '<p class="packs-empty"><i class="mdi mdi-account-group-outline"></i>No community packs yet. Be the first to contribute!</p>'
+        return
+      }
+      grid.innerHTML = packs.map(pack => packCardHtml(pack, true)).join('')
+    }
+
+    function packCardHtml(pack, isCommunity) {
+      let badges = ''
+      if (isCommunity && pack.author) {
+        badges += `<div class="pack-author"><i class="mdi mdi-account"></i> ${pack.author}</div>`
+      }
+      let footerBadges = ''
+      if (isCommunity) {
+        footerBadges += '<span class="pack-badge-community"><i class="mdi mdi-account-group"></i> Community</span> '
+      }
+      if (pack.hasJavaScript) {
+        footerBadges += '<span class="pack-badge-js"><i class="mdi mdi-code-braces"></i> JS</span> '
+      }
+      return `
+        <div class="pack-card" onclick="showPackModal('${pack.id}', ${isCommunity})" style="--accent:${pack.color}">
+          <div class="pack-icon">${pack.icon}</div>
+          ${badges}
+          <div class="pack-title">${pack.name}</div>
+          <div class="pack-desc">${pack.description}</div>
+          <div class="pack-footer">
+            <span class="pack-count"><i class="mdi mdi-keyboard-outline"></i> ${pack.shortcutCount} shortcuts ${footerBadges}</span>
+            <button class="btn-add" onclick="event.stopPropagation();showPackModal('${pack.id}', ${isCommunity})">Preview</button>
+          </div>
+        </div>
+      `
+    }
+
+    function showPackModal(packId, isCommunity) {
+      const source = isCommunity ? communityData : officialData
+      const pack = source.packs.find(p => p.id === packId)
+      if (!pack) return
+
+      document.getElementById('modal-icon').textContent = pack.icon
+      document.getElementById('modal-title').textContent = pack.name
+      document.getElementById('modal-desc').textContent = pack.description
+      document.getElementById('modal-header').style.background = pack.color
+
+      let bodyHtml = ''
+      if (isCommunity && pack.author) {
+        bodyHtml += `<div style="padding:8px 0 12px;font-size:14px;color:var(--gray)"><i class="mdi mdi-account" style="margin-right:4px"></i> By ${pack.author}</div>`
+      }
+      if (pack.hasJavaScript) {
+        bodyHtml += `<div style="padding:8px 16px;margin-bottom:12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;font-size:13px;color:#92400e;display:flex;align-items:center;gap:8px"><i class="mdi mdi-alert-outline"></i> This pack contains custom JavaScript actions. Review the code before installing.</div>`
+      }
+      bodyHtml += pack.shortcuts.map(s => `
+        <div class="modal-row">
+          <span class="modal-row-label">${s.label}</span>
+          <span class="modal-row-keys">
+            ${s.key.split('+').map(k => `<kbd>${k}</kbd>`).join('')}
+          </span>
+        </div>
+      `).join('')
+
+      document.getElementById('modal-body').innerHTML = bodyHtml
+
+      document.getElementById('modal-install-btn').onclick = () => {
+        window.open('https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck', '_blank')
+      }
+
+      document.getElementById('modal-overlay').classList.add('active')
+    }
+
+    function closeModal() {
+      document.getElementById('modal-overlay').classList.remove('active')
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal() })
+
+    // Search functionality
+    document.getElementById('search-input').addEventListener('input', function() {
+      const q = this.value.toLowerCase().trim()
+      if (!officialData || !communityData) return
+
+      if (!q) {
+        renderOfficialPacks(officialData.packs)
+        renderCommunityPacks(communityData.packs)
+        return
+      }
+
+      const match = pack => {
+        return pack.name.toLowerCase().includes(q)
+          || pack.description.toLowerCase().includes(q)
+          || (pack.author && pack.author.toLowerCase().includes(q))
+      }
+
+      renderOfficialPacks(officialData.packs.filter(match))
+      renderCommunityPacks(communityData.packs.filter(match))
+    })
+  </script>
+</BaseLayout>

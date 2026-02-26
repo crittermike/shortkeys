@@ -1,0 +1,34 @@
+---
+interface Props {
+  currentPage?: 'home' | 'welcome' | 'packs'
+}
+
+const { currentPage = 'home' } = Astro.props
+---
+
+<header class="header">
+  <div class="header-inner">
+    <a href="/" class="brand">
+      <img src="/images/icon_48.png" alt="Shortkeys" />
+      Shortkeys
+    </a>
+    <nav class="header-nav">
+      {currentPage === 'home' && (
+        <>
+          <a href="#features">Features</a>
+        </>
+      )}
+      {currentPage !== 'home' && (
+        <a href="/">Home</a>
+      )}
+      <a href="/packs">Packs</a>
+      <a href="https://github.com/crittermike/shortkeys" target="_blank">GitHub</a>
+      <a href="https://github.com/crittermike/shortkeys/wiki" target="_blank">Docs</a>
+      {currentPage === 'home' && (
+        <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck" class="btn-install-header" target="_blank">
+          Install Extension
+        </a>
+      )}
+    </nav>
+  </div>
+</header>
