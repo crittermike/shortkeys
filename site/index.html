@@ -3,30 +3,47 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shortkeys — Custom Keyboard Shortcuts for Your Browser</title>
+  <title>Shortkeys - Custom Keyboard Shortcuts for Your Browser</title>
   <meta name="description" content="Browse and share custom keyboard shortcuts for Chrome, Firefox, and Edge. Install shortcut packs for Vim, YouTube, GitHub, and more. Free and open source." />
-  <meta property="og:title" content="Shortkeys — Custom Keyboard Shortcuts for Your Browser" />
+  <meta property="og:title" content="Shortkeys - Custom Keyboard Shortcuts for Your Browser" />
   <meta property="og:description" content="Browse and share custom keyboard shortcuts. Install shortcut packs for Vim, YouTube, GitHub, and more." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://shortkeys.app" />
   <link rel="icon" type="image/png" href="/images/icon_16.png" />
   <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7/css/materialdesignicons.min.css" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
       --blue: #4361ee;
-      --dark: #1a1a2e;
+      --blue-hover: #3730a3;
+      --dark: #0f172a;
+      --darker: #020617;
       --gray: #64748b;
+      --gray-light: #cbd5e1;
       --light: #f8fafc;
+      --white: #ffffff;
       --border: #e2e8f0;
+      --accent: #f59e0b;
+    }
+
+    html {
+      scroll-behavior: smooth;
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       color: var(--dark);
-      background: var(--light);
+      background: var(--white);
       line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4, .brand, .font-display, .btn {
+      font-family: 'Outfit', sans-serif;
     }
 
     a { color: var(--blue); text-decoration: none; }
@@ -34,388 +51,823 @@
 
     /* Header */
     .header {
-      background: #fff;
-      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
       position: sticky;
       top: 0;
-      z-index: 10;
+      z-index: 100;
     }
 
     .header-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 0 24px;
-      height: 60px;
+      height: 72px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
-    .brand { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 800; color: var(--dark); }
-    .brand img { width: 32px; height: 32px; }
-
-    .header-nav { display: flex; gap: 24px; align-items: center; }
-    .header-nav a { color: var(--gray); font-size: 14px; font-weight: 500; }
-    .header-nav a:hover { color: var(--blue); text-decoration: none; }
-
-    a.btn-install {
-      background: var(--blue);
-      color: #fff;
-      padding: 8px 20px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      transition: background 0.15s;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--dark);
+      letter-spacing: -0.5px;
     }
-    a.btn-install:hover { background: #3730a3; text-decoration: none; color: #fff; }
+
+    .brand img { width: 36px; height: 36px; }
+
+    .header-nav { display: flex; gap: 32px; align-items: center; }
+    .header-nav a { color: var(--gray); font-size: 15px; font-weight: 600; transition: color 0.2s; }
+    .header-nav a:hover { color: var(--dark); text-decoration: none; }
+
+    .btn-install-header {
+      background: var(--dark);
+      color: var(--white) !important;
+      padding: 10px 20px;
+      border-radius: 10px;
+      transition: all 0.2s;
+    }
+    .btn-install-header:hover {
+      background: var(--blue);
+      transform: translateY(-1px);
+    }
 
     /* Hero */
     .hero {
+      padding: 120px 24px 80px;
       text-align: center;
-      padding: 80px 24px 60px;
-      background: linear-gradient(180deg, #fff 0%, var(--light) 100%);
+      position: relative;
+      overflow: hidden;
+      background: radial-gradient(circle at top center, #ffffff 0%, var(--light) 100%);
     }
 
-    .hero h1 {
-      font-size: 48px;
-      font-weight: 800;
-      letter-spacing: -1px;
-      margin-bottom: 16px;
-      line-height: 1.1;
+    .hero-inner {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      margin: 0 auto;
     }
 
-    .hero h1 span { color: var(--blue); }
-
-    .hero p {
-      font-size: 18px;
-      color: var(--gray);
-      max-width: 600px;
-      margin: 0 auto 32px;
-    }
-
-    .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-
-    .btn-hero {
-      padding: 14px 32px;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: 600;
+    .hero-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      transition: all 0.15s;
-    }
-
-    .btn-primary { background: var(--blue); color: #fff; }
-    .btn-primary:hover { background: #3730a3; text-decoration: none; }
-    .btn-secondary { background: #fff; color: var(--dark); border: 1px solid var(--border); }
-    .btn-secondary:hover { border-color: #cbd5e1; text-decoration: none; }
-
-    .hero-stats {
-      display: flex;
-      gap: 40px;
-      justify-content: center;
-      margin-top: 40px;
-      color: var(--gray);
+      background: rgba(67, 97, 238, 0.1);
+      color: var(--blue);
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-weight: 700;
       font-size: 14px;
+      margin-bottom: 32px;
+      font-family: 'Outfit', sans-serif;
     }
 
-    .hero-stats strong { display: block; font-size: 28px; color: var(--dark); font-weight: 800; }
-
-    /* Section */
-    .section {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 60px 24px;
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--blue);
+      border-radius: 50%;
+      box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.4);
+      animation: pulse 2s infinite;
     }
 
-    .section-header {
-      text-align: center;
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(67, 97, 238, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0); }
+    }
+
+    .hero h1 {
+      font-size: 72px;
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -2px;
+      margin-bottom: 24px;
+      color: var(--darker);
+    }
+
+    .text-blue { color: var(--blue); }
+
+    .hero-subtitle {
+      font-size: 20px;
+      color: var(--gray);
+      max-width: 640px;
+      margin: 0 auto 16px;
+      line-height: 1.6;
+    }
+
+    .hero-opensource {
+      font-size: 15px;
+      color: var(--blue);
+      font-weight: 600;
       margin-bottom: 40px;
+      text-align: center;
+      font-family: 'Outfit', sans-serif;
+      letter-spacing: 0.5px;
     }
 
-    .section-header h2 {
+    .hero-downloads {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .hero-screenshot {
+      max-width: 960px;
+      margin: 64px auto 0;
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    }
+
+    .hero-screenshot .browser-bar {
+      background: #f1f3f4;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hero-screenshot .browser-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .hero-screenshot .browser-dots span {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ddd;
+    }
+
+    .hero-screenshot .browser-dots span:nth-child(1) { background: #ff5f57; }
+    .hero-screenshot .browser-dots span:nth-child(2) { background: #febc2e; }
+    .hero-screenshot .browser-dots span:nth-child(3) { background: #28c840; }
+
+    .hero-screenshot .browser-url {
+      flex: 1;
+      background: var(--white);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: var(--gray);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    .hero-screenshot img {
+      width: 100%;
+      display: block;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 16px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-chrome { background: var(--blue); color: var(--white); box-shadow: 0 8px 16px rgba(67, 97, 238, 0.2); }
+    .btn-chrome:hover { background: var(--blue-hover); transform: translateY(-2px); text-decoration: none; color: var(--white); }
+    
+    .btn-firefox { background: #FF7139; color: var(--white); box-shadow: 0 8px 16px rgba(255, 113, 57, 0.2); }
+    .btn-firefox:hover { background: #E55B2B; transform: translateY(-2px); text-decoration: none; color: var(--white); }
+    
+    .btn-edge { background: #0078D7; color: var(--white); box-shadow: 0 8px 16px rgba(0, 120, 215, 0.2); }
+    .btn-edge:hover { background: #0063B1; transform: translateY(-2px); text-decoration: none; color: var(--white); }
+
+    .hero-visual {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .floating-key {
+      position: absolute;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-bottom-width: 4px;
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-family: 'SF Mono', monospace;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--gray);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+      animation: float 6s ease-in-out infinite;
+      opacity: 0.6;
+    }
+
+    .key-1 { top: 15%; left: 8%; animation-delay: 0s; --rot: -12deg; }
+    .key-2 { top: 55%; right: 8%; animation-delay: -2s; --rot: 15deg; }
+    .key-3 { top: 25%; right: 12%; animation-delay: -4s; --rot: 8deg; }
+    .key-4 { top: 65%; left: 10%; animation-delay: -1s; --rot: -6deg; }
+    .key-5 { top: 10%; left: 35%; animation-delay: -3s; --rot: 5deg; font-size: 14px; padding: 10px 16px; }
+    .key-6 { top: 75%; right: 25%; animation-delay: -5s; --rot: -8deg; font-size: 14px; padding: 10px 16px; }
+    .key-7 { top: 40%; left: 5%; animation-delay: -1.5s; --rot: 10deg; font-size: 14px; padding: 10px 16px; }
+    .key-8 { top: 45%; right: 5%; animation-delay: -3.5s; --rot: -4deg; font-size: 14px; padding: 10px 16px; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(var(--rot)); }
+      50% { transform: translateY(-20px) rotate(var(--rot)); }
+    }
+
+    /* Sections */
+    .section { padding: 100px 24px; }
+    .bg-light { background: var(--light); }
+    .bg-dark { background: var(--darker); color: var(--white); }
+    .bg-dark .section-header p { color: var(--gray-light); }
+
+    .section-header { text-align: center; margin-bottom: 64px; }
+    .section-header h2 { font-size: 48px; font-weight: 800; margin-bottom: 16px; letter-spacing: -1px; }
+    .section-header p { font-size: 20px; color: var(--gray); max-width: 600px; margin: 0 auto; }
+
+    /* How it works */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .step { text-align: center; position: relative; }
+    .step-number {
+      width: 64px;
+      height: 64px;
+      background: var(--blue);
+      color: var(--white);
+      font-family: 'Outfit', sans-serif;
       font-size: 32px;
       font-weight: 800;
-      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      margin: 0 auto 24px;
+      box-shadow: 0 0 0 8px rgba(67, 97, 238, 0.2);
+    }
+    .step h3 { font-size: 24px; margin-bottom: 12px; }
+    .step p { color: var(--gray-light); font-size: 16px; }
+
+    @media (min-width: 768px) {
+      .step:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: 32px;
+        left: calc(50% + 48px);
+        right: calc(-50% + 48px);
+        border-top: 2px dashed rgba(255,255,255,0.2);
+        z-index: 0;
+      }
     }
 
-    .section-header p {
-      font-size: 16px;
+    /* Bento Features */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .bento-item {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 32px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bento-item:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .bento-large { grid-column: span 2; }
+
+    .bento-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .bento-stack .bento-item {
+      flex: 1;
+    }
+
+    .bento-icon {
+      font-size: 32px;
+      color: var(--blue);
+      margin-bottom: 16px;
+      background: rgba(67, 97, 238, 0.1);
+      width: 64px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 16px;
+    }
+
+    .bento-item h3 { font-size: 24px; margin-bottom: 12px; }
+    .bento-item p { color: var(--gray); font-size: 16px; margin-bottom: 16px; }
+
+    .bento-large .bento-screenshot {
+      margin-top: 8px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+
+    .bento-large .bento-screenshot img {
+      width: 100%;
+      display: block;
+    }
+
+    .bento-visual {
+      margin-top: 16px;
+      padding: 16px;
+      background: var(--light);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .actions-visual { display: flex; flex-direction: column; gap: 8px; max-width: 420px; }
+    .mock-action {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--white);
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .mock-action kbd {
+      background: var(--light);
+      border: 1px solid var(--border);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-family: 'SF Mono', monospace;
+      font-size: 12px;
       color: var(--gray);
     }
+
+    .sync-visual {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 32px;
+      color: var(--gray);
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .sync-line {
+      height: 2px;
+      flex: 1;
+      background: linear-gradient(90deg, transparent, var(--blue), transparent);
+      position: relative;
+      overflow: hidden;
+    }
+    .sync-line::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%; width: 50%; height: 100%;
+      background: var(--blue);
+      animation: sync-flow 2s infinite linear;
+    }
+    @keyframes sync-flow { 100% { left: 200%; } }
 
     /* Pack grid */
     .pack-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 16px;
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
     }
 
     .pack-card {
-      background: #fff;
+      background: var(--white);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 24px;
-      transition: box-shadow 0.2s, transform 0.2s;
+      border-radius: 20px;
+      padding: 32px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
       position: relative;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
     }
 
-    .pack-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-2px); }
+    .pack-card:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1);
+      border-color: var(--accent, var(--blue));
+    }
 
     .pack-card::before {
       content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
+      top: 0; left: 0; right: 0;
+      height: 6px;
+      background: var(--accent, var(--blue));
     }
 
-    .pack-header { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 12px; }
-    .pack-icon { font-size: 36px; flex-shrink: 0; }
-    .pack-title { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
-    .pack-desc { font-size: 13px; color: var(--gray); line-height: 1.5; margin-bottom: 16px; }
-
-    .pack-shortcuts {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-      margin-bottom: 16px;
-    }
-
-    .pack-shortcuts kbd {
-      display: inline-block;
-      padding: 3px 8px;
-      background: var(--light);
-      border: 1px solid var(--border);
-      border-radius: 5px;
-      font-family: 'SF Mono', Menlo, monospace;
-      font-size: 11px;
-      color: var(--gray);
-    }
+    .pack-icon { font-size: 48px; margin-bottom: 16px; display: block; }
+    .pack-title { font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .pack-desc { color: var(--gray); font-size: 15px; flex-grow: 1; margin-bottom: 24px; }
 
     .pack-footer {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
     }
 
-    .pack-count { font-size: 12px; font-weight: 600; color: var(--gray); }
+    .pack-count { font-size: 14px; font-weight: 600; color: var(--gray); display: flex; align-items: center; gap: 6px; }
 
     .btn-add {
-      padding: 8px 18px;
-      background: var(--blue);
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      font-size: 13px;
+      background: var(--light);
+      color: var(--dark);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 8px;
       font-weight: 600;
+      font-family: 'Outfit', sans-serif;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      transition: background 0.15s;
+      transition: all 0.2s;
     }
 
-    .btn-add:hover { background: #3730a3; }
+    .pack-card:hover .btn-add {
+      background: var(--dark);
+      color: var(--white);
+      border-color: var(--dark);
+    }
+
+    /* Actions Accordion */
+    .actions-accordion {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: 0 20px 40px -10px rgba(0,0,0,0.05);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .action-category { border-bottom: 1px solid var(--border); }
+    .action-category:last-child { border-bottom: none; }
+
+    .action-category-header {
+      width: 100%;
+      background: var(--white);
+      padding: 20px 24px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--dark);
+      border: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .action-category-header:hover { background: var(--light); }
+
+    .action-count {
+      font-size: 14px;
+      color: var(--gray);
+      font-weight: 500;
+      margin-left: 12px;
+      background: var(--light);
+      padding: 4px 10px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+    }
+
+    .action-chevron {
+      font-size: 24px;
+      color: var(--gray);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .action-category.open .action-chevron { transform: rotate(180deg); }
+
+    [hidden] { display: none !important; }
+
+    .action-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+      padding: 20px 24px;
+      background: #f8fafc;
+      border-top: 1px solid var(--border);
+    }
+
+    .action-item {
+      background: var(--white);
+      border: 1px solid var(--border);
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .action-item:hover {
+      transform: translateY(-2px);
+      border-color: var(--blue);
+    }
+
+    .action-item::before {
+      content: '\F0E1E';
+      font-family: "Material Design Icons";
+      margin-right: 10px;
+      font-size: 16px;
+      color: var(--blue);
+      opacity: 0.7;
+    }
 
     /* Share section */
     .share-section {
-      background: var(--dark);
-      color: #fff;
-      padding: 80px 24px;
+      background: var(--darker);
+      color: var(--white);
+      padding: 100px 24px;
       text-align: center;
+      position: relative;
+      overflow: hidden;
     }
 
-    .share-section h2 { font-size: 32px; font-weight: 800; margin-bottom: 12px; }
-    .share-section p { color: #94a3b8; font-size: 16px; max-width: 500px; margin: 0 auto 32px; }
+    .share-section::before {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%; width: 200%; height: 200%;
+      background: radial-gradient(circle at center, rgba(67, 97, 238, 0.15) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .share-section h2 { font-size: 48px; font-weight: 800; margin-bottom: 16px; letter-spacing: -1px; }
+    .share-section p { color: var(--gray-light); font-size: 20px; max-width: 600px; margin: 0 auto 48px; }
 
     .share-input-wrap {
-      max-width: 500px;
+      max-width: 600px;
       margin: 0 auto;
       display: flex;
-      gap: 8px;
+      gap: 12px;
+      position: relative;
+      z-index: 1;
     }
 
     .share-input {
       flex: 1;
-      padding: 14px 18px;
-      border: 1px solid #334155;
-      border-radius: 10px;
-      background: #0f172a;
-      color: #e2e8f0;
+      padding: 16px 24px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      color: var(--white);
+      font-family: 'SF Mono', monospace;
       font-size: 14px;
-      font-family: 'SF Mono', Menlo, monospace;
+      backdrop-filter: blur(10px);
     }
 
-    .share-input::placeholder { color: #475569; }
+    .share-input:focus {
+      outline: none;
+      border-color: var(--blue);
+      background: rgba(255,255,255,0.1);
+    }
 
     .btn-share {
-      padding: 14px 24px;
       background: var(--blue);
-      color: #fff;
+      color: var(--white);
       border: none;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    /* Features */
-    .features {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 24px;
-    }
-
-    .feature {
-      padding: 24px;
-      background: #fff;
+      padding: 0 32px;
       border-radius: 12px;
-      border: 1px solid var(--border);
-    }
-
-    .feature-icon { font-size: 28px; margin-bottom: 12px; }
-    .feature h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
-    .feature p { font-size: 13px; color: var(--gray); }
-
-    /* Actions Accordion */
-    .actions-accordion { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-    .action-category + .action-category { border-top: 1px solid var(--border); }
-    .action-category-header {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 20px;
-      background: var(--light);
-      border: none;
-      cursor: pointer;
-      font-size: 15px;
+      font-family: 'Outfit', sans-serif;
       font-weight: 700;
-      color: var(--dark);
-      font-family: inherit;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
     }
-    .action-category-header:hover { background: #eef1f6; }
-    .action-count { font-size: 12px; font-weight: 500; color: var(--gray); margin-left: 8px; }
-    .action-chevron { font-size: 20px; color: var(--gray); transition: transform 0.2s; }
-    .action-category.open .action-chevron { transform: rotate(180deg); }
-    .action-list { padding: 0; }
-    .action-item { padding: 8px 20px 8px 36px; font-size: 13px; color: #334155; }
-    .action-item:nth-child(odd) { background: #fff; }
-    .action-item:nth-child(even) { background: var(--light); }
+
+    .btn-share:hover { background: var(--blue-hover); transform: translateY(-2px); }
 
     /* Footer */
     .footer {
+      background: var(--white);
+      padding: 64px 24px;
       text-align: center;
-      padding: 40px 24px;
-      color: var(--gray);
-      font-size: 13px;
       border-top: 1px solid var(--border);
     }
 
-    .footer a { color: var(--gray); }
-    .footer a:hover { color: var(--blue); }
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 20px;
+      font-weight: 800;
+      font-family: 'Outfit', sans-serif;
+      margin-bottom: 24px;
+      color: var(--dark);
+    }
+
+    .footer-brand img { width: 32px; height: 32px; }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a { color: var(--gray); font-weight: 600; text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--blue); }
 
     .footer-support {
       display: flex;
-      gap: 16px;
       justify-content: center;
-      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
       flex-wrap: wrap;
-      margin-bottom: 12px;
-      font-size: 14px;
     }
 
-    .footer-support span { font-weight: 600; color: var(--dark); }
-    .footer-support a { color: var(--blue); font-weight: 500; }
+    .support-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--light);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--dark);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .support-badge:hover {
+      background: var(--white);
+      border-color: var(--blue);
+      color: var(--blue);
+      transform: translateY(-2px);
+      text-decoration: none;
+    }
+
+    .footer-copy { color: var(--gray); font-size: 14px; }
+    .footer-copy a { color: var(--dark); font-weight: 600; text-decoration: none; }
+    .footer-copy a:hover { color: var(--blue); }
 
     /* Modal */
     .modal-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(4px);
-      z-index: 100;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
       align-items: center;
       justify-content: center;
+      padding: 24px;
     }
 
-    .modal-overlay.active { display: flex; }
+    .modal-overlay.active { display: flex; animation: fadeIn 0.2s ease-out; }
 
     .modal {
-      background: #fff;
-      border-radius: 16px;
-      max-width: 560px;
-      width: 90vw;
-      max-height: 80vh;
-      overflow: hidden;
-      box-shadow: 0 25px 50px rgba(0,0,0,0.2);
-    }
-
-    .modal-header {
-      padding: 24px;
-      color: #fff;
+      background: var(--white);
+      border-radius: 24px;
+      width: 100%;
+      max-width: 600px;
+      max-height: 85vh;
       display: flex;
-      gap: 14px;
-      align-items: center;
-      position: relative;
+      flex-direction: column;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+      overflow: hidden;
+      transform: scale(0.95);
+      opacity: 0;
+      animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    .modal-header h2 { font-size: 20px; font-weight: 700; margin: 0; }
-    .modal-header p { font-size: 13px; opacity: 0.85; margin: 4px 0 0; }
-    .modal-icon { font-size: 40px; }
+    .modal-overlay.active .modal { transform: scale(1); opacity: 1; }
 
-    .modal-body {
-      padding: 20px 24px;
-      overflow-y: auto;
-      max-height: 50vh;
-    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes modalIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    .modal-header { padding: 32px; color: var(--white); display: flex; gap: 20px; align-items: center; }
+    .modal-icon { font-size: 56px; line-height: 1; }
+    .modal-header h2 { font-size: 28px; margin-bottom: 4px; }
+    .modal-header p { font-size: 15px; opacity: 0.9; }
+
+    .modal-body { padding: 24px 32px; overflow-y: auto; background: var(--light); }
 
     .modal-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 12px;
-      border-radius: 6px;
-      gap: 12px;
+      padding: 16px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
 
-    .modal-row:nth-child(odd) { background: var(--light); }
-    .modal-row-label { font-size: 13px; color: #334155; }
-    .modal-row-keys { display: flex; gap: 3px; }
-    .modal-row-keys kbd { display: inline-block; padding: 2px 7px; background: var(--light); border: 1px solid var(--border); border-radius: 4px; font-family: 'SF Mono', Menlo, monospace; font-size: 11px; color: #475569; text-transform: capitalize; }
+    .modal-row-label { font-weight: 600; color: var(--dark); font-size: 15px; }
+    .modal-row-keys { display: flex; gap: 6px; }
+    .modal-row-keys kbd {
+      background: var(--light);
+      border: 1px solid var(--border);
+      border-bottom-width: 3px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-family: 'SF Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--dark);
+      text-transform: capitalize;
+    }
 
     .modal-footer {
-      padding: 16px 24px;
+      padding: 24px 32px;
+      background: var(--white);
       border-top: 1px solid var(--border);
       display: flex;
       justify-content: flex-end;
-      gap: 8px;
+      gap: 12px;
+    }
+
+    .modal-cancel {
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
       background: var(--light);
-    }
-
-    .modal-footer button {
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
+      color: var(--gray);
+      border: 1px solid var(--border);
       cursor: pointer;
-      border: none;
+      transition: all 0.2s;
     }
 
-    .modal-cancel { background: #fff; color: var(--gray); border: 1px solid var(--border) !important; }
-    .modal-install { background: var(--blue); color: #fff; }
+    .modal-cancel:hover { background: #e2e8f0; color: var(--dark); }
+
+    .modal-install {
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      background: var(--blue);
+      color: var(--white);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-install:hover { background: var(--blue-hover); transform: translateY(-2px); }
+
+    @media (max-width: 900px) {
+      .bento-grid { grid-template-columns: 1fr; }
+      .bento-large { grid-column: span 1; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 48px; }
+      .hero-downloads { flex-direction: column; }
+      .btn { width: 100%; justify-content: center; }
+      .header-nav { display: none; }
+    }
 
     @media (max-width: 768px) {
-      .hero h1 { font-size: 32px; }
-      .hero-stats { flex-direction: column; gap: 16px; }
-      .header-nav { display: none; }
     }
   </style>
 </head>
@@ -428,11 +880,12 @@
         Shortkeys
       </a>
       <nav class="header-nav">
-        <a href="#packs">Browse Packs</a>
+        <a href="#how-it-works">How it Works</a>
         <a href="#features">Features</a>
+        <a href="#packs">Packs</a>
         <a href="https://github.com/crittermike/shortkeys" target="_blank">GitHub</a>
         <a href="https://github.com/crittermike/shortkeys/wiki" target="_blank">Docs</a>
-        <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck" class="btn-install" target="_blank">
+        <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck" class="btn-install-header" target="_blank">
           Install Extension
         </a>
       </nav>
@@ -441,77 +894,162 @@
 
   <!-- Hero -->
   <section class="hero">
-    <h1>Custom <span>keyboard shortcuts</span><br>for your browser</h1>
-    <p>Create shortcuts for anything — navigate tabs, run JavaScript, control videos, search the web. Browse community packs or build your own.</p>
-    <div class="hero-actions">
-      <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck" class="btn-hero btn-primary" target="_blank">
-        <i class="mdi mdi-google-chrome"></i> Install for Chrome
-      </a>
-      <a href="#packs" class="btn-hero btn-secondary">
-        <i class="mdi mdi-package-variant"></i> Browse Packs
-      </a>
+    <div class="hero-visual">
+      <div class="floating-key key-1"><kbd>Ctrl</kbd></div>
+      <div class="floating-key key-2"><kbd>Shift</kbd></div>
+      <div class="floating-key key-3"><kbd>K</kbd></div>
+      <div class="floating-key key-4"><kbd>Alt</kbd></div>
+      <div class="floating-key key-5"><kbd>Tab</kbd></div>
+      <div class="floating-key key-6"><kbd>Esc</kbd></div>
+      <div class="floating-key key-7"><kbd>↑</kbd></div>
+      <div class="floating-key key-8"><kbd>G</kbd></div>
     </div>
-    <div class="hero-stats">
-      <div><strong>200K+</strong> users</div>
-      <div><strong>10</strong> curated packs</div>
-      <div><strong>90+</strong> built-in actions</div>
+    <div class="hero-inner">
+      <div class="hero-badge">
+        <span class="pulse-dot"></span> Trusted by 200,000+ Chrome Users
+      </div>
+      <h1>Take control of your<br><span class="text-blue">browser.</span></h1>
+      <p class="hero-subtitle">Shortkeys lets you customize everything: navigate tabs, run JavaScript, control videos, and more.</p>
+      <p class="hero-opensource"><a href="https://github.com/crittermike/shortkeys" target="_blank" style="color:var(--blue);text-decoration:none"><i class="mdi mdi-open-source-initiative" style="vertical-align:-2px;margin-right:4px"></i>Free &amp; open source</a>, forever</p>
+      
+      <div class="hero-downloads">
+        <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck" class="btn btn-chrome" target="_blank">
+          <i class="mdi mdi-google-chrome"></i> Chrome
+        </a>
+        <a href="https://addons.mozilla.org/firefox/addon/shortkeys/" class="btn btn-firefox" target="_blank">
+          <i class="mdi mdi-firefox"></i> Firefox
+        </a>
+        <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck" class="btn btn-edge" target="_blank">
+          <i class="mdi mdi-microsoft-edge"></i> Edge
+        </a>
+      </div>
+
+      <div class="hero-screenshot">
+        <div class="browser-bar">
+          <div class="browser-dots"><span></span><span></span><span></span></div>
+          <div class="browser-url">chrome-extension://shortkeys/options.html</div>
+        </div>
+        <img src="/images/screenshot-hero.png" alt="Shortkeys options page showing organized keyboard shortcuts in groups" />
+      </div>
     </div>
   </section>
 
   <!-- Features -->
-  <section class="section" id="features">
+  <section class="section bg-light" id="features">
     <div class="section-header">
-      <h2>Why Shortkeys?</h2>
-      <p>The most powerful keyboard shortcut extension for your browser.</p>
+      <h2>Supercharge your workflow</h2>
+      <p>Everything you need to navigate the web at the speed of thought.</p>
     </div>
-    <div class="features">
-      <div class="feature">
-        <div class="feature-icon">⌨️</div>
-        <h3>90+ Built-in Actions</h3>
-        <p>Tab management, scrolling, navigation, zoom, bookmarks, downloads, video controls, and more.</p>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">🔤</div>
+    
+    <div class="bento-grid">
+      <!-- Row 1: Custom JS (large) + [90+ Actions, Shortcut Packs] stacked -->
+      <div class="bento-item bento-large">
+        <div class="bento-icon"><i class="mdi mdi-code-braces"></i></div>
         <h3>Custom JavaScript</h3>
-        <p>Run any JavaScript with a keyboard shortcut. Full CodeMirror editor with syntax highlighting and test button.</p>
+        <p>Run any JavaScript with a keyboard shortcut. Full CodeMirror editor with syntax highlighting and One Dark theme.</p>
+        <div class="bento-screenshot">
+          <img src="/images/screenshot-custom-js.png" alt="CodeMirror editor with JavaScript code" />
+        </div>
       </div>
-      <div class="feature">
-        <div class="feature-icon">📦</div>
-        <h3>Shortcut Packs</h3>
-        <p>Browse and install curated shortcut collections. Vim, Emacs, YouTube, GitHub — or create your own.</p>
+
+      <div class="bento-stack">
+        <div class="bento-item">
+          <div class="bento-icon"><i class="mdi mdi-flash"></i></div>
+          <h3>90+ Built-in Actions</h3>
+          <p>Tab management, scrolling, navigation, zoom, bookmarks, downloads, video controls, and more.</p>
+          <div class="bento-visual actions-visual">
+            <div class="mock-action"><span>Scroll to bottom</span> <kbd>G</kbd></div>
+            <div class="mock-action"><span>Next tab</span> <kbd>Shift</kbd> + <kbd>K</kbd></div>
+            <div class="mock-action"><span>Mute audio</span> <kbd>M</kbd></div>
+          </div>
+        </div>
+        <div class="bento-item">
+          <div class="bento-icon"><i class="mdi mdi-package-variant-closed"></i></div>
+          <h3>Shortcut Packs</h3>
+          <p>Browse and install curated shortcut collections like Vim, YouTube, or GitHub with one click.</p>
+        </div>
       </div>
-      <div class="feature">
-        <div class="feature-icon">☁️</div>
-        <h3>Cloud Sync</h3>
-        <p>Shortcuts sync across all your Chrome instances via your Google account. No account needed.</p>
+
+      <!-- Row 2: [Groups, Shortcut Recorder] stacked + Macros (large) -->
+      <div class="bento-stack">
+        <div class="bento-item">
+          <div class="bento-icon"><i class="mdi mdi-folder-outline"></i></div>
+          <h3>Groups</h3>
+          <p>Organize shortcuts into collapsible groups. Enable, disable, or share entire groups at once.</p>
+        </div>
+        <div class="bento-item">
+          <div class="bento-icon"><i class="mdi mdi-record-circle-outline"></i></div>
+          <h3>Shortcut Recorder</h3>
+          <p>Just click Record and press your key combo. Supports multi-key sequences like vim's <kbd>g</kbd> <kbd>g</kbd>.</p>
+        </div>
       </div>
-      <div class="feature">
-        <div class="feature-icon">📂</div>
-        <h3>Groups</h3>
-        <p>Organize shortcuts into collapsible groups. Enable/disable, rename, or delete entire groups at once.</p>
+
+      <div class="bento-item bento-large">
+        <div class="bento-icon"><i class="mdi mdi-playlist-play"></i></div>
+        <h3>Macros</h3>
+        <p>Chain multiple actions into a single shortcut. Add delays between steps for precise automation.</p>
+        <div class="bento-screenshot">
+          <img src="/images/screenshot-macros.png" alt="Macro builder with chained action steps" />
+        </div>
       </div>
-      <div class="feature">
-        <div class="feature-icon">⏺️</div>
-        <h3>Shortcut Recorder</h3>
-        <p>Click Record and press your key combo — supports multi-key sequences like vim's <kbd>g</kbd><kbd>g</kbd>.</p>
+
+      <!-- Row 3: Dark Mode (large) + [Cloud Sync, Command Palette] stacked -->
+      <div class="bento-item bento-large">
+        <div class="bento-icon"><i class="mdi mdi-weather-night"></i></div>
+        <h3>Dark Mode</h3>
+        <p>The settings page automatically adapts to your system theme preference. Easy on the eyes, day or night.</p>
+        <div class="bento-screenshot">
+          <img src="/images/screenshot-dark-mode.png" alt="Options page in dark mode" />
+        </div>
       </div>
-      <div class="feature">
-        <div class="feature-icon">⚠️</div>
-        <h3>Conflict Detection</h3>
-        <p>Warns when your shortcuts conflict with browser defaults or other extensions.</p>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">🔍</div>
-        <h3>Command Palette</h3>
-        <p>Click the extension icon for an instant searchable palette of all your shortcuts.</p>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">🌙</div>
-        <h3>Dark Mode & Cheat Sheet</h3>
-        <p>One-key dark mode for any site. Press a key to see all your active shortcuts overlaid on the page.</p>
+
+      <div class="bento-stack">
+        <div class="bento-item">
+          <div class="bento-icon"><i class="mdi mdi-cloud-sync"></i></div>
+          <h3>Cloud Sync</h3>
+          <p>Your shortcuts automatically sync across all your Chrome instances via your Google account.</p>
+          <div class="bento-visual sync-visual">
+            <i class="mdi mdi-laptop"></i>
+            <div class="sync-line"></div>
+            <i class="mdi mdi-cloud"></i>
+            <div class="sync-line"></div>
+            <i class="mdi mdi-monitor"></i>
+          </div>
+        </div>
+        <div class="bento-item">
+          <div class="bento-icon"><i class="mdi mdi-magnify"></i></div>
+          <h3>Command Palette</h3>
+          <p>Click the extension icon for an instant searchable palette of all your active shortcuts.</p>
+        </div>
       </div>
     </div>
   </section>
+
+  <!-- How it works -->
+  <section class="section bg-dark" id="how-it-works">
+    <div class="section-header">
+      <h2>How it works</h2>
+      <p>Three steps to keyboard nirvana.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-number">1</div>
+        <h3>Install</h3>
+        <p>Add Shortkeys to your favorite browser in seconds.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <h3>Configure</h3>
+        <p>Pick an action or write custom JS, then record your key combo.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <h3>Execute</h3>
+        <p>Press your keys and watch the magic happen. It's that simple.</p>
+      </div>
+    </div>
+  </section>
+
 
   <!-- Built-in Actions -->
   <section class="section" id="actions">
@@ -657,7 +1195,7 @@
       </div>
       <div class="action-category" data-category="Page Scripts">
         <button class="action-category-header" onclick="toggleCategory(this)">
-          <span>Page Scripts <span class="action-count">23 actions</span></span>
+          <span>Page Scripts <span class="action-count">24 actions</span></span>
           <i class="mdi mdi-chevron-down action-chevron"></i>
         </button>
         <div class="action-list" hidden>
@@ -684,6 +1222,7 @@
           <div class="action-item">Picture-in-picture</div>
           <div class="action-item">Video speed 2x</div>
           <div class="action-item">List image URLs</div>
+          <div class="action-item">Show audio volume</div>
         </div>
       </div>
       <div class="action-category" data-category="Utilities">
@@ -710,14 +1249,14 @@
   </section>
 
   <!-- Packs -->
-  <section class="section" id="packs">
+  <section class="section bg-light" id="packs">
     <div class="section-header">
       <h2>Shortcut Packs</h2>
       <p>One-click install curated shortcut collections. Customize or remove anytime.</p>
     </div>
     <div class="pack-grid" id="pack-grid">
       <!-- Populated by JavaScript -->
-      <div style="text-align:center;padding:40px;color:var(--gray)">Loading packs...</div>
+      <div style="text-align:center;padding:40px;color:var(--gray);grid-column:1/-1;">Loading packs...</div>
     </div>
   </section>
 
@@ -729,18 +1268,34 @@
       <input class="share-input" id="share-input" placeholder='Paste your shortcut JSON here...' />
       <button class="btn-share" id="share-btn" onclick="generateShareLink()">Generate Link</button>
     </div>
-    <p id="share-result" style="margin-top:16px;font-size:13px;color:#94a3b8"></p>
+    <p id="share-result" style="margin-top:16px;font-size:14px;color:var(--gray-light)"></p>
   </section>
 
   <!-- Footer -->
   <footer class="footer">
-    <div class="footer-support">
-      <span>Love Shortkeys?</span>
-      <a href="https://github.com/sponsors/crittermike" target="_blank">💛 Sponsor</a>
-      <a href="https://buymeacoffee.com/crittermike" target="_blank">☕ Buy me a coffee</a>
-      <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck/reviews" target="_blank">⭐ Leave a review</a>
+    <a href="/" class="footer-brand">
+      <img src="/images/icon_48.png" alt="Shortkeys" />
+      Shortkeys
+    </a>
+    <div class="footer-links">
+      <a href="#how-it-works">How it Works</a>
+      <a href="#features">Features</a>
+      <a href="#packs">Packs</a>
+      <a href="https://github.com/crittermike/shortkeys" target="_blank">GitHub</a>
+      <a href="https://github.com/crittermike/shortkeys/wiki" target="_blank">Documentation</a>
     </div>
-    <p>
+    <div class="footer-support">
+      <a href="https://github.com/sponsors/crittermike" class="support-badge" target="_blank">
+        <i class="mdi mdi-heart" style="color:#ef4444"></i> Sponsor
+      </a>
+      <a href="https://buymeacoffee.com/crittermike" class="support-badge" target="_blank">
+        <i class="mdi mdi-coffee" style="color:#f59e0b"></i> Buy me a coffee
+      </a>
+      <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck/reviews" class="support-badge" target="_blank">
+        <i class="mdi mdi-star" style="color:#eab308"></i> Leave a review
+      </a>
+    </div>
+    <p class="footer-copy">
       Shortkeys is free and <a href="https://github.com/crittermike/shortkeys" target="_blank">open source</a>.
       Made by <a href="https://github.com/crittermike" target="_blank">Mike Crittenden</a>.
     </p>
@@ -777,25 +1332,20 @@
         renderPacks(data.packs)
       })
       .catch(() => {
-        document.getElementById('pack-grid').innerHTML = '<p style="color:var(--gray)">Failed to load packs. <a href="https://github.com/crittermike/shortkeys">View on GitHub</a></p>'
+        document.getElementById('pack-grid').innerHTML = '<p style="color:var(--gray);text-align:center;grid-column:1/-1;">Failed to load packs. <a href="https://github.com/crittermike/shortkeys">View on GitHub</a></p>'
       })
 
     function renderPacks(packs) {
       const grid = document.getElementById('pack-grid')
       grid.innerHTML = packs.map(pack => `
         <div class="pack-card" onclick="showPackModal('${pack.id}')" style="--accent:${pack.color}">
-          <style>.pack-card[style*="${pack.color}"]::before { background: ${pack.color}; }</style>
-          <div class="pack-header">
-            <span class="pack-icon">${pack.icon}</span>
-            <div>
-              <div class="pack-title">${pack.name}</div>
-            </div>
-          </div>
+          <div class="pack-icon">${pack.icon}</div>
+          <div class="pack-title">${pack.name}</div>
           <div class="pack-desc">${pack.description}</div>
           <div class="pack-footer">
-            <span class="pack-count">${pack.shortcutCount} shortcuts</span>
+            <span class="pack-count"><i class="mdi mdi-keyboard-outline"></i> ${pack.shortcutCount} shortcuts</span>
             <button class="btn-add" onclick="event.stopPropagation();showPackModal('${pack.id}')">
-              <i class="mdi mdi-eye-outline"></i> Preview
+              Preview
             </button>
           </div>
         </div>
@@ -848,12 +1398,13 @@
         const data = JSON.parse(input.value)
         const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))))
         const url = `${window.location.origin}/share#${encoded}`
-        result.innerHTML = `<a href="${url}" target="_blank" style="color:#60a5fa;word-break:break-all">${url}</a><br><small>Share this link — anyone with Shortkeys can import it.</small>`
+        result.innerHTML = `<a href="${url}" target="_blank" style="color:#60a5fa;word-break:break-all">${url}</a><br><small style="display:block;margin-top:8px;color:#94a3b8;">Share this link. Anyone with Shortkeys can import it.</small>`
         navigator.clipboard.writeText(url).catch(() => {})
       } catch {
         result.textContent = 'Invalid JSON. Export your shortcuts from the extension and paste them here.'
         result.style.color = '#ef4444'
       }
+
     }
   </script>
 </body>
