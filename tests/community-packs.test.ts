@@ -5,17 +5,13 @@ import { fileURLToPath } from 'url'
 import { getAllActionValues } from '../src/utils/actions-registry'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const communityDir = resolve(__dirname, '../community-packs')
+const communityDir = resolve(__dirname, '../packs/community')
 
 interface CommunityPackJson {
-  id: string
   name: string
   icon: string
   description: string
-  color: string
   author: string
-  category?: string
-  tags?: string[]
   shortcuts: Array<{
     key: string
     action: string
@@ -24,23 +20,27 @@ interface CommunityPackJson {
   }>
 }
 
-function loadCommunityPacks(): CommunityPackJson[] {
+// Same palette used in build-catalog.ts
+const COLOR_PALETTE = [
+  '#4361ee', '#7c3aed', '#0891b2', '#059669', '#d97706',
+  '#dc2626', '#db2777', '#6366f1', '#0284c7', '#16a34a',
+]
+
+function hashString(str: string): number {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0
+  }
+  return Math.abs(hash)
+}
+
+function loadCommunityPacks(): Array<CommunityPackJson & { _file: string }> {
   const files = readdirSync(communityDir).filter((f) => f.endsWith('.json'))
   return files.map((file) => {
     const raw = readFileSync(resolve(communityDir, file), 'utf-8')
-    return JSON.parse(raw) as CommunityPackJson
+    return { ...JSON.parse(raw), _file: file } as CommunityPackJson & { _file: string }
   })
 }
-
-const VALID_CATEGORIES = [
-  'productivity',
-  'navigation',
-  'accessibility',
-  'developer',
-  'media',
-  'reading',
-  'uncategorized',
-]
 
 describe('community pack JSON validation', () => {
   const packs = loadCommunityPacks()
@@ -51,42 +51,24 @@ describe('community pack JSON validation', () => {
 
   it('all packs have required metadata fields', () => {
     for (const pack of packs) {
-      expect(pack.id, `Pack missing id`).toBeTruthy()
-      expect(pack.name, `${pack.id} missing name`).toBeTruthy()
-      expect(pack.icon, `${pack.id} missing icon`).toBeTruthy()
-      expect(pack.description, `${pack.id} missing description`).toBeTruthy()
-      expect(pack.color, `${pack.id} missing color`).toBeTruthy()
-      expect(pack.author, `${pack.id} missing author`).toBeTruthy()
-      expect(pack.shortcuts, `${pack.id} missing shortcuts`).toBeDefined()
-      expect(pack.shortcuts.length, `${pack.id} has no shortcuts`).toBeGreaterThan(0)
+      expect(pack.name, `${pack._file} missing name`).toBeTruthy()
+      expect(pack.icon, `${pack._file} missing icon`).toBeTruthy()
+      expect(pack.description, `${pack._file} missing description`).toBeTruthy()
+      expect(pack.author, `${pack._file} missing author`).toBeTruthy()
+      expect(pack.shortcuts, `${pack._file} missing shortcuts`).toBeDefined()
+      expect(pack.shortcuts.length, `${pack._file} has no shortcuts`).toBeGreaterThan(0)
     }
   })
 
-  it('all pack IDs start with "community-"', () => {
+  it('file names are lowercase with hyphens', () => {
     for (const pack of packs) {
-      expect(pack.id, `${pack.id} must start with "community-"`).toMatch(/^community-/)
+      expect(pack._file, `${pack._file} should be lowercase-hyphens.json`).toMatch(/^[a-z0-9-]+\.json$/)
     }
   })
 
-  it('all pack IDs are unique', () => {
-    const ids = packs.map((p) => p.id)
-    expect(new Set(ids).size).toBe(ids.length)
-  })
-
-  it('all pack colors are valid hex colors', () => {
-    for (const pack of packs) {
-      expect(pack.color, `${pack.id} has invalid color "${pack.color}"`).toMatch(/^#[0-9a-fA-F]{6}$/)
-    }
-  })
-
-  it('all pack categories are valid', () => {
-    for (const pack of packs) {
-      const category = pack.category || 'uncategorized'
-      expect(
-        VALID_CATEGORIES,
-        `${pack.id} has invalid category "${category}"`,
-      ).toContain(category)
-    }
+  it('file names are unique', () => {
+    const files = packs.map((p) => p._file)
+    expect(new Set(files).size).toBe(files.length)
   })
 
   it('all pack shortcuts have valid action names', () => {
@@ -149,14 +131,6 @@ describe('community pack JSON validation', () => {
     }
   })
 
-  it('tags is an array when present', () => {
-    for (const pack of packs) {
-      if (pack.tags !== undefined) {
-        expect(Array.isArray(pack.tags), `${pack.id} tags must be an array`).toBe(true)
-      }
-    }
-  })
-
   it('javascript actions include code field', () => {
     for (const pack of packs) {
       for (const s of pack.shortcuts) {
@@ -174,15 +148,15 @@ describe('community pack build script', () => {
     const packs = files.map((file) => {
       const raw = readFileSync(resolve(communityDir, file), 'utf-8')
       const pack: CommunityPackJson = JSON.parse(raw)
+      const id = `community-${file.replace(/\.json$/, '')}`
+      const color = COLOR_PALETTE[hashString(pack.name) % COLOR_PALETTE.length]
       return {
-        id: pack.id,
+        id,
         name: pack.name,
         icon: pack.icon,
         description: pack.description,
-        color: pack.color,
+        color,
         author: pack.author,
-        category: pack.category || 'uncategorized',
-        tags: pack.tags || [],
         shortcutCount: pack.shortcuts.length,
         hasJavaScript: pack.shortcuts.some((s) => s.action === 'javascript'),
         shortcuts: pack.shortcuts.map((s) => ({
@@ -207,7 +181,9 @@ describe('community pack build script', () => {
 
     for (const pack of catalog.packs) {
       expect(pack.id).toBeTruthy()
+      expect(pack.id).toMatch(/^community-/)
       expect(pack.name).toBeTruthy()
+      expect(pack.color).toMatch(/^#[0-9a-fA-F]{6}$/)
       expect(pack.shortcutCount).toBeGreaterThan(0)
       expect(typeof pack.hasJavaScript).toBe('boolean')
       expect(Array.isArray(pack.shortcuts)).toBe(true)
@@ -236,6 +212,25 @@ describe('community pack build script', () => {
         hasJavaScript: pack.shortcuts.some((s) => s.action === 'javascript'),
       }
       expect(generated.hasJavaScript).toBe(hasJs)
+    }
+  })
+
+  it('auto-generated IDs are deterministic from filename', () => {
+    const files = readdirSync(communityDir).filter((f) => f.endsWith('.json'))
+    for (const file of files) {
+      const expected = `community-${file.replace(/\.json$/, '')}`
+      expect(expected).toMatch(/^community-[a-z0-9-]+$/)
+    }
+  })
+
+  it('auto-generated colors are valid hex and deterministic', () => {
+    const packs = loadCommunityPacks()
+    for (const pack of packs) {
+      const color = COLOR_PALETTE[hashString(pack.name) % COLOR_PALETTE.length]
+      expect(color).toMatch(/^#[0-9a-fA-F]{6}$/)
+      // Running twice should produce same result
+      const color2 = COLOR_PALETTE[hashString(pack.name) % COLOR_PALETTE.length]
+      expect(color).toBe(color2)
     }
   })
 })
@@ -319,7 +314,7 @@ describe('community pack conflict detection', () => {
   it('detects conflicts between community pack and existing shortcuts', () => {
     const existingKeys = new Set(['alt+shift+f', 'alt+shift+m'])
     const packs = loadCommunityPacks()
-    const focusPack = packs.find((p) => p.id === 'community-focus-mode')!
+    const focusPack = packs.find((p) => p.name === 'Focus Mode')!
     const conflicts = focusPack.shortcuts.filter((s) => existingKeys.has(s.key.toLowerCase()))
     expect(conflicts.length).toBeGreaterThan(0)
   })

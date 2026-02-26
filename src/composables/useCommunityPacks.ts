@@ -11,8 +11,6 @@ export interface CommunityPack {
   description: string
   color: string
   author: string
-  category: string
-  tags: string[]
   shortcutCount: number
   hasJavaScript: boolean
   shortcuts: Array<{ key: string; action: string; label: string }>
@@ -30,7 +28,6 @@ const communityPacks = ref<CommunityPack[]>([])
 const communityLoading = ref(false)
 const communityError = ref<string | null>(null)
 const communitySearchQuery = ref('')
-const communityCategory = ref<string>('all')
 const previewCommunityPack = ref<CommunityPack | null>(null)
 const communityConflictMode = ref<'skip' | 'replace' | 'keep'>('replace')
 const jsWarningPack = ref<CommunityPack | null>(null)
@@ -41,32 +38,16 @@ export function useCommunityPacks() {
   const { keys, saveShortcuts } = useShortcuts()
   const { showSnack } = useToast()
 
-  /** Unique category values from loaded community packs */
-  const communityCategories = computed(() => {
-    const cats = new Set<string>()
-    for (const p of communityPacks.value) {
-      if (p.category) cats.add(p.category)
-    }
-    return Array.from(cats).sort()
-  })
-
-  /** Filter community packs by search query and category */
+  /** Filter community packs by search query */
   const filteredCommunityPacks = computed(() => {
-    let packs = communityPacks.value
-    if (communityCategory.value !== 'all') {
-      packs = packs.filter((p) => p.category === communityCategory.value)
-    }
     const q = communitySearchQuery.value.toLowerCase().trim()
-    if (q) {
-      packs = packs.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.description.toLowerCase().includes(q) ||
-          p.author.toLowerCase().includes(q) ||
-          p.tags.some((t) => t.toLowerCase().includes(q)),
-      )
-    }
-    return packs
+    if (!q) return communityPacks.value
+    return communityPacks.value.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q) ||
+        p.author.toLowerCase().includes(q),
+    )
   })
 
   /** Fetch community packs from the catalog */
@@ -149,8 +130,6 @@ export function useCommunityPacks() {
     communityLoading,
     communityError,
     communitySearchQuery,
-    communityCategory,
-    communityCategories,
     filteredCommunityPacks,
     previewCommunityPack,
     communityConflictMode,

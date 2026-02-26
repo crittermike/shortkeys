@@ -1,12 +1,8 @@
 {
-  "id": "community-research",
   "name": "Research Workflow",
   "icon": "🔬",
   "description": "Speed up research with shortcuts for searching, copying references, and managing research tabs.",
-  "color": "#059669",
   "author": "shortkeys",
-  "category": "productivity",
-  "tags": ["research", "academic", "search", "reference"],
   "shortcuts": [
     { "key": "alt+g", "action": "searchgoogle", "label": "Search Google for selection" },
     { "key": "alt+w", "action": "searchwikipedia", "label": "Search Wikipedia for selection" },

@@ -35,54 +35,11 @@ body:
       placeholder: e.g. Minimize distractions while working. Close unneeded tabs, mute audio, and keep your workspace clean.
     validations:
       required: true
-
-  - type: dropdown
-    id: category
-    attributes:
-      label: Category
-      options:
-        - productivity
-        - navigation
-        - accessibility
-        - developer
-        - media
-        - reading
-        - uncategorized
-    validations:
-      required: true
-
-  - type: input
-    id: icon
-    attributes:
-      label: Icon
-      description: A single emoji
-      placeholder: e.g. 🎯
-    validations:
-      required: true
-
-  - type: input
-    id: color
-    attributes:
-      label: Card color
-      description: Hex color for the pack card in the UI
-      placeholder: e.g. #7c3aed
-    validations:
-      required: true
-
-  - type: input
-    id: tags
-    attributes:
-      label: Tags
-      description: Comma-separated keywords for search
-      placeholder: e.g. focus, productivity, clean
-    validations:
-      required: true
-
   - type: textarea
     id: pack-json
     attributes:
       label: Pack JSON
-      description: Paste the full pack JSON here. See [contributing guide](https://github.com/crittermike/shortkeys/blob/master/community-packs/README.md) for format.
+      description: Paste the full pack JSON here. See [contributing guide](https://github.com/crittermike/shortkeys/blob/master/packs/README.md) for format.
       render: json
     validations:
       required: true

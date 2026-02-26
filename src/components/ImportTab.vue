@@ -11,8 +11,6 @@ const {
   communityLoading,
   communityError,
   communitySearchQuery,
-  communityCategory,
-  communityCategories,
   filteredCommunityPacks,
   previewCommunityPack,
   fetchCommunityPacks,
@@ -59,7 +57,7 @@ onMounted(() => {
     <div class="import-section packs-section">
       <div class="section-header">
         <h3 class="section-title">Community packs</h3>
-        <p class="tab-desc">Shortcut packs created by the community. <a href="https://github.com/crittermike/shortkeys/tree/master/community-packs" target="_blank">Submit your own on GitHub.</a></p>
+        <p class="tab-desc">Shortcut packs created by the community. <a href="https://github.com/crittermike/shortkeys/tree/master/packs/community" target="_blank">Submit your own on GitHub.</a></p>
       </div>
 
       <!-- Loading -->
@@ -92,20 +90,6 @@ onMounted(() => {
             <button v-if="communitySearchQuery" class="search-clear" @click="communitySearchQuery = ''" type="button">
               <i class="mdi mdi-close"></i>
             </button>
-          </div>
-          <div v-if="communityCategories.length > 1" class="category-chips">
-            <button
-              :class="['category-chip', { active: communityCategory === 'all' }]"
-              @click="communityCategory = 'all'"
-              type="button"
-            >All</button>
-            <button
-              v-for="cat in communityCategories"
-              :key="cat"
-              :class="['category-chip', { active: communityCategory === cat }]"
-              @click="communityCategory = cat"
-              type="button"
-            >{{ cat }}</button>
           </div>
         </div>
 
@@ -168,35 +152,10 @@ onMounted(() => {
 
 <style scoped>
 .community-filters {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
   margin-bottom: 24px;
 }
-.category-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.category-chip {
-  padding: 6px 14px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.category-chip:hover {
-  background: var(--bg-hover);
-  color: var(--text);
-}
-.category-chip.active {
-  background: var(--blue);
-  color: #fff;
-  border-color: var(--blue);
+.community-filters .search-wrap {
+  max-width: 400px;
 }
 .community-loading, .community-error, .community-empty {
   display: flex;
@@ -237,8 +196,5 @@ onMounted(() => {
   letter-spacing: 0.5px;
   font-weight: 600;
   color: var(--text-muted);
-}
-.community-filters .search-wrap {
-  max-width: 400px;
 }
 </style>
