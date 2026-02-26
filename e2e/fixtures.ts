@@ -23,7 +23,7 @@ export const test = base.extend<{
     // Wait for the extension service worker to start
     let [sw] = context.serviceWorkers()
     if (!sw) {
-      sw = await context.waitForEvent('serviceworker')
+      sw = await context.waitForEvent('serviceworker', { timeout: 10_000 })
     }
 
     // The extension opens welcome + options pages on first install.
@@ -45,7 +45,7 @@ export const test = base.extend<{
   extensionId: async ({ context }, use) => {
     let [background] = context.serviceWorkers()
     if (!background) {
-      background = await context.waitForEvent('serviceworker')
+      background = await context.waitForEvent('serviceworker', { timeout: 10_000 })
     }
     const extensionId = background.url().split('/')[2]
     await use(extensionId)
