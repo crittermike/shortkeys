@@ -178,8 +178,8 @@ test.describe('Options Page', () => {
     await page.locator('.shortcut-label-title').last().fill('Beta Shortcut')
 
     // Search for "Alpha" using click + type to ensure Vue v-model reacts
-    await page.locator('.search-input').click()
-    await page.locator('.search-input').pressSequentially('Alpha', { delay: 50 })
+    await page.getByPlaceholder('Filter shortcuts…').click()
+    await page.getByPlaceholder('Filter shortcuts…').pressSequentially('Alpha', { delay: 50 })
     await expect(page.locator('.shortcut-card')).toHaveCount(1, { timeout: 5000 })
 
     // Clear search

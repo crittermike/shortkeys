@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import { useShortcuts } from './useShortcuts'
 import { useToast } from './useToast'
 import { DEFAULT_GROUP } from './useGroups'
+import { getActionLabel } from '../utils/actions-registry'
 
 export function useImportExport() {
   const { keys, ensureIds, saveShortcuts } = useShortcuts()
@@ -33,7 +34,11 @@ export function useImportExport() {
 
   function generateShareLink() {
     try {
-      const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(keys.value))))
+      const shareData = keys.value.map(k => ({
+        ...k,
+        label: k.label || getActionLabel(k.action) || k.action,
+      }))
+      const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(shareData))))
       shareLink.value = `https://shortkeys.app/share#${encoded}`
       navigator.clipboard.writeText(shareLink.value)
       showSnack('Share link copied!')
@@ -45,7 +50,11 @@ export function useImportExport() {
   function shareGroup(group: string) {
     const groupShortcuts = keys.value.filter((k) => (k.group || DEFAULT_GROUP) === group)
     try {
-      const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(groupShortcuts))))
+      const shareData = groupShortcuts.map(k => ({
+        ...k,
+        label: k.label || getActionLabel(k.action) || k.action,
+      }))
+      const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(shareData))))
       const url = `https://shortkeys.app/share#${encoded}`
       navigator.clipboard.writeText(url)
       showSnack(`Share link for "${group}" copied!`)
