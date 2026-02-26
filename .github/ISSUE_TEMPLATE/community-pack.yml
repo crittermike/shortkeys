@@ -1,0 +1,100 @@
+name: Community Pack Submission
+description: Submit a new community shortcut pack for Shortkeys
+title: "Community pack: "
+labels: ["community-pack"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for contributing a community pack! Fill in the details below and paste your pack JSON.
+
+        **Tip:** You can auto-generate this from Shortkeys by right-clicking a group → "Publish to community".
+
+  - type: input
+    id: pack-name
+    attributes:
+      label: Pack name
+      placeholder: e.g. Focus Mode
+    validations:
+      required: true
+
+  - type: input
+    id: author
+    attributes:
+      label: Author
+      description: Your GitHub username
+      placeholder: e.g. octocat
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: 1-2 sentences about what this pack does
+      placeholder: e.g. Minimize distractions while working. Close unneeded tabs, mute audio, and keep your workspace clean.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - productivity
+        - navigation
+        - accessibility
+        - developer
+        - media
+        - reading
+        - uncategorized
+    validations:
+      required: true
+
+  - type: input
+    id: icon
+    attributes:
+      label: Icon
+      description: A single emoji
+      placeholder: e.g. 🎯
+    validations:
+      required: true
+
+  - type: input
+    id: color
+    attributes:
+      label: Card color
+      description: Hex color for the pack card in the UI
+      placeholder: e.g. #7c3aed
+    validations:
+      required: true
+
+  - type: input
+    id: tags
+    attributes:
+      label: Tags
+      description: Comma-separated keywords for search
+      placeholder: e.g. focus, productivity, clean
+    validations:
+      required: true
+
+  - type: textarea
+    id: pack-json
+    attributes:
+      label: Pack JSON
+      description: Paste the full pack JSON here. See [contributing guide](https://github.com/crittermike/shortkeys/blob/master/community-packs/README.md) for format.
+      render: json
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I've tested all shortcuts in this pack
+          required: true
+        - label: This pack doesn't duplicate built-in packs or website shortcuts
+          required: true
+        - label: Labels use sentence case
+          required: true

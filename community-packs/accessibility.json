@@ -1,0 +1,19 @@
+{
+  "id": "community-accessibility",
+  "name": "Accessibility",
+  "icon": "♿",
+  "description": "Quick access to zoom controls, text tools, and navigation aids for comfortable browsing.",
+  "color": "#0891b2",
+  "author": "shortkeys",
+  "category": "accessibility",
+  "tags": ["accessibility", "a11y", "zoom", "navigation"],
+  "shortcuts": [
+    { "key": "alt+equal", "action": "zoomin", "label": "Zoom in" },
+    { "key": "alt+minus", "action": "zoomout", "label": "Zoom out" },
+    { "key": "alt+0", "action": "zoomreset", "label": "Reset zoom" },
+    { "key": "alt+home", "action": "top", "label": "Jump to top of page" },
+    { "key": "alt+end", "action": "bottom", "label": "Jump to bottom of page" },
+    { "key": "alt+p", "action": "print", "label": "Print page" },
+    { "key": "alt+shift+v", "action": "viewsource", "label": "View page source" }
+  ]
+}

@@ -13,6 +13,7 @@ tests/setup.js
 .wxt
 .output
 site/catalog.json
+site/community.json
 site/images/
 screenshots/
 playwright-report/
