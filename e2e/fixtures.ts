@@ -12,11 +12,14 @@ export const test = base.extend<{
     const context = await chromium.launchPersistentContext('', {
       headless: false,
       args: [
-        '--headless=new',
+        // In CI, xvfb-run provides a virtual display so we don't need --headless=new.
+        // Locally, --headless=new allows running without a visible browser window.
+        ...(process.env.CI ? [] : ['--headless=new']),
         `--disable-extensions-except=${pathToExtension}`,
         `--load-extension=${pathToExtension}`,
         '--no-first-run',
         '--disable-default-apps',
+        '--disable-dev-shm-usage',
       ],
     })
 
