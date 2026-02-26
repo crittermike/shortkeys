@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shortkeys — Custom Keyboard Shortcuts for Your Browser</title>
+  <title>Shortkeys - Custom Keyboard Shortcuts for Your Browser</title>
   <meta name="description" content="Browse and share custom keyboard shortcuts for Chrome, Firefox, and Edge. Install shortcut packs for Vim, YouTube, GitHub, and more. Free and open source." />
-  <meta property="og:title" content="Shortkeys — Custom Keyboard Shortcuts for Your Browser" />
+  <meta property="og:title" content="Shortkeys - Custom Keyboard Shortcuts for Your Browser" />
   <meta property="og:description" content="Browse and share custom keyboard shortcuts. Install shortcut packs for Vim, YouTube, GitHub, and more." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://shortkeys.app" />
@@ -166,10 +166,7 @@
       color: var(--blue);
       font-weight: 600;
       margin-bottom: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
+      text-align: center;
       font-family: 'Outfit', sans-serif;
       letter-spacing: 0.5px;
     }
@@ -837,6 +834,195 @@
 
     .modal-install:hover { background: var(--blue-hover); transform: translateY(-2px); }
 
+    .screenshot-gallery {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .screenshot-card {
+      text-align: center;
+    }
+
+    .screenshot-card h3 {
+      font-size: 20px;
+      margin: 20px 0 8px;
+    }
+
+    .screenshot-card p {
+      color: var(--gray);
+      font-size: 15px;
+    }
+
+    .screenshot-frame {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+      background: var(--white);
+    }
+
+    .screenshot-frame .browser-bar {
+      padding: 10px 16px;
+      background: var(--light);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .screenshot-label {
+      font-size: 13px;
+      color: var(--gray);
+      font-weight: 500;
+    }
+
+    .screenshot-frame img {
+      width: 100%;
+      display: block;
+    }
+
+    .demo-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .demo-browser {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+      background: var(--white);
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .demo-browser.dark {
+      background: #1e293b;
+      border-color: #334155;
+    }
+
+    .demo-browser-bar {
+      padding: 10px 16px;
+      background: var(--light);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .demo-browser.dark .demo-browser-bar {
+      background: #0f172a;
+      border-color: #334155;
+    }
+
+    .demo-tabs {
+      display: flex;
+      gap: 2px;
+    }
+
+    .demo-tab {
+      padding: 6px 16px;
+      border-radius: 8px 8px 0 0;
+      font-size: 13px;
+      color: var(--gray);
+      cursor: default;
+      transition: background 0.3s, color 0.3s;
+      font-weight: 500;
+    }
+
+    .demo-tab.active {
+      background: var(--white);
+      color: var(--dark);
+    }
+
+    .demo-browser.dark .demo-tab {
+      color: #94a3b8;
+    }
+
+    .demo-browser.dark .demo-tab.active {
+      background: #1e293b;
+      color: #f1f5f9;
+    }
+
+    .demo-viewport {
+      height: 240px;
+      overflow: hidden;
+      position: relative;
+      padding: 24px;
+    }
+
+    .demo-content {
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .demo-fake-text {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .demo-line {
+      height: 12px;
+      background: var(--border);
+      border-radius: 6px;
+      transition: background 0.3s;
+    }
+
+    .demo-browser.dark .demo-line {
+      background: #334155;
+    }
+
+    .demo-shortcuts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 24px;
+    }
+
+    .demo-shortcut {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--dark);
+      transition: all 0.2s;
+    }
+
+    .demo-shortcut:hover {
+      border-color: var(--blue);
+      box-shadow: 0 4px 12px rgba(67, 97, 238, 0.15);
+    }
+
+    .demo-shortcut:active {
+      transform: scale(0.97);
+    }
+
+    .demo-shortcut kbd {
+      background: var(--light);
+      border: 1px solid var(--border);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: 'SF Mono', monospace;
+      font-size: 12px;
+      color: var(--gray);
+    }
+
+    .demo-shortcut span {
+      color: var(--gray);
+      font-weight: 400;
+    }
+
     @media (max-width: 900px) {
       .bento-grid { grid-template-columns: 1fr; }
       .bento-large { grid-column: span 1; }
@@ -845,6 +1031,15 @@
       .hero-downloads { flex-direction: column; }
       .btn { width: 100%; justify-content: center; }
       .header-nav { display: none; }
+    }
+
+    @media (max-width: 768px) {
+      .screenshot-gallery {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+      .demo-shortcuts { gap: 8px; }
+      .demo-shortcut { padding: 8px 14px; font-size: 13px; }
     }
   </style>
 </head>
@@ -886,8 +1081,8 @@
         <span class="pulse-dot"></span> Trusted by 200,000+ Chrome Users
       </div>
       <h1>Take control of your<br><span class="text-blue">browser.</span></h1>
-      <p class="hero-subtitle">Browsers have limited keyboard shortcuts. Shortkeys lets you customize everything—navigate tabs, run JavaScript, control videos, and more.</p>
-      <p class="hero-opensource"><i class="mdi mdi-open-source-initiative"></i> Free & open source — forever</p>
+      <p class="hero-subtitle">Shortkeys lets you customize everything: navigate tabs, run JavaScript, control videos, and more.</p>
+      <p class="hero-opensource"><a href="https://github.com/crittermike/shortkeys" target="_blank" style="color:var(--blue);text-decoration:none"><i class="mdi mdi-open-source-initiative" style="vertical-align:-2px;margin-right:4px"></i>Free &amp; open source</a>, forever</p>
       
       <div class="hero-downloads">
         <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck" class="btn btn-chrome" target="_blank">
@@ -907,6 +1102,82 @@
           <div class="browser-url">chrome-extension://shortkeys/options.html</div>
         </div>
         <img src="/images/screenshot-hero.png" alt="Shortkeys options page showing organized keyboard shortcuts in groups" />
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section bg-light" id="features">
+    <div class="section-header">
+      <h2>Supercharge your workflow</h2>
+      <p>Everything you need to navigate the web at the speed of thought.</p>
+    </div>
+    
+    <div class="bento-grid">
+      <div class="bento-item">
+        <div class="bento-icon"><i class="mdi mdi-flash"></i></div>
+        <h3>90+ Built-in Actions</h3>
+        <p>Tab management, scrolling, navigation, zoom, bookmarks, downloads, video controls, and more. If you can do it with a mouse, you can do it with Shortkeys.</p>
+        <div class="bento-visual actions-visual">
+          <div class="mock-action"><span>Scroll to bottom</span> <kbd>G</kbd></div>
+          <div class="mock-action"><span>Next tab</span> <kbd>Shift</kbd> + <kbd>K</kbd></div>
+          <div class="mock-action"><span>Mute audio</span> <kbd>M</kbd></div>
+        </div>
+      </div>
+      
+      <div class="bento-item">
+        <div class="bento-icon"><i class="mdi mdi-code-braces"></i></div>
+        <h3>Custom JavaScript</h3>
+        <p>Run any JavaScript with a keyboard shortcut. Includes a full CodeMirror editor with syntax highlighting.</p>
+        <div class="bento-visual">
+          <img src="/images/screenshot-custom-js.png" alt="CodeMirror editor with JavaScript code" style="width:100%;border-radius:8px;opacity:0.9;" />
+        </div>
+      </div>
+      
+      <div class="bento-item">
+        <div class="bento-icon"><i class="mdi mdi-package-variant-closed"></i></div>
+        <h3>Shortcut Packs</h3>
+        <p>Browse and install curated shortcut collections like Vim, YouTube, or GitHub with one click.</p>
+      </div>
+      
+      <div class="bento-item">
+        <div class="bento-icon"><i class="mdi mdi-cloud-sync"></i></div>
+        <h3>Cloud Sync</h3>
+        <p>Your shortcuts automatically sync across all your Chrome instances via your Google account. No separate account needed.</p>
+        <div class="bento-visual sync-visual">
+          <i class="mdi mdi-laptop"></i>
+          <div class="sync-line"></div>
+          <i class="mdi mdi-cloud"></i>
+          <div class="sync-line"></div>
+          <i class="mdi mdi-monitor"></i>
+        </div>
+      </div>
+      
+      <div class="bento-item">
+        <div class="bento-icon"><i class="mdi mdi-folder-outline"></i></div>
+        <h3>Groups</h3>
+        <p>Organize shortcuts into collapsible groups. Enable, disable, or share entire groups at once.</p>
+      </div>
+      
+      <div class="bento-item">
+        <div class="bento-icon"><i class="mdi mdi-record-circle-outline"></i></div>
+        <h3>Shortcut Recorder</h3>
+        <p>Just click Record and press your key combo. Supports multi-key sequences like vim's <kbd>g</kbd> <kbd>g</kbd>.</p>
+      </div>
+      
+      <div class="bento-item">
+        <div class="bento-icon"><i class="mdi mdi-magnify"></i></div>
+        <h3>Command Palette</h3>
+        <p>Click the extension icon for an instant searchable palette of all your active shortcuts.</p>
+      </div>
+      
+      <div class="bento-item">
+        <div class="bento-icon"><i class="mdi mdi-playlist-play"></i></div>
+        <h3>Macros</h3>
+        <p>Chain multiple actions into a single shortcut. Add delays between steps for precise automation.</p>
+        <div class="bento-visual">
+          <img src="/images/screenshot-macros.png" alt="Macro builder with chained action steps" style="width:100%;border-radius:8px;opacity:0.9;" />
+        </div>
       </div>
     </div>
   </section>
@@ -936,66 +1207,96 @@
     </div>
   </section>
 
-  <!-- Features -->
-  <section class="section bg-light" id="features">
+  <!-- Screenshots -->
+  <section class="section" id="screenshots">
     <div class="section-header">
-      <h2>Supercharge your workflow</h2>
-      <p>Everything you need to navigate the web at the speed of thought.</p>
+      <h2>See it in action</h2>
+      <p>A clean, powerful interface for all your keyboard shortcuts.</p>
     </div>
-    
-    <div class="bento-grid">
-      <div class="bento-item bento-large">
-        <div class="bento-icon"><i class="mdi mdi-flash"></i></div>
-        <h3>90+ Built-in Actions</h3>
-        <p>Tab management, scrolling, navigation, zoom, bookmarks, downloads, video controls, and more. If you can do it with a mouse, you can do it with Shortkeys.</p>
-        <div class="bento-visual actions-visual">
-          <div class="mock-action"><span>Scroll to bottom</span> <kbd>G</kbd></div>
-          <div class="mock-action"><span>Next tab</span> <kbd>Shift</kbd> + <kbd>K</kbd></div>
-          <div class="mock-action"><span>Mute audio</span> <kbd>M</kbd></div>
+    <div class="screenshot-gallery">
+      <div class="screenshot-card">
+        <div class="screenshot-frame">
+          <div class="browser-bar"><div class="browser-dots"><span></span><span></span><span></span></div><span class="screenshot-label">Macros</span></div>
+          <img src="/images/screenshot-macros.png" alt="Macro builder showing chained actions" />
+        </div>
+        <h3>Chain actions together</h3>
+        <p>Build powerful macros that run multiple browser actions in sequence.</p>
+      </div>
+      <div class="screenshot-card">
+        <div class="screenshot-frame">
+          <div class="browser-bar"><div class="browser-dots"><span></span><span></span><span></span></div><span class="screenshot-label">Custom JavaScript</span></div>
+          <img src="/images/screenshot-custom-js.png" alt="CodeMirror editor with syntax highlighting" />
+        </div>
+        <h3>Write custom scripts</h3>
+        <p>Full CodeMirror editor with syntax highlighting for any JavaScript you need.</p>
+      </div>
+      <div class="screenshot-card">
+        <div class="screenshot-frame">
+          <div class="browser-bar"><div class="browser-dots"><span></span><span></span><span></span></div><span class="screenshot-label">Dark mode</span></div>
+          <img src="/images/screenshot-dark-mode.png" alt="Options page in dark mode" />
+        </div>
+        <h3>Dark mode included</h3>
+        <p>Settings page automatically adapts to your system theme preference.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Demo -->
+  <section class="section bg-light" id="demo">
+    <div class="section-header">
+      <h2>Try it yourself</h2>
+      <p>Click a shortcut below to see what Shortkeys can do.</p>
+    </div>
+    <div class="demo-container">
+      <div class="demo-browser">
+        <div class="demo-browser-bar">
+          <div class="browser-dots"><span></span><span></span><span></span></div>
+          <div class="demo-tabs">
+            <div class="demo-tab active" data-tab="0">Google</div>
+            <div class="demo-tab" data-tab="1">GitHub</div>
+            <div class="demo-tab" data-tab="2">YouTube</div>
+          </div>
+        </div>
+        <div class="demo-viewport" id="demo-viewport">
+          <div class="demo-content" id="demo-content">
+            <div class="demo-fake-text">
+              <div class="demo-line" style="width:85%"></div>
+              <div class="demo-line" style="width:70%"></div>
+              <div class="demo-line" style="width:90%"></div>
+              <div class="demo-line" style="width:60%"></div>
+              <div class="demo-line" style="width:80%"></div>
+              <div class="demo-line" style="width:75%"></div>
+              <div class="demo-line" style="width:85%"></div>
+              <div class="demo-line" style="width:65%"></div>
+              <div class="demo-line" style="width:90%"></div>
+              <div class="demo-line" style="width:55%"></div>
+              <div class="demo-line" style="width:80%"></div>
+              <div class="demo-line" style="width:70%"></div>
+            </div>
+          </div>
         </div>
       </div>
-      
-      <div class="bento-item">
-        <div class="bento-icon"><i class="mdi mdi-code-braces"></i></div>
-        <h3>Custom JavaScript</h3>
-        <p>Run any JavaScript with a keyboard shortcut. Includes a full CodeMirror editor with syntax highlighting.</p>
-      </div>
-      
-      <div class="bento-item">
-        <div class="bento-icon"><i class="mdi mdi-package-variant-closed"></i></div>
-        <h3>Shortcut Packs</h3>
-        <p>Browse and install curated shortcut collections like Vim, YouTube, or GitHub with one click.</p>
-      </div>
-      
-      <div class="bento-item bento-large">
-        <div class="bento-icon"><i class="mdi mdi-cloud-sync"></i></div>
-        <h3>Cloud Sync</h3>
-        <p>Your shortcuts automatically sync across all your Chrome instances via your Google account. No separate account needed.</p>
-        <div class="bento-visual sync-visual">
-          <i class="mdi mdi-laptop"></i>
-          <div class="sync-line"></div>
-          <i class="mdi mdi-cloud"></i>
-          <div class="sync-line"></div>
-          <i class="mdi mdi-monitor"></i>
-        </div>
-      </div>
-      
-      <div class="bento-item">
-        <div class="bento-icon"><i class="mdi mdi-folder-outline"></i></div>
-        <h3>Groups</h3>
-        <p>Organize shortcuts into collapsible groups. Enable, disable, or share entire groups at once.</p>
-      </div>
-      
-      <div class="bento-item">
-        <div class="bento-icon"><i class="mdi mdi-record-circle-outline"></i></div>
-        <h3>Shortcut Recorder</h3>
-        <p>Just click Record and press your key combo. Supports multi-key sequences like vim's <kbd>g</kbd> <kbd>g</kbd>.</p>
-      </div>
-      
-      <div class="bento-item">
-        <div class="bento-icon"><i class="mdi mdi-magnify"></i></div>
-        <h3>Command Palette</h3>
-        <p>Click the extension icon for an instant searchable palette of all your active shortcuts.</p>
+      <div class="demo-shortcuts">
+        <button class="demo-shortcut" onclick="demoAction('next-tab')">
+          <kbd>Shift</kbd> + <kbd>K</kbd>
+          <span>Next tab</span>
+        </button>
+        <button class="demo-shortcut" onclick="demoAction('scroll-down')">
+          <kbd>J</kbd>
+          <span>Scroll down</span>
+        </button>
+        <button class="demo-shortcut" onclick="demoAction('scroll-top')">
+          <kbd>G</kbd> <kbd>G</kbd>
+          <span>Scroll to top</span>
+        </button>
+        <button class="demo-shortcut" onclick="demoAction('dark-mode')">
+          <kbd>D</kbd>
+          <span>Toggle dark mode</span>
+        </button>
+        <button class="demo-shortcut" onclick="demoAction('new-tab')">
+          <kbd>T</kbd>
+          <span>New tab</span>
+        </button>
       </div>
     </div>
   </section>
@@ -1347,11 +1648,65 @@
         const data = JSON.parse(input.value)
         const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))))
         const url = `${window.location.origin}/share#${encoded}`
-        result.innerHTML = `<a href="${url}" target="_blank" style="color:#60a5fa;word-break:break-all">${url}</a><br><small style="display:block;margin-top:8px;color:#94a3b8;">Share this link — anyone with Shortkeys can import it.</small>`
+        result.innerHTML = `<a href="${url}" target="_blank" style="color:#60a5fa;word-break:break-all">${url}</a><br><small style="display:block;margin-top:8px;color:#94a3b8;">Share this link. Anyone with Shortkeys can import it.</small>`
         navigator.clipboard.writeText(url).catch(() => {})
       } catch {
         result.textContent = 'Invalid JSON. Export your shortcuts from the extension and paste them here.'
         result.style.color = '#ef4444'
+      }
+
+    }
+    let demoTabIndex = 0;
+    const demoTabNames = ['Google', 'GitHub', 'YouTube'];
+    let demoScrollPos = 0;
+    let demoDark = false;
+    let demoTabCount = 3;
+
+    function demoAction(action) {
+      const browser = document.querySelector('.demo-browser');
+      const tabs = browser.querySelectorAll('.demo-tab');
+      const content = document.getElementById('demo-content');
+      const viewport = document.getElementById('demo-viewport');
+
+      switch(action) {
+        case 'next-tab':
+          demoTabIndex = (demoTabIndex + 1) % demoTabCount;
+          tabs.forEach((t, i) => t.classList.toggle('active', i === demoTabIndex));
+          // Flash effect
+          viewport.style.opacity = '0.5';
+          setTimeout(() => viewport.style.opacity = '1', 150);
+          break;
+
+        case 'scroll-down':
+          demoScrollPos = Math.min(demoScrollPos + 80, 200);
+          content.style.transform = `translateY(-${demoScrollPos}px)`;
+          break;
+
+        case 'scroll-top':
+          demoScrollPos = 0;
+          content.style.transform = 'translateY(0)';
+          break;
+
+        case 'dark-mode':
+          demoDark = !demoDark;
+          browser.classList.toggle('dark', demoDark);
+          break;
+
+        case 'new-tab':
+          if (demoTabCount < 5) {
+            const newNames = ['Reddit', 'Twitter'];
+            const tabsContainer = browser.querySelector('.demo-tabs');
+            const tab = document.createElement('div');
+            tab.className = 'demo-tab';
+            tab.dataset.tab = demoTabCount.toString();
+            tab.textContent = newNames[demoTabCount - 3] || 'New Tab';
+            tabsContainer.appendChild(tab);
+            demoTabCount++;
+            // Switch to new tab
+            demoTabIndex = demoTabCount - 1;
+            browser.querySelectorAll('.demo-tab').forEach((t, i) => t.classList.toggle('active', i === demoTabIndex));
+          }
+          break;
       }
     }
   </script>
