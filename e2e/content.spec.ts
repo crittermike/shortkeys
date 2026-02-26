@@ -34,16 +34,16 @@ test.describe('Content Script', () => {
     await page.locator('.btn-primary', { hasText: 'Save shortcuts' }).click()
     await expect(page.locator('.toast')).toBeVisible({ timeout: 5000 })
 
-    // Navigate to a page and verify the content script doesn't crash
+    // Navigate to a local page to avoid network dependency in CI
     const testPage = await context.newPage()
-    await testPage.goto('https://example.com')
+    await testPage.goto('data:text/html,<html><head><title>Test Page</title></head><body style="height:2000px"><p>Hello</p></body></html>')
 
     // Give content script time to initialize
     await testPage.waitForTimeout(1500)
 
     // Verify page is functional (content script didn't crash it)
     const title = await testPage.title()
-    expect(title).toContain('Example')
+    expect(title).toBe('Test Page')
 
     // Press the shortcut key — just verify no errors
     await testPage.keyboard.press('j')

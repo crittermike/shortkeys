@@ -43,7 +43,17 @@ export const test = base.extend<{
     }
 
     await use(context)
-    await context.close()
+
+    // Teardown: close all pages first, then race context.close() against a
+    // timeout. MV3 service workers can prevent graceful shutdown, causing
+    // context.close() to hang indefinitely.
+    for (const p of context.pages()) {
+      await p.close().catch(() => {})
+    }
+    await Promise.race([
+      context.close().catch(() => {}),
+      new Promise<void>((resolve) => setTimeout(resolve, 5_000)),
+    ])
   },
   extensionId: async ({ context }, use) => {
     let [background] = context.serviceWorkers()
