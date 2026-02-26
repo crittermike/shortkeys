@@ -10,6 +10,7 @@ import CommunityPackModal from '@/components/CommunityPackModal.vue'
 import JsWarningDialog from '@/components/JsWarningDialog.vue'
 import ExportTab from '@/components/ExportTab.vue'
 import AnalyticsTab from '@/components/AnalyticsTab.vue'
+import OnboardingWizard from '@/components/OnboardingWizard.vue'
 import { useTheme } from '@/composables/useTheme'
 import { useToast } from '@/composables/useToast'
 import { useShortcuts } from '@/composables/useShortcuts'
@@ -52,7 +53,20 @@ initTheme()
 initUndoRedo(keys)
 
 const activeTab = ref(0)
+const showOnboarding = ref(false)
 
+const handleWizardFinish = async (shortcut: { key: string; action: string }) => {
+  addShortcut()
+  const newIndex = keys.value.length - 1
+  keys.value[newIndex].key = shortcut.key
+  keys.value[newIndex].action = shortcut.action
+  await saveShortcuts()
+}
+
+const completeOnboarding = () => {
+  showOnboarding.value = false
+  localStorage.setItem('shortkeys-onboarding-done', 'true')
+}
 function handleKeydown(e: KeyboardEvent) {
   const tag = (e.target as HTMLElement).tagName
   const isEditable = tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement).isContentEditable
@@ -77,6 +91,10 @@ onMounted(async () => {
   document.addEventListener('click', () => { groupMenuOpen.value = null })
   document.addEventListener('keydown', handleKeydown)
   loadBookmarks()
+  
+  if (localStorage.getItem('shortkeys-onboarding-done') !== 'true') {
+    showOnboarding.value = true
+  }
 })
 
 onUnmounted(() => {
@@ -148,7 +166,7 @@ onUnmounted(() => {
         </article>
 
         <!-- Stats bar -->
-        <div v-if="keys.length > 0" class="stats-bar">
+        <div v-if="keys.length > 0 && !showOnboarding" class="stats-bar">
           <div class="stats-chips">
             <span class="stat-chip">
               <i class="mdi mdi-keyboard"></i> {{ stats.total }} shortcut{{ stats.total !== 1 ? 's' : '' }}
@@ -175,7 +193,14 @@ onUnmounted(() => {
         </div>
 
         <!-- Empty state (no shortcuts yet) -->
-        <div v-if="keys.length === 0" class="empty-state">
+        <template v-if="keys.length === 0 || showOnboarding">
+          <OnboardingWizard
+            v-if="showOnboarding"
+            @finish="handleWizardFinish"
+            @skip="completeOnboarding"
+            @done="completeOnboarding"
+          />
+          <div v-else class="empty-state">
           <div class="empty-state-icon">
             <i class="mdi mdi-keyboard-outline"></i>
           </div>
@@ -191,10 +216,11 @@ onUnmounted(() => {
               <i class="mdi mdi-package-variant"></i> Browse shortcut packs
             </button>
           </div>
-        </div>
+          </div>
+        </template>
 
         <!-- Grouped shortcut rows -->
-        <div v-if="keys.length > 0" class="shortcut-groups">
+        <div v-if="keys.length > 0 && !showOnboarding" class="shortcut-groups">
           <template v-for="group in groupNames" :key="group">
           <div v-if="groupedIndices.has(group)" class="shortcut-group">
             <!-- Group header -->
@@ -369,7 +395,7 @@ onUnmounted(() => {
           </template>
         </div>
 
-        <div v-if="keys.length > 0" class="action-bar">
+        <div v-if="keys.length > 0 && !showOnboarding" class="action-bar">
           <div class="action-bar-left">
             <button class="btn btn-secondary" @click="addShortcut">
               <i class="mdi mdi-plus"></i> Add shortcut
