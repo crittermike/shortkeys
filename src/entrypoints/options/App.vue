@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { ACTION_CATEGORIES } from '@/utils/actions-registry'
 import SearchSelect from '@/components/SearchSelect.vue'
 import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
@@ -21,10 +21,11 @@ import { useMacros } from '@/composables/useMacros'
 import { useDragDrop } from '@/composables/useDragDrop'
 import { useImportExport } from '@/composables/useImportExport'
 import { useJsTools } from '@/composables/useJsTools'
+import { useUndoRedo } from '@/composables/useUndoRedo'
 
 // --- Composables ---
 const { darkMode, initTheme, toggleTheme } = useTheme()
-const { snackMessage, snackType } = useToast()
+const { snackMessage, snackType, snackAction, dismissSnack } = useToast()
 const {
   keys, expandedRow,
   addShortcut, saveShortcuts, deleteShortcut, toggleDetails,
@@ -45,9 +46,11 @@ const { convertToMacro } = useMacros()
 const { dragIndex, onDragStart, onDragOver, onDragOverGroup, onDragEnd } = useDragDrop()
 const { shareGroup, publishToCommunity } = useImportExport()
 const { refreshTabs, loadBookmarks } = useJsTools()
+const { init: initUndoRedo, undo, redo, canUndo, canRedo } = useUndoRedo()
 
 // --- Lifecycle ---
 initTheme()
+initUndoRedo(keys)
 
 const activeTab = ref(0)
 const showOnboarding = ref(false)
@@ -64,16 +67,38 @@ const completeOnboarding = () => {
   showOnboarding.value = false
   localStorage.setItem('shortkeys-onboarding-done', 'true')
 }
+function handleKeydown(e: KeyboardEvent) {
+  const tag = (e.target as HTMLElement).tagName
+  const isEditable = tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement).isContentEditable
+  if (isEditable) return
+
+  if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 'z') {
+    e.preventDefault()
+    undo()
+  } else if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'z' || e.key === 'Z')) {
+    e.preventDefault()
+    redo()
+  } else if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+    e.preventDefault()
+    redo()
+  }
+}
+
 onMounted(async () => {
   await loadSavedKeys()
   await loadGroupSettingsFromStorage()
   refreshTabs()
   document.addEventListener('click', () => { groupMenuOpen.value = null })
+  document.addEventListener('keydown', handleKeydown)
   loadBookmarks()
   
   if (localStorage.getItem('shortkeys-onboarding-done') !== 'true') {
     showOnboarding.value = true
   }
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown)
 })
 </script>
 
@@ -91,6 +116,13 @@ onMounted(async () => {
           <a href="https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys" target="_blank">Docs</a>
           <a href="https://github.com/mikecrittenden/shortkeys/issues" target="_blank">Support</a>
           <a href="https://github.com/mikecrittenden/shortkeys" target="_blank">GitHub</a>
+          <div class="header-divider"></div>
+          <button class="header-btn" @click="undo" :disabled="!canUndo" title="Undo (Ctrl+Z)" type="button">
+            <i class="mdi mdi-undo"></i>
+          </button>
+          <button class="header-btn" @click="redo" :disabled="!canRedo" title="Redo (Ctrl+Shift+Z)" type="button">
+            <i class="mdi mdi-redo"></i>
+          </button>
           <button class="theme-toggle" @click="toggleTheme" :title="darkMode ? 'Switch to light mode' : 'Switch to dark mode'" type="button">
             <i :class="darkMode ? 'mdi mdi-white-balance-sunny' : 'mdi mdi-moon-waning-crescent'"></i>
           </button>
@@ -100,8 +132,11 @@ onMounted(async () => {
 
     <!-- Toast -->
     <Transition name="toast">
-      <div v-if="snackMessage" :class="['toast', snackType === 'danger' ? 'toast-error' : 'toast-success']">
+      <div v-if="snackMessage" :class="['toast', snackType === 'danger' ? 'toast-error' : 'toast-success']" @click="dismissSnack">
         {{ snackMessage }}
+        <button v-if="snackAction" class="toast-action" @click.stop="snackAction.handler(); dismissSnack()" type="button">
+          {{ snackAction.label }}
+        </button>
       </div>
     </Transition>
 
@@ -525,6 +560,30 @@ a:hover { text-decoration: underline; }
 }
 
 .theme-toggle:hover { background: var(--bg-hover); color: var(--text); }
+
+.header-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.15s;
+}
+.header-btn:hover:not(:disabled) { background: var(--bg-hover); color: var(--text); }
+.header-btn:disabled { opacity: 0.3; cursor: default; }
+
+.header-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 4px;
+}
 
 .app-main {
   max-width: 960px;
@@ -1411,6 +1470,10 @@ a:hover { text-decoration: underline; }
   font-size: 14px;
   font-weight: 500;
   box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
 }
 
 .toast-success { background: #059669; color: #fff; }
@@ -1418,6 +1481,18 @@ a:hover { text-decoration: underline; }
 
 .toast-enter-active, .toast-leave-active { transition: all 0.3s ease; }
 .toast-enter-from, .toast-leave-to { opacity: 0; transform: translateY(16px); }
+.toast-action {
+  margin-left: 4px;
+  padding: 4px 12px;
+  background: rgba(255,255,255,0.2);
+  color: inherit;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+}
+.toast-action:hover { background: rgba(255,255,255,0.3); }
 
 /* ── Expand animation ── */
 .expand-enter-active, .expand-leave-active { transition: all 0.2s ease; }

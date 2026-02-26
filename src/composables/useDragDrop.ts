@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { useShortcuts } from './useShortcuts'
+import { useUndoRedo } from './useUndoRedo'
 import { DEFAULT_GROUP } from './useGroups'
 
 export function useDragDrop() {
@@ -8,6 +9,8 @@ export function useDragDrop() {
   const dragIndex = ref<number | null>(null)
 
   function onDragStart(index: number) {
+    const { pushUndo } = useUndoRedo()
+    pushUndo('Shortcuts reordered')
     dragIndex.value = index
   }
 
