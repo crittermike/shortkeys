@@ -3,6 +3,7 @@ import { v4 as uuid } from 'uuid'
 import type { KeySetting } from '@/utils/url-matching'
 import { saveKeys, loadKeys } from '@/utils/storage'
 import { useToast } from './useToast'
+import { useUndoRedo } from './useUndoRedo'
 
 const keys = ref<KeySetting[]>([])
 const expandedRow = ref<number | null>(null)
@@ -38,11 +39,14 @@ async function saveShortcuts() {
 }
 
 async function deleteShortcut(index: number) {
-  if (confirm('Delete this shortcut?')) {
-    keys.value.splice(index, 1)
-    if (expandedRow.value === index) expandedRow.value = null
-    await saveShortcuts()
-  }
+  const { pushUndo } = useUndoRedo()
+  const { showSnack } = useToast()
+  const { undo } = useUndoRedo()
+  pushUndo('Shortcut deleted')
+  keys.value.splice(index, 1)
+  if (expandedRow.value === index) expandedRow.value = null
+  await saveShortcuts()
+  showSnack('Shortcut deleted', 'success', { label: 'Undo', handler: undo })
 }
 
 function toggleDetails(index: number) {
