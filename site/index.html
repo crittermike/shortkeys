@@ -336,7 +336,7 @@
     /* Bento Features */
     .bento-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 24px;
       max-width: 1200px;
       margin: 0 auto;
@@ -359,6 +359,16 @@
     }
 
     .bento-large { grid-column: span 2; }
+
+    .bento-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .bento-stack .bento-item {
+      flex: 1;
+    }
 
     .bento-icon {
       font-size: 32px;
@@ -932,7 +942,7 @@
     </div>
     
     <div class="bento-grid">
-      <!-- Row 1: Custom JS (large) + 90+ Actions -->
+      <!-- Row 1: Custom JS (large) + [90+ Actions, Shortcut Packs] stacked -->
       <div class="bento-item bento-large">
         <div class="bento-icon"><i class="mdi mdi-code-braces"></i></div>
         <h3>Custom JavaScript</h3>
@@ -942,22 +952,36 @@
         </div>
       </div>
 
-      <div class="bento-item">
-        <div class="bento-icon"><i class="mdi mdi-flash"></i></div>
-        <h3>90+ Built-in Actions</h3>
-        <p>Tab management, scrolling, navigation, zoom, bookmarks, downloads, video controls, and more.</p>
-        <div class="bento-visual actions-visual">
-          <div class="mock-action"><span>Scroll to bottom</span> <kbd>G</kbd></div>
-          <div class="mock-action"><span>Next tab</span> <kbd>Shift</kbd> + <kbd>K</kbd></div>
-          <div class="mock-action"><span>Mute audio</span> <kbd>M</kbd></div>
+      <div class="bento-stack">
+        <div class="bento-item">
+          <div class="bento-icon"><i class="mdi mdi-flash"></i></div>
+          <h3>90+ Built-in Actions</h3>
+          <p>Tab management, scrolling, navigation, zoom, bookmarks, downloads, video controls, and more.</p>
+          <div class="bento-visual actions-visual">
+            <div class="mock-action"><span>Scroll to bottom</span> <kbd>G</kbd></div>
+            <div class="mock-action"><span>Next tab</span> <kbd>Shift</kbd> + <kbd>K</kbd></div>
+            <div class="mock-action"><span>Mute audio</span> <kbd>M</kbd></div>
+          </div>
+        </div>
+        <div class="bento-item">
+          <div class="bento-icon"><i class="mdi mdi-package-variant-closed"></i></div>
+          <h3>Shortcut Packs</h3>
+          <p>Browse and install curated shortcut collections like Vim, YouTube, or GitHub with one click.</p>
         </div>
       </div>
 
-      <!-- Row 2: Shortcut Packs + Macros (large) -->
-      <div class="bento-item">
-        <div class="bento-icon"><i class="mdi mdi-package-variant-closed"></i></div>
-        <h3>Shortcut Packs</h3>
-        <p>Browse and install curated shortcut collections like Vim, YouTube, or GitHub with one click.</p>
+      <!-- Row 2: [Groups, Shortcut Recorder] stacked + Macros (large) -->
+      <div class="bento-stack">
+        <div class="bento-item">
+          <div class="bento-icon"><i class="mdi mdi-folder-outline"></i></div>
+          <h3>Groups</h3>
+          <p>Organize shortcuts into collapsible groups. Enable, disable, or share entire groups at once.</p>
+        </div>
+        <div class="bento-item">
+          <div class="bento-icon"><i class="mdi mdi-record-circle-outline"></i></div>
+          <h3>Shortcut Recorder</h3>
+          <p>Just click Record and press your key combo. Supports multi-key sequences like vim's <kbd>g</kbd> <kbd>g</kbd>.</p>
+        </div>
       </div>
 
       <div class="bento-item bento-large">
@@ -969,7 +993,7 @@
         </div>
       </div>
 
-      <!-- Row 3: Dark Mode (large) + Cloud Sync -->
+      <!-- Row 3: Dark Mode (large) + [Cloud Sync, Command Palette] stacked -->
       <div class="bento-item bento-large">
         <div class="bento-icon"><i class="mdi mdi-weather-night"></i></div>
         <h3>Dark Mode</h3>
@@ -979,36 +1003,24 @@
         </div>
       </div>
 
-      <div class="bento-item">
-        <div class="bento-icon"><i class="mdi mdi-cloud-sync"></i></div>
-        <h3>Cloud Sync</h3>
-        <p>Your shortcuts automatically sync across all your Chrome instances via your Google account.</p>
-        <div class="bento-visual sync-visual">
-          <i class="mdi mdi-laptop"></i>
-          <div class="sync-line"></div>
-          <i class="mdi mdi-cloud"></i>
-          <div class="sync-line"></div>
-          <i class="mdi mdi-monitor"></i>
+      <div class="bento-stack">
+        <div class="bento-item">
+          <div class="bento-icon"><i class="mdi mdi-cloud-sync"></i></div>
+          <h3>Cloud Sync</h3>
+          <p>Your shortcuts automatically sync across all your Chrome instances via your Google account.</p>
+          <div class="bento-visual sync-visual">
+            <i class="mdi mdi-laptop"></i>
+            <div class="sync-line"></div>
+            <i class="mdi mdi-cloud"></i>
+            <div class="sync-line"></div>
+            <i class="mdi mdi-monitor"></i>
+          </div>
         </div>
-      </div>
-
-      <!-- Row 4: Groups + Recorder + Command Palette -->
-      <div class="bento-item">
-        <div class="bento-icon"><i class="mdi mdi-folder-outline"></i></div>
-        <h3>Groups</h3>
-        <p>Organize shortcuts into collapsible groups. Enable, disable, or share entire groups at once.</p>
-      </div>
-
-      <div class="bento-item">
-        <div class="bento-icon"><i class="mdi mdi-record-circle-outline"></i></div>
-        <h3>Shortcut Recorder</h3>
-        <p>Just click Record and press your key combo. Supports multi-key sequences like vim's <kbd>g</kbd> <kbd>g</kbd>.</p>
-      </div>
-
-      <div class="bento-item">
-        <div class="bento-icon"><i class="mdi mdi-magnify"></i></div>
-        <h3>Command Palette</h3>
-        <p>Click the extension icon for an instant searchable palette of all your active shortcuts.</p>
+        <div class="bento-item">
+          <div class="bento-icon"><i class="mdi mdi-magnify"></i></div>
+          <h3>Command Palette</h3>
+          <p>Click the extension icon for an instant searchable palette of all your active shortcuts.</p>
+        </div>
       </div>
     </div>
   </section>
