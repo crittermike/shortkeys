@@ -12,9 +12,14 @@ coverage
 tests/setup.js
 .wxt
 .output
-site/catalog.json
-site/community.json
-site/images/
+site/public/catalog.json
+site/public/community.json
+site/public/images/icon_*.png
+site/public/images/allowscripts.png
+site/public/images/browser-*.png
+site/public/images/screenshot.png
+site/dist/
+site/.astro/
 screenshots/
 playwright-report/
 test-results/

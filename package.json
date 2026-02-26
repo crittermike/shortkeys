@@ -13,15 +13,17 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "postinstall": "wxt prepare || true",
-    "build:site": "npx tsx scripts/build-catalog.ts && cp -r public/images site/images",
+    "build:site": "npx tsx scripts/build-catalog.ts && cp -r public/images site/public/images && cd site && npx astro build",
     "test:e2e": "npx playwright test",
-    "visual-review": "npx tsx scripts/visual-review.ts"
+    "visual-review": "npx tsx scripts/visual-review.ts",
+    "dev:site": "cd site && npx astro dev"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "@types/chrome": "^0.0.267",
     "@vitest/coverage-v8": "^3.2.4",
     "@wxt-dev/module-vue": "^1.0.3",
+    "astro": "^5.18.0",
     "jsdom": "^27.0.1",
     "vitest": "^3.2.4",
     "wxt": "^0.20.17"

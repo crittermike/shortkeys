@@ -1,0 +1,45 @@
+---
+import Header from '../components/Header.astro'
+import Footer from '../components/Footer.astro'
+import '../styles/global.css'
+
+interface Props {
+  title: string
+  description: string
+  currentPage?: 'home' | 'welcome' | 'packs'
+  showHeader?: boolean
+  showFooter?: boolean
+}
+
+const {
+  title,
+  description,
+  currentPage = 'home',
+  showHeader = true,
+  showFooter = true,
+} = Astro.props
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://shortkeys.app" />
+  <link rel="icon" type="image/png" href="/images/icon_16.png" />
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7/css/materialdesignicons.min.css" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+</head>
+<body>
+  {showHeader && <Header currentPage={currentPage} />}
+  <slot />
+  {showFooter && <Footer />}
+</body>
+</html>
