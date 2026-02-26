@@ -59,4 +59,4 @@ jobs:
       run: npm run build
 
     - name: Run E2E tests
-      run: npm run test:e2e
+      run: xvfb-run npm run test:e2e
