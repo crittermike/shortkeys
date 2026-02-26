@@ -1,12 +1,8 @@
 {
-  "id": "community-focus-mode",
   "name": "Focus Mode",
   "icon": "🎯",
   "description": "Minimize distractions while working. Close unneeded tabs, mute audio, and keep your workspace clean.",
-  "color": "#7c3aed",
   "author": "shortkeys",
-  "category": "productivity",
-  "tags": ["focus", "productivity", "clean", "workspace"],
   "shortcuts": [
     { "key": "alt+shift+f", "action": "onlytab", "label": "Close all other tabs" },
     { "key": "alt+shift+m", "action": "togglemute", "label": "Mute/unmute current tab" },

@@ -1,24 +1,15 @@
 [build]
   command = "npm run build:site"
-  publish = "site"
+  publish = "site/dist"
 
 [build.environment]
   NODE_VERSION = "20"
 
-[[redirects]]
-  from = "/share"
-  to = "/share.html"
-  status = 200
-
-[[redirects]]
-  from = "/share/*"
-  to = "/share.html"
-  status = 200
-
-[[redirects]]
-  from = "/welcome"
-  to = "/welcome.html"
-  status = 200
+[[headers]]
+  for = "/community.json"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Cache-Control = "public, max-age=3600"
 
 [[headers]]
   for = "/catalog.json"
