@@ -23,3 +23,6 @@ site/.astro/
 screenshots/
 playwright-report/
 test-results/
+site/public/images/images/
+.opencode/
+OpenCode.md
