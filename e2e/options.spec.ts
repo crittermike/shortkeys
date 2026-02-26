@@ -1,5 +1,16 @@
 import { test, expect } from './fixtures'
-import type { Page } from '@playwright/test'
+import type { BrowserContext, Page } from '@playwright/test'
+
+/** Open the options page with onboarding already dismissed. */
+async function openOptionsPage(context: BrowserContext, extensionId: string): Promise<Page> {
+  const page = await context.newPage()
+  // Skip the onboarding wizard so tests interact with the normal options UI
+  await page.addInitScript(() => {
+    localStorage.setItem('shortkeys-onboarding-done', 'true')
+  })
+  await page.goto(`chrome-extension://${extensionId}/options.html`)
+  return page
+}
 
 /** Click "Create your first shortcut" on the blank slate to add an empty shortcut card. */
 async function createFirstShortcut(page: Page) {
@@ -10,8 +21,7 @@ async function createFirstShortcut(page: Page) {
 test.describe('Options Page', () => {
 
   test('loads and displays the header', async ({ context, extensionId }) => {
-    const page = await context.newPage()
-    await page.goto(`chrome-extension://${extensionId}/options.html`)
+    const page = await openOptionsPage(context, extensionId)
     await expect(page).toHaveTitle('Shortkeys Options')
     await expect(page.locator('.brand-text')).toHaveText('Shortkeys')
   })
@@ -20,8 +30,7 @@ test.describe('Options Page', () => {
     context,
     extensionId,
   }) => {
-    const page = await context.newPage()
-    await page.goto(`chrome-extension://${extensionId}/options.html`)
+    const page = await openOptionsPage(context, extensionId)
     const tabs = page.locator('.tab-btn')
     await expect(tabs).toHaveCount(4)
     await expect(tabs.nth(0)).toContainText('Shortcuts')
@@ -31,8 +40,7 @@ test.describe('Options Page', () => {
   })
 
   test('shows empty state when no shortcuts exist', async ({ context, extensionId }) => {
-    const page = await context.newPage()
-    await page.goto(`chrome-extension://${extensionId}/options.html`)
+    const page = await openOptionsPage(context, extensionId)
 
     // Empty state should be visible with CTA buttons
     await expect(page.locator('.empty-state')).toBeVisible({ timeout: 5000 })
@@ -42,9 +50,7 @@ test.describe('Options Page', () => {
   })
 
   test('can add a new shortcut', async ({ context, extensionId }) => {
-    const page = await context.newPage()
-    await page.goto(`chrome-extension://${extensionId}/options.html`)
-
+    const page = await openOptionsPage(context, extensionId)
     // Click "Create your first shortcut" from the blank slate
     await createFirstShortcut(page)
 
@@ -63,9 +69,7 @@ test.describe('Options Page', () => {
   })
 
   test('shortcut persists after page reload', async ({ context, extensionId }) => {
-    const page = await context.newPage()
-    await page.goto(`chrome-extension://${extensionId}/options.html`)
-
+    const page = await openOptionsPage(context, extensionId)
     // Create first shortcut from blank slate
     await createFirstShortcut(page)
     await page.locator('.shortcut-label-title').first().fill('Persist Test')
@@ -80,9 +84,7 @@ test.describe('Options Page', () => {
   })
 
   test('can delete a shortcut', async ({ context, extensionId }) => {
-    const page = await context.newPage()
-    await page.goto(`chrome-extension://${extensionId}/options.html`)
-
+    const page = await openOptionsPage(context, extensionId)
     // Create first shortcut from blank slate and save it
     await createFirstShortcut(page)
     await page.locator('.shortcut-label-title').first().fill('Delete Me')
@@ -107,9 +109,7 @@ test.describe('Options Page', () => {
   })
 
   test('can toggle shortcut enabled/disabled', async ({ context, extensionId }) => {
-    const page = await context.newPage()
-    await page.goto(`chrome-extension://${extensionId}/options.html`)
-
+    const page = await openOptionsPage(context, extensionId)
     // Create first shortcut from blank slate
     await createFirstShortcut(page)
 
@@ -126,9 +126,7 @@ test.describe('Options Page', () => {
   })
 
   test('can create a new group', async ({ context, extensionId }) => {
-    const page = await context.newPage()
-    await page.goto(`chrome-extension://${extensionId}/options.html`)
-
+    const page = await openOptionsPage(context, extensionId)
     // Create first shortcut from blank slate (creates My Shortcuts group)
     await createFirstShortcut(page)
 
@@ -143,9 +141,7 @@ test.describe('Options Page', () => {
   })
 
   test('can switch between tabs', async ({ context, extensionId }) => {
-    const page = await context.newPage()
-    await page.goto(`chrome-extension://${extensionId}/options.html`)
-
+    const page = await openOptionsPage(context, extensionId)
     // Click Import tab
     await page.locator('.tab-btn', { hasText: 'Import' }).click()
 
@@ -163,9 +159,7 @@ test.describe('Options Page', () => {
   })
 
   test('search filters shortcuts', async ({ context, extensionId }) => {
-    const page = await context.newPage()
-    await page.goto(`chrome-extension://${extensionId}/options.html`)
-
+    const page = await openOptionsPage(context, extensionId)
     // Create first shortcut from blank slate
     await createFirstShortcut(page)
 
@@ -188,9 +182,7 @@ test.describe('Options Page', () => {
   })
 
   test('import/export round-trip', async ({ context, extensionId }) => {
-    const page = await context.newPage()
-    await page.goto(`chrome-extension://${extensionId}/options.html`)
-
+    const page = await openOptionsPage(context, extensionId)
     // Create first shortcut from blank slate
     await createFirstShortcut(page)
     await page.locator('.shortcut-label-title').first().fill('Round Trip Test')
@@ -225,9 +217,7 @@ test.describe('Options Page', () => {
   })
 
   test('dark mode toggle works', async ({ context, extensionId }) => {
-    const page = await context.newPage()
-    await page.goto(`chrome-extension://${extensionId}/options.html`)
-
+    const page = await openOptionsPage(context, extensionId)
     // Click the theme toggle button
     const themeToggle = page.locator('.theme-toggle')
     await themeToggle.click()
@@ -238,9 +228,7 @@ test.describe('Options Page', () => {
   })
 
   test('expand shortcut settings panel', async ({ context, extensionId }) => {
-    const page = await context.newPage()
-    await page.goto(`chrome-extension://${extensionId}/options.html`)
-
+    const page = await openOptionsPage(context, extensionId)
     // Create first shortcut from blank slate
     await createFirstShortcut(page)
 
@@ -249,5 +237,26 @@ test.describe('Options Page', () => {
 
     // ShortcutDetails panel should appear
     await expect(page.locator('.shortcut-details')).toBeVisible({ timeout: 5000 })
+  })
+
+  test('onboarding wizard shows on fresh install and can be skipped', async ({ context, extensionId }) => {
+    // Do NOT use openOptionsPage — we want the wizard to appear
+    const page = await context.newPage()
+    // Clear the onboarding flag to simulate a fresh install (previous tests may have set it)
+    await page.addInitScript(() => {
+      localStorage.removeItem('shortkeys-onboarding-done')
+    })
+    await page.goto(`chrome-extension://${extensionId}/options.html`)
+
+    // The wizard should appear for a fresh install
+    await expect(page.locator('.onboarding-wizard')).toBeVisible({ timeout: 5000 })
+    await expect(page.locator('.step-title')).toHaveText('Pick an action')
+
+    // Skip onboarding
+    await page.locator('.skip-link').click()
+
+    // The wizard should disappear, showing the empty state
+    await expect(page.locator('.onboarding-wizard')).not.toBeVisible()
+    await expect(page.locator('.empty-state')).toBeVisible({ timeout: 5000 })
   })
 })

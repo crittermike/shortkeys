@@ -1,10 +1,20 @@
 import { test, expect } from './fixtures'
+import type { BrowserContext, Page } from '@playwright/test'
+
+/** Open the options page with onboarding already dismissed. */
+async function openOptionsPage(context: BrowserContext, extensionId: string): Promise<Page> {
+  const page = await context.newPage()
+  await page.addInitScript(() => {
+    localStorage.setItem('shortkeys-onboarding-done', 'true')
+  })
+  await page.goto(`chrome-extension://${extensionId}/options.html`)
+  return page
+}
 
 test.describe('Content Script', () => {
 
   test('content script loads on a web page', async ({ context, extensionId }) => {
-    const page = await context.newPage()
-    await page.goto(`chrome-extension://${extensionId}/options.html`)
+    const page = await openOptionsPage(context, extensionId)
 
     // Create first shortcut from blank slate
     await page.locator('.empty-state .btn-primary', { hasText: 'Create your first shortcut' }).click()
