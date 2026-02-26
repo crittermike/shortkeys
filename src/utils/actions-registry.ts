@@ -140,6 +140,18 @@ export function getAllActionValues(): string[] {
   return values
 }
 
+/** Get the human-readable label for an action value. */
+export function getActionLabel(actionValue: string): string | undefined {
+  for (const category of Object.values(ACTION_CATEGORIES)) {
+    for (const action of category) {
+      if (action.value === actionValue) {
+        return action.label
+      }
+    }
+  }
+  return undefined
+}
+
 /** Check if a given action value corresponds to a built-in browser shortcut. */
 export function isBuiltInAction(actionValue: string): boolean {
   for (const category of Object.values(ACTION_CATEGORIES)) {
