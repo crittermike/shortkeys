@@ -16,6 +16,6 @@
     { "key": "ctrl+w", "action": "closetab", "label": "Close tab (C-w)" },
     { "key": "alt+w", "action": "copyurl", "label": "Copy URL (M-w)" },
     { "key": "ctrl+shift+f", "action": "searchgoogle", "label": "Search Google for selection" },
-    { "key": "ctrl+shift+?", "action": "showcheatsheet", "label": "Show cheat sheet" }
+    { "key": "ctrl+shift+/", "action": "showcheatsheet", "label": "Show cheat sheet" }
   ]
 }

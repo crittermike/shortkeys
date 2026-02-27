@@ -14,6 +14,6 @@
     { "key": "alt+shift+i", "action": "openincognito", "label": "Open in incognito" },
     { "key": "alt+shift+c", "action": "copyurl", "label": "Copy current URL" },
     { "key": "alt+shift+j", "action": "javascript", "label": "Log DOM element count", "code": "console.log('DOM elements:', document.querySelectorAll('*').length)" },
-    { "key": "alt+shift+?", "action": "showcheatsheet", "label": "Show cheat sheet" }
+    { "key": "alt+shift+/", "action": "showcheatsheet", "label": "Show cheat sheet" }
   ]
 }

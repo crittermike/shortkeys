@@ -16,8 +16,8 @@ interface MockKeyEvent {
 }
 
 function keyToString(e: MockKeyEvent): string | null {
-  const modifierKeys = ['Control', 'Shift', 'Alt', 'Meta', 'OS']
-  if (modifierKeys.includes(e.key)) return null
+  const modifierCodes = ['ShiftLeft', 'ShiftRight', 'ControlLeft', 'ControlRight', 'AltLeft', 'AltRight', 'MetaLeft', 'MetaRight', 'OSLeft', 'OSRight']
+  if (modifierCodes.includes(e.code)) return null
 
   const parts: string[] = []
   if (e.metaKey) parts.push('meta')
@@ -50,7 +50,8 @@ function keyToString(e: MockKeyEvent): string | null {
   } else if (code.startsWith('F') && /^F\d+$/.test(code)) {
     key = code.toLowerCase()
   } else {
-    key = e.key.toLowerCase()
+    // Fallback: derive from e.code to avoid unicode chars (e.g. Alt on Mac)
+    key = e.code.toLowerCase()
   }
 
   parts.push(key)
@@ -144,6 +145,23 @@ describe('ShortcutRecorder key capture', () => {
 
   it('handles digit keys', () => {
     expect(keyToString({ ...noMods, ctrlKey: true, key: '1', code: 'Digit1' })).toBe('ctrl+1')
+  })
+
+  it('fallback uses e.code not e.key for unknown codes', () => {
+    // Some exotic key codes that don't match any pattern should use e.code
+    expect(keyToString({ ...noMods, key: 'Unidentified', code: 'IntlBackslash' })).toBe('intlbackslash')
+  })
+
+  it('ignores right-side modifier keys', () => {
+    expect(keyToString({ ...noMods, ctrlKey: true, key: 'Control', code: 'ControlRight' })).toBeNull()
+    expect(keyToString({ ...noMods, shiftKey: true, key: 'Shift', code: 'ShiftRight' })).toBeNull()
+    expect(keyToString({ ...noMods, altKey: true, key: 'Alt', code: 'AltRight' })).toBeNull()
+    expect(keyToString({ ...noMods, metaKey: true, key: 'Meta', code: 'MetaRight' })).toBeNull()
+  })
+
+  it('ignores OS key (Firefox)', () => {
+    expect(keyToString({ ...noMods, metaKey: true, key: 'OS', code: 'OSLeft' })).toBeNull()
+    expect(keyToString({ ...noMods, metaKey: true, key: 'OS', code: 'OSRight' })).toBeNull()
   })
 })
 

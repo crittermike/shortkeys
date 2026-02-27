@@ -17,6 +17,6 @@
     { "key": "alt+-", "action": "zoomout", "label": "Zoom out" },
     { "key": "alt+0", "action": "zoomreset", "label": "Reset zoom" },
     { "key": "alt+b", "action": "togglebookmark", "label": "Bookmark page" },
-    { "key": "alt+shift+?", "action": "showcheatsheet", "label": "Show cheat sheet" }
+    { "key": "alt+shift+/", "action": "showcheatsheet", "label": "Show cheat sheet" }
   ]
 }

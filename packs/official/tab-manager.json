@@ -23,6 +23,6 @@
     { "key": "alt+shift+g", "action": "ungrouptab", "label": "Ungroup tab", "activeInInputs": true },
     { "key": "alt+shift+n", "action": "movetabtonewwindow", "label": "Move tab to new window", "activeInInputs": true },
     { "key": "alt+shift+t", "action": "newtabright", "label": "New tab to the right", "activeInInputs": true },
-    { "key": "alt+shift+?", "action": "showcheatsheet", "label": "Show cheat sheet" }
+    { "key": "alt+shift+/", "action": "showcheatsheet", "label": "Show cheat sheet" }
   ]
 }
