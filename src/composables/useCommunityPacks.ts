@@ -109,8 +109,12 @@ export function useCommunityPacks() {
 
     previewCommunityPack.value = null
     jsWarningPack.value = null
-    await saveShortcuts()
-    showSnack(`✓ Added "${pack.name}" (${newShortcuts.length} shortcuts)`)
+    try {
+      await saveShortcuts()
+      showSnack(`Added "${pack.name}" (${newShortcuts.length} shortcuts)`)
+    } catch {
+      showSnack('Failed to save shortcuts. Please try again.', 'danger')
+    }
   }
 
   /** Confirm JS warning and proceed with install */

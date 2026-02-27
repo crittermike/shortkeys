@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const mockSyncGet = vi.fn()
 const mockSyncSet = vi.fn()
+const mockSyncRemove = vi.fn()
 const mockLocalGet = vi.fn()
 const mockLocalSet = vi.fn()
 const mockOnChanged = vi.fn()
@@ -10,7 +11,7 @@ const mockWriteText = vi.fn().mockResolvedValue(undefined)
 // @ts-ignore
 globalThis.chrome = {
   storage: {
-    sync: { get: mockSyncGet, set: mockSyncSet },
+    sync: { get: mockSyncGet, set: mockSyncSet, remove: mockSyncRemove },
     local: { get: mockLocalGet, set: mockLocalSet },
     onChanged: { addListener: mockOnChanged },
   },
@@ -32,6 +33,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   mockSyncGet.mockResolvedValue({})
   mockSyncSet.mockResolvedValue(undefined)
+  mockSyncRemove.mockResolvedValue(undefined)
   mockLocalGet.mockResolvedValue({})
   mockLocalSet.mockResolvedValue(undefined)
 })

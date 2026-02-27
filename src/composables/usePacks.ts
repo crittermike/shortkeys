@@ -44,8 +44,12 @@ export function usePacks() {
     }
 
     previewPack.value = null
-    await saveShortcuts()
-    showSnack(`✓ Added "${pack.name}" (${newShortcuts.length} shortcuts)`)
+    try {
+      await saveShortcuts()
+      showSnack(`Added "${pack.name}" (${newShortcuts.length} shortcuts)`)
+    } catch {
+      showSnack('Failed to save shortcuts. Please try again.', 'danger')
+    }
   }
 
   return { previewPack, packConflictMode, getPackConflicts, installPack }
