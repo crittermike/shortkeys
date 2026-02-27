@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { ALL_PACKS, type ShortcutPack } from '../src/packs'
 import { getAllActionValues } from '../src/utils/actions-registry'
-import { normalizeKey } from '../src/utils/shortcut-conflicts'
+import { normalizeKey, couldSiteFiltersOverlap } from '../src/utils/shortcut-conflicts'
+import type { KeySetting } from '../src/utils/url-matching'
 
 describe('shortcut packs', () => {
   it('all packs have required metadata', () => {
@@ -153,5 +154,105 @@ describe('pack install modes', () => {
     // Both j entries exist
     const jEntries = result.filter((s) => s.key === 'j')
     expect(jEntries).toHaveLength(2)
+  })
+})
+
+describe('pack install auto-drop exact duplicates', () => {
+  function simulateInstallWithAutoDrop(
+    existing: Array<{ key: string; action: string }>,
+    packShortcuts: Array<{ key: string; action: string; label: string }>,
+    mode: 'skip' | 'replace' | 'keep',
+  ) {
+    // Simulate the auto-drop logic from usePacks.ts
+    const nonExact = packShortcuts.filter((ps) => {
+      const existingMatch = existing.find(
+        (e) => normalizeKey(e.key) === normalizeKey(ps.key) && e.action === ps.action,
+      )
+      return !existingMatch
+    })
+
+    const existingKeys = new Set(existing.map((k) => normalizeKey(k.key)))
+    let result = [...existing]
+
+    if (mode === 'skip') {
+      const toAdd = nonExact.filter((s) => !existingKeys.has(normalizeKey(s.key)))
+      result.push(...toAdd)
+    } else if (mode === 'replace') {
+      const packKeys = new Set(nonExact.map((s) => normalizeKey(s.key)))
+      result = result.filter((k) => !packKeys.has(normalizeKey(k.key)))
+      result.push(...nonExact)
+    } else {
+      result.push(...nonExact)
+    }
+
+    return { result, droppedCount: packShortcuts.length - nonExact.length }
+  }
+
+  it('drops exact duplicates (same key + same action) in replace mode', () => {
+    const existing = [{ key: 'j', action: 'scrolldown' }]
+    const packShortcuts = [
+      { key: 'j', action: 'scrolldown', label: 'Scroll down' },
+      { key: 'k', action: 'scrollup', label: 'Scroll up' },
+    ]
+    const { result, droppedCount } = simulateInstallWithAutoDrop(existing, packShortcuts, 'replace')
+    expect(droppedCount).toBe(1) // j+scrolldown was exact duplicate
+    // Original j preserved (not replaced, since the duplicate was dropped)
+    expect(result.filter((s) => s.key === 'j')).toHaveLength(1)
+    // k was still added
+    expect(result.some((s) => s.key === 'k')).toBe(true)
+  })
+
+  it('drops exact duplicates in skip mode', () => {
+    const existing = [{ key: 'j', action: 'scrolldown' }]
+    const packShortcuts = [
+      { key: 'j', action: 'scrolldown', label: 'Scroll down' },
+      { key: 'k', action: 'scrollup', label: 'Scroll up' },
+    ]
+    const { result, droppedCount } = simulateInstallWithAutoDrop(existing, packShortcuts, 'skip')
+    expect(droppedCount).toBe(1)
+    expect(result.filter((s) => s.key === 'j')).toHaveLength(1)
+    expect(result.some((s) => s.key === 'k')).toBe(true)
+  })
+
+  it('drops exact duplicates in keep mode', () => {
+    const existing = [{ key: 'j', action: 'scrolldown' }]
+    const packShortcuts = [
+      { key: 'j', action: 'scrolldown', label: 'Scroll down' },
+      { key: 'k', action: 'scrollup', label: 'Scroll up' },
+    ]
+    const { result, droppedCount } = simulateInstallWithAutoDrop(existing, packShortcuts, 'keep')
+    expect(droppedCount).toBe(1)
+    // Original j preserved, duplicate not added
+    expect(result.filter((s) => s.key === 'j')).toHaveLength(1)
+    expect(result.some((s) => s.key === 'k')).toBe(true)
+  })
+
+  it('does NOT drop shortcuts with same key but different action', () => {
+    const existing = [{ key: 'j', action: 'newtab' }]
+    const packShortcuts = [
+      { key: 'j', action: 'scrolldown', label: 'Scroll down' },
+    ]
+    const { result, droppedCount } = simulateInstallWithAutoDrop(existing, packShortcuts, 'replace')
+    expect(droppedCount).toBe(0)
+    // In replace mode, pack version replaces existing
+    expect(result.find((s) => s.key === 'j')!.action).toBe('scrolldown')
+  })
+
+  it('drops multiple exact duplicates', () => {
+    const existing = [
+      { key: 'j', action: 'scrolldown' },
+      { key: 'k', action: 'scrollup' },
+    ]
+    const packShortcuts = [
+      { key: 'j', action: 'scrolldown', label: 'Scroll down' },
+      { key: 'k', action: 'scrollup', label: 'Scroll up' },
+      { key: 'g g', action: 'scrolltop', label: 'Scroll to top' },
+    ]
+    const { result, droppedCount } = simulateInstallWithAutoDrop(existing, packShortcuts, 'replace')
+    expect(droppedCount).toBe(2)
+    // Only g g was actually added
+    expect(result.some((s) => s.key === 'g g')).toBe(true)
+    expect(result.filter((s) => s.key === 'j')).toHaveLength(1)
+    expect(result.filter((s) => s.key === 'k')).toHaveLength(1)
   })
 })

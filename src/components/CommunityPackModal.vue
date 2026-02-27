@@ -1,12 +1,35 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useCommunityPacks } from '@/composables/useCommunityPacks'
 
 const { 
   previewCommunityPack, 
   communityConflictMode, 
+  communityExactDuplicateCount,
   getCommunityPackConflicts, 
+  getCommunityPackConflictKeys,
   requestInstallCommunityPack 
 } = useCommunityPacks()
+
+const conflicts = computed(() => previewCommunityPack.value ? getCommunityPackConflicts(previewCommunityPack.value) : new Map())
+const conflictKeys = computed(() => previewCommunityPack.value ? getCommunityPackConflictKeys(previewCommunityPack.value) : [])
+const addCount = computed(() => {
+  if (!previewCommunityPack.value) return 0
+  let count = previewCommunityPack.value.shortcuts.length - communityExactDuplicateCount.value
+  if (communityConflictMode.value === 'skip') {
+    for (const c of conflicts.value.values()) {
+      if (c.type === 'key') count--
+    }
+  }
+  return count
+})
+const keyConflictCount = computed(() => {
+  let count = 0
+  for (const c of conflicts.value.values()) {
+    if (c.type === 'key') count++
+  }
+  return count
+})
 </script>
 
 <template>
@@ -34,18 +57,35 @@ const {
           </div>
 
           <div class="modal-shortcuts">
-            <div v-for="s in previewCommunityPack.shortcuts" :key="s.key" class="modal-shortcut-row">
-              <span class="modal-shortcut-label">{{ s.label || s.action }}</span>
+            <div
+              v-for="(s, si) in previewCommunityPack.shortcuts"
+              :key="s.key"
+              class="modal-shortcut-row"
+              :class="{
+                'modal-shortcut-conflict': conflicts.has(si) && conflicts.get(si)!.type === 'key',
+                'modal-shortcut-exact': conflicts.has(si) && conflicts.get(si)!.type === 'exact',
+              }"
+            >
+              <span class="modal-shortcut-label">
+                {{ s.label || s.action }}
+                <span v-if="conflicts.has(si) && conflicts.get(si)!.type === 'exact'" class="conflict-badge exact">duplicate</span>
+                <span v-else-if="conflicts.has(si)" class="conflict-badge key">conflict</span>
+              </span>
               <span class="modal-shortcut-keys">
                 <kbd v-for="(part, pi) in s.key.split('+')" :key="pi">{{ part }}</kbd>
               </span>
             </div>
           </div>
 
-          <div v-if="getCommunityPackConflicts(previewCommunityPack).length > 0" class="modal-conflicts">
+          <div v-if="communityExactDuplicateCount > 0" class="modal-exact-notice">
+            <i class="mdi mdi-information-outline"></i>
+            {{ communityExactDuplicateCount }} exact duplicate{{ communityExactDuplicateCount > 1 ? 's' : '' }} will be skipped automatically (same key and action already exist)
+          </div>
+
+          <div v-if="keyConflictCount > 0" class="modal-conflicts">
             <div class="modal-conflict-header">
               <i class="mdi mdi-alert-outline"></i>
-              {{ getCommunityPackConflicts(previewCommunityPack).length }} shortcut{{ getCommunityPackConflicts(previewCommunityPack).length > 1 ? 's' : '' }} conflict with your existing shortcuts
+              {{ conflictKeys.length }} shortcut{{ conflictKeys.length > 1 ? 's' : '' }} conflict with your existing shortcuts
             </div>
             <div class="modal-conflict-options">
               <label class="radio-option">
@@ -66,7 +106,7 @@ const {
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="previewCommunityPack = null" type="button">Cancel</button>
           <button class="btn btn-primary" @click="requestInstallCommunityPack(previewCommunityPack)" type="button">
-            <i class="mdi mdi-plus"></i> Add {{ previewCommunityPack.shortcuts.length }} shortcuts
+            <i class="mdi mdi-plus"></i> Add {{ addCount }} shortcut{{ addCount !== 1 ? 's' : '' }}
           </button>
         </div>
       </div>
@@ -107,5 +147,78 @@ const {
 }
 .modal-js-warning .mdi {
   font-size: 16px;
+}
+.modal-shortcut-conflict {
+  background: #fffbeb;
+  border-left: 3px solid #f59e0b;
+  padding-left: 9px;
+}
+.modal-shortcut-exact {
+  background: #f0f9ff;
+  border-left: 3px solid #94a3b8;
+  padding-left: 9px;
+  opacity: 0.6;
+}
+.conflict-badge {
+  display: inline-block;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  margin-left: 6px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  vertical-align: middle;
+}
+.conflict-badge.key {
+  background: #fef3c7;
+  color: #92400e;
+}
+.conflict-badge.exact {
+  background: #e2e8f0;
+  color: #475569;
+}
+.modal-exact-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  color: #0c4a6e;
+  border-radius: 8px;
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.modal-exact-notice .mdi {
+  font-size: 16px;
+}
+
+[data-theme="dark"] .modal-shortcut-conflict {
+  background: rgba(245, 158, 11, 0.1);
+  border-left-color: #f59e0b;
+}
+[data-theme="dark"] .modal-shortcut-exact {
+  background: rgba(148, 163, 184, 0.1);
+  border-left-color: #64748b;
+}
+[data-theme="dark"] .conflict-badge.key {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+}
+[data-theme="dark"] .conflict-badge.exact {
+  background: rgba(148, 163, 184, 0.2);
+  color: #94a3b8;
+}
+[data-theme="dark"] .modal-exact-notice {
+  background: rgba(14, 165, 233, 0.1);
+  border-color: rgba(14, 165, 233, 0.3);
+  color: #7dd3fc;
+}
+[data-theme="dark"] .modal-js-warning {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
 }
 </style>

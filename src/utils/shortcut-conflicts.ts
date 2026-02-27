@@ -143,6 +143,8 @@ export interface ShortcutConflict {
   message: string
   browserAction?: string
   duplicateIndices?: number[]
+  /** True when duplicates have the same key AND same action (exact duplicate) */
+  exact?: boolean
 }
 
 /**
@@ -156,6 +158,132 @@ export function normalizeKey(key: string): string {
   const mods = parts.filter((p) => modifiers.includes(p)).sort()
   const rest = parts.filter((p) => !modifiers.includes(p))
   return [...mods, ...rest].join('+')
+}
+
+/**
+ * Get the effective site filter patterns for a shortcut.
+ * Returns null if the shortcut applies to all sites (no filtering).
+ * Returns the array of site patterns if filtering is active.
+ */
+export function getSitePatterns(shortcut: KeySetting): string[] | null {
+  // No blacklist field or blacklist is false/undefined = applies everywhere
+  if (!shortcut.blacklist || shortcut.blacklist === 'false') {
+    return null
+  }
+  // Prefer sitesArray if populated, otherwise fall back to splitting the sites string
+  // (sitesArray is only set on save; the sites string is always current in the UI)
+  const patterns = shortcut.sitesArray && shortcut.sitesArray.length > 0
+    ? shortcut.sitesArray
+    : shortcut.sites
+      ? shortcut.sites.split('\n')
+      : []
+  const filtered = patterns.filter(Boolean)
+  // Has site filter but no actual patterns = applies everywhere (vacuous filter)
+  if (filtered.length === 0) {
+    return null
+  }
+  return filtered
+}
+
+/**
+ * Determine if two shortcuts could ever fire on the same URL.
+ * If either applies to all sites, they can always overlap.
+ * If both have site filters, check conservatively whether any patterns
+ * share a common domain substring (not a full URL intersection, which
+ * would require regex intersection and be too complex/fragile).
+ *
+ * For allowlist (blacklist='whitelist') shortcuts, site patterns define WHERE they fire.
+ * For blocklist (blacklist=true/'true') shortcuts, they fire everywhere EXCEPT listed sites.
+ * Two allowlist shortcuts only conflict if their patterns could match the same URL.
+ */
+export function couldSiteFiltersOverlap(a: KeySetting, b: KeySetting): boolean {
+  const aPats = getSitePatterns(a)
+  const bPats = getSitePatterns(b)
+
+  // If either applies everywhere, they always overlap
+  if (aPats === null || bPats === null) return true
+
+  // Both have site filters. If both are allowlists (blacklist=true),
+  // they only conflict if patterns could match the same URL.
+  // If one is an allowlist and the other is a blocklist, it's complex -
+  // be conservative and say they overlap.
+  const aIsAllowlist = a.blacklist === 'whitelist'
+  const bIsAllowlist = b.blacklist === 'whitelist'
+
+  // Case 1: Both are allowlists — only conflict if patterns could match the same URL
+  if (aIsAllowlist && bIsAllowlist) {
+    for (const ap of aPats) {
+      for (const bp of bPats) {
+        if (patternsCouldOverlap(ap, bp)) return true
+      }
+    }
+    return false
+  }
+
+  // Case 2: One is allowlist, other is blocklist
+  // Allowlist fires ONLY on its patterns; blocklist fires EVERYWHERE EXCEPT its patterns.
+  // If the blocklist excludes the same domains the allowlist targets, they can never both fire.
+  // e.g. allowlist=['*reddit.com*'] + blocklist=['*reddit.com*'] = mutually exclusive
+  if (aIsAllowlist !== bIsAllowlist) {
+    const allowPats = aIsAllowlist ? aPats : bPats
+    const blockPats = aIsAllowlist ? bPats : aPats
+    // If every allowlist pattern is covered by a blocklist pattern,
+    // the blocklist won't fire on any URL the allowlist fires on.
+    const allAllowPatsBlocked = allowPats.every((ap) =>
+      blockPats.some((bp) => patternsCouldOverlap(ap, bp))
+    )
+    if (allAllowPatsBlocked) return false
+    // Some allowlist URLs aren't blocked — they could overlap there
+    return true
+  }
+
+  // Case 3: Both are blocklists — they both fire on most sites, likely overlap
+  return true
+}
+
+/**
+ * Heuristic check if two URL glob patterns could match the same URL.
+ * Extracts domain-like substrings and checks for overlap.
+ * Conservative: returns true when uncertain.
+ */
+function patternsCouldOverlap(a: string, b: string): boolean {
+  // If either is a regex pattern, be conservative
+  if (/^\/.*\/$/.test(a) || /^\/.*\/$/.test(b)) return true
+
+  // If either is just a wildcard, it matches everything
+  if (a === '*' || b === '*') return true
+
+  // Extract the non-wildcard core from each pattern
+  const coreA = a.replace(/^\*+|\*+$/g, '').toLowerCase()
+  const coreB = b.replace(/^\*+|\*+$/g, '').toLowerCase()
+
+  // If either core is empty after stripping wildcards, it matches everything
+  if (!coreA || !coreB) return true
+
+  // Check if one core contains the other or they share a domain component
+  if (coreA.includes(coreB) || coreB.includes(coreA)) return true
+
+  // Check for domain-level overlap: extract domain-like parts
+  // e.g. '*gmail.com*' -> 'gmail.com', '*://github.com/*' -> 'github.com'
+  const domainA = extractDomain(coreA)
+  const domainB = extractDomain(coreB)
+
+  if (domainA && domainB) {
+    return domainA === domainB
+  }
+
+  // Can't determine - be conservative
+  return true
+}
+
+/**
+ * Try to extract a domain from a URL pattern fragment.
+ * Returns null if no clear domain can be extracted.
+ */
+function extractDomain(pattern: string): string | null {
+  // Try to find a domain-like pattern (word.word)
+  const match = pattern.match(/([a-z0-9-]+\.[a-z]{2,})/)
+  return match ? match[1] : null
 }
 
 /**
@@ -208,13 +336,21 @@ export function detectConflicts(shortcuts: KeySetting[], mac?: boolean): Map<num
 
     const indices = keyToIndices.get(norm) || []
     if (indices.length > 1) {
-      const others = indices.filter((idx) => idx !== i)
-      shortcutConflicts.push({
-        type: 'duplicate',
-        key: norm,
-        message: `Duplicate shortcut (also used by shortcut #${others.map((o) => o + 1).join(', #')})`,
-        duplicateIndices: others,
+      const others = indices.filter((idx) => idx !== i).filter((idx) => {
+        // Only flag as duplicate if site filters could overlap (#739)
+        return couldSiteFiltersOverlap(shortcuts[i], shortcuts[idx])
       })
+      if (others.length > 0) {
+        // Check if any duplicate is an exact match (same key + same action)
+        const hasExact = others.some((idx) => shortcuts[idx].action === shortcuts[i].action)
+        shortcutConflicts.push({
+          type: 'duplicate',
+          key: norm,
+          message: `Duplicate shortcut (also used by shortcut #${others.map((o) => o + 1).join(', #')})`,
+          duplicateIndices: others,
+          exact: hasExact,
+        })
+      }
     }
 
     if (shortcutConflicts.length > 0) {
