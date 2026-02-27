@@ -192,8 +192,8 @@ export function getSitePatterns(shortcut: KeySetting): string[] | null {
  * share a common domain substring (not a full URL intersection, which
  * would require regex intersection and be too complex/fragile).
  *
- * For allowlist (blacklist=true) shortcuts, site patterns define WHERE they fire.
- * For blocklist (blacklist=false/undefined), they fire everywhere.
+ * For allowlist (blacklist='whitelist') shortcuts, site patterns define WHERE they fire.
+ * For blocklist (blacklist=true/'true') shortcuts, they fire everywhere EXCEPT listed sites.
  * Two allowlist shortcuts only conflict if their patterns could match the same URL.
  */
 export function couldSiteFiltersOverlap(a: KeySetting, b: KeySetting): boolean {
@@ -207,8 +207,8 @@ export function couldSiteFiltersOverlap(a: KeySetting, b: KeySetting): boolean {
   // they only conflict if patterns could match the same URL.
   // If one is an allowlist and the other is a blocklist, it's complex -
   // be conservative and say they overlap.
-  const aIsAllowlist = a.blacklist === true || a.blacklist === 'true'
-  const bIsAllowlist = b.blacklist === true || b.blacklist === 'true'
+  const aIsAllowlist = a.blacklist === 'whitelist'
+  const bIsAllowlist = b.blacklist === 'whitelist'
 
   if (!aIsAllowlist || !bIsAllowlist) {
     // One or both are blocklists with patterns - they likely still fire on many sites

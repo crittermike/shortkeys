@@ -259,8 +259,8 @@ describe('detectConflicts', () => {
 
   it('does NOT flag duplicates when shortcuts have non-overlapping site filters (#739)', () => {
     const shortcuts: KeySetting[] = [
-      { key: 'ctrl+b', action: 'newtab', blacklist: true, sitesArray: ['*gmail.com*'] },
-      { key: 'ctrl+b', action: 'closetab', blacklist: true, sitesArray: ['*github.com*'] },
+      { key: 'ctrl+b', action: 'newtab', blacklist: 'whitelist', sitesArray: ['*gmail.com*'] },
+      { key: 'ctrl+b', action: 'closetab', blacklist: 'whitelist', sitesArray: ['*github.com*'] },
     ]
     const conflicts = detectConflicts(shortcuts, false)
     // Neither should have duplicate conflicts since they never fire on the same site
@@ -273,7 +273,7 @@ describe('detectConflicts', () => {
   it('still flags duplicates when one shortcut has no site filter (#739)', () => {
     const shortcuts: KeySetting[] = [
       { key: 'ctrl+b', action: 'newtab' }, // no site filter = everywhere
-      { key: 'ctrl+b', action: 'closetab', blacklist: true, sitesArray: ['*github.com*'] },
+      { key: 'ctrl+b', action: 'closetab', blacklist: 'whitelist', sitesArray: ['*github.com*'] },
     ]
     const conflicts = detectConflicts(shortcuts, false)
     expect(conflicts.get(0)?.some((c) => c.type === 'duplicate')).toBe(true)
@@ -282,8 +282,8 @@ describe('detectConflicts', () => {
 
   it('still flags duplicates when both have overlapping site filters (#739)', () => {
     const shortcuts: KeySetting[] = [
-      { key: 'ctrl+b', action: 'newtab', blacklist: true, sitesArray: ['*google.com*'] },
-      { key: 'ctrl+b', action: 'closetab', blacklist: true, sitesArray: ['*google.com*'] },
+      { key: 'ctrl+b', action: 'newtab', blacklist: 'whitelist', sitesArray: ['*google.com*'] },
+      { key: 'ctrl+b', action: 'closetab', blacklist: 'whitelist', sitesArray: ['*google.com*'] },
     ]
     const conflicts = detectConflicts(shortcuts, false)
     expect(conflicts.get(0)?.some((c) => c.type === 'duplicate')).toBe(true)
@@ -338,32 +338,32 @@ describe('couldSiteFiltersOverlap', () => {
   })
 
   it('returns false when both have different domain allowlists', () => {
-    const a: KeySetting = { key: 'a', action: 'newtab', blacklist: true, sitesArray: ['*gmail.com*'] }
-    const b: KeySetting = { key: 'b', action: 'closetab', blacklist: true, sitesArray: ['*github.com*'] }
+    const a: KeySetting = { key: 'a', action: 'newtab', blacklist: 'whitelist', sitesArray: ['*gmail.com*'] }
+    const b: KeySetting = { key: 'b', action: 'closetab', blacklist: 'whitelist', sitesArray: ['*github.com*'] }
     expect(couldSiteFiltersOverlap(a, b)).toBe(false)
   })
 
   it('returns true when both have same domain allowlists', () => {
-    const a: KeySetting = { key: 'a', action: 'newtab', blacklist: true, sitesArray: ['*gmail.com*'] }
-    const b: KeySetting = { key: 'b', action: 'closetab', blacklist: true, sitesArray: ['*gmail.com*'] }
+    const a: KeySetting = { key: 'a', action: 'newtab', blacklist: 'whitelist', sitesArray: ['*gmail.com*'] }
+    const b: KeySetting = { key: 'b', action: 'closetab', blacklist: 'whitelist', sitesArray: ['*gmail.com*'] }
     expect(couldSiteFiltersOverlap(a, b)).toBe(true)
   })
 
   it('returns true when allowlists share a domain', () => {
-    const a: KeySetting = { key: 'a', action: 'newtab', blacklist: true, sitesArray: ['*gmail.com*', '*youtube.com*'] }
-    const b: KeySetting = { key: 'b', action: 'closetab', blacklist: true, sitesArray: ['*github.com*', '*youtube.com*'] }
+    const a: KeySetting = { key: 'a', action: 'newtab', blacklist: 'whitelist', sitesArray: ['*gmail.com*', '*youtube.com*'] }
+    const b: KeySetting = { key: 'b', action: 'closetab', blacklist: 'whitelist', sitesArray: ['*github.com*', '*youtube.com*'] }
     expect(couldSiteFiltersOverlap(a, b)).toBe(true)
   })
 
   it('returns false for completely different domains', () => {
-    const a: KeySetting = { key: 'a', action: 'newtab', blacklist: true, sitesArray: ['https://gmail.com/*'] }
-    const b: KeySetting = { key: 'b', action: 'closetab', blacklist: true, sitesArray: ['https://github.com/*'] }
+    const a: KeySetting = { key: 'a', action: 'newtab', blacklist: 'whitelist', sitesArray: ['https://gmail.com/*'] }
+    const b: KeySetting = { key: 'b', action: 'closetab', blacklist: 'whitelist', sitesArray: ['https://github.com/*'] }
     expect(couldSiteFiltersOverlap(a, b)).toBe(false)
   })
 
   it('is conservative with regex patterns', () => {
-    const a: KeySetting = { key: 'a', action: 'newtab', blacklist: true, sitesArray: ['/gmail\\.com/'] }
-    const b: KeySetting = { key: 'b', action: 'closetab', blacklist: true, sitesArray: ['/github\\.com/'] }
+    const a: KeySetting = { key: 'a', action: 'newtab', blacklist: 'whitelist', sitesArray: ['/gmail\.com/'] }
+    const b: KeySetting = { key: 'b', action: 'closetab', blacklist: 'whitelist', sitesArray: ['/github\.com/'] }
     // Regex patterns are too complex to analyze, so be conservative
     expect(couldSiteFiltersOverlap(a, b)).toBe(true)
   })
