@@ -69,7 +69,8 @@ function keyToString(e: KeyboardEvent): string {
   } else if (code.startsWith('F') && /^F\d+$/.test(code)) {
     key = code.toLowerCase()
   } else {
-    key = e.key.toLowerCase()
+    // Fallback: derive from e.code to avoid unicode chars (e.g. Alt on Mac)
+    key = e.code.toLowerCase()
   }
 
   parts.push(key)
@@ -80,8 +81,8 @@ function captureKey(e: KeyboardEvent) {
   e.preventDefault()
   e.stopPropagation()
 
-  const modifierKeys = ['Control', 'Shift', 'Alt', 'Meta', 'OS']
-  if (modifierKeys.includes(e.key)) return
+  const modifierCodes = ['ShiftLeft', 'ShiftRight', 'ControlLeft', 'ControlRight', 'AltLeft', 'AltRight', 'MetaLeft', 'MetaRight', 'OSLeft', 'OSRight']
+  if (modifierCodes.includes(e.code)) return
 
   const combo = keyToString(e)
   recordedKeys.value.push(combo)
@@ -89,6 +90,18 @@ function captureKey(e: KeyboardEvent) {
   // Show live preview
   emit('update:modelValue', recordedKeys.value.join(' '))
   resetAutoStop()
+}
+
+function handleInputKeydown(e: KeyboardEvent) {
+  // When not recording, intercept modifier+key combos to prevent unicode insertion on Mac
+  // (e.g. Alt+L produces ¬, Alt+D produces ∂)
+  const modifierCodes = ['ShiftLeft', 'ShiftRight', 'ControlLeft', 'ControlRight', 'AltLeft', 'AltRight', 'MetaLeft', 'MetaRight', 'OSLeft', 'OSRight']
+  if (modifierCodes.includes(e.code)) return
+  if (!recording.value && (e.altKey || e.ctrlKey || e.metaKey)) {
+    e.preventDefault()
+    const combo = keyToString(e)
+    emit('update:modelValue', combo)
+  }
 }
 </script>
 
@@ -100,6 +113,7 @@ function captureKey(e: KeyboardEvent) {
       placeholder="e.g. ctrl+shift+k"
       :value="modelValue"
       @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+      @keydown="handleInputKeydown"
       :readonly="recording"
     />
     <button

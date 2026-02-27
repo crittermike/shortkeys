@@ -12,6 +12,6 @@
     { "key": "alt+s", "action": "sorttabs", "label": "Sort tabs A–Z" },
     { "key": "alt+shift+s", "action": "closeduplicatetabs", "label": "Close duplicate tabs" },
     { "key": "alt+a", "action": "audibletab", "label": "Jump to tab playing audio" },
-    { "key": "alt+shift+?", "action": "showcheatsheet", "label": "Show cheat sheet" }
+    { "key": "alt+shift+/", "action": "showcheatsheet", "label": "Show cheat sheet" }
   ]
 }

@@ -67,6 +67,22 @@ describe('shortcut packs', () => {
   })
 })
 
+  it('no shortcuts use impossible double-shift combos like shift+?', () => {
+    // ? is shift+/, so alt+shift+? means alt+shift+shift+/ which is impossible
+    for (const pack of ALL_PACKS) {
+      for (const s of pack.shortcuts) {
+        const parts = s.key.toLowerCase().split('+')
+        const hasShift = parts.includes('shift')
+        // Characters that already require shift: ? ! @ # $ % ^ & * ( ) _ + { } | : " < > ~
+        const shiftChars = ['?', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '{', '}', '|', ':', '"', '<', '>', '~']
+        const lastPart = parts[parts.length - 1]
+        if (hasShift && shiftChars.includes(lastPart)) {
+          throw new Error(`Pack "${pack.name}": key "${s.key}" uses shift+${lastPart} which is an impossible double-shift combo (${lastPart} already requires shift)`)
+        }
+      }
+    }
+  })
+
 describe('pack conflict detection', () => {
   it('detects conflicts between pack and existing shortcuts', () => {
     const existingKeys = new Set(['j', 'k', 'ctrl+b'])
