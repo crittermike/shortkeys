@@ -3,6 +3,7 @@ import { v4 as uuid } from 'uuid'
 import type { KeySetting } from '@/utils/url-matching'
 import { useShortcuts } from './useShortcuts'
 import { useToast } from './useToast'
+import { normalizeKey, couldSiteFiltersOverlap } from '@/utils/shortcut-conflicts'
 
 export interface CommunityPack {
   id: string
@@ -68,11 +69,60 @@ export function useCommunityPacks() {
     }
   }
 
-  /** Get conflicts between a community pack and existing shortcuts */
-  function getCommunityPackConflicts(pack: CommunityPack): string[] {
-    const existing = new Set(keys.value.map((k) => k.key?.toLowerCase()).filter(Boolean))
-    return pack.fullShortcuts.filter((s) => existing.has(s.key?.toLowerCase())).map((s) => s.key)
+  /** Conflict metadata for a single community pack shortcut */
+  interface CommunityPackConflictInfo {
+    key: string
+    type: 'exact' | 'key'
+    existingIndices: number[]
   }
+
+  /**
+   * Get detailed conflict info for each shortcut in a community pack.
+   * Returns a Map from pack shortcut index to conflict info.
+   */
+  function getCommunityPackConflicts(pack: CommunityPack): Map<number, CommunityPackConflictInfo> {
+    const result = new Map<number, CommunityPackConflictInfo>()
+    for (let pi = 0; pi < pack.fullShortcuts.length; pi++) {
+      const ps = pack.fullShortcuts[pi]
+      const psNorm = normalizeKey(ps.key)
+      if (!psNorm) continue
+
+      const matchingIndices: number[] = []
+      for (let ei = 0; ei < keys.value.length; ei++) {
+        const existing = keys.value[ei]
+        if (normalizeKey(existing.key) !== psNorm) continue
+        if (!couldSiteFiltersOverlap(ps, existing)) continue
+        matchingIndices.push(ei)
+      }
+
+      if (matchingIndices.length > 0) {
+        const isExact = matchingIndices.some((ei) => keys.value[ei].action === ps.action)
+        result.set(pi, {
+          key: ps.key,
+          type: isExact ? 'exact' : 'key',
+          existingIndices: matchingIndices,
+        })
+      }
+    }
+    return result
+  }
+
+  /** Simple list of conflicting key names (for backward compat) */
+  function getCommunityPackConflictKeys(pack: CommunityPack): string[] {
+    const conflicts = getCommunityPackConflicts(pack)
+    return Array.from(conflicts.values()).map((c) => c.key)
+  }
+
+  /** Count of exact duplicates that will be auto-dropped */
+  const communityExactDuplicateCount = computed(() => {
+    if (!previewCommunityPack.value) return 0
+    const conflicts = getCommunityPackConflicts(previewCommunityPack.value)
+    let count = 0
+    for (const c of conflicts.values()) {
+      if (c.type === 'exact') count++
+    }
+    return count
+  })
 
   /** Try to install a community pack. If it has JS, shows the warning first. */
   function requestInstallCommunityPack(pack: CommunityPack) {
@@ -87,31 +137,43 @@ export function useCommunityPacks() {
   async function installCommunityPack(pack: CommunityPack) {
     const mode = communityConflictMode.value
     const groupName = pack.name
-    const existingKeys = new Set(keys.value.map((k) => k.key?.toLowerCase()).filter(Boolean))
+    const conflicts = getCommunityPackConflicts(pack)
 
-    const newShortcuts = pack.fullShortcuts.map((s) => ({
+    // Auto-drop exact duplicates (same key + same action) regardless of mode
+    const nonExactShortcuts = pack.fullShortcuts.filter((_, i) => {
+      const conflict = conflicts.get(i)
+      return !conflict || conflict.type !== 'exact'
+    })
+
+    const newShortcuts = nonExactShortcuts.map((s) => ({
       ...s,
       id: uuid(),
       group: groupName,
       enabled: true,
     }))
 
+    const existingKeys = new Set(keys.value.map((k) => normalizeKey(k.key)).filter(Boolean))
+
     if (mode === 'skip') {
-      const toAdd = newShortcuts.filter((s) => !existingKeys.has(s.key?.toLowerCase()))
+      const toAdd = newShortcuts.filter((s) => !existingKeys.has(normalizeKey(s.key)))
       keys.value.push(...toAdd)
     } else if (mode === 'replace') {
-      const packKeys = new Set(newShortcuts.map((s) => s.key?.toLowerCase()))
-      keys.value = keys.value.filter((k) => !packKeys.has(k.key?.toLowerCase()))
+      const packKeys = new Set(newShortcuts.map((s) => normalizeKey(s.key)))
+      keys.value = keys.value.filter((k) => !packKeys.has(normalizeKey(k.key)))
       keys.value.push(...newShortcuts)
     } else {
       keys.value.push(...newShortcuts)
     }
 
+    const droppedCount = pack.fullShortcuts.length - nonExactShortcuts.length
     previewCommunityPack.value = null
     jsWarningPack.value = null
     try {
       await saveShortcuts()
-      showSnack(`Added "${pack.name}" (${newShortcuts.length} shortcuts)`)
+      const msg = droppedCount > 0
+        ? `Added "${pack.name}" (${nonExactShortcuts.length} shortcuts, ${droppedCount} duplicate${droppedCount > 1 ? 's' : ''} skipped)`
+        : `Added "${pack.name}" (${nonExactShortcuts.length} shortcuts)`
+      showSnack(msg)
     } catch {
       showSnack('Failed to save shortcuts. Please try again.', 'danger')
     }
@@ -137,12 +199,14 @@ export function useCommunityPacks() {
     filteredCommunityPacks,
     previewCommunityPack,
     communityConflictMode,
+    communityExactDuplicateCount,
     jsWarningPack,
     fetchCommunityPacks,
     getCommunityPackConflicts,
+    getCommunityPackConflictKeys,
     requestInstallCommunityPack,
     installCommunityPack,
     confirmJsInstall,
     dismissJsWarning,
-  }
+}
 }
