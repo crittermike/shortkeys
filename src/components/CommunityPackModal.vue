@@ -23,6 +23,13 @@ const addCount = computed(() => {
   }
   return count
 })
+const keyConflictCount = computed(() => {
+  let count = 0
+  for (const c of conflicts.value.values()) {
+    if (c.type === 'key') count++
+  }
+  return count
+})
 </script>
 
 <template>
@@ -75,7 +82,7 @@ const addCount = computed(() => {
             {{ communityExactDuplicateCount }} exact duplicate{{ communityExactDuplicateCount > 1 ? 's' : '' }} will be skipped automatically (same key and action already exist)
           </div>
 
-          <div v-if="conflictKeys.length > 0" class="modal-conflicts">
+          <div v-if="keyConflictCount > 0" class="modal-conflicts">
             <div class="modal-conflict-header">
               <i class="mdi mdi-alert-outline"></i>
               {{ conflictKeys.length }} shortcut{{ conflictKeys.length > 1 ? 's' : '' }} conflict with your existing shortcuts
