@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { v4 as uuid } from 'uuid'
 import type { KeySetting } from '@/utils/url-matching'
-import { saveKeys, loadKeys, StorageError } from '@/utils/storage'
+import { saveKeys, loadKeys } from '@/utils/storage'
 import { useToast } from './useToast'
 import { useUndoRedo } from './useUndoRedo'
 
