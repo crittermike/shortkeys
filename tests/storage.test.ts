@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const mockSyncGet = vi.fn()
 const mockSyncSet = vi.fn()
+const mockSyncRemove = vi.fn()
 const mockLocalGet = vi.fn()
 const mockLocalSet = vi.fn()
 const mockOnChanged = vi.fn()
@@ -9,7 +10,7 @@ const mockOnChanged = vi.fn()
 // @ts-ignore
 globalThis.chrome = {
   storage: {
-    sync: { get: mockSyncGet, set: mockSyncSet },
+    sync: { get: mockSyncGet, set: mockSyncSet, remove: mockSyncRemove },
     local: { get: mockLocalGet, set: mockLocalSet },
     onChanged: { addListener: mockOnChanged },
   },
@@ -26,6 +27,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   mockSyncGet.mockResolvedValue({})
   mockSyncSet.mockResolvedValue(undefined)
+  mockSyncRemove.mockResolvedValue(undefined)
   mockLocalGet.mockResolvedValue({})
   mockLocalSet.mockResolvedValue(undefined)
 })
@@ -81,6 +83,34 @@ describe('saveKeys', () => {
     )
     consoleSpy.mockRestore()
   })
+
+  it('clears stale sync data when falling back to local after sync failure', async () => {
+    mockSyncSet.mockRejectedValue(new Error('quota exceeded'))
+    const keys = [{ key: 'a', action: 'newtab' }]
+    await saveKeys(keys)
+
+    expect(mockSyncRemove).toHaveBeenCalledWith('keys')
+    expect(mockLocalSet).toHaveBeenCalledWith({ keys: JSON.stringify(keys) })
+  })
+
+  it('clears stale sync data when data is too large for sync', async () => {
+    const bigCode = 'x'.repeat(110_000)
+    const keys = [{ key: 'a', action: 'javascript', code: bigCode }]
+    await saveKeys(keys)
+
+    expect(mockSyncRemove).toHaveBeenCalledWith('keys')
+    expect(mockLocalSet).toHaveBeenCalled()
+  })
+
+  it('still saves to local if sync.remove fails', async () => {
+    mockSyncSet.mockRejectedValue(new Error('quota exceeded'))
+    mockSyncRemove.mockRejectedValue(new Error('remove failed'))
+    const keys = [{ key: 'a', action: 'newtab' }]
+    const result = await saveKeys(keys)
+
+    expect(result).toBe('local')
+    expect(mockLocalSet).toHaveBeenCalledWith({ keys: JSON.stringify(keys) })
+  })
 })
 
 describe('loadKeys', () => {
@@ -128,6 +158,32 @@ describe('loadKeys', () => {
       expect.any(Error)
     )
     consoleSpy.mockRestore()
+  })
+
+  it('prefers local when local has more shortcuts than sync (stale sync)', async () => {
+    // Simulate stale sync: sync has 1 shortcut, local has 3 (user added more after exceeding sync quota)
+    mockSyncGet.mockResolvedValue({ keys: '[{"key":"a"}]' })
+    mockLocalGet.mockResolvedValue({ keys: '[{"key":"a"},{"key":"b"},{"key":"c"}]' })
+    const result = await loadKeys()
+
+    expect(result).toBe('[{"key":"a"},{"key":"b"},{"key":"c"}]')
+  })
+
+  it('prefers sync when sync has more shortcuts than local', async () => {
+    mockSyncGet.mockResolvedValue({ keys: '[{"key":"a"},{"key":"b"}]' })
+    mockLocalGet.mockResolvedValue({ keys: '[{"key":"a"}]' })
+    const result = await loadKeys()
+
+    expect(result).toBe('[{"key":"a"},{"key":"b"}]')
+  })
+
+  it('prefers local when both have equal number of shortcuts', async () => {
+    // When equal, prefer local (it was written more recently in the fallback path)
+    mockSyncGet.mockResolvedValue({ keys: '[{"key":"a"}]' })
+    mockLocalGet.mockResolvedValue({ keys: '[{"key":"b"}]' })
+    const result = await loadKeys()
+
+    expect(result).toBe('[{"key":"b"}]')
   })
 })
 

@@ -15,8 +15,11 @@ import { browser } from 'wxt/browser'
 const SYNC_QUOTA = 102_400 // 100KB total
 const MIGRATED_KEY = '__shortkeys_migrated_to_sync'
 
+
 /**
  * Save keys to synced storage. Falls back to local if too large.
+ * When falling back to local, clears stale sync data so loadKeys()
+ * doesn't return an outdated dataset.
  * Returns 'sync' or 'local' indicating where data was saved.
  */
 export async function saveKeys(keys: any[]): Promise<'sync' | 'local'> {
@@ -35,7 +38,15 @@ export async function saveKeys(keys: any[]): Promise<'sync' | 'local'> {
     }
   }
 
-  // Fallback: local only
+  // Fallback: local only. Remove stale sync data so loadKeys() won't
+  // return an older dataset that was saved before the data grew too large.
+  if (browser.storage.sync) {
+    try {
+      await browser.storage.sync.remove('keys')
+    } catch {
+      // Best-effort cleanup -- if this fails, loadKeys() still handles it
+    }
+  }
   try {
     await browser.storage.local.set({ keys: json })
     return 'local'
@@ -47,26 +58,49 @@ export async function saveKeys(keys: any[]): Promise<'sync' | 'local'> {
 
 /**
  * Load keys from storage. Checks sync first, then local.
+ * If both exist, compares them and returns whichever has more shortcuts
+ * (more data = more recent, since shortcuts only grow via import/add).
  */
 export async function loadKeys(): Promise<string | undefined> {
+  let syncKeys: string | undefined
+  let localKeys: string | undefined
+
   // Try sync first
   if (browser.storage.sync) {
     try {
       const syncData = await browser.storage.sync.get('keys')
-      if (syncData.keys) return syncData.keys as string
+      syncKeys = syncData.keys as string | undefined
     } catch (e) {
       console.error('[Shortkeys] Failed to load from sync storage, trying local:', e)
     }
   }
 
-  // Fallback to local
+  // Also load local
   try {
     const localData = await browser.storage.local.get('keys')
-    return localData.keys as string | undefined
+    localKeys = localData.keys as string | undefined
   } catch (e) {
     console.error('[Shortkeys] Failed to load from local storage:', e)
-    return undefined
   }
+
+  // If only one source has data, use it
+  if (syncKeys && !localKeys) return syncKeys
+  if (!syncKeys && localKeys) return localKeys
+  if (!syncKeys && !localKeys) return undefined
+
+  // Both exist -- prefer whichever has more shortcuts.
+  // This handles the edge case where sync has stale data that wasn't cleaned up.
+  try {
+    const syncArr = JSON.parse(syncKeys!)
+    const localArr = JSON.parse(localKeys!)
+    if (Array.isArray(syncArr) && Array.isArray(localArr)) {
+      return localArr.length >= syncArr.length ? localKeys : syncKeys
+    }
+  } catch {
+    // Parse failed -- fall through to sync preference
+  }
+
+  return syncKeys
 }
 
 /**

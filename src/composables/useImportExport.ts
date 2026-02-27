@@ -13,9 +13,16 @@ export function useImportExport() {
   const shareLink = ref('')
 
   async function importKeys() {
+    let parsed: any
+    try {
+      parsed = JSON.parse(importJson.value)
+    } catch {
+      showSnack('Invalid JSON. Please check and try again.', 'danger')
+      return
+    }
+
     try {
       const { pushUndo } = useUndoRedo()
-      const parsed = JSON.parse(importJson.value)
       // Filter out empty/invalid shortcuts (#472/#598)
       const valid = (Array.isArray(parsed) ? parsed : [parsed]).filter(
         (k: any) => k && (k.key || k.action),
@@ -26,7 +33,7 @@ export function useImportExport() {
       await saveShortcuts()
       showSnack('Imported successfully!')
     } catch {
-      showSnack('Invalid JSON. Please check and try again.', 'danger')
+      showSnack('Failed to save shortcuts. Please try again.', 'danger')
     }
   }
 
