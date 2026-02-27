@@ -367,4 +367,33 @@ describe('couldSiteFiltersOverlap', () => {
     // Regex patterns are too complex to analyze, so be conservative
     expect(couldSiteFiltersOverlap(a, b)).toBe(true)
   })
+
+  it('returns false when allowlist and blocklist target the same domain (mutually exclusive)', () => {
+    // "Only on reddit.com" vs "Except reddit.com" = can never both fire
+    const a: KeySetting = { key: 'a', action: 'newtab', blacklist: 'whitelist', sitesArray: ['*reddit.com*'] }
+    const b: KeySetting = { key: 'b', action: 'closetab', blacklist: true, sitesArray: ['*reddit.com*'] }
+    expect(couldSiteFiltersOverlap(a, b)).toBe(false)
+    expect(couldSiteFiltersOverlap(b, a)).toBe(false)
+  })
+
+  it('returns true when allowlist and blocklist target different domains', () => {
+    // "Only on reddit.com" vs "Except gmail.com" = allowlist fires on reddit, blocklist also fires on reddit
+    const a: KeySetting = { key: 'a', action: 'newtab', blacklist: 'whitelist', sitesArray: ['*reddit.com*'] }
+    const b: KeySetting = { key: 'b', action: 'closetab', blacklist: true, sitesArray: ['*gmail.com*'] }
+    expect(couldSiteFiltersOverlap(a, b)).toBe(true)
+  })
+
+  it('returns false when allowlist domains are a subset of blocklist domains', () => {
+    // "Only on reddit.com" vs "Except reddit.com and gmail.com" = blocklist covers all allowlist domains
+    const a: KeySetting = { key: 'a', action: 'newtab', blacklist: 'whitelist', sitesArray: ['*reddit.com*'] }
+    const b: KeySetting = { key: 'b', action: 'closetab', blacklist: true, sitesArray: ['*reddit.com*', '*gmail.com*'] }
+    expect(couldSiteFiltersOverlap(a, b)).toBe(false)
+  })
+
+  it('returns true when allowlist has domains not covered by blocklist', () => {
+    // "Only on reddit.com and youtube.com" vs "Except reddit.com" = youtube.com not blocked
+    const a: KeySetting = { key: 'a', action: 'newtab', blacklist: 'whitelist', sitesArray: ['*reddit.com*', '*youtube.com*'] }
+    const b: KeySetting = { key: 'b', action: 'closetab', blacklist: true, sitesArray: ['*reddit.com*'] }
+    expect(couldSiteFiltersOverlap(a, b)).toBe(true)
+  })
 })

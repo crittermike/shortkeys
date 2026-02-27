@@ -210,19 +210,35 @@ export function couldSiteFiltersOverlap(a: KeySetting, b: KeySetting): boolean {
   const aIsAllowlist = a.blacklist === 'whitelist'
   const bIsAllowlist = b.blacklist === 'whitelist'
 
-  if (!aIsAllowlist || !bIsAllowlist) {
-    // One or both are blocklists with patterns - they likely still fire on many sites
+  // Case 1: Both are allowlists — only conflict if patterns could match the same URL
+  if (aIsAllowlist && bIsAllowlist) {
+    for (const ap of aPats) {
+      for (const bp of bPats) {
+        if (patternsCouldOverlap(ap, bp)) return true
+      }
+    }
+    return false
+  }
+
+  // Case 2: One is allowlist, other is blocklist
+  // Allowlist fires ONLY on its patterns; blocklist fires EVERYWHERE EXCEPT its patterns.
+  // If the blocklist excludes the same domains the allowlist targets, they can never both fire.
+  // e.g. allowlist=['*reddit.com*'] + blocklist=['*reddit.com*'] = mutually exclusive
+  if (aIsAllowlist !== bIsAllowlist) {
+    const allowPats = aIsAllowlist ? aPats : bPats
+    const blockPats = aIsAllowlist ? bPats : aPats
+    // If every allowlist pattern is covered by a blocklist pattern,
+    // the blocklist won't fire on any URL the allowlist fires on.
+    const allAllowPatsBlocked = allowPats.every((ap) =>
+      blockPats.some((bp) => patternsCouldOverlap(ap, bp))
+    )
+    if (allAllowPatsBlocked) return false
+    // Some allowlist URLs aren't blocked — they could overlap there
     return true
   }
 
-  // Both are allowlists. Check if any pattern pair could match the same URL.
-  // Use domain-substring heuristic: extract domain-like parts and check overlap.
-  for (const ap of aPats) {
-    for (const bp of bPats) {
-      if (patternsCouldOverlap(ap, bp)) return true
-    }
-  }
-  return false
+  // Case 3: Both are blocklists — they both fire on most sites, likely overlap
+  return true
 }
 
 /**
