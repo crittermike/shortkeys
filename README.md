@@ -1,28 +1,91 @@
-# Shortkeys ⌨️
+<p align="center">
+  <img src="public/images/icon_128.png" alt="Shortkeys logo" width="96" height="96" />
+</p>
 
-**Custom keyboard shortcuts for your browser** — 90+ built-in actions, shortcut packs, cloud sync, and more.
+<h1 align="center">Shortkeys</h1>
 
-[Chrome Web Store](https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck) · [Firefox Add-on](https://addons.mozilla.org/firefox/addon/shortkeys/) · [Website](https://shortkeys.app) · [Documentation](https://github.com/crittermike/shortkeys/wiki) · [Support](https://github.com/crittermike/shortkeys/issues)
+<p align="center">
+  <strong>Custom keyboard shortcuts for your browser</strong><br>
+  A cross-browser extension for Chrome, Firefox, Edge, and Opera with 200,000+ Chrome users.
+</p>
+
+<p align="center">
+  <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck">Chrome Web Store</a> · <a href="https://addons.mozilla.org/firefox/addon/shortkeys/">Firefox Add-ons</a> · <a href="https://shortkeys.app">Website</a> · <a href="https://github.com/crittermike/shortkeys/issues">Issues</a>
+</p>
+
+<br>
+
+<p align="center">
+  <img src="site/public/images/screenshot-hero.png" alt="Shortkeys options page" width="700" />
+</p>
 
 ## Features
 
-- **90+ built-in actions** — tabs, scrolling, navigation, video controls, page scripts, and more
-- **Command palette** — click the extension icon to search and trigger any shortcut
-- **Shortcut packs** — one-click install curated collections (Vim, Emacs, YouTube, etc.)
-- **Cloud sync** — shortcuts sync across devices via your browser account
-- **Groups** — organize shortcuts into collapsible, renamable sections
-- **Custom JavaScript** — run any code with a keyboard shortcut, with syntax-highlighted editor
-- **Shortcut recorder** — click Record and press keys, supports multi-key sequences
-- **Conflict detection** — warns when shortcuts clash with browser defaults
-- **Live reload** — save shortcuts and they update in all tabs instantly
-- **Share via link** — generate a URL to share shortcuts with anyone
-- **Dark mode** — settings page follows your system preference
-- **Firefox support** — full Firefox build included
-- **Greasyfork import** — paste a userscript URL to bind it to a shortcut
+- ⚡ **125+ built-in actions** across 11 categories: scrolling, tabs, navigation, video controls, search, bookmarks, windows, zooming, page tools, page scripts, and more
+- 🔍 **Command palette** - click the icon or set a shortcut to search and trigger any action
+- 📦 **9 curated shortcut packs** - one-click install for Vim, Emacs, YouTube, Productivity, Developer, Reading, Tab Manager, Keyboard Power, and Media Control
+- ☁️ **Cloud sync** with automatic local fallback when data exceeds sync quota
+- 📁 **Groups** - organize shortcuts into collapsible, renamable sections with bulk enable/disable
+- 🔗 **Macro chaining** - chain multiple actions into a single shortcut
+- 🌐 **Site filtering** - all sites, blocklist, or allowlist per shortcut
+- 🎬 **Live reload** - shortcuts update in all tabs instantly, no page refresh needed
+- 🔗 **Shareable links** - generate a URL to share shortcuts or groups with anyone
+- ⌨️ **Shortcut recorder** with multi-key sequence support (e.g. `g i`, `g h`)
+- ⚠️ **Conflict detection** - platform-aware warnings for browser default clashes
+- 🌙 **Dark mode** following system preference
+- 📜 **Userscript import** from Greasyfork and OpenUserJS
+- 🧙 **Guided onboarding** wizard for new users
+- ↩️ **Undo/redo** in the settings page
 
-## Getting Started
+<details>
+<summary><strong>More screenshots</strong></summary>
 
-Install from the [Chrome Web Store](https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck) or [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/shortkeys/), or build from source:
+### Custom JavaScript editor
+
+<img src="site/public/images/screenshot-custom-js.png" alt="Custom JavaScript editor" width="700" />
+
+### Macro chaining
+
+<img src="site/public/images/screenshot-macros.png" alt="Macro chaining" width="700" />
+
+### Dark mode
+
+<img src="site/public/images/screenshot-dark-mode.png" alt="Dark mode" width="700" />
+
+</details>
+
+## Install
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck">
+        <img src="public/images/browser-chrome.png" alt="Chrome" width="48" /><br>
+        <strong>Chrome</strong>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://addons.mozilla.org/firefox/addon/shortkeys/">
+        <img src="public/images/browser-firefox.png" alt="Firefox" width="48" /><br>
+        <strong>Firefox</strong>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://microsoftedge.microsoft.com/addons/detail/shortkeys/">
+        <img src="public/images/browser-edge.png" alt="Edge" width="48" /><br>
+        <strong>Edge</strong>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://addons.opera.com/extensions/details/shortkeys/">
+        <img src="public/images/browser-opera.png" alt="Opera" width="48" /><br>
+        <strong>Opera</strong>
+      </a>
+    </td>
+  </tr>
+</table>
+
+Or build from source:
 
 ```bash
 npm install
@@ -35,34 +98,45 @@ npm run build:firefox  # Firefox → .output/firefox-mv2/
 ```bash
 npm run dev            # Chrome dev mode with hot reload
 npm run dev:firefox    # Firefox dev mode
-npm test               # Run all 416 tests
+npm test               # Run all tests (569 tests across 21 files)
 npm run test:watch     # Watch mode
 npm run test:coverage  # With coverage report
-npm run build:site     # Build shortkeys.app community site
 ```
 
-## Architecture
-
-Built with [WXT](https://wxt.dev/) (Vite-based browser extension framework), Vue 3, and TypeScript. See [`.github/copilot-instructions.md`](.github/copilot-instructions.md) for detailed architecture docs.
+## Project structure
 
 ```
 src/
 ├── entrypoints/
-│   ├── background.ts        # Service worker: messaging, storage sync, action dispatch
-│   ├── content.ts           # Content script: Mousetrap bindings, cheat sheet, dark mode
+│   ├── background.ts        # Service worker: messaging, action dispatch, storage sync
+│   ├── content.ts           # Content script: Mousetrap key bindings, cheat sheet, dark mode
 │   ├── options/             # Options page (Vue 3 SPA)
 │   └── popup/               # Command palette popup
-├── actions/
-│   └── action-handlers.ts   # Map-based action registry (96+ handlers)
+├── actions/                 # Action handlers and helpers
 ├── components/              # Vue components (CodeEditor, SearchSelect, ShortcutRecorder)
-├── packs/                   # Curated shortcut pack collections
-└── utils/                   # Pure business logic (URL matching, conflicts, storage, snippets)
+├── composables/             # Vue composables (useShortcuts)
+├── packs/                   # 9 curated shortcut pack collections
+└── utils/                   # Storage, URL matching, conflict detection, JS snippets
 
-site/                        # shortkeys.app (Netlify)
-tests/                       # 416 tests across 14 files
+site/                        # shortkeys.app (Astro SSG, deployed to Netlify)
+tests/                       # 569 tests across 21 files
 ```
 
-## Support This Project
+## Tech stack
+
+- **WXT** - Vite-based browser extension framework
+- **Vue 3** - Composition API with `<script setup>`
+- **TypeScript** throughout
+- **Vitest** - 569 tests across 21 files
+- **Mousetrap** - keyboard shortcut detection
+- **CodeMirror 6** - JavaScript editor with syntax highlighting
+- **Astro** - community website (shortkeys.app)
+
+## Contributing
+
+Pull requests are welcome. Please ensure all tests pass (`npm test`) before submitting. For bugs and feature requests, open a [GitHub issue](https://github.com/crittermike/shortkeys/issues).
+
+## Support
 
 Shortkeys is free and open source. If you find it useful, consider supporting development:
 
@@ -71,6 +145,8 @@ Shortkeys is free and open source. If you find it useful, consider supporting de
 - ☕ [Buy me a coffee](https://buymeacoffee.com/crittermike)
 - 📝 [Leave a review](https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck/reviews)
 
-## Credits
+## Credits and license
 
-* Icon by [Freepik](https://www.flaticon.com/authors/freepik) from [Flaticon](https://www.flaticon.com/).
+Icon by [Freepik](https://www.flaticon.com/authors/freepik) from [Flaticon](https://www.flaticon.com/).
+
+Licensed under the [MIT License](LICENSE.md).
