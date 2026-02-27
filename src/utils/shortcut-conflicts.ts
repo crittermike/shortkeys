@@ -170,11 +170,19 @@ export function getSitePatterns(shortcut: KeySetting): string[] | null {
   if (!shortcut.blacklist || shortcut.blacklist === 'false') {
     return null
   }
+  // Prefer sitesArray if populated, otherwise fall back to splitting the sites string
+  // (sitesArray is only set on save; the sites string is always current in the UI)
+  const patterns = shortcut.sitesArray && shortcut.sitesArray.length > 0
+    ? shortcut.sitesArray
+    : shortcut.sites
+      ? shortcut.sites.split('\n')
+      : []
+  const filtered = patterns.filter(Boolean)
   // Has site filter but no actual patterns = applies everywhere (vacuous filter)
-  if (!shortcut.sitesArray || shortcut.sitesArray.length === 0) {
+  if (filtered.length === 0) {
     return null
   }
-  return shortcut.sitesArray.filter(Boolean)
+  return filtered
 }
 
 /**

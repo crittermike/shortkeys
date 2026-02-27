@@ -15,7 +15,13 @@ const conflicts = computed(() => previewCommunityPack.value ? getCommunityPackCo
 const conflictKeys = computed(() => previewCommunityPack.value ? getCommunityPackConflictKeys(previewCommunityPack.value) : [])
 const addCount = computed(() => {
   if (!previewCommunityPack.value) return 0
-  return previewCommunityPack.value.shortcuts.length - communityExactDuplicateCount.value
+  let count = previewCommunityPack.value.shortcuts.length - communityExactDuplicateCount.value
+  if (communityConflictMode.value === 'skip') {
+    for (const c of conflicts.value.values()) {
+      if (c.type === 'key') count--
+    }
+  }
+  return count
 })
 </script>
 

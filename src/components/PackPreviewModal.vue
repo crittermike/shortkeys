@@ -8,7 +8,13 @@ const conflicts = computed(() => previewPack.value ? getPackConflicts(previewPac
 const conflictKeys = computed(() => previewPack.value ? getPackConflictKeys(previewPack.value) : [])
 const addCount = computed(() => {
   if (!previewPack.value) return 0
-  return previewPack.value.shortcuts.length - exactDuplicateCount.value
+  let count = previewPack.value.shortcuts.length - exactDuplicateCount.value
+  if (packConflictMode.value === 'skip') {
+    for (const c of conflicts.value.values()) {
+      if (c.type === 'key') count--
+    }
+  }
+  return count
 })
 </script>
 
