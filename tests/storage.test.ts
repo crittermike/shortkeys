@@ -60,6 +60,27 @@ describe('saveKeys', () => {
     expect(mockSyncSet).not.toHaveBeenCalled()
     expect(mockLocalSet).toHaveBeenCalled()
   })
+
+  it('throws when both sync and local fail', async () => {
+    mockSyncSet.mockRejectedValue(new Error('sync unavailable'))
+    mockLocalSet.mockRejectedValue(new Error('local write failed'))
+    const keys = [{ key: 'a', action: 'newtab' }]
+
+    await expect(saveKeys(keys)).rejects.toThrow('Failed to save shortcuts to any storage area')
+  })
+
+  it('logs errors to console.error on sync failure', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    mockSyncSet.mockRejectedValue(new Error('quota exceeded'))
+    const keys = [{ key: 'a', action: 'newtab' }]
+    await saveKeys(keys)
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[Shortkeys] Sync save failed'),
+      expect.any(Error)
+    )
+    consoleSpy.mockRestore()
+  })
 })
 
 describe('loadKeys', () => {
@@ -93,6 +114,20 @@ describe('loadKeys', () => {
     const result = await loadKeys()
 
     expect(result).toBeUndefined()
+  })
+
+  it('returns undefined and logs error if both sync and local throw', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    mockSyncGet.mockRejectedValue(new Error('sync unavailable'))
+    mockLocalGet.mockRejectedValue(new Error('local unavailable'))
+    const result = await loadKeys()
+
+    expect(result).toBeUndefined()
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[Shortkeys] Failed to load from local storage'),
+      expect.any(Error)
+    )
+    consoleSpy.mockRestore()
   })
 })
 
@@ -139,10 +174,23 @@ describe('migrateLocalToSync', () => {
     expect(mockSyncSet).not.toHaveBeenCalled()
     expect(mockLocalSet).toHaveBeenCalledWith({ __shortkeys_migrated_to_sync: true })
   })
+
+  it('logs error on migration failure', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    mockLocalGet.mockRejectedValue(new Error('storage broken'))
+
+    await migrateLocalToSync()
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[Shortkeys] Migration from local to sync failed'),
+      expect.any(Error)
+    )
+    consoleSpy.mockRestore()
+  })
 })
 
 describe('onKeysChanged', () => {
-  it('registers a listener on chrome.storage.onChanged', () => {
+  it('registers a listener on browser.storage.onChanged', () => {
     const callback = vi.fn()
     onKeysChanged(callback)
 

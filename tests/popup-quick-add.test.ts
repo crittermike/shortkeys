@@ -86,7 +86,6 @@ describe('popup quick-add shortcut flow', () => {
   it('creates shortcut with empty storage (first shortcut)', async () => {
     mockSyncGet.mockResolvedValue({})
     mockLocalGet.mockResolvedValue({})
-
     const saved = await loadKeys()
     const currentKeys: KeySetting[] = saved ? JSON.parse(saved) : []
 

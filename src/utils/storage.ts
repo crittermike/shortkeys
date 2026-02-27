@@ -1,20 +1,19 @@
 /**
- * Storage abstraction that uses chrome.storage.sync (cloud-synced across devices)
- * with automatic fallback to chrome.storage.local if data exceeds sync limits.
+ * Storage abstraction that uses browser.storage.sync (cloud-synced across devices)
+ * with automatic fallback to browser.storage.local if data exceeds sync limits.
  *
- * chrome.storage.sync limits:
+ * Uses `browser` from wxt/browser for cross-browser compatibility (Chrome + Firefox).
+ *
+ * browser.storage.sync limits:
  *   - QUOTA_BYTES_PER_ITEM: 8,192 bytes per key
  *   - QUOTA_BYTES: 102,400 bytes total
  *   - MAX_ITEMS: 512
  */
 
+import { browser } from 'wxt/browser'
+
 const SYNC_QUOTA = 102_400 // 100KB total
 const MIGRATED_KEY = '__shortkeys_migrated_to_sync'
-
-/** Get the appropriate storage area. Prefers sync, falls back to local. */
-function getStorage(): chrome.storage.SyncStorageArea | chrome.storage.LocalStorageArea {
-  return chrome.storage.sync || chrome.storage.local
-}
 
 /**
  * Save keys to synced storage. Falls back to local if too large.
@@ -25,20 +24,25 @@ export async function saveKeys(keys: any[]): Promise<'sync' | 'local'> {
   const byteSize = new Blob([json]).size
 
   // If data fits in sync, use sync
-  if (chrome.storage.sync && byteSize < SYNC_QUOTA - 1024) {
+  if (browser.storage.sync && byteSize < SYNC_QUOTA - 1024) {
     try {
-      await chrome.storage.sync.set({ keys: json })
+      await browser.storage.sync.set({ keys: json })
       // Also keep a local copy as backup
-      await chrome.storage.local.set({ keys: json })
+      await browser.storage.local.set({ keys: json })
       return 'sync'
-    } catch {
-      // Sync failed (quota, network, etc.) — fall back to local
+    } catch (e) {
+      console.error('[Shortkeys] Sync save failed, falling back to local:', e)
     }
   }
 
   // Fallback: local only
-  await chrome.storage.local.set({ keys: json })
-  return 'local'
+  try {
+    await browser.storage.local.set({ keys: json })
+    return 'local'
+  } catch (e) {
+    console.error('[Shortkeys] Local save failed:', e)
+    throw new Error('Failed to save shortcuts to any storage area')
+  }
 }
 
 /**
@@ -46,18 +50,23 @@ export async function saveKeys(keys: any[]): Promise<'sync' | 'local'> {
  */
 export async function loadKeys(): Promise<string | undefined> {
   // Try sync first
-  if (chrome.storage.sync) {
+  if (browser.storage.sync) {
     try {
-      const syncData = await chrome.storage.sync.get('keys')
-      if (syncData.keys) return syncData.keys
-    } catch {
-      // Sync unavailable — try local
+      const syncData = await browser.storage.sync.get('keys')
+      if (syncData.keys) return syncData.keys as string
+    } catch (e) {
+      console.error('[Shortkeys] Failed to load from sync storage, trying local:', e)
     }
   }
 
   // Fallback to local
-  const localData = await chrome.storage.local.get('keys')
-  return localData.keys
+  try {
+    const localData = await browser.storage.local.get('keys')
+    return localData.keys as string | undefined
+  } catch (e) {
+    console.error('[Shortkeys] Failed to load from local storage:', e)
+    return undefined
+  }
 }
 
 /**
@@ -65,35 +74,35 @@ export async function loadKeys(): Promise<string | undefined> {
  * Called on extension update/install. Safe to call multiple times.
  */
 export async function migrateLocalToSync(): Promise<void> {
-  if (!chrome.storage.sync) return
+  if (!browser.storage.sync) return
 
   try {
     // Check if already migrated
-    const { [MIGRATED_KEY]: migrated } = await chrome.storage.local.get(MIGRATED_KEY)
+    const { [MIGRATED_KEY]: migrated } = await browser.storage.local.get(MIGRATED_KEY)
     if (migrated) return
 
     // Check if there's local data that isn't in sync yet
-    const localData = await chrome.storage.local.get('keys')
+    const localData = await browser.storage.local.get('keys')
     if (!localData.keys) {
-      await chrome.storage.local.set({ [MIGRATED_KEY]: true })
+      await browser.storage.local.set({ [MIGRATED_KEY]: true })
       return
     }
 
-    const syncData = await chrome.storage.sync.get('keys')
+    const syncData = await browser.storage.sync.get('keys')
     if (syncData.keys) {
-      // Sync already has data — don't overwrite (user may have set up on another device)
-      await chrome.storage.local.set({ [MIGRATED_KEY]: true })
+      // Sync already has data -- don't overwrite (user may have set up on another device)
+      await browser.storage.local.set({ [MIGRATED_KEY]: true })
       return
     }
 
-    // Migrate local → sync
-    const byteSize = new Blob([localData.keys]).size
+    // Migrate local -> sync
+    const byteSize = new Blob([localData.keys as string]).size
     if (byteSize < SYNC_QUOTA - 1024) {
-      await chrome.storage.sync.set({ keys: localData.keys })
+      await browser.storage.sync.set({ keys: localData.keys })
     }
-    await chrome.storage.local.set({ [MIGRATED_KEY]: true })
-  } catch {
-    // Migration failed — not critical, local data still works
+    await browser.storage.local.set({ [MIGRATED_KEY]: true })
+  } catch (e) {
+    console.error('[Shortkeys] Migration from local to sync failed (non-critical):', e)
   }
 }
 
@@ -103,7 +112,7 @@ export async function migrateLocalToSync(): Promise<void> {
  */
 export function onKeysChanged(callback: () => void): void {
   // Listen on both storage areas
-  chrome.storage.onChanged.addListener((_changes, areaName) => {
+  browser.storage.onChanged.addListener((_changes, areaName) => {
     if (areaName === 'sync' || areaName === 'local') {
       callback()
     }
@@ -118,31 +127,39 @@ import type { GroupSettings } from './url-matching'
  */
 export async function saveGroupSettings(settings: Record<string, GroupSettings>): Promise<void> {
   const json = JSON.stringify(settings)
-  if (chrome.storage.sync) {
+  if (browser.storage.sync) {
     try {
-      await chrome.storage.sync.set({ groupSettings: json })
-      await chrome.storage.local.set({ groupSettings: json })
+      await browser.storage.sync.set({ groupSettings: json })
+      await browser.storage.local.set({ groupSettings: json })
       return
-    } catch {
-      // Sync failed — fall back to local
+    } catch (e) {
+      console.error('[Shortkeys] Sync save failed for group settings, falling back to local:', e)
     }
   }
-  await chrome.storage.local.set({ groupSettings: json })
+  try {
+    await browser.storage.local.set({ groupSettings: json })
+  } catch (e) {
+    console.error('[Shortkeys] Local save failed for group settings:', e)
+  }
 }
 
 /**
  * Load group settings from storage. Checks sync first, then local.
  */
 export async function loadGroupSettings(): Promise<Record<string, GroupSettings>> {
-  if (chrome.storage.sync) {
+  if (browser.storage.sync) {
     try {
-      const syncData = await chrome.storage.sync.get('groupSettings')
-      if (syncData.groupSettings) return JSON.parse(syncData.groupSettings)
-    } catch {
-      // Sync unavailable — try local
+      const syncData = await browser.storage.sync.get('groupSettings')
+      if (syncData.groupSettings) return JSON.parse(syncData.groupSettings as string)
+    } catch (e) {
+      console.error('[Shortkeys] Failed to load group settings from sync, trying local:', e)
     }
   }
-  const localData = await chrome.storage.local.get('groupSettings')
-  if (localData.groupSettings) return JSON.parse(localData.groupSettings)
+  try {
+    const localData = await browser.storage.local.get('groupSettings')
+    if (localData.groupSettings) return JSON.parse(localData.groupSettings as string)
+  } catch (e) {
+    console.error('[Shortkeys] Failed to load group settings from local:', e)
+  }
   return {}
 }
