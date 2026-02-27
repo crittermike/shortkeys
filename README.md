@@ -1,28 +1,55 @@
-# Shortkeys ⌨️
+# Shortkeys
 
-**Custom keyboard shortcuts for your browser** — 90+ built-in actions, shortcut packs, cloud sync, and more.
+Custom keyboard shortcuts for your browser
 
-[Chrome Web Store](https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck) · [Firefox Add-on](https://addons.mozilla.org/firefox/addon/shortkeys/) · [Website](https://shortkeys.app) · [Documentation](https://github.com/crittermike/shortkeys/wiki) · [Support](https://github.com/crittermike/shortkeys/issues)
+Shortkeys is a cross-browser extension for Chrome, Firefox, Edge, and Opera with over 200,000 Chrome users. It allows users to define custom keyboard shortcuts for a wide range of browser actions.
+
+[Chrome Web Store](https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck) · [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/shortkeys/) · [Website](https://shortkeys.app) · [GitHub Issues](https://github.com/crittermike/shortkeys/issues)
 
 ## Features
 
-- **90+ built-in actions** — tabs, scrolling, navigation, video controls, page scripts, and more
-- **Command palette** — click the extension icon to search and trigger any shortcut
-- **Shortcut packs** — one-click install curated collections (Vim, Emacs, YouTube, etc.)
-- **Cloud sync** — shortcuts sync across devices via your browser account
-- **Groups** — organize shortcuts into collapsible, renamable sections
-- **Custom JavaScript** — run any code with a keyboard shortcut, with syntax-highlighted editor
-- **Shortcut recorder** — click Record and press keys, supports multi-key sequences
-- **Conflict detection** — warns when shortcuts clash with browser defaults
-- **Live reload** — save shortcuts and they update in all tabs instantly
-- **Share via link** — generate a URL to share shortcuts with anyone
-- **Dark mode** — settings page follows your system preference
-- **Firefox support** — full Firefox build included
-- **Greasyfork import** — paste a userscript URL to bind it to a shortcut
+- **125+ built-in actions**
+  Actions across 11 categories including scrolling, tabs, navigation, video controls, search, bookmarks, windows, zooming, page tools, page scripts, and miscellaneous.
+- **Command palette popup**
+  Click the icon or set a shortcut to search and trigger any action.
+- **9 curated shortcut packs**
+  One-click installation for Vim, Emacs, YouTube, Productivity, Developer, Reading, Tab Manager, Keyboard Power, and Media Control.
+- **Cloud sync**
+  Automatic sync with local fallback when data exceeds sync quota.
+- **Groups**
+  Organize shortcuts into collapsible and renamable groups with bulk enable or disable support.
+- **Custom JavaScript execution**
+  Run scripts with a syntax-highlighted CodeMirror editor.
+- **Macro and chaining support**
+  Chain multiple actions into a single shortcut.
+- **Shortcut recorder**
+  Support for multi-key sequences like "g i" or "g h".
+- **Platform-aware conflict detection**
+  Warnings for browser default clashes with different defaults for Mac, Windows, and Linux.
+- **Live reload**
+  Shortcuts update in all tabs instantly on save without requiring a page refresh.
+- **Share shortcuts**
+  Generate shareable links with support for per-group sharing.
+- **Dark mode**
+  Follows system preference.
+- **Site filtering**
+  Apply shortcuts to all sites, or use blocklists and allowlists per shortcut.
+- **Userscript import**
+  Import from Greasyfork or OpenUserJS.
+- **Guided onboarding**
+  Wizard to help new users get started.
+- **Undo and redo**
+  Available in the settings page.
+- **Text insertion**
+  Type text into form fields with a shortcut.
+- **Screenshot capture**
+  Capture viewport, full page, or forced full page screenshots.
 
-## Getting Started
+## Install
 
-Install from the [Chrome Web Store](https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck) or [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/shortkeys/), or build from source:
+Install from the [Chrome Web Store](https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck) or [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/shortkeys/).
+
+### Build from source
 
 ```bash
 npm install
@@ -35,34 +62,45 @@ npm run build:firefox  # Firefox → .output/firefox-mv2/
 ```bash
 npm run dev            # Chrome dev mode with hot reload
 npm run dev:firefox    # Firefox dev mode
-npm test               # Run all 416 tests
+npm test               # Run all tests (569 tests across 21 files)
 npm run test:watch     # Watch mode
 npm run test:coverage  # With coverage report
-npm run build:site     # Build shortkeys.app community site
 ```
 
-## Architecture
-
-Built with [WXT](https://wxt.dev/) (Vite-based browser extension framework), Vue 3, and TypeScript. See [`.github/copilot-instructions.md`](.github/copilot-instructions.md) for detailed architecture docs.
+## Project structure
 
 ```
 src/
 ├── entrypoints/
-│   ├── background.ts        # Service worker: messaging, storage sync, action dispatch
-│   ├── content.ts           # Content script: Mousetrap bindings, cheat sheet, dark mode
+│   ├── background.ts        # Service worker: messaging, action dispatch, storage sync
+│   ├── content.ts           # Content script: Mousetrap key bindings, cheat sheet, dark mode
 │   ├── options/             # Options page (Vue 3 SPA)
 │   └── popup/               # Command palette popup
-├── actions/
-│   └── action-handlers.ts   # Map-based action registry (96+ handlers)
+├── actions/                 # Action handlers and helpers
 ├── components/              # Vue components (CodeEditor, SearchSelect, ShortcutRecorder)
-├── packs/                   # Curated shortcut pack collections
-└── utils/                   # Pure business logic (URL matching, conflicts, storage, snippets)
+├── composables/             # Vue composables (useShortcuts)
+├── packs/                   # 9 curated shortcut pack collections
+└── utils/                   # Storage, URL matching, conflict detection, JS snippets
 
-site/                        # shortkeys.app (Netlify)
-tests/                       # 416 tests across 14 files
+site/                        # shortkeys.app (Astro SSG, deployed to Netlify)
+tests/                       # 569 tests across 21 files
 ```
 
-## Support This Project
+## Tech stack
+
+- **WXT** (Vite-based browser extension framework)
+- **Vue 3** with Composition API
+- **TypeScript**
+- **Vitest** for testing
+- **Mousetrap** for keyboard shortcut detection
+- **CodeMirror 6** for JavaScript editing
+- **Astro** for the community website
+
+## Contributing
+
+Pull requests are welcome. Please ensure all tests pass by running `npm test` before submitting changes. For bugs and feature requests, please use the GitHub issues tracker.
+
+## Support
 
 Shortkeys is free and open source. If you find it useful, consider supporting development:
 
@@ -71,6 +109,8 @@ Shortkeys is free and open source. If you find it useful, consider supporting de
 - ☕ [Buy me a coffee](https://buymeacoffee.com/crittermike)
 - 📝 [Leave a review](https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck/reviews)
 
-## Credits
+## Credits and license
 
-* Icon by [Freepik](https://www.flaticon.com/authors/freepik) from [Flaticon](https://www.flaticon.com/).
+Icon credit to [Freepik](https://www.flaticon.com/authors/freepik) from [Flaticon](https://www.flaticon.com/).
+
+This project is licensed under the [MIT License](LICENSE.md).
