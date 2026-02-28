@@ -39,6 +39,8 @@ export const ACTION_CATEGORIES: Record<string, ActionDefinition[]> = {
     { value: 'opensettings', label: 'Open settings page', builtin: true },
     { value: 'openextensions', label: 'Open extensions page', builtin: true },
     { value: 'openshortcuts', label: 'Open keyboard shortcuts page', builtin: true },
+    { value: 'nextpage', label: 'Navigate to next page', builtin: true },
+    { value: 'prevpage', label: 'Navigate to previous page', builtin: true },
   ],
   Bookmarks: [
     { value: 'openbookmark', label: 'Open bookmark/bookmarklet in current tab' },
