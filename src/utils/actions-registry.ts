@@ -41,6 +41,11 @@ export const ACTION_CATEGORIES: Record<string, ActionDefinition[]> = {
     { value: 'openshortcuts', label: 'Open keyboard shortcuts page', builtin: true },
     { value: 'urlup', label: 'Go up one level in URL path', builtin: true },
     { value: 'urlroot', label: 'Go to root of current site', builtin: true },
+    { value: 'urlinc', label: 'Increment number in URL', builtin: true },
+    { value: 'urldec', label: 'Decrement number in URL', builtin: true },
+    { value: 'editurl', label: 'Edit current URL and navigate' },
+    { value: 'nextpage', label: 'Navigate to next page', builtin: true },
+    { value: 'prevpage', label: 'Navigate to previous page', builtin: true },
   ],
   Bookmarks: [
     { value: 'openbookmark', label: 'Open bookmark/bookmarklet in current tab' },
@@ -107,6 +112,7 @@ export const ACTION_CATEGORIES: Record<string, ActionDefinition[]> = {
     { value: 'capturefullsizescreenshot', label: 'Capture full size screenshot (max 16,348px)' },
     { value: 'forcecapturefullsizescreenshot', label: 'Force capture full size screenshot' },
     { value: 'macro', label: 'Run a macro (chain multiple actions)' },
+    { value: 'focusinput', label: 'Focus first text input on page', builtin: true },
   ],
   'Video Controls': [
     { value: 'videoplaypause', label: 'Play/pause video' },
@@ -127,6 +133,10 @@ export const ACTION_CATEGORIES: Record<string, ActionDefinition[]> = {
   'Page Tools': [
     { value: 'showcheatsheet', label: 'Show shortcut cheat sheet overlay' },
     { value: 'toggledarkmode', label: 'Toggle dark mode on current page' },
+  ],
+  'Link Hints': [
+    { value: 'linkhints', label: 'Show link hints (click)', builtin: true },
+    { value: 'linkhintsnew', label: 'Show link hints (open in new tab)', builtin: true },
   ],
   'Page Scripts': JS_SNIPPETS.map((s) => ({ value: 'script-' + s.id, label: s.name })),
 }
