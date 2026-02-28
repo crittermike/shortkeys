@@ -28,7 +28,7 @@ import { useViewDensity } from '@/composables/useViewDensity'
 const { darkMode, initTheme, toggleTheme } = useTheme()
 const { snackMessage, snackType, snackAction, dismissSnack } = useToast()
 const {
-  keys, expandedRow,
+  keys, expandedRow, dirty,
   addShortcut, saveShortcuts, deleteShortcut, toggleDetails,
   onActionChange, toggleEnabled, needsUserScripts, loadSavedKeys,
 } = useShortcuts()
@@ -86,6 +86,11 @@ function handleKeydown(e: KeyboardEvent) {
     redo()
   }
 }
+function handleBeforeUnload(e: BeforeUnloadEvent) {
+  if (dirty.value) {
+    e.preventDefault()
+  }
+}
 
 onMounted(async () => {
   await loadSavedKeys()
@@ -93,6 +98,7 @@ onMounted(async () => {
   refreshTabs()
   document.addEventListener('click', () => { groupMenuOpen.value = null })
   document.addEventListener('keydown', handleKeydown)
+  window.addEventListener('beforeunload', handleBeforeUnload)
   loadBookmarks()
   
   if (localStorage.getItem('shortkeys-onboarding-done') !== 'true') {
@@ -102,6 +108,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown)
+  window.removeEventListener('beforeunload', handleBeforeUnload)
 })
 </script>
 
