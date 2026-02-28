@@ -181,22 +181,24 @@ onUnmounted(() => {
               <i class="mdi mdi-alert-outline"></i> {{ stats.withConflicts }} with conflicts
             </span>
           </div>
-          <button class="density-toggle" @click="toggleDensity" :title="density === 'comfortable' ? 'Switch to condensed view' : 'Switch to comfortable view'" type="button">
-            <i :class="density === 'comfortable' ? 'mdi mdi-view-agenda-outline' : 'mdi mdi-view-headline'"></i>
-          </button>
-          <div class="search-wrap">
-            <i class="mdi mdi-magnify search-icon"></i>
-            <input
-              class="search-input"
-              type="text"
-              placeholder="Filter shortcuts…"
-              v-model="searchQuery"
-            />
-            <button v-if="searchQuery" class="search-clear" @click="searchQuery = ''" type="button">
-              <i class="mdi mdi-close"></i>
+          <div class="stats-bar-right">
+            <button class="density-toggle" @click="toggleDensity" :title="density === 'comfortable' ? 'Switch to condensed view' : 'Switch to comfortable view'" type="button">
+              <i :class="density === 'comfortable' ? 'mdi mdi-view-agenda-outline' : 'mdi mdi-view-headline'"></i>
             </button>
+            <div class="search-wrap">
+              <i class="mdi mdi-magnify search-icon"></i>
+              <input
+                class="search-input"
+                type="text"
+                placeholder="Filter shortcuts…"
+                v-model="searchQuery"
+              />
+              <button v-if="searchQuery" class="search-clear" @click="searchQuery = ''" type="button">
+                <i class="mdi mdi-close"></i>
+              </button>
+            </div>
+            </div>
           </div>
-        </div>
 
         <!-- Empty state (no shortcuts yet) -->
         <template v-if="keys.length === 0 || showOnboarding">
@@ -649,6 +651,12 @@ a:hover { text-decoration: underline; }
   flex-shrink: 0;
 }
 
+.stats-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .stat-chip {
   display: flex;
   align-items: center;
@@ -905,7 +913,7 @@ a:hover { text-decoration: underline; }
 .shortcut-row {
   display: flex;
   align-items: flex-end;
-  gap: 12px;
+  gap: 8px;
   padding: 14px 16px;
 }
 
@@ -916,7 +924,7 @@ a:hover { text-decoration: underline; }
   min-width: 0;
 }
 
-.shortcut-col { width: 260px; flex: 0 0 260px; }
+.shortcut-col { width: 320px; flex: 0 0 320px; }
 .behavior-col { flex: 1; min-width: 0; }
 
 .field-label {
@@ -951,14 +959,15 @@ a:hover { text-decoration: underline; }
 
 .shortcut-actions {
   display: flex;
+  align-items: center;
   gap: 4px;
   flex-shrink: 0;
-  padding-bottom: 1px;
+  align-self: flex-end;
 }
 
 .btn-icon {
-  width: 34px;
-  height: 34px;
+  padding: 8px;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -969,10 +978,13 @@ a:hover { text-decoration: underline; }
   cursor: pointer;
   transition: all 0.15s;
   font-size: 16px;
+  flex-shrink: 0;
 }
 
 .btn-icon:hover { background: var(--bg-hover); color: var(--text); }
 .btn-delete:hover { background: #fef2f2; color: #ef4444; border-color: #fecaca; }
+.shortcut-header .toggle { flex-shrink: 0; }
+
 
 /* ── Details panel ── */
 .shortcut-details {
@@ -2037,8 +2049,8 @@ a:hover { text-decoration: underline; }
 }
 
 [data-density="condensed"] .shortcut-col {
-  width: 200px;
-  flex: 0 0 200px;
+  width: 240px;
+  flex: 0 0 240px;
 }
 
 [data-density="condensed"] .toggle.toggle-sm {
@@ -2073,8 +2085,7 @@ a:hover { text-decoration: underline; }
 }
 
 [data-density="condensed"] .shortcut-actions .btn-icon {
-  width: 26px;
-  height: 26px;
   font-size: 14px;
+  padding: 9px;
 }
 </style>
