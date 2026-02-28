@@ -619,10 +619,40 @@ describe('handleAction', () => {
       expect(executeScript).toHaveBeenCalled()
     })
 
+    it('nextpage shows toast when no link found', async () => {
+      const { executeScript, showPageToast } = await import('../src/utils/execute-script')
+      vi.mocked(executeScript).mockResolvedValueOnce([{ result: false }] as any)
+      await handleAction('nextpage')
+      expect(showPageToast).toHaveBeenCalledWith('No next page link found')
+    })
+
+    it('nextpage does not show toast when link is found', async () => {
+      const { executeScript, showPageToast } = await import('../src/utils/execute-script')
+      vi.mocked(executeScript).mockResolvedValueOnce([{ result: true }] as any)
+      vi.mocked(showPageToast).mockClear()
+      await handleAction('nextpage')
+      expect(showPageToast).not.toHaveBeenCalled()
+    })
+
     it('prevpage calls executeScript', async () => {
       const { executeScript } = await import('../src/utils/execute-script')
       await handleAction('prevpage')
       expect(executeScript).toHaveBeenCalled()
+    })
+
+    it('prevpage shows toast when no link found', async () => {
+      const { executeScript, showPageToast } = await import('../src/utils/execute-script')
+      vi.mocked(executeScript).mockResolvedValueOnce([{ result: false }] as any)
+      await handleAction('prevpage')
+      expect(showPageToast).toHaveBeenCalledWith('No previous page link found')
+    })
+
+    it('prevpage does not show toast when link is found', async () => {
+      const { executeScript, showPageToast } = await import('../src/utils/execute-script')
+      vi.mocked(executeScript).mockResolvedValueOnce([{ result: true }] as any)
+      vi.mocked(showPageToast).mockClear()
+      await handleAction('prevpage')
+      expect(showPageToast).not.toHaveBeenCalled()
     })
   })
 
