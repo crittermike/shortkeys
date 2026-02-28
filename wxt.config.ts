@@ -126,7 +126,6 @@ export default defineConfig({
       'storage',
       'tabs',
       'clipboardWrite',
-      'clipboardRead',
       'browsingData',
       'bookmarks',
       'sessions',
@@ -137,6 +136,7 @@ export default defineConfig({
       'activeTab',
       'userScripts',
     ],
+    optional_permissions: ['clipboardRead'],
     host_permissions: ['*://*/*'],
     externally_connectable: {
       matches: ['https://shortkeys.app/*', 'http://localhost/*'],

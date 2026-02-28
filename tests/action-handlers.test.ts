@@ -62,6 +62,7 @@ const browserMock = {
   management: { launchApp: mockManagementLaunchApp },
   scripting: { executeScript: vi.fn() },
   debugger: { attach: vi.fn(), detach: vi.fn(), sendCommand: vi.fn() },
+  permissions: { request: vi.fn().mockResolvedValue(true) },
 }
 
 // @ts-ignore
