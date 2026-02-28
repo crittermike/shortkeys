@@ -7,12 +7,10 @@ const {
   communityConflictMode, 
   communityExactDuplicateCount,
   getCommunityPackConflicts, 
-  getCommunityPackConflictKeys,
   requestInstallCommunityPack 
 } = useCommunityPacks()
 
 const conflicts = computed(() => previewCommunityPack.value ? getCommunityPackConflicts(previewCommunityPack.value) : new Map())
-const conflictKeys = computed(() => previewCommunityPack.value ? getCommunityPackConflictKeys(previewCommunityPack.value) : [])
 const addCount = computed(() => {
   if (!previewCommunityPack.value) return 0
   let count = previewCommunityPack.value.shortcuts.length - communityExactDuplicateCount.value
@@ -85,7 +83,7 @@ const keyConflictCount = computed(() => {
           <div v-if="keyConflictCount > 0" class="modal-conflicts">
             <div class="modal-conflict-header">
               <i class="mdi mdi-alert-outline"></i>
-              {{ conflictKeys.length }} shortcut{{ conflictKeys.length > 1 ? 's' : '' }} conflict with your existing shortcuts
+              {{ keyConflictCount }} shortcut{{ keyConflictCount > 1 ? 's' : '' }} conflict with your existing shortcuts
             </div>
             <div class="modal-conflict-options">
               <label class="radio-option">

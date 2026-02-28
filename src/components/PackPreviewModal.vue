@@ -2,10 +2,9 @@
 import { computed } from 'vue'
 import { usePacks } from '@/composables/usePacks'
 
-const { previewPack, packConflictMode, getPackConflicts, getPackConflictKeys, exactDuplicateCount, installPack } = usePacks()
+const { previewPack, packConflictMode, getPackConflicts, exactDuplicateCount, installPack } = usePacks()
 
 const conflicts = computed(() => previewPack.value ? getPackConflicts(previewPack.value) : new Map())
-const conflictKeys = computed(() => previewPack.value ? getPackConflictKeys(previewPack.value) : [])
 const addCount = computed(() => {
   if (!previewPack.value) return 0
   let count = previewPack.value.shortcuts.length - exactDuplicateCount.value
@@ -69,7 +68,7 @@ const keyConflictCount = computed(() => {
           <div v-if="keyConflictCount > 0" class="modal-conflicts">
             <div class="modal-conflict-header">
               <i class="mdi mdi-alert-outline"></i>
-              {{ conflictKeys.length }} shortcut{{ conflictKeys.length > 1 ? 's' : '' }} conflict with your existing shortcuts
+              {{ keyConflictCount }} shortcut{{ keyConflictCount > 1 ? 's' : '' }} conflict with your existing shortcuts
             </div>
             <div class="modal-conflict-options">
               <label class="radio-option">
