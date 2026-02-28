@@ -22,6 +22,7 @@ import { useDragDrop } from '@/composables/useDragDrop'
 import { useImportExport } from '@/composables/useImportExport'
 import { useJsTools } from '@/composables/useJsTools'
 import { useUndoRedo } from '@/composables/useUndoRedo'
+import { useViewDensity } from '@/composables/useViewDensity'
 
 // --- Composables ---
 const { darkMode, initTheme, toggleTheme } = useTheme()
@@ -47,10 +48,12 @@ const { dragIndex, onDragStart, onDragOver, onDragOverGroup, onDragEnd } = useDr
 const { shareGroup, publishToCommunity } = useImportExport()
 const { refreshTabs, loadBookmarks } = useJsTools()
 const { init: initUndoRedo, undo, redo, canUndo, canRedo } = useUndoRedo()
+const { density, initDensity, toggleDensity } = useViewDensity()
 
 // --- Lifecycle ---
 initTheme()
 initUndoRedo(keys)
+initDensity()
 
 const activeTab = ref(0)
 const showOnboarding = ref(false)
@@ -178,6 +181,9 @@ onUnmounted(() => {
               <i class="mdi mdi-alert-outline"></i> {{ stats.withConflicts }} with conflicts
             </span>
           </div>
+          <button class="density-toggle" @click="toggleDensity" :title="density === 'comfortable' ? 'Switch to condensed view' : 'Switch to comfortable view'" type="button">
+            <i :class="density === 'comfortable' ? 'mdi mdi-view-agenda-outline' : 'mdi mdi-view-headline'"></i>
+          </button>
           <div class="search-wrap">
             <i class="mdi mdi-magnify search-icon"></i>
             <input
@@ -1976,5 +1982,99 @@ a:hover { text-decoration: underline; }
 .empty-state-actions .btn {
   font-size: 14px;
   padding: 10px 20px;
+}
+
+/* ── Density toggle ── */
+.density-toggle {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  }
+.density-toggle:hover { background: var(--bg-hover); color: var(--text); }
+
+/* ── Condensed view ── */
+[data-density="condensed"] .shortcut-header {
+  padding: 2px 10px 0 6px;
+  gap: 2px;
+}
+
+[data-density="condensed"] .shortcut-label-title {
+  font-size: 11px;
+  padding: 1px 4px;
+}
+
+[data-density="condensed"] .shortcut-row {
+  padding: 4px 10px 6px;
+  gap: 8px;
+}
+
+[data-density="condensed"] .shortcut-card {
+  margin-bottom: 1px;
+  border-radius: 4px;
+}
+
+[data-density="condensed"] .shortcut-list {
+  padding: 2px;
+  gap: 0;
+}
+
+[data-density="condensed"] .field-label {
+  display: none;
+}
+
+[data-density="condensed"] .field-label-row {
+  display: none;
+}
+
+[data-density="condensed"] .shortcut-col {
+  width: 200px;
+  flex: 0 0 200px;
+}
+
+[data-density="condensed"] .toggle.toggle-sm {
+  width: 26px;
+  height: 14px;
+  border-radius: 7px;
+}
+[data-density="condensed"] .toggle.toggle-sm .toggle-knob {
+  width: 10px;
+  height: 10px;
+}
+[data-density="condensed"] .toggle.toggle-sm.on .toggle-knob {
+  transform: translateX(12px);
+}
+
+[data-density="condensed"] .drag-handle {
+  font-size: 14px;
+  padding: 0;
+}
+
+[data-density="condensed"] .conflict-warnings {
+  padding: 0 10px 4px;
+}
+
+[data-density="condensed"] .group-header {
+  padding: 5px 10px;
+}
+
+[data-density="condensed"] .btn-add-to-group {
+  padding: 3px 6px;
+  font-size: 11px;
+}
+
+[data-density="condensed"] .shortcut-actions .btn-icon {
+  width: 26px;
+  height: 26px;
+  font-size: 14px;
 }
 </style>

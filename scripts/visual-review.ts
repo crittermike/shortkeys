@@ -94,16 +94,52 @@ async function main() {
 
   await popupPage.close()
 
-  // 7. Screenshot: Options page
-  console.log('Capturing options page...')
+  // Inject test shortcuts via service worker so options page has data
+  console.log('Injecting test shortcuts...')
+  const testShortcuts = [
+    { id: 'test-1', key: 'ctrl+shift+t', action: 'newtab', label: 'Open new tab', enabled: true, group: 'My Shortcuts' },
+    { id: 'test-2', key: 'ctrl+shift+w', action: 'closetab', label: 'Close current tab', enabled: true, group: 'My Shortcuts' },
+    { id: 'test-3', key: 'ctrl+shift+l', action: 'nexttab', label: 'Next tab', enabled: true, group: 'My Shortcuts' },
+    { id: 'test-4', key: 'ctrl+shift+h', action: 'prevtab', label: 'Previous tab', enabled: false, group: 'My Shortcuts' },
+    { id: 'test-5', key: 'alt+s', action: 'scrolldown', label: 'Scroll down', enabled: true, group: 'Navigation' },
+    { id: 'test-6', key: 'alt+w', action: 'scrollup', label: 'Scroll up', enabled: true, group: 'Navigation' },
+    { id: 'test-7', key: 'alt+d', action: 'scrolldownmore', label: 'Scroll down more', enabled: true, group: 'Navigation' },
+    { id: 'test-8', key: 'alt+a', action: 'scrollupmore', label: 'Page up', enabled: true, group: 'Navigation' },
+    { id: 'test-9', key: 'g i', action: 'javascript', label: 'Run custom script', enabled: true, group: 'My Shortcuts' },
+    { id: 'test-10', key: 'ctrl+b', action: 'bookmark', label: 'Bookmark page', enabled: true, group: 'My Shortcuts' },
+  ]
+  await sw.evaluate((shortcuts) => {
+    return (globalThis as any).chrome.storage.local.set({ keys: JSON.stringify(shortcuts) })
+  }, testShortcuts)
+  // Also mark onboarding done
+  const setupPage = await context.newPage()
+  await setupPage.goto(`chrome-extension://${extensionId}/options.html`)
+  await setupPage.waitForSelector('.app-main', { timeout: 5000 })
+  await setupPage.evaluate(() => {
+    localStorage.setItem('shortkeys-onboarding-done', 'true')
+  })
+  await setupPage.close()
+
+  // 7. Screenshot: Options page — comfortable view (default)
+  console.log('Capturing options page (comfortable view)...')
   const optionsPage = await context.newPage()
-  await optionsPage.setViewportSize({ width: 1280, height: 800 })
+  await optionsPage.setViewportSize({ width: 1280, height: 900 })
   await optionsPage.goto(`chrome-extension://${extensionId}/options.html`)
-  await optionsPage.waitForSelector('.app-main', { timeout: 5000 })
-  await optionsPage.waitForTimeout(500) // Let CodeMirror + icons load
+  await optionsPage.waitForSelector('.shortcut-card', { timeout: 5000 })
+  await optionsPage.waitForTimeout(500)
   await optionsPage.screenshot({
-    path: path.join(SCREENSHOT_DIR, 'options-page.png'),
-    fullPage: false, // Just viewport — options page can be very tall
+    path: path.join(SCREENSHOT_DIR, 'options-comfortable.png'),
+    fullPage: true,
+  })
+
+  // 8. Screenshot: Options page — condensed view
+  console.log('Capturing options page (condensed view)...')
+  // Click the density toggle button
+  await optionsPage.click('.density-toggle')
+  await optionsPage.waitForTimeout(300)
+  await optionsPage.screenshot({
+    path: path.join(SCREENSHOT_DIR, 'options-condensed.png'),
+    fullPage: true,
   })
 
   // 8. Screenshot: Options page — Analytics tab
@@ -148,7 +184,8 @@ async function main() {
   console.log('  - popup-empty.png')
   console.log('  - popup-quick-add.png')
   console.log('  - popup-quick-add-dropdown.png')
-  console.log('  - options-page.png')
+  console.log('  - options-comfortable.png')
+  console.log('  - options-condensed.png')
   console.log('  - options-analytics.png')
   console.log('  - options-import.png')
 }
