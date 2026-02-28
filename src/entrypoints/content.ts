@@ -213,7 +213,13 @@ export default defineContentScript({
           if (url && !url.match(/^[a-zA-Z]+:\/\//)) {
             url = 'https://' + url
           }
-          if (url) window.location.href = url
+          try {
+            const parsed = new URL(url)
+            if (!['http:', 'https:'].includes(parsed.protocol)) return
+          } catch {
+            return
+          }
+          window.location.href = url
           overlay.remove()
         } else if (e.key === 'Escape') {
           overlay.remove()
