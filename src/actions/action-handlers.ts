@@ -446,34 +446,6 @@ const actionHandlers: Record<string, ActionHandler> = {
     await browser.tabs.reload({ bypassCache: true } as any)
     return true
   },
-  urlinc: async () => {
-    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
-    if (!tab.url) return true
-    const match = tab.url.match(/^(.*)(\d+)(\D*)$/)
-    if (match) {
-      const num = parseInt(match[2], 10) + 1
-      const padded = String(num).padStart(match[2].length, '0')
-      await browser.tabs.update(tab.id!, { url: match[1] + padded + match[3] })
-    } else {
-      showPageToast('No number found in URL')
-    }
-    return true
-  },
-
-  urldec: async () => {
-    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
-    if (!tab.url) return true
-    const match = tab.url.match(/^(.*)(\d+)(\D*)$/)
-    if (match) {
-      const num = Math.max(0, parseInt(match[2], 10) - 1)
-      const padded = String(num).padStart(match[2].length, '0')
-      await browser.tabs.update(tab.id!, { url: match[1] + padded + match[3] })
-    } else {
-      showPageToast('No number found in URL')
-    }
-    return true
-  },
-
 
   urlinc: async () => {
     const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
