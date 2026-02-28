@@ -167,7 +167,7 @@ test.describe('Options Page', () => {
     await page.locator('.shortcut-label-title').first().fill('Alpha Shortcut')
 
     // Add a second shortcut
-    await page.locator('.action-bar .btn-secondary', { hasText: 'Add shortcut' }).click()
+    await page.locator('.stats-actions .btn-sm', { hasText: 'Add shortcut' }).click()
     await expect(page.locator('.shortcut-card')).toHaveCount(2)
     await page.locator('.shortcut-label-title').last().fill('Beta Shortcut')
 
