@@ -447,6 +447,53 @@ const actionHandlers: Record<string, ActionHandler> = {
     return true
   },
 
+  // -- Pagination --
+  nextpage: async () => {
+    const results = await executeScript(() => {
+      const linkNext = document.querySelector<HTMLLinkElement>('link[rel="next"]')
+      if (linkNext?.href) { window.location.href = linkNext.href; return true }
+      const aNext = document.querySelector<HTMLAnchorElement>('a[rel="next"]')
+      if (aNext) { aNext.click(); return true }
+      const patterns = /^(next|next\s*page|next\s*›|next\s*»|next\s*→|›|»|→|>>|older\s*(posts|entries)?)$/i
+      const candidates = document.querySelectorAll<HTMLElement>('a, button, [role="button"]')
+      for (const el of candidates) {
+        const text = (el.textContent || '').trim()
+        const ariaLabel = el.getAttribute('aria-label') || ''
+        const title = el.getAttribute('title') || ''
+        if (patterns.test(text) || patterns.test(ariaLabel) || patterns.test(title)) {
+          const rect = el.getBoundingClientRect()
+          if (rect.width > 0 && rect.height > 0) { el.click(); return true }
+        }
+      }
+      return false
+    })
+    if (!results?.[0]?.result) { showPageToast('No next page link found') }
+    return true
+  },
+
+  prevpage: async () => {
+    const results = await executeScript(() => {
+      const linkPrev = document.querySelector<HTMLLinkElement>('link[rel="prev"]')
+      if (linkPrev?.href) { window.location.href = linkPrev.href; return true }
+      const aPrev = document.querySelector<HTMLAnchorElement>('a[rel="prev"]')
+      if (aPrev) { aPrev.click(); return true }
+      const patterns = /^(prev|previous|prev\s*page|previous\s*page|prev\s*‹|prev\s*«|‹|«|←|<<|newer\s*(posts|entries)?)$/i
+      const candidates = document.querySelectorAll<HTMLElement>('a, button, [role="button"]')
+      for (const el of candidates) {
+        const text = (el.textContent || '').trim()
+        const ariaLabel = el.getAttribute('aria-label') || ''
+        const title = el.getAttribute('title') || ''
+        if (patterns.test(text) || patterns.test(ariaLabel) || patterns.test(title)) {
+          const rect = el.getBoundingClientRect()
+          if (rect.width > 0 && rect.height > 0) { el.click(); return true }
+        }
+      }
+      return false
+    })
+    if (!results?.[0]?.result) { showPageToast('No previous page link found') }
+    return true
+  },
+
   // -- Scrolling --
   // Uses focused scrollable element if available, otherwise window (#300)
   top: async (r) => {
@@ -663,6 +710,26 @@ const actionHandlers: Record<string, ActionHandler> = {
           document.execCommand('insertText', false, text)
         }
       }, [request.inserttext])
+    }
+    return true
+  },
+
+  // -- Focus input --
+  focusinput: async () => {
+    const results = await executeScript(() => {
+      const selector = 'input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]):not([type=image]):not([type=file]):not([type=reset]):not([disabled]), textarea:not([disabled]), [contenteditable="true"], [contenteditable=""]'
+      const elements = document.querySelectorAll<HTMLElement>(selector)
+      for (const el of elements) {
+        const rect = el.getBoundingClientRect()
+        if (rect.width > 0 && rect.height > 0) {
+          el.focus()
+          return true
+        }
+      }
+      return false
+    })
+    if (!results?.[0]?.result) {
+      showPageToast('No text input found on page')
     }
     return true
   },
