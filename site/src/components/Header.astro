@@ -1,6 +1,6 @@
 ---
 interface Props {
-  currentPage?: 'home' | 'welcome' | 'packs'
+  currentPage?: 'home' | 'welcome' | 'packs' | 'docs'
 }
 
 const { currentPage = 'home' } = Astro.props
@@ -23,7 +23,7 @@ const { currentPage = 'home' } = Astro.props
       )}
       <a href="/packs">Packs</a>
       <a href="https://github.com/crittermike/shortkeys" target="_blank">GitHub</a>
-      <a href="https://github.com/crittermike/shortkeys/wiki" target="_blank">Docs</a>
+      <a href="/docs">Docs</a>
       {currentPage === 'home' && (
         <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck" class="btn-install-header" target="_blank">
           Install Extension
