@@ -783,6 +783,7 @@ actionHandlers.macro = async (request) => {
   return true
 }
 
+
 // Register snippet-based actions
 for (const snippet of JS_SNIPPETS) {
   const code = snippet.code

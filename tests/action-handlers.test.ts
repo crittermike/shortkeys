@@ -81,6 +81,8 @@ const mockShowPageToast = vi.mocked(showPageToast)
 
 const defaultTab = { id: 1, url: 'https://example.com', index: 2, windowId: 1, pinned: false, mutedInfo: { muted: false } }
 
+
+
 beforeEach(() => {
   vi.clearAllMocks()
   mockTabsQuery.mockResolvedValue([defaultTab])
@@ -646,6 +648,9 @@ describe('handleAction', () => {
       expect(mockShowPageToast).toHaveBeenCalledWith('No number found in URL')
     })
   })
+
+
+
 
 
 
