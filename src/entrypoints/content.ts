@@ -1,6 +1,7 @@
 import Mousetrap from 'mousetrap'
 import { fetchConfig, shouldStopCallback } from '@/utils/content-logic'
 import { ACTION_CATEGORIES } from '@/utils/actions-registry'
+import { activateLinkHints, deactivateLinkHints, isLinkHintModeActive } from '@/utils/link-hints'
 import type { KeySetting } from '@/utils/url-matching'
 
 export default defineContentScript({
@@ -52,6 +53,14 @@ export default defineContentScript({
         trackContentAction(keySetting)
         return
       }
+      if (action === 'linkhints') {
+        activateLinkHints(false)
+        trackContentAction(keySetting)
+        return
+      }
+      if (action === 'linkhintsnew') {
+        activateLinkHints(true)
+      }
       if (action === 'editurl') {
         showEditUrlBar()
         trackContentAction(keySetting)
@@ -91,6 +100,9 @@ export default defineContentScript({
       element: HTMLElement,
       combo: string,
     ) {
+      // When link hint mode is active, block all Mousetrap bindings so the
+      // hint keystroke handler gets the events instead.
+      if (isLinkHintModeActive()) return true
       return shouldStopCallback(element, combo, keys)
     }
 
@@ -263,6 +275,10 @@ export default defineContentScript({
         toggleCheatSheet()
       } else if (message.action === 'toggledarkmode') {
         toggleDarkMode()
+      } else if (message.action === 'linkhints') {
+        activateLinkHints(false)
+      } else if (message.action === 'linkhintsnew') {
+        activateLinkHints(true)
       } else if (message.action === 'editurl') {
         showEditUrlBar()
       }

@@ -130,6 +130,10 @@ export const ACTION_CATEGORIES: Record<string, ActionDefinition[]> = {
     { value: 'showcheatsheet', label: 'Show shortcut cheat sheet overlay' },
     { value: 'toggledarkmode', label: 'Toggle dark mode on current page' },
   ],
+  'Link Hints': [
+    { value: 'linkhints', label: 'Show link hints (click)', builtin: true },
+    { value: 'linkhintsnew', label: 'Show link hints (open in new tab)', builtin: true },
+  ],
   'Page Scripts': JS_SNIPPETS.map((s) => ({ value: 'script-' + s.id, label: s.name })),
 }
 

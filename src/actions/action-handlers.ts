@@ -5,7 +5,7 @@ import type { KeySetting } from '../utils/url-matching'
 type ActionHandler = (request: KeySetting) => Promise<boolean> | boolean
 
 /** Actions handled in the content script, not the background action registry. */
-const CONTENT_SCRIPT_ACTIONS = ['javascript', 'showcheatsheet', 'toggledarkmode', 'trigger', 'editurl']
+const CONTENT_SCRIPT_ACTIONS = ['javascript', 'showcheatsheet', 'toggledarkmode', 'trigger', 'editurl', 'linkhints', 'linkhintsnew']
 
 /** Maximum number of steps allowed in a macro. */
 const MAX_MACRO_STEPS = 10
