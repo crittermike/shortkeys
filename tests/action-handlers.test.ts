@@ -685,7 +685,7 @@ describe('handleAction', () => {
     const specialActions = ['lastusedtab', 'capturescreenshot', 'capturefullsizescreenshot', 'forcecapturefullsizescreenshot']
 
     // These actions are handled in the content script, not the background action handlers
-    const contentScriptActions = ['javascript', 'trigger', 'buttonnexttab', 'showcheatsheet', 'toggledarkmode']
+    const contentScriptActions = ['javascript', 'trigger', 'buttonnexttab', 'showcheatsheet', 'toggledarkmode', 'editurl']
 
     for (const action of allActions) {
       if (specialActions.includes(action) || contentScriptActions.includes(action)) continue
