@@ -39,6 +39,9 @@ export const ACTION_CATEGORIES: Record<string, ActionDefinition[]> = {
     { value: 'opensettings', label: 'Open settings page', builtin: true },
     { value: 'openextensions', label: 'Open extensions page', builtin: true },
     { value: 'openshortcuts', label: 'Open keyboard shortcuts page', builtin: true },
+    { value: 'editurl', label: 'Edit current URL and navigate' },
+    { value: 'nextpage', label: 'Navigate to next page', builtin: true },
+    { value: 'prevpage', label: 'Navigate to previous page', builtin: true },
   ],
   Bookmarks: [
     { value: 'openbookmark', label: 'Open bookmark/bookmarklet in current tab' },
@@ -105,6 +108,7 @@ export const ACTION_CATEGORIES: Record<string, ActionDefinition[]> = {
     { value: 'capturefullsizescreenshot', label: 'Capture full size screenshot (max 16,348px)' },
     { value: 'forcecapturefullsizescreenshot', label: 'Force capture full size screenshot' },
     { value: 'macro', label: 'Run a macro (chain multiple actions)' },
+    { value: 'focusinput', label: 'Focus first text input on page', builtin: true },
   ],
   'Video Controls': [
     { value: 'videoplaypause', label: 'Play/pause video' },

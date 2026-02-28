@@ -60,6 +60,9 @@ export default defineContentScript({
       }
       if (action === 'linkhintsnew') {
         activateLinkHints(true)
+      }
+      if (action === 'editurl') {
+        showEditUrlBar()
         trackContentAction(keySetting)
         return
       }
@@ -191,6 +194,63 @@ export default defineContentScript({
       document.documentElement.appendChild(style)
     }
 
+    function showEditUrlBar() {
+      const existing = document.getElementById('__shortkeys-editurl')
+      if (existing) { existing.remove(); return }
+
+      const overlay = document.createElement('div')
+      overlay.id = '__shortkeys-editurl'
+      Object.assign(overlay.style, {
+        position: 'fixed', top: '0', left: '0', right: '0', zIndex: '2147483647',
+        display: 'flex', justifyContent: 'center', padding: '12px',
+        background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      })
+
+      const input = document.createElement('input')
+      input.type = 'text'
+      input.value = window.location.href
+      Object.assign(input.style, {
+        width: '100%', maxWidth: '700px', padding: '10px 16px',
+        fontSize: '14px', fontFamily: 'SF Mono, Menlo, Consolas, monospace',
+        border: '2px solid #4361ee', borderRadius: '10px', outline: 'none',
+        background: '#1e293b', color: '#f1f5f9',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+      })
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          let url = input.value.trim()
+          if (url && !url.match(/^[a-zA-Z]+:\/\//)) {
+            url = 'https://' + url
+          }
+          try {
+            const parsed = new URL(url)
+            if (!['http:', 'https:'].includes(parsed.protocol)) return
+          } catch {
+            return
+          }
+          window.location.href = url
+          overlay.remove()
+        } else if (e.key === 'Escape') {
+          overlay.remove()
+        }
+        e.stopPropagation()
+      })
+
+      // Prevent Mousetrap from capturing keys while editing
+      input.addEventListener('keyup', (e) => e.stopPropagation())
+      input.addEventListener('keypress', (e) => e.stopPropagation())
+
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove() })
+      overlay.appendChild(input)
+      document.body.appendChild(overlay)
+
+      // Select all text and focus
+      requestAnimationFrame(() => { input.focus(); input.select() })
+    }
+
     function bindAllKeys() {
       Mousetrap.reset()
       keys.forEach(activateKey)
@@ -219,6 +279,8 @@ export default defineContentScript({
         activateLinkHints(false)
       } else if (message.action === 'linkhintsnew') {
         activateLinkHints(true)
+      } else if (message.action === 'editurl') {
+        showEditUrlBar()
       }
     })
 
