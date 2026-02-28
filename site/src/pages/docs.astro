@@ -827,14 +827,15 @@ import BaseLayout from '../layouts/BaseLayout.astro'
       <section id="browser-shortcuts" class="docs-section">
         <h2>11. Browser Shortcuts (Global) <a href="#browser-shortcuts" class="anchor-link"><i class="mdi mdi-link-variant"></i></a></h2>
         <p class="docs-text">By design, Chrome does not allow extensions to inject scripts into restricted pages like <code>chrome://</code> pages, the New Tab page, or the Chrome Web Store. Standard shortcuts will not work there.</p>
-        <p class="docs-text"><strong>The Solution:</strong></p>
+        <p class="docs-text"><strong>The Solution:</strong> Shortkeys registers 85 named commands with the browser. Each one appears as an item on Chrome's built-in keyboard shortcuts page, where you can assign a key combo directly.</p>
         <ul class="docs-list">
           <li>Navigate to <kbd>chrome://extensions/shortcuts</kbd> in your URL bar.</li>
-          <li>Find the "Shortkeys" section.</li>
-          <li>You will see up to 86 "Command slots" (e.g. Command 01, Command 02).</li>
-          <li>Assign global keyboard shortcuts here. These shortcuts are handled natively by Chrome and will work on <strong>ANY page</strong>.</li>
-          <li>Go back to Shortkeys settings, create a shortcut, set the key combo field to exactly match the one you just created, and assign it an action (like "Close tab" or "New tab").</li>
+          <li>Find the <strong>Shortkeys</strong> section.</li>
+          <li>You'll see named commands like "TABS: New tab", "TABS: Close tab", "SCROLLING: Scroll down", "VIDEO: Play/pause", etc.</li>
+          <li>Click any command's shortcut field and press your desired key combo. Chrome assigns it immediately.</li>
+          <li>These shortcuts are handled <strong>natively by Chrome</strong> and work on <strong>any page</strong>, including <code>chrome://</code> pages and the Chrome Web Store.</li>
         </ul>
+        <p class="docs-text"><strong>Limitations:</strong> Browser shortcuts require at least one modifier key (Ctrl, Alt, or Cmd), so single-key or vim-style shortcuts (like <kbd>j</kbd>/<kbd>k</kbd>) are not supported. You also can't use advanced Shortkeys features like site filtering, macros, or custom JavaScript with browser shortcuts.</p>
       </section>
 
       <!-- 12. Conflict Detection -->
