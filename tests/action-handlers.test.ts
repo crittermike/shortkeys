@@ -76,6 +76,8 @@ globalThis.chrome = {
 
 // Now import the module under test
 const { handleAction } = await import('../src/actions/action-handlers')
+const { showPageToast } = await import('../src/utils/execute-script')
+const mockShowPageToast = vi.mocked(showPageToast)
 
 const defaultTab = { id: 1, url: 'https://example.com', index: 2, windowId: 1, pinned: false, mutedInfo: { muted: false } }
 
@@ -609,6 +611,39 @@ describe('handleAction', () => {
 
       expect(result).toBe(true)
       expect(mockTabsCreate).toHaveBeenCalled()
+    })
+  })
+
+  describe('URL increment/decrement (#754)', () => {
+    it('urlinc increments the last number in URL', async () => {
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, url: 'https://example.com/page/3' }])
+      await handleAction('urlinc')
+      expect(mockTabsUpdate).toHaveBeenCalledWith(1, { url: 'https://example.com/page/4' })
+    })
+
+    it('urlinc preserves leading zeros', async () => {
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, url: 'https://example.com/img007.jpg' }])
+      await handleAction('urlinc')
+      expect(mockTabsUpdate).toHaveBeenCalledWith(1, { url: 'https://example.com/img008.jpg' })
+    })
+
+    it('urldec decrements the last number in URL', async () => {
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, url: 'https://example.com/page/5' }])
+      await handleAction('urldec')
+      expect(mockTabsUpdate).toHaveBeenCalledWith(1, { url: 'https://example.com/page/4' })
+    })
+
+    it('urldec floors at zero', async () => {
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, url: 'https://example.com/page/0' }])
+      await handleAction('urldec')
+      expect(mockTabsUpdate).toHaveBeenCalledWith(1, { url: 'https://example.com/page/0' })
+    })
+
+    it('urlinc shows toast when no number in URL', async () => {
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, url: 'https://example.com/' }])
+      await handleAction('urlinc')
+      expect(mockTabsUpdate).not.toHaveBeenCalled()
+      expect(mockShowPageToast).toHaveBeenCalledWith('No number found in URL')
     })
   })
 
