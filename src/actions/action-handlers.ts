@@ -272,6 +272,11 @@ const actionHandlers: Record<string, ActionHandler> = {
   },
 
   openclipboardurl: async () => {
+    const granted = await browser.permissions.request({ permissions: ['clipboardRead'] })
+    if (!granted) {
+      showPageToast('Clipboard permission is required for this action')
+      return true
+    }
     const results = await executeScript(() => navigator.clipboard.readText())
     const url = results?.[0]?.result?.trim()
     if (url) {
@@ -282,6 +287,11 @@ const actionHandlers: Record<string, ActionHandler> = {
   },
 
   openclipboardurlnewtab: async () => {
+    const granted = await browser.permissions.request({ permissions: ['clipboardRead'] })
+    if (!granted) {
+      showPageToast('Clipboard permission is required for this action')
+      return true
+    }
     const results = await executeScript(() => navigator.clipboard.readText())
     const url = results?.[0]?.result?.trim()
     if (url) {
