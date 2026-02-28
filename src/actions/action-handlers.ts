@@ -466,6 +466,9 @@ const actionHandlers: Record<string, ActionHandler> = {
     const [, prefix, , numStr, suffix] = match
     const decremented = String(Math.max(0, parseInt(numStr, 10) - 1)).padStart(numStr.length, '0')
     await browser.tabs.update(tab.id!, { url: prefix + decremented + suffix })
+    return true
+  },
+
   // -- Pagination --
   nextpage: async () => {
     const results = await executeScript(() => {
