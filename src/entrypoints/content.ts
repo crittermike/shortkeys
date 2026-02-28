@@ -2,6 +2,7 @@ import Mousetrap from 'mousetrap'
 import { fetchConfig, shouldStopCallback } from '@/utils/content-logic'
 import { ACTION_CATEGORIES } from '@/utils/actions-registry'
 import { activateLinkHints, deactivateLinkHints, isLinkHintModeActive } from '@/utils/link-hints'
+import { generateSelector } from '@/utils/css-selector'
 import type { KeySetting } from '@/utils/url-matching'
 
 export default defineContentScript({
@@ -11,6 +12,7 @@ export default defineContentScript({
 
   main() {
     let keys: KeySetting[] = []
+    let lastRightClickedElement: Element | null = null
 
     // Build action → label lookup for cheat sheet
     const actionLabels: Record<string, string> = {}
@@ -267,8 +269,13 @@ export default defineContentScript({
       }).catch(() => {})
     }
 
+    // Capture right-clicked element for context menu shortcut creation
+    document.addEventListener('contextmenu', (e) => {
+      lastRightClickedElement = e.target as Element
+    })
+
     // Listen for live reload and forwarded content-script actions
-    browser.runtime.onMessage.addListener((message) => {
+    browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       if (message.action === 'refreshKeys') {
         loadKeys()
       } else if (message.action === 'showcheatsheet') {
@@ -281,6 +288,16 @@ export default defineContentScript({
         activateLinkHints(true)
       } else if (message.action === 'editurl') {
         showEditUrlBar()
+      } else if (message.action === 'getClickSelector') {
+        if (lastRightClickedElement) {
+          const selector = generateSelector(lastRightClickedElement)
+          const tagName = lastRightClickedElement.tagName.toLowerCase()
+          const text = (lastRightClickedElement.textContent || '').trim().slice(0, 50)
+          sendResponse({ selector, tagName, text })
+        } else {
+          sendResponse({ selector: null })
+        }
+        return true
       }
     })
 

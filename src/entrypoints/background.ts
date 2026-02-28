@@ -90,6 +90,50 @@ export default defineBackground(() => {
       chrome.tabs.create({ url: 'https://shortkeys.app/welcome' })
       chrome.runtime.openOptionsPage()
     }
+
+    // Create right-click context menu for element shortcut creation
+    chrome.contextMenus.create({
+      id: 'shortkeys-click-element',
+      title: 'Create Shortkeys shortcut to click this element',
+      contexts: ['all'],
+    })
+  })
+
+  // Handle context menu click — generate a shortcut to click the right-clicked element
+  chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+    if (info.menuItemId !== 'shortkeys-click-element') return
+    if (!tab?.id) return
+
+    try {
+      const response = await chrome.tabs.sendMessage(tab.id, { action: 'getClickSelector' })
+      if (!response?.selector) return
+
+      const { selector, tagName, text } = response
+      const label = text
+        ? `Click "${text.length > 30 ? text.slice(0, 30) + '…' : text}"`
+        : `Click ${tagName} element`
+
+      const raw = await loadKeys()
+      const existing = JSON.parse(raw || '[]')
+      const newShortcut = {
+        id: uuid(),
+        key: '',
+        action: 'javascript',
+        code: `document.querySelector('${selector.replace(/'/g, "\\'")  }')?.click()`,
+        label,
+        blacklist: 'whitelist',
+        sitesArray: [new URL(tab.url || '').hostname + '*'],
+        sites: new URL(tab.url || '').hostname + '*',
+        enabled: true,
+      }
+      existing.push(newShortcut)
+      await saveKeys(existing)
+
+      // Open options page so user can assign a key combo
+      chrome.runtime.openOptionsPage()
+    } catch {
+      // Content script may not be loaded on this page (e.g. chrome:// pages)
+    }
   })
 
   browser.commands.onCommand.addListener((command) => {
