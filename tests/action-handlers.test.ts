@@ -629,4 +629,30 @@ describe('handleAction', () => {
       })
     }
   })
+
+  describe('URL hierarchy navigation (#754)', () => {
+    it('urlup navigates to parent path', async () => {
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, url: 'https://example.com/foo/bar/baz' }])
+      await handleAction('urlup')
+      expect(mockTabsUpdate).toHaveBeenCalledWith(1, { url: 'https://example.com/foo/bar' })
+    })
+
+    it('urlup strips query and hash', async () => {
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, url: 'https://example.com/foo/bar?q=1#section' }])
+      await handleAction('urlup')
+      expect(mockTabsUpdate).toHaveBeenCalledWith(1, { url: 'https://example.com/foo' })
+    })
+
+    it('urlup does nothing at root', async () => {
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, url: 'https://example.com/' }])
+      await handleAction('urlup')
+      expect(mockTabsUpdate).not.toHaveBeenCalled()
+    })
+
+    it('urlroot navigates to origin', async () => {
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, url: 'https://example.com/foo/bar?q=1' }])
+      await handleAction('urlroot')
+      expect(mockTabsUpdate).toHaveBeenCalledWith(1, { url: 'https://example.com' })
+    })
+  })
 })

@@ -446,6 +446,37 @@ const actionHandlers: Record<string, ActionHandler> = {
     await browser.tabs.reload({ bypassCache: true } as any)
     return true
   },
+  urlup: async () => {
+    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
+    if (!tab.url) return true
+    try {
+      const url = new URL(tab.url)
+      // Remove trailing slash, then go up one level
+      const path = url.pathname.replace(/\/+$/, '')
+      if (path && path !== '') {
+        const parentPath = path.substring(0, path.lastIndexOf('/')) || '/'
+        url.pathname = parentPath
+        url.search = ''
+        url.hash = ''
+        await browser.tabs.update(tab.id!, { url: url.toString() })
+      }
+    } catch {
+      // Invalid URL, ignore
+    }
+    return true
+  },
+
+  urlroot: async () => {
+    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
+    if (!tab.url) return true
+    try {
+      const url = new URL(tab.url)
+      await browser.tabs.update(tab.id!, { url: url.origin })
+    } catch {
+      // Invalid URL, ignore
+    }
+    return true
+  },
 
   // -- Scrolling --
   // Uses focused scrollable element if available, otherwise window (#300)

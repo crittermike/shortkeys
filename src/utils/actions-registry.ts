@@ -39,6 +39,8 @@ export const ACTION_CATEGORIES: Record<string, ActionDefinition[]> = {
     { value: 'opensettings', label: 'Open settings page', builtin: true },
     { value: 'openextensions', label: 'Open extensions page', builtin: true },
     { value: 'openshortcuts', label: 'Open keyboard shortcuts page', builtin: true },
+    { value: 'urlup', label: 'Go up one level in URL path', builtin: true },
+    { value: 'urlroot', label: 'Go to root of current site', builtin: true },
   ],
   Bookmarks: [
     { value: 'openbookmark', label: 'Open bookmark/bookmarklet in current tab' },
