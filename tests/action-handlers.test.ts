@@ -612,6 +612,14 @@ describe('handleAction', () => {
     })
   })
 
+
+  describe('focus input (#754)', () => {
+    it('calls executeScript to focus input', async () => {
+      const { executeScript } = await import('../src/utils/execute-script')
+      await handleAction('focusinput')
+      expect(executeScript).toHaveBeenCalled()
+    })
+  })
   describe('coverage of all registered actions', () => {
     const allActions = getAllActionValues()
     // These require special handling (imports from other modules, not in actionHandlers)
