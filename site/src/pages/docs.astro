@@ -1,0 +1,988 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+---
+
+<BaseLayout
+  title="Documentation - Shortkeys"
+  description="Complete documentation for Shortkeys browser extension. Learn about keyboard shortcuts, actions, groups, macros, and more."
+  currentPage="docs"
+>
+  <style>
+    .docs-page {
+      display: flex;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 24px;
+      gap: 48px;
+      align-items: flex-start;
+    }
+    
+    .docs-sidebar {
+      width: 280px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 100px;
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
+      background: var(--light);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+    }
+
+    .docs-sidebar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .docs-sidebar::-webkit-scrollbar-thumb {
+      background: var(--gray-light);
+      border-radius: 4px;
+    }
+
+    .docs-sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .docs-sidebar-link {
+      color: var(--gray);
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: all 0.2s;
+      display: block;
+    }
+    .docs-sidebar-link:hover {
+      background: rgba(67, 97, 238, 0.05);
+      color: var(--blue);
+      text-decoration: none;
+    }
+    .docs-sidebar-link.active {
+      background: var(--blue);
+      color: var(--white);
+      font-weight: 600;
+    }
+
+    .docs-sidebar-subnav {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding-left: 12px;
+      margin-top: 4px;
+      margin-bottom: 8px;
+      border-left: 2px solid var(--border);
+      margin-left: 12px;
+    }
+    .docs-sidebar-sublink {
+      font-size: 13px;
+      color: var(--gray);
+      padding: 4px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: color 0.2s, background 0.2s;
+    }
+    .docs-sidebar-sublink:hover {
+      color: var(--blue);
+      background: rgba(67, 97, 238, 0.05);
+      text-decoration: none;
+    }
+    
+    .docs-content {
+      flex: 1;
+      max-width: 800px;
+      min-width: 0;
+    }
+
+    .docs-hero {
+      margin-bottom: 48px;
+    }
+    .docs-hero h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+      color: var(--darker);
+    }
+    .docs-hero p {
+      font-size: 20px;
+      color: var(--gray);
+      line-height: 1.5;
+    }
+
+    .docs-section {
+      margin-bottom: 64px;
+      scroll-margin-top: 100px;
+    }
+    .docs-section h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--darker);
+    }
+    .docs-section h2 a.anchor-link {
+      color: var(--gray-light);
+      opacity: 0;
+      transition: opacity 0.2s, color 0.2s;
+      font-size: 24px;
+      text-decoration: none;
+    }
+    .docs-section h2:hover a.anchor-link {
+      opacity: 1;
+    }
+    .docs-section h2 a.anchor-link:hover {
+      color: var(--blue);
+    }
+    
+    .docs-section h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+      margin-top: 40px;
+      margin-bottom: 16px;
+      color: var(--dark);
+      scroll-margin-top: 100px;
+    }
+
+    .docs-text {
+      font-size: 16px;
+      color: var(--gray);
+      margin-bottom: 20px;
+      line-height: 1.7;
+    }
+    
+    .docs-text strong {
+      color: var(--dark);
+      font-weight: 600;
+    }
+    
+    .docs-text a {
+      font-weight: 500;
+    }
+
+    .docs-list {
+      list-style-type: disc;
+      padding-left: 24px;
+      margin-bottom: 24px;
+      color: var(--gray);
+      line-height: 1.7;
+    }
+    .docs-list li {
+      margin-bottom: 10px;
+    }
+    .docs-list li::marker {
+      color: var(--gray-light);
+    }
+
+    .docs-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+    }
+    
+    .docs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+      margin-bottom: 24px;
+    }
+
+    .bento-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .bento-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+      border-color: var(--blue);
+    }
+    .bento-card-icon {
+      font-size: 24px;
+      color: var(--blue);
+      margin-bottom: 12px;
+      background: rgba(67, 97, 238, 0.1);
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+    }
+    .bento-card h4 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--dark);
+    }
+    .bento-card p {
+      font-size: 14px;
+      color: var(--gray);
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .action-table-wrap {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 32px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .action-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    .action-table th, .action-table td {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .action-table th {
+      background: var(--light);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gray);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .action-table td {
+      font-size: 14px;
+      color: var(--dark);
+    }
+    .action-table td:last-child {
+      color: var(--gray);
+    }
+    .action-table tr:last-child td {
+      border-bottom: none;
+    }
+    .action-badge {
+      display: inline-flex;
+      background: rgba(67, 97, 238, 0.1);
+      color: var(--blue);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'SF Mono', monospace;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      width: 100%;
+      background: var(--light);
+      border: 1px solid var(--border);
+      padding: 16px 20px;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: 'Outfit', sans-serif;
+      color: var(--dark);
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .mobile-menu-btn:hover {
+      background: #e2e8f0;
+    }
+
+    .stores-grid {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .faq-item {
+      margin-bottom: 24px;
+    }
+    .faq-item h4 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .faq-item h4::before {
+      content: '\F02D6';
+      font-family: "Material Design Icons";
+      color: var(--blue);
+      font-size: 20px;
+      line-height: 1;
+      margin-top: 2px;
+    }
+
+    @media (max-width: 900px) {
+      .docs-page {
+        flex-direction: column;
+        gap: 24px;
+      }
+      .docs-sidebar {
+        width: 100%;
+        position: relative;
+        top: 0;
+        max-height: none;
+        padding: 0;
+        border: none;
+        background: transparent;
+      }
+      .mobile-menu-btn {
+        display: flex;
+      }
+      .docs-sidebar-nav {
+        display: none;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+      }
+      .docs-sidebar-nav.show {
+        display: flex;
+      }
+      .action-table-wrap {
+        overflow-x: auto;
+      }
+      .docs-hero h1 {
+        font-size: 32px;
+      }
+      .docs-hero p {
+        font-size: 17px;
+      }
+      .docs-section h2 {
+        font-size: 24px;
+      }
+      .docs-content {
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+    }
+  </style>
+
+  <div class="docs-page">
+    <aside class="docs-sidebar">
+      <button class="mobile-menu-btn" id="mobile-menu-btn">
+        <span id="current-section-text">Contents</span>
+        <i class="mdi mdi-menu"></i>
+      </button>
+      <nav class="docs-sidebar-nav" id="sidebar-nav">
+        <a href="#getting-started" class="docs-sidebar-link">1. Getting Started</a>
+        <a href="#actions-reference" class="docs-sidebar-link">2. Actions Reference</a>
+        <div class="docs-sidebar-subnav">
+          <a href="#scrolling" class="docs-sidebar-sublink">Scrolling</a>
+          <a href="#navigation" class="docs-sidebar-sublink">Navigation</a>
+          <a href="#bookmarks" class="docs-sidebar-sublink">Bookmarks</a>
+          <a href="#tabs" class="docs-sidebar-sublink">Tabs</a>
+          <a href="#windows" class="docs-sidebar-sublink">Windows</a>
+          <a href="#zooming" class="docs-sidebar-sublink">Zooming</a>
+          <a href="#miscellaneous" class="docs-sidebar-sublink">Miscellaneous</a>
+          <a href="#video-controls" class="docs-sidebar-sublink">Video Controls</a>
+          <a href="#search-providers" class="docs-sidebar-sublink">Search Providers</a>
+          <a href="#page-tools" class="docs-sidebar-sublink">Page Tools</a>
+          <a href="#link-hints" class="docs-sidebar-sublink">Link Hints</a>
+          <a href="#page-scripts" class="docs-sidebar-sublink">Page Scripts</a>
+        </div>
+        <a href="#shortcut-packs" class="docs-sidebar-link">3. Shortcut Packs</a>
+        <a href="#groups" class="docs-sidebar-link">4. Groups</a>
+        <a href="#macros" class="docs-sidebar-link">5. Macros</a>
+        <a href="#site-filtering" class="docs-sidebar-link">6. Site Filtering</a>
+        <a href="#custom-javascript" class="docs-sidebar-link">7. Custom JavaScript</a>
+        <a href="#command-palette" class="docs-sidebar-link">8. Command Palette</a>
+        <a href="#cloud-sync" class="docs-sidebar-link">9. Cloud Sync</a>
+        <a href="#sharing" class="docs-sidebar-link">10. Sharing</a>
+        <a href="#browser-shortcuts" class="docs-sidebar-link">11. Browser Shortcuts</a>
+        <a href="#conflict-detection" class="docs-sidebar-link">12. Conflict Detection</a>
+        <a href="#userscript-import" class="docs-sidebar-link">13. Userscript Import</a>
+        <a href="#faq" class="docs-sidebar-link">14. FAQ / Troubleshooting</a>
+        <a href="#browser-compatibility" class="docs-sidebar-link">15. Browser Compatibility</a>
+      </nav>
+    </aside>
+
+    <main class="docs-content">
+      <div class="docs-hero">
+        <h1>Documentation</h1>
+        <p>Learn how to install, configure, and master the Shortkeys browser extension to navigate the web at the speed of thought.</p>
+      </div>
+
+      <!-- 1. Getting Started -->
+      <section id="getting-started" class="docs-section">
+        <h2>1. Getting Started <a href="#getting-started" class="anchor-link"><i class="mdi mdi-link-variant"></i></a></h2>
+        
+        <p class="docs-text">First, install the Shortkeys extension for your preferred browser:</p>
+        
+        <div class="stores-grid">
+          <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck" class="btn btn-chrome" target="_blank"><i class="mdi mdi-google-chrome"></i> Chrome</a>
+          <a href="https://addons.mozilla.org/firefox/addon/shortkeys/" class="btn btn-firefox" target="_blank"><i class="mdi mdi-firefox"></i> Firefox</a>
+          <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck" class="btn btn-edge" target="_blank"><i class="mdi mdi-microsoft-edge"></i> Edge</a>
+          <a href="https://addons.opera.com/extensions/details/shortkeys/" class="btn" style="background:#FF1B2D;color:#fff;" target="_blank"><i class="mdi mdi-opera"></i> Opera</a>
+        </div>
+
+        <div class="docs-card">
+          <h4>Opening the Settings Page</h4>
+          <p class="docs-text" style="margin-bottom:0">Right-click the Shortkeys icon in your browser toolbar and select <strong>Options</strong>, or open the extension manager and click Shortkeys. On Chrome, you can navigate directly to: <br><kbd style="margin-top:8px;display:inline-block">chrome-extension://logpjaacgmcbpdkdchjiaagddngobkck/options.html</kbd></p>
+        </div>
+
+        <h3>Creating your first shortcut</h3>
+        <ol class="docs-list">
+          <li>Click the <strong>Add Shortcut</strong> button.</li>
+          <li>Choose an action from the dropdown menu (e.g., "Scroll down").</li>
+          <li>Click the <strong>Record</strong> button in the shortcut field.</li>
+          <li>Press the physical keys on your keyboard you want to use (e.g., <kbd>G</kbd>). You can record multi-key sequences like <kbd>G</kbd> then <kbd>G</kbd> by simply pressing them in order.</li>
+          <li>Click <strong>Save</strong>. Your shortcut is instantly active across all your open tabs!</li>
+        </ol>
+
+        <div class="docs-card" style="border-left: 4px solid var(--accent); background: #fffbeb;">
+          <h4 style="margin-top:0; color: #92400e;"><i class="mdi mdi-alert-circle-outline" style="margin-right:6px;"></i>Important: Refresh your tabs after installing</h4>
+          <p class="docs-text" style="margin-bottom:0">Shortkeys can only run on tabs that were opened (or refreshed) <strong>after</strong> the extension was installed. If your shortcuts aren't working, refresh the page first. This applies after initial install and after extension updates. Chrome doesn't allow extensions to inject into pages that were already loaded before installation.</p>
+        </div>
+      </section>
+
+      <!-- 2. Actions Reference -->
+      <section id="actions-reference" class="docs-section">
+        <h2>2. Actions Reference <a href="#actions-reference" class="anchor-link"><i class="mdi mdi-link-variant"></i></a></h2>
+        <p class="docs-text">Shortkeys includes 12 categories of built-in actions you can assign to any key combo. The <span class="action-badge">value</span> shown is what appears in the action dropdown.</p>
+
+        <!-- Scrolling -->
+        <h3 id="scrolling">Scrolling</h3>
+        <p class="docs-text">Note: You can enable "Smooth scrolling" in the global settings for a more fluid experience with these actions.</p>
+        <div class="action-table-wrap">
+          <table class="action-table">
+            <thead><tr><th>Action</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="action-badge">top</span></td><td>Scroll to the top of the page</td></tr>
+              <tr><td><span class="action-badge">bottom</span></td><td>Scroll to the bottom of the page</td></tr>
+              <tr><td><span class="action-badge">scrolldown</span></td><td>Scroll down slightly</td></tr>
+              <tr><td><span class="action-badge">scrolldownmore</span></td><td>Scroll down a large amount</td></tr>
+              <tr><td><span class="action-badge">pagedown</span></td><td>Scroll down one full page</td></tr>
+              <tr><td><span class="action-badge">scrollup</span></td><td>Scroll up slightly</td></tr>
+              <tr><td><span class="action-badge">scrollupmore</span></td><td>Scroll up a large amount</td></tr>
+              <tr><td><span class="action-badge">pageup</span></td><td>Scroll up one full page</td></tr>
+              <tr><td><span class="action-badge">scrollright</span></td><td>Scroll right slightly</td></tr>
+              <tr><td><span class="action-badge">scrollrightmore</span></td><td>Scroll right a large amount</td></tr>
+              <tr><td><span class="action-badge">scrollleft</span></td><td>Scroll left slightly</td></tr>
+              <tr><td><span class="action-badge">scrollleftmore</span></td><td>Scroll left a large amount</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Location/Navigation -->
+        <h3 id="navigation">Location/Navigation</h3>
+        <div class="action-table-wrap">
+          <table class="action-table">
+            <thead><tr><th>Action</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="action-badge">back</span></td><td>Go back in history</td></tr>
+              <tr><td><span class="action-badge">forward</span></td><td>Go forward in history</td></tr>
+              <tr><td><span class="action-badge">reload</span></td><td>Reload the page</td></tr>
+              <tr><td><span class="action-badge">hardreload</span></td><td>Hard reload (bypasses cache)</td></tr>
+              <tr><td><span class="action-badge">copyurl</span></td><td>Copy URL to clipboard</td></tr>
+              <tr><td><span class="action-badge">copypagetitle</span></td><td>Copy page title to clipboard</td></tr>
+              <tr><td><span class="action-badge">copytitleurl</span></td><td>Copy title and URL to clipboard</td></tr>
+              <tr><td><span class="action-badge">copytitleurlmarkdown</span></td><td>Copy as markdown link <code>[title](url)</code></td></tr>
+              <tr><td><span class="action-badge">openclipboardurl</span></td><td>Open URL from clipboard in current tab</td></tr>
+              <tr><td><span class="action-badge">openclipboardurlnewtab</span></td><td>Open URL from clipboard in new tab</td></tr>
+              <tr><td><span class="action-badge">openurl</span></td><td>Navigate to a specific URL</td></tr>
+              <tr><td><span class="action-badge">opensettings</span></td><td>Open Shortkeys settings page</td></tr>
+              <tr><td><span class="action-badge">openextensions</span></td><td>Open browser extensions page</td></tr>
+              <tr><td><span class="action-badge">openshortcuts</span></td><td>Open Chrome keyboard shortcuts page</td></tr>
+              <tr><td><span class="action-badge">urlup</span></td><td>Go up one directory in URL path</td></tr>
+              <tr><td><span class="action-badge">urlroot</span></td><td>Go to root URL</td></tr>
+              <tr><td><span class="action-badge">urlinc</span></td><td>Increment URL path or hash</td></tr>
+              <tr><td><span class="action-badge">urldec</span></td><td>Decrement URL path or hash</td></tr>
+              <tr><td><span class="action-badge">editurl</span></td><td>Edit current URL in a dialog</td></tr>
+              <tr><td><span class="action-badge">nextpage</span></td><td>Go to next page (pagination)</td></tr>
+              <tr><td><span class="action-badge">prevpage</span></td><td>Go to previous page (pagination)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Bookmarks -->
+        <h3 id="bookmarks">Bookmarks</h3>
+        <div class="action-table-wrap">
+          <table class="action-table">
+            <thead><tr><th>Action</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="action-badge">openbookmark</span></td><td>Open bookmark (current tab)</td></tr>
+              <tr><td><span class="action-badge">openbookmarknewtab</span></td><td>Open bookmark in new tab</td></tr>
+              <tr><td><span class="action-badge">openbookmarkbackgroundtab</span></td><td>Open bookmark in background tab</td></tr>
+              <tr><td><span class="action-badge">openbookmarkbackgroundtabandclose</span></td><td>Open in background tab and close current tab</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="docs-text">Note: Use the "togglebookmark" action (in Miscellaneous) to add/remove the current page from bookmarks.</p>
+
+        <!-- Tabs -->
+        <h3 id="tabs">Tabs</h3>
+        <div class="action-table-wrap">
+          <table class="action-table">
+            <thead><tr><th>Action</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="action-badge">gototab</span></td><td>Jump to a tab by URL</td></tr>
+              <tr><td><span class="action-badge">gototabbytitle</span></td><td>Jump to a tab by title</td></tr>
+              <tr><td><span class="action-badge">gototabbyindex</span></td><td>Jump to a tab by index (1-based)</td></tr>
+              <tr><td><span class="action-badge">newtab</span></td><td>Open a new tab</td></tr>
+              <tr><td><span class="action-badge">newtabright</span></td><td>Open a new tab to the right of current</td></tr>
+              <tr><td><span class="action-badge">closetab</span></td><td>Close current tab</td></tr>
+              <tr><td><span class="action-badge">onlytab</span></td><td>Close all other tabs</td></tr>
+              <tr><td><span class="action-badge">closelefttabs</span></td><td>Close all tabs to the left</td></tr>
+              <tr><td><span class="action-badge">closerighttabs</span></td><td>Close all tabs to the right</td></tr>
+              <tr><td><span class="action-badge">closeduplicatetabs</span></td><td>Close duplicate tabs</td></tr>
+              <tr><td><span class="action-badge">clonetab</span></td><td>Duplicate current tab</td></tr>
+              <tr><td><span class="action-badge">movetabtonewwindow</span></td><td>Move tab to a new window</td></tr>
+              <tr><td><span class="action-badge">reopentab</span></td><td>Reopen last closed tab</td></tr>
+              <tr><td><span class="action-badge">nexttab</span></td><td>Navigate to next tab</td></tr>
+              <tr><td><span class="action-badge">prevtab</span></td><td>Navigate to previous tab</td></tr>
+              <tr><td><span class="action-badge">firsttab</span></td><td>Navigate to first tab</td></tr>
+              <tr><td><span class="action-badge">lasttab</span></td><td>Navigate to last tab</td></tr>
+              <tr><td><span class="action-badge">lastusedtab</span></td><td>Switch to last used tab</td></tr>
+              <tr><td><span class="action-badge">audibletab</span></td><td>Jump to the tab playing audio/video</td></tr>
+              <tr><td><span class="action-badge">togglepin</span></td><td>Pin or unpin current tab</td></tr>
+              <tr><td><span class="action-badge">togglemute</span></td><td>Mute or unmute current tab</td></tr>
+              <tr><td><span class="action-badge">movetableft</span></td><td>Move tab one position to the left</td></tr>
+              <tr><td><span class="action-badge">movetabright</span></td><td>Move tab one position to the right</td></tr>
+              <tr><td><span class="action-badge">movetabtofirst</span></td><td>Move tab to first position</td></tr>
+              <tr><td><span class="action-badge">movetabtolast</span></td><td>Move tab to last position</td></tr>
+              <tr><td><span class="action-badge">sorttabs</span></td><td>Sort all tabs alphabetically by title</td></tr>
+              <tr><td><span class="action-badge">discardtab</span></td><td>Suspend tab to free memory</td></tr>
+              <tr><td><span class="action-badge">grouptab</span></td><td>Add tab to a new group (Chrome only)</td></tr>
+              <tr><td><span class="action-badge">ungrouptab</span></td><td>Remove tab from its group (Chrome only)</td></tr>
+            </tbody>
+        </div>
+
+        <!-- Windows -->
+        <h3 id="windows">Windows</h3>
+        <div class="action-table-wrap">
+          <table class="action-table">
+            <thead><tr><th>Action</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="action-badge">newwindow</span></td><td>Open new window</td></tr>
+              <tr><td><span class="action-badge">newprivatewindow</span></td><td>Open new incognito/private window</td></tr>
+              <tr><td><span class="action-badge">closewindow</span></td><td>Close current window</td></tr>
+              <tr><td><span class="action-badge">fullscreen</span></td><td>Toggle browser fullscreen</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Zooming -->
+        <h3 id="zooming">Zooming</h3>
+        <div class="action-table-wrap">
+          <table class="action-table">
+            <thead><tr><th>Action</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="action-badge">zoomin</span></td><td>Zoom in</td></tr>
+              <tr><td><span class="action-badge">zoomout</span></td><td>Zoom out</td></tr>
+              <tr><td><span class="action-badge">zoomreset</span></td><td>Reset zoom to 100%</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Miscellaneous -->
+        <h3 id="miscellaneous">Miscellaneous</h3>
+        <div class="action-table-wrap">
+          <table class="action-table">
+            <thead><tr><th>Action</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="action-badge">javascript</span></td><td>Run custom JavaScript</td></tr>
+              <tr><td><span class="action-badge">macro</span></td><td>Run a macro (chain of actions)</td></tr>
+              <tr><td><span class="action-badge">showlatestdownload</span></td><td>Show latest download in folder</td></tr>
+              <tr><td><span class="action-badge">cleardownloads</span></td><td>Clear download history</td></tr>
+              <tr><td><span class="action-badge">viewsource</span></td><td>View page source</td></tr>
+              <tr><td><span class="action-badge">disable</span></td><td>Do nothing (useful to block website/browser defaults)</td></tr>
+              <tr><td><span class="action-badge">trigger</span></td><td>Trigger another Shortkeys shortcut</td></tr>
+              <tr><td><span class="action-badge">inserttext</span></td><td>Insert predefined text into focused input field</td></tr>
+              <tr><td><span class="action-badge">print</span></td><td>Print the page</td></tr>
+              <tr><td><span class="action-badge">buttonnexttab</span></td><td>Click a button and switch to the next tab</td></tr>
+              <tr><td><span class="action-badge">openapp</span></td><td>Open a progressive web app</td></tr>
+              <tr><td><span class="action-badge">togglebookmark</span></td><td>Add or remove current page from bookmarks</td></tr>
+              <tr><td><span class="action-badge">openincognito</span></td><td>Open current URL in incognito window</td></tr>
+              <tr><td><span class="action-badge">capturescreenshot</span></td><td>Take screenshot of visible area</td></tr>
+              <tr><td><span class="action-badge">capturefullsizescreenshot</span></td><td>Take full-page screenshot (max 16,384px)</td></tr>
+              <tr><td><span class="action-badge">forcecapturefullsizescreenshot</span></td><td>Force capture full-page screenshot (no size limit)</td></tr>
+              <tr><td><span class="action-badge">focusinput</span></td><td>Focus first text input on page</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Video Controls -->
+        <h3 id="video-controls">Video Controls</h3>
+        <p class="docs-text">Controls the largest playing HTML5 video on the current page.</p>
+        <div class="action-table-wrap">
+          <table class="action-table">
+            <thead><tr><th>Action</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="action-badge">videoplaypause</span></td><td>Toggle video playback (play/pause)</td></tr>
+              <tr><td><span class="action-badge">videomute</span></td><td>Toggle video audio (mute/unmute)</td></tr>
+              <tr><td><span class="action-badge">videofullscreen</span></td><td>Toggle video fullscreen mode</td></tr>
+              <tr><td><span class="action-badge">videospeedup</span></td><td>Speed up video by 0.25x</td></tr>
+              <tr><td><span class="action-badge">videospeeddown</span></td><td>Slow down video by 0.25x</td></tr>
+              <tr><td><span class="action-badge">videospeedreset</span></td><td>Reset video speed to 1x</td></tr>
+              <tr><td><span class="action-badge">videoskipforward</span></td><td>Skip forward 10 seconds</td></tr>
+              <tr><td><span class="action-badge">videoskipback</span></td><td>Skip back 10 seconds</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Search Providers -->
+        <h3 id="search-providers">Search Providers</h3>
+        <p class="docs-text">Searches the currently highlighted text on the page using the specified provider.</p>
+        <div class="action-table-wrap">
+          <table class="action-table">
+            <thead><tr><th>Action</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="action-badge">searchgoogle</span></td><td>Search selected text on Google</td></tr>
+              <tr><td><span class="action-badge">searchyoutube</span></td><td>Search selected text on YouTube</td></tr>
+              <tr><td><span class="action-badge">searchwikipedia</span></td><td>Search selected text on Wikipedia</td></tr>
+              <tr><td><span class="action-badge">searchgithub</span></td><td>Search selected text on GitHub</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Page Tools -->
+        <h3 id="page-tools">Page Tools</h3>
+        <div class="action-table-wrap">
+          <table class="action-table">
+            <thead><tr><th>Action</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="action-badge">showcheatsheet</span></td><td>Show an overlay of all active shortcuts</td></tr>
+              <tr><td><span class="action-badge">toggledarkmode</span></td><td>Toggle an inverted color dark mode on the current site</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Link Hints -->
+        <h3 id="link-hints">Link Hints</h3>
+        <div class="action-table-wrap">
+          <table class="action-table">
+            <thead><tr><th>Action</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="action-badge">linkhints</span></td><td>Display letter hints over all links. Type the letters to click.</td></tr>
+              <tr><td><span class="action-badge">linkhintsnew</span></td><td>Display letter hints over links. Clicked links open in new tab.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Page Scripts -->
+        <h3 id="page-scripts">Page Scripts</h3>
+        <p class="docs-text">These are 24 pre-built JavaScript snippets you can assign to any shortcut.</p>
+        <div class="docs-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))">
+          <div class="bento-card"><p>Dark mode</p></div>
+          <div class="bento-card"><p>Reader mode</p></div>
+          <div class="bento-card"><p>Hide sticky headers & banners</p></div>
+          <div class="bento-card"><p>Increase text size</p></div>
+          <div class="bento-card"><p>Highlight all links</p></div>
+          <div class="bento-card"><p>Make page editable</p></div>
+          <div class="bento-card"><p>Copy all links on page</p></div>
+          <div class="bento-card"><p>Word count</p></div>
+          <div class="bento-card"><p>Extract email addresses</p></div>
+          <div class="bento-card"><p>Export table to CSV</p></div>
+          <div class="bento-card"><p>Show QR code for this page</p></div>
+          <div class="bento-card"><p>Remove all images</p></div>
+          <div class="bento-card"><p>Show image sizes</p></div>
+          <div class="bento-card"><p>Show page outline</p></div>
+          <div class="bento-card"><p>Reading progress bar</p></div>
+          <div class="bento-card"><p>Show layout grid</p></div>
+          <div class="bento-card"><p>Clear site storage</p></div>
+          <div class="bento-card"><p>Show performance metrics</p></div>
+          <div class="bento-card"><p>Log all events</p></div>
+          <div class="bento-card"><p>Pretty print JSON</p></div>
+          <div class="bento-card"><p>Picture-in-Picture</p></div>
+          <div class="bento-card"><p>Set video speed (2x)</p></div>
+          <div class="bento-card"><p>List all image URLs</p></div>
+          <div class="bento-card"><p>Show audio volume</p></div>
+        </div>
+
+      </section>
+
+      <!-- 3. Shortcut Packs -->
+      <section id="shortcut-packs" class="docs-section">
+        <h2>3. Shortcut Packs <a href="#shortcut-packs" class="anchor-link"><i class="mdi mdi-link-variant"></i></a></h2>
+        <p class="docs-text">Shortcut packs are curated collections of shortcuts you can install with a single click. They let you adopt popular keyboard navigation styles without configuring them manually.</p>
+        <ul class="docs-list">
+          <li><strong>Available packs:</strong> Vim, Emacs, YouTube, Productivity, Developer, Reading, Tab Manager, Keyboard Power, and Media Control.</li>
+          <li><strong>How to install:</strong> Open Shortkeys Settings, click <strong>Browse Packs</strong>, or visit <a href="/packs">shortkeys.app/packs</a> directly.</li>
+          <li>Packs are imported as <strong>Groups</strong>. Once installed, you can freely edit, reassign keys, or delete shortcuts you don't need.</li>
+        </ul>
+      </section>
+
+      <!-- 4. Groups -->
+      <section id="groups" class="docs-section">
+        <h2>4. Groups <a href="#groups" class="anchor-link"><i class="mdi mdi-link-variant"></i></a></h2>
+        <p class="docs-text">Organize your shortcuts into folders. Ungrouped shortcuts live in the <strong>My Shortcuts</strong> default group.</p>
+        <ul class="docs-list">
+          <li><strong>Creating:</strong> Click the <i class="mdi mdi-folder-plus"></i> icon next to "Add Group" in the header.</li>
+          <li><strong>Renaming:</strong> Click directly on the group name to edit it.</li>
+          <li><strong>Collapse/Expand:</strong> Click the chevron on the group header to hide shortcuts.</li>
+          <li><strong>Enable/Disable:</strong> Use the toggle switch on the group header to disable all shortcuts inside it at once.</li>
+          <li><strong>Moving:</strong> Drag and drop the handle icon on a shortcut to move it between groups.</li>
+          <li><strong>Delete:</strong> Click the trash icon on the group header. <em>Warning: This deletes all shortcuts inside the group.</em></li>
+          <li><strong>Sharing:</strong> Click the share icon on the group header to export just that group.</li>
+        </ul>
+      </section>
+
+      <!-- 5. Macros -->
+      <section id="macros" class="docs-section">
+        <h2>5. Macros <a href="#macros" class="anchor-link"><i class="mdi mdi-link-variant"></i></a></h2>
+        <p class="docs-text">Macros allow you to chain multiple actions into a single keyboard shortcut.</p>
+        <ul class="docs-list">
+          <li><strong>How to create:</strong> Add a new shortcut, and choose the <strong>Run a macro</strong> action.</li>
+          <li>Click "Add Step" to add actions to the chain.</li>
+          <li>You can optionally add <strong>Delays</strong> (in milliseconds) between steps for precise timing, which is useful when waiting for a page navigation to complete.</li>
+          <li><strong>Example use cases:</strong>
+            <ul>
+              <li>Open a specific tab and immediately run a JavaScript snippet.</li>
+              <li>Scroll down, wait 500ms, and take a screenshot.</li>
+              <li>Duplicate current tab and move it to a new window.</li>
+            </ul>
+          </li>
+        </ul>
+      </section>
+
+      <!-- 6. Site Filtering -->
+      <section id="site-filtering" class="docs-section">
+        <h2>6. Site Filtering <a href="#site-filtering" class="anchor-link"><i class="mdi mdi-link-variant"></i></a></h2>
+        <p class="docs-text">Control exactly where your shortcuts are active. Open the advanced settings for a shortcut to configure filtering. There are three modes:</p>
+        <ul class="docs-list">
+          <li><strong>All sites:</strong> The shortcut works everywhere.</li>
+          <li><strong>All sites except... (Blocklist):</strong> Works everywhere EXCEPT the listed sites. Useful if a shortcut conflicts with a specific website's native hotkeys (e.g., block Gmail or GitHub).</li>
+          <li><strong>Only on specific sites (Allowlist):</strong> Shortcut ONLY works on the listed sites.</li>
+        </ul>
+        <p class="docs-text"><strong>URL Patterns:</strong> Enter one pattern per line. Supports wildcards (<kbd>*</kbd>). Examples:<br>
+          <code>*.google.com/*</code><br>
+          <code>github.com/*/pulls</code>
+        </p>
+      </section>
+
+      <!-- 7. Custom JavaScript -->
+      <section id="custom-javascript" class="docs-section">
+        <h2>7. Custom JavaScript <a href="#custom-javascript" class="anchor-link"><i class="mdi mdi-link-variant"></i></a></h2>
+        <p class="docs-text">Run your own code via keyboard shortcuts for infinite possibilities.</p>
+        <ul class="docs-list">
+          <li>Choose <strong>Run JavaScript</strong> as the action.</li>
+          <li>Write code in the built-in CodeMirror editor (features syntax highlighting and One Dark theme).</li>
+          <li>Code runs directly in the page context (MAIN world), meaning it has full access to the page's DOM and <code>window</code> object.</li>
+          <li><strong>Example:</strong> <code>document.body.style.background = 'red';</code></li>
+          <li>If you need inspiration, check out the built-in "Page Scripts" and modify them.</li>
+        </ul>
+        <div class="docs-card">
+          <h4>Content Security Policy (CSP) Note</h4>
+          <p class="docs-text" style="margin-bottom:0">On sites with strict CSP (like Twitter or GitHub), inline script execution may be blocked by the browser. If your script fails silently, try testing it with the "Test" button which bypasses CSP using the debugger API.</p>
+        </div>
+      </section>
+
+      <!-- 8. Command Palette -->
+      <section id="command-palette" class="docs-section">
+        <h2>8. Command Palette <a href="#command-palette" class="anchor-link"><i class="mdi mdi-link-variant"></i></a></h2>
+        <p class="docs-text">Don't want to memorize all your shortcuts? The command palette lets you search and trigger them.</p>
+        <ul class="docs-list">
+          <li>Click the Shortkeys extension icon in your browser toolbar to open the palette.</li>
+          <li>Tip: Assign a global hotkey to open the extension popup via <code>chrome://extensions/shortcuts</code> for instant access.</li>
+          <li>It shows a searchable list of all your active shortcuts, their labels, and keys.</li>
+          <li>Use the arrow keys to navigate and press <kbd>Enter</kbd> to execute.</li>
+          <li>Use the <strong>Quick-add</strong> button to create a new shortcut directly from the palette.</li>
+        </ul>
+      </section>
+
+      <!-- 9. Cloud Sync -->
+      <section id="cloud-sync" class="docs-section">
+        <h2>9. Cloud Sync <a href="#cloud-sync" class="anchor-link"><i class="mdi mdi-link-variant"></i></a></h2>
+        <p class="docs-text">Your shortcuts stay with you, automatically.</p>
+        <ul class="docs-list">
+          <li>Shortkeys utilizes <code>chrome.storage.sync</code> to sync your configuration to your Google Account.</li>
+          <li>No extra account or setup is needed. It works across all Chrome instances where you are signed in.</li>
+          <li><strong>Fallback:</strong> Chrome limits sync storage to 100KB. If your data (like large custom JavaScript actions) exceeds this limit, Shortkeys automatically and transparently falls back to local storage so you never lose data.</li>
+          <li>On Firefox, it utilizes Firefox Sync.</li>
+        </ul>
+      </section>
+
+      <!-- 10. Sharing -->
+      <section id="sharing" class="docs-section">
+        <h2>10. Sharing <a href="#sharing" class="anchor-link"><i class="mdi mdi-link-variant"></i></a></h2>
+        <p class="docs-text">Easily back up or share your configurations.</p>
+        <ul class="docs-list">
+          <li><strong>Export:</strong> Go to Settings → Export tab. You can copy the raw JSON configuration.</li>
+          <li><strong>Share Links:</strong> Click "Generate Share Link" to create a unique <code>shortkeys.app/share#...</code> URL. Anyone with the extension installed can click this link to instantly preview and import your shortcuts.</li>
+          <li><strong>Group Sharing:</strong> You can export or share individual groups by clicking the share icon on the group header.</li>
+          <li><strong>Import:</strong> Paste valid JSON into the Import tab to restore a backup.</li>
+        </ul>
+      </section>
+
+      <!-- 11. Browser Shortcuts -->
+      <section id="browser-shortcuts" class="docs-section">
+        <h2>11. Browser Shortcuts (Global) <a href="#browser-shortcuts" class="anchor-link"><i class="mdi mdi-link-variant"></i></a></h2>
+        <p class="docs-text">By design, Chrome does not allow extensions to inject scripts into restricted pages like <code>chrome://</code> pages, the New Tab page, or the Chrome Web Store. Standard shortcuts will not work there.</p>
+        <p class="docs-text"><strong>The Solution:</strong> Shortkeys registers 85 named commands with the browser. Each one appears as an item on Chrome's built-in keyboard shortcuts page, where you can assign a key combo directly.</p>
+        <ul class="docs-list">
+          <li>Navigate to <kbd>chrome://extensions/shortcuts</kbd> in your URL bar.</li>
+          <li>Find the <strong>Shortkeys</strong> section.</li>
+          <li>You'll see named commands like "TABS: New tab", "TABS: Close tab", "SCROLLING: Scroll down", "VIDEO: Play/pause", etc.</li>
+          <li>Click any command's shortcut field and press your desired key combo. Chrome assigns it immediately.</li>
+          <li>These shortcuts are handled <strong>natively by Chrome</strong> and work on <strong>any page</strong>, including <code>chrome://</code> pages and the Chrome Web Store.</li>
+        </ul>
+        <p class="docs-text"><strong>Limitations:</strong> Browser shortcuts require at least one modifier key (Ctrl, Alt, or Cmd), so single-key or vim-style shortcuts (like <kbd>j</kbd>/<kbd>k</kbd>) are not supported. You also can't use advanced Shortkeys features like site filtering, macros, or custom JavaScript with browser shortcuts.</p>
+      </section>
+
+      <!-- 12. Conflict Detection -->
+      <section id="conflict-detection" class="docs-section">
+        <h2>12. Conflict Detection <a href="#conflict-detection" class="anchor-link"><i class="mdi mdi-link-variant"></i></a></h2>
+        <p class="docs-text">Shortkeys prevents you from accidentally breaking your workflow.</p>
+        <ul class="docs-list">
+          <li><strong>Platform-aware:</strong> It knows if you are on Mac (using Cmd) or Windows/Linux (using Ctrl).</li>
+          <li>If you assign a combo like <kbd>Ctrl</kbd> + <kbd>T</kbd>, Shortkeys will warn you that it conflicts with the browser's default "New Tab" action.</li>
+          <li>Duplicate shortcuts (the same key combo assigned twice) are flagged.</li>
+          <li>Warnings appear in the stats bar at the top of the settings page and inline on the shortcut card.</li>
+          <li><strong>Note:</strong> You can still save and use conflicting shortcuts; the warning is purely informational.</li>
+        </ul>
+      </section>
+
+      <!-- 13. Userscript Import -->
+      <section id="userscript-import" class="docs-section">
+        <h2>13. Userscript Import <a href="#userscript-import" class="anchor-link"><i class="mdi mdi-link-variant"></i></a></h2>
+        <p class="docs-text">Bring powerful scripts directly into Shortkeys without needing a separate manager like Tampermonkey.</p>
+        <ul class="docs-list">
+          <li>Choose <strong>Import Userscript</strong> in the Add menu.</li>
+          <li>Paste a URL from <strong>Greasyfork</strong> or <strong>OpenUserJS</strong>.</li>
+          <li>Shortkeys will fetch the script, parse its metadata, and bind it to your chosen keyboard shortcut.</li>
+          <li><em>Unlike standard userscripts that run automatically on page load, Shortkeys runs them only when you press the shortcut.</em></li>
+        </ul>
+      </section>
+
+      <!-- 14. FAQ / Troubleshooting -->
+      <section id="faq" class="docs-section">
+        <h2>14. FAQ / Troubleshooting <a href="#faq" class="anchor-link"><i class="mdi mdi-link-variant"></i></a></h2>
+        
+        <div class="faq-item">
+          <h4>Shortcuts don't work on chrome:// pages or the New Tab page</h4>
+          <p class="docs-text">Chrome strictly prevents extensions from running on its internal pages and the Chrome Web Store. To use actions like "Close tab" on these pages, use <a href="#browser-shortcuts">Browser Shortcuts</a> instead.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h4>Shortcuts stopped working after an update</h4>
+          <p class="docs-text">When the extension updates in the background, existing tabs might lose the connection to the content script. Simply refresh the open tabs to restore functionality.</p>
+        </div>
+
+        <div class="faq-item">
+          <h4>Custom JavaScript doesn't work on some sites</h4>
+          <p class="docs-text">Sites with strict Content Security Policies (CSP) block injected scripts. Try using the debugger-based "Test" button in the editor, or map a built-in action via Browser Shortcuts which bypasses page-level CSP.</p>
+        </div>
+
+        <div class="faq-item">
+          <h4>My shortcuts conflict with website shortcuts (e.g. Gmail/GitHub)</h4>
+          <p class="docs-text">Use the <a href="#site-filtering">Site Filtering</a> feature to add the domain to your Blocklist, so Shortkeys won't override the site's native hotkeys.</p>
+        </div>
+
+        <div class="faq-item">
+          <h4>Shortcuts don't trigger when I'm typing in text inputs</h4>
+          <p class="docs-text">By default, Shortkeys disabled shortcuts while you are focused in an <code>&lt;input&gt;</code>, <code>&lt;textarea&gt;</code>, or <code>contenteditable</code> element to avoid typing interference. You can check the <strong>"Active in text fields"</strong> box on any individual shortcut to override this.</p>
+        </div>
+
+        <div class="faq-item">
+          <h4>How do I use multi-key sequences like vim?</h4>
+          <p class="docs-text">Click the <strong>Record</strong> button, press the first key (e.g., <kbd>G</kbd>), release it, and press the second key (e.g., <kbd>I</kbd>). The recorder captures the sequence perfectly as <code>g i</code>.</p>
+        </div>
+
+        <div class="faq-item">
+          <h4>How do I back up my shortcuts?</h4>
+          <p class="docs-text">Use the Export tab in settings to copy your JSON config. Cloud Sync also automatically backs them up to your Google account.</p>
+        </div>
+      </section>
+
+      <!-- 15. Browser Compatibility -->
+      <section id="browser-compatibility" class="docs-section">
+        <h2>15. Browser Compatibility <a href="#browser-compatibility" class="anchor-link"><i class="mdi mdi-link-variant"></i></a></h2>
+        <p class="docs-text">Shortkeys is built to run on modern web browsers.</p>
+        <ul class="docs-list">
+          <li><strong>Chrome:</strong> Full support (Manifest V3). All features available.</li>
+          <li><strong>Firefox:</strong> Full support (Manifest V2). Built natively for Firefox. Note that some Chrome-specific APIs are unavailable (tab grouping, debugger API testing, showing specific downloads).</li>
+          <li><strong>Edge:</strong> Full support. Install directly from the Chrome Web Store.</li>
+          <li><strong>Opera:</strong> Full support. Install directly from Opera Add-ons.</li>
+        </ul>
+      </section>
+
+    </main>
+  </div>
+
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', () => {
+      const sections = document.querySelectorAll('.docs-section');
+      const navLinks = document.querySelectorAll('.docs-sidebar-link');
+      const subLinks = document.querySelectorAll('.docs-sidebar-sublink');
+      const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+      const sidebarNav = document.getElementById('sidebar-nav');
+      const currentSectionText = document.getElementById('current-section-text');
+
+      // Mobile menu toggle
+      if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => {
+          sidebarNav.classList.toggle('show');
+          const icon = mobileMenuBtn.querySelector('i');
+          if (sidebarNav.classList.contains('show')) {
+            icon.className = 'mdi mdi-close';
+          } else {
+            icon.className = 'mdi mdi-menu';
+          }
+        });
+      }
+
+      // Hide mobile menu on link click
+      const allLinks = [...navLinks, ...subLinks];
+      allLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          if (window.innerWidth <= 900) {
+            sidebarNav.classList.remove('show');
+            if (mobileMenuBtn) {
+              mobileMenuBtn.querySelector('i').className = 'mdi mdi-menu';
+            }
+          }
+        });
+      });
+
+      // Scroll spy logic
+      const observerOptions = {
+        root: null,
+        rootMargin: '-100px 0px -70% 0px',
+        threshold: 0
+      };
+
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = entry.target.getAttribute('id');
+            navLinks.forEach(link => {
+              link.classList.remove('active');
+              if (link.getAttribute('href') === `#${id}`) {
+                link.classList.add('active');
+                if (currentSectionText) {
+                  currentSectionText.textContent = link.textContent.replace(/^[0-9]+\.\s/, '');
+                }
+              }
+            });
+          }
+        });
+      }, observerOptions);
+
+      sections.forEach(section => observer.observe(section));
+    });
+  </script>
+</BaseLayout>
