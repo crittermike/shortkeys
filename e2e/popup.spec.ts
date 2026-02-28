@@ -76,7 +76,7 @@ test.describe('Popup Command Palette', () => {
     await optionsPage.locator('.ss-option', { hasText: 'New tab' }).first().click()
 
     // Add a second shortcut
-    await optionsPage.locator('.action-bar .btn-secondary', { hasText: 'Add shortcut' }).click()
+    await optionsPage.locator('.stats-actions .btn-sm', { hasText: 'Add shortcut' }).click()
     await optionsPage.locator('.shortcut-label-title').last().fill('Close Window')
     await optionsPage.locator('.shortcut-input').last().fill('w')
     await optionsPage.locator('.ss-trigger').last().click()

@@ -170,16 +170,26 @@ onUnmounted(() => {
 
         <!-- Stats bar -->
         <div v-if="keys.length > 0 && !showOnboarding" class="stats-bar">
-          <div class="stats-chips">
-            <span class="stat-chip">
-              <i class="mdi mdi-keyboard"></i> {{ stats.total }} shortcut{{ stats.total !== 1 ? 's' : '' }}
-            </span>
-            <span v-if="stats.disabled > 0" class="stat-chip stat-disabled">
-              <i class="mdi mdi-pause-circle-outline"></i> {{ stats.disabled }} disabled
-            </span>
-            <span v-if="stats.withConflicts > 0" class="stat-chip stat-warn">
-              <i class="mdi mdi-alert-outline"></i> {{ stats.withConflicts }} with conflicts
-            </span>
+          <div class="stats-bar-left">
+            <div class="stats-chips">
+              <span class="stat-chip">
+                <i class="mdi mdi-keyboard"></i> {{ stats.total }} shortcut{{ stats.total !== 1 ? 's' : '' }}
+              </span>
+              <span v-if="stats.disabled > 0" class="stat-chip stat-disabled">
+                <i class="mdi mdi-pause-circle-outline"></i> {{ stats.disabled }} disabled
+              </span>
+              <span v-if="stats.withConflicts > 0" class="stat-chip stat-warn">
+                <i class="mdi mdi-alert-outline"></i> {{ stats.withConflicts }} with conflicts
+              </span>
+            </div>
+            <div class="stats-actions">
+              <button class="btn btn-secondary btn-sm" @click="addShortcut">
+                <i class="mdi mdi-plus"></i> Add shortcut
+              </button>
+              <button class="btn btn-secondary btn-sm" @click="createNewGroup">
+                <i class="mdi mdi-folder-plus-outline"></i> New group
+              </button>
+            </div>
           </div>
           <div class="stats-bar-right">
             <button class="density-toggle" @click="toggleDensity" :title="density === 'comfortable' ? 'Switch to condensed view' : 'Switch to comfortable view'" type="button">
@@ -404,14 +414,6 @@ onUnmounted(() => {
         </div>
 
         <div v-if="keys.length > 0 && !showOnboarding" class="action-bar">
-          <div class="action-bar-left">
-            <button class="btn btn-secondary" @click="addShortcut">
-              <i class="mdi mdi-plus"></i> Add shortcut
-            </button>
-            <button class="btn btn-secondary" @click="createNewGroup">
-              <i class="mdi mdi-folder-plus-outline"></i> New group
-            </button>
-          </div>
           <button class="btn btn-primary" @click="saveShortcuts">
             <i class="mdi mdi-content-save"></i> Save shortcuts
           </button>
@@ -643,12 +645,25 @@ a:hover { text-decoration: underline; }
   align-items: center;
   margin-bottom: 16px;
   gap: 12px;
+  flex-wrap: wrap;
+}
+
+.stats-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .stats-chips {
   display: flex;
   gap: 8px;
   flex-shrink: 0;
+}
+
+.stats-actions {
+  display: flex;
+  gap: 6px;
 }
 
 .stats-bar-right {
@@ -1448,14 +1463,9 @@ a:hover { text-decoration: underline; }
 /* ── Buttons ── */
 .action-bar {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   margin-top: 20px;
-}
-
-.action-bar-left {
-  display: flex;
-  gap: 8px;
 }
 
 .btn {
@@ -1476,6 +1486,8 @@ a:hover { text-decoration: underline; }
 
 .btn-secondary { background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border); }
 .btn-secondary:hover { background: var(--bg-elevated); border-color: var(--text-placeholder); }
+
+.btn-sm { padding: 6px 12px; font-size: 12px; }
 
 /* ── Toast ── */
 .toast {
