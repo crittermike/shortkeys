@@ -612,6 +612,20 @@ describe('handleAction', () => {
     })
   })
 
+  describe('prev/next page navigation (#754)', () => {
+    it('nextpage calls executeScript', async () => {
+      const { executeScript } = await import('../src/utils/execute-script')
+      await handleAction('nextpage')
+      expect(executeScript).toHaveBeenCalled()
+    })
+
+    it('prevpage calls executeScript', async () => {
+      const { executeScript } = await import('../src/utils/execute-script')
+      await handleAction('prevpage')
+      expect(executeScript).toHaveBeenCalled()
+    })
+  })
+
   describe('coverage of all registered actions', () => {
     const allActions = getAllActionValues()
     // These require special handling (imports from other modules, not in actionHandlers)
