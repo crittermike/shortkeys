@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { v4 as uuid } from 'uuid'
 import type { KeySetting } from '@/utils/url-matching'
 import { saveKeys, loadKeys } from '@/utils/storage'
@@ -7,6 +7,8 @@ import { useUndoRedo } from './useUndoRedo'
 
 const keys = ref<KeySetting[]>([])
 const expandedRow = ref<number | null>(null)
+const dirty = ref(false)
+let savedSnapshot = ''
 
 const ACTIONS_NEEDING_EXPANSION = [
   'javascript', 'openbookmark', 'openbookmarknewtab', 'openbookmarkbackgroundtab',
@@ -36,6 +38,8 @@ async function saveShortcuts() {
   })
   try {
     const area = await saveKeys(keys.value)
+    savedSnapshot = JSON.stringify(keys.value)
+    dirty.value = false
     showSnack(area === 'sync' ? 'Shortcuts saved & synced!' : 'Shortcuts saved (local only -- too large to sync)')
   } catch (e) {
     console.error('[Shortkeys] Failed to save shortcuts:', e)
@@ -92,7 +96,15 @@ async function loadSavedKeys() {
     keys.value = JSON.parse(saved)
     ensureIds()
   }
+  savedSnapshot = JSON.stringify(keys.value)
+  dirty.value = false
 }
+
+// Deep watch keys to track unsaved changes
+watch(keys, (newKeys) => {
+  if (!savedSnapshot) return
+  dirty.value = JSON.stringify(newKeys) !== savedSnapshot
+}, { deep: true })
 
 export function useShortcuts() {
   return {
@@ -107,6 +119,7 @@ export function useShortcuts() {
     onActionChange,
     toggleEnabled,
     needsUserScripts,
+    dirty,
     loadSavedKeys,
   }
 }
