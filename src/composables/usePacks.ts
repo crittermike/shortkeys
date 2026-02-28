@@ -57,12 +57,6 @@ export function usePacks() {
     return result
   }
 
-  /** Simple list of conflicting key names (for backward compat with conflict count) */
-  function getPackConflictKeys(pack: ShortcutPack): string[] {
-    const conflicts = getPackConflicts(pack)
-    return Array.from(conflicts.values()).map((c) => c.key)
-  }
-
   /** Count of exact duplicates that will be auto-dropped */
   const exactDuplicateCount = computed(() => {
     if (!previewPack.value) return 0
@@ -121,5 +115,5 @@ export function usePacks() {
     }
   }
 
-  return { previewPack, packConflictMode, getPackConflicts, getPackConflictKeys, exactDuplicateCount, installPack }
+  return { previewPack, packConflictMode, getPackConflicts, exactDuplicateCount, installPack }
 }

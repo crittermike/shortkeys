@@ -256,3 +256,110 @@ describe('pack install auto-drop exact duplicates', () => {
     expect(result.filter((s) => s.key === 'k')).toHaveLength(1)
   })
 })
+
+describe('conflict count should exclude exact duplicates (#737)', () => {
+  /**
+   * Simulates getPackConflicts from usePacks.ts to classify each pack shortcut
+   * as 'exact' (same key + same action = duplicate) or 'key' (same key, different action = conflict).
+   */
+  function classifyConflicts(
+    existing: Array<{ key: string; action: string; sites?: string; sitesArray?: string[] }>,
+    packShortcuts: Array<{ key: string; action: string; label: string; sites?: string; sitesArray?: string[] }>,
+  ) {
+    const result = new Map<number, { key: string; type: 'exact' | 'key'; existingIndices: number[] }>()
+    for (let pi = 0; pi < packShortcuts.length; pi++) {
+      const ps = packShortcuts[pi]
+      const psNorm = normalizeKey(ps.key)
+      if (!psNorm) continue
+
+      const matchingIndices: number[] = []
+      for (let ei = 0; ei < existing.length; ei++) {
+        const e = existing[ei]
+        if (normalizeKey(e.key) !== psNorm) continue
+        if (!couldSiteFiltersOverlap(ps as KeySetting, e as KeySetting)) continue
+        matchingIndices.push(ei)
+      }
+
+      if (matchingIndices.length > 0) {
+        const isExact = matchingIndices.some((ei) => existing[ei].action === ps.action)
+        result.set(pi, { key: ps.key, type: isExact ? 'exact' : 'key', existingIndices: matchingIndices })
+      }
+    }
+    return result
+  }
+
+  function countByType(conflicts: Map<number, { type: string }>, type: string) {
+    let count = 0
+    for (const c of conflicts.values()) {
+      if (c.type === type) count++
+    }
+    return count
+  }
+
+  it('exact duplicates are not counted as conflicts', () => {
+    const existing = [
+      { key: 'alt+shift+d', action: 'toggledarkmode' },
+      { key: 'alt+shift+c', action: 'copycurrenturl' },
+      { key: 'alt+shift+/', action: 'showcheatsheet' },
+      { key: 'alt+shift+j', action: 'newtab' },
+    ]
+    const packShortcuts = [
+      { key: 'alt+shift+d', action: 'toggledarkmode', label: 'Toggle dark mode' },  // exact duplicate
+      { key: 'alt+shift+i', action: 'openincognito', label: 'Open in incognito' },  // no conflict
+      { key: 'alt+shift+c', action: 'differentaction', label: 'Copy current URL' }, // key conflict
+      { key: 'alt+shift+j', action: 'logdomcount', label: 'Log DOM element count' },// key conflict
+      { key: 'alt+shift+/', action: 'showcheatsheet', label: 'Show cheat sheet' },  // exact duplicate
+    ]
+
+    const conflicts = classifyConflicts(existing, packShortcuts)
+    const exactCount = countByType(conflicts, 'exact')
+    const keyCount = countByType(conflicts, 'key')
+
+    // 2 exact duplicates (alt+shift+d, alt+shift+/) — should be skipped, not shown as conflicts
+    expect(exactCount).toBe(2)
+    // 2 real key conflicts (alt+shift+c, alt+shift+j) — these are the ones the user decides about
+    expect(keyCount).toBe(2)
+    // Total conflicts in map is 4, but only 2 should be shown as "conflicts" in UI
+    expect(conflicts.size).toBe(4)
+    // The conflict count message should use keyCount (2), NOT conflicts.size (4)
+    expect(keyCount).not.toBe(conflicts.size)
+  })
+
+  it('all exact duplicates means zero conflicts shown', () => {
+    const existing = [
+      { key: 'j', action: 'scrolldown' },
+      { key: 'k', action: 'scrollup' },
+    ]
+    const packShortcuts = [
+      { key: 'j', action: 'scrolldown', label: 'Scroll down' },
+      { key: 'k', action: 'scrollup', label: 'Scroll up' },
+    ]
+
+    const conflicts = classifyConflicts(existing, packShortcuts)
+    const keyCount = countByType(conflicts, 'key')
+    const exactCount = countByType(conflicts, 'exact')
+
+    expect(exactCount).toBe(2)
+    expect(keyCount).toBe(0)
+  })
+
+  it('no duplicates means all conflicts are key conflicts', () => {
+    const existing = [
+      { key: 'j', action: 'newtab' },
+      { key: 'k', action: 'closetab' },
+    ]
+    const packShortcuts = [
+      { key: 'j', action: 'scrolldown', label: 'Scroll down' },
+      { key: 'k', action: 'scrollup', label: 'Scroll up' },
+    ]
+
+    const conflicts = classifyConflicts(existing, packShortcuts)
+    const keyCount = countByType(conflicts, 'key')
+    const exactCount = countByType(conflicts, 'exact')
+
+    expect(exactCount).toBe(0)
+    expect(keyCount).toBe(2)
+    // When there are no duplicates, keyCount equals conflicts.size
+    expect(keyCount).toBe(conflicts.size)
+  })
+})

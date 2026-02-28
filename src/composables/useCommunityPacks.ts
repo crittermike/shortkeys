@@ -107,12 +107,6 @@ export function useCommunityPacks() {
     return result
   }
 
-  /** Simple list of conflicting key names (for backward compat) */
-  function getCommunityPackConflictKeys(pack: CommunityPack): string[] {
-    const conflicts = getCommunityPackConflicts(pack)
-    return Array.from(conflicts.values()).map((c) => c.key)
-  }
-
   /** Count of exact duplicates that will be auto-dropped */
   const communityExactDuplicateCount = computed(() => {
     if (!previewCommunityPack.value) return 0
@@ -203,7 +197,6 @@ export function useCommunityPacks() {
     jsWarningPack,
     fetchCommunityPacks,
     getCommunityPackConflicts,
-    getCommunityPackConflictKeys,
     requestInstallCommunityPack,
     installCommunityPack,
     confirmJsInstall,
