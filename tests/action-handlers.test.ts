@@ -646,6 +646,64 @@ describe('handleAction', () => {
       expect(mockShowPageToast).toHaveBeenCalledWith('No number found in URL')
     })
   })
+<<<<<<< HEAD
+    it('urlinc increments the last number in URL', async () => {
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, url: 'https://example.com/page/3' }])
+      await handleAction('urlinc')
+      expect(mockTabsUpdate).toHaveBeenCalledWith(1, { url: 'https://example.com/page/4' })
+    })
+
+    it('urlinc preserves leading zeros', async () => {
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, url: 'https://example.com/img007.jpg' }])
+      await handleAction('urlinc')
+      expect(mockTabsUpdate).toHaveBeenCalledWith(1, { url: 'https://example.com/img008.jpg' })
+    })
+
+    it('urldec decrements the last number in URL', async () => {
+=======
+    it('urlinc increments last number in URL', async () => {
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, url: 'https://example.com/page/2' }])
+      await handleAction('urlinc')
+      expect(mockTabsUpdate).toHaveBeenCalledWith(1, { url: 'https://example.com/page/3' })
+    })
+
+    it('urlinc preserves leading zeros', async () => {
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, url: 'https://example.com/img/007.jpg' }])
+      await handleAction('urlinc')
+      expect(mockTabsUpdate).toHaveBeenCalledWith(1, { url: 'https://example.com/img/008.jpg' })
+    })
+
+    it('urldec decrements last number in URL', async () => {
+>>>>>>> e868bcf (feat: add urlinc and urldec actions for URL number manipulation)
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, url: 'https://example.com/page/5' }])
+      await handleAction('urldec')
+      expect(mockTabsUpdate).toHaveBeenCalledWith(1, { url: 'https://example.com/page/4' })
+    })
+
+<<<<<<< HEAD
+    it('urldec floors at zero', async () => {
+=======
+    it('urldec does not go below zero', async () => {
+>>>>>>> e868bcf (feat: add urlinc and urldec actions for URL number manipulation)
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, url: 'https://example.com/page/0' }])
+      await handleAction('urldec')
+      expect(mockTabsUpdate).toHaveBeenCalledWith(1, { url: 'https://example.com/page/0' })
+    })
+
+    it('urlinc shows toast when no number in URL', async () => {
+<<<<<<< HEAD
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, url: 'https://example.com/' }])
+      await handleAction('urlinc')
+      expect(mockTabsUpdate).not.toHaveBeenCalled()
+      expect(mockShowPageToast).toHaveBeenCalledWith('No number found in URL')
+=======
+      const { showPageToast } = await import('../src/utils/execute-script')
+      mockTabsQuery.mockResolvedValue([{ ...defaultTab, url: 'https://example.com/about' }])
+      await handleAction('urlinc')
+      expect(showPageToast).toHaveBeenCalledWith('No number found in URL')
+>>>>>>> e868bcf (feat: add urlinc and urldec actions for URL number manipulation)
+    })
+  })
 
   describe('coverage of all registered actions', () => {
     const allActions = getAllActionValues()
