@@ -649,18 +649,80 @@ describe('handleAction', () => {
     })
   })
 
+  describe('prev/next page navigation (#754)', () => {
+    it('nextpage calls executeScript', async () => {
+      const { executeScript } = await import('../src/utils/execute-script')
+      await handleAction('nextpage')
+      expect(executeScript).toHaveBeenCalled()
+    })
 
+    it('nextpage shows toast when no link found', async () => {
+      const { executeScript, showPageToast } = await import('../src/utils/execute-script')
+      vi.mocked(executeScript).mockResolvedValueOnce([{ result: false }] as any)
+      await handleAction('nextpage')
+      expect(showPageToast).toHaveBeenCalledWith('No next page link found')
+    })
 
+    it('nextpage does not show toast when link is found', async () => {
+      const { executeScript, showPageToast } = await import('../src/utils/execute-script')
+      vi.mocked(executeScript).mockResolvedValueOnce([{ result: true }] as any)
+      vi.mocked(showPageToast).mockClear()
+      await handleAction('nextpage')
+      expect(showPageToast).not.toHaveBeenCalled()
+    })
 
+    it('prevpage calls executeScript', async () => {
+      const { executeScript } = await import('../src/utils/execute-script')
+      await handleAction('prevpage')
+      expect(executeScript).toHaveBeenCalled()
+    })
 
+    it('prevpage shows toast when no link found', async () => {
+      const { executeScript, showPageToast } = await import('../src/utils/execute-script')
+      vi.mocked(executeScript).mockResolvedValueOnce([{ result: false }] as any)
+      await handleAction('prevpage')
+      expect(showPageToast).toHaveBeenCalledWith('No previous page link found')
+    })
 
+    it('prevpage does not show toast when link is found', async () => {
+      const { executeScript, showPageToast } = await import('../src/utils/execute-script')
+      vi.mocked(executeScript).mockResolvedValueOnce([{ result: true }] as any)
+      vi.mocked(showPageToast).mockClear()
+      await handleAction('prevpage')
+      expect(showPageToast).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('focus input (#754)', () => {
+    it('calls executeScript to focus input', async () => {
+      const { executeScript } = await import('../src/utils/execute-script')
+      await handleAction('focusinput')
+      expect(executeScript).toHaveBeenCalled()
+    })
+
+    it('shows toast when no input found on page', async () => {
+      const { executeScript, showPageToast } = await import('../src/utils/execute-script')
+      vi.mocked(executeScript).mockResolvedValueOnce([{ result: false }] as any)
+      await handleAction('focusinput')
+      expect(showPageToast).toHaveBeenCalledWith('No text input found on page')
+    })
+
+    it('does not show toast when input is found', async () => {
+      const { executeScript, showPageToast } = await import('../src/utils/execute-script')
+      vi.mocked(executeScript).mockResolvedValueOnce([{ result: true }] as any)
+      vi.mocked(showPageToast).mockClear()
+      await handleAction('focusinput')
+      expect(showPageToast).not.toHaveBeenCalled()
+    })
+  })
+  
   describe('coverage of all registered actions', () => {
     const allActions = getAllActionValues()
     // These require special handling (imports from other modules, not in actionHandlers)
     const specialActions = ['lastusedtab', 'capturescreenshot', 'capturefullsizescreenshot', 'forcecapturefullsizescreenshot']
 
     // These actions are handled in the content script, not the background action handlers
-    const contentScriptActions = ['javascript', 'trigger', 'buttonnexttab', 'showcheatsheet', 'toggledarkmode']
+    const contentScriptActions = ['javascript', 'trigger', 'buttonnexttab', 'showcheatsheet', 'toggledarkmode', 'editurl']
 
     for (const action of allActions) {
       if (specialActions.includes(action) || contentScriptActions.includes(action)) continue
