@@ -656,6 +656,29 @@ describe('handleAction', () => {
     })
   })
 
+  describe('focus input (#754)', () => {
+    it('calls executeScript to focus input', async () => {
+      const { executeScript } = await import('../src/utils/execute-script')
+      await handleAction('focusinput')
+      expect(executeScript).toHaveBeenCalled()
+    })
+
+    it('shows toast when no input found on page', async () => {
+      const { executeScript, showPageToast } = await import('../src/utils/execute-script')
+      vi.mocked(executeScript).mockResolvedValueOnce([{ result: false }] as any)
+      await handleAction('focusinput')
+      expect(showPageToast).toHaveBeenCalledWith('No text input found on page')
+    })
+
+    it('does not show toast when input is found', async () => {
+      const { executeScript, showPageToast } = await import('../src/utils/execute-script')
+      vi.mocked(executeScript).mockResolvedValueOnce([{ result: true }] as any)
+      vi.mocked(showPageToast).mockClear()
+      await handleAction('focusinput')
+      expect(showPageToast).not.toHaveBeenCalled()
+    })
+  })
+  
   describe('coverage of all registered actions', () => {
     const allActions = getAllActionValues()
     // These require special handling (imports from other modules, not in actionHandlers)

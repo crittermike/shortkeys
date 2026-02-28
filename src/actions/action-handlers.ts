@@ -714,6 +714,26 @@ const actionHandlers: Record<string, ActionHandler> = {
     return true
   },
 
+  // -- Focus input --
+  focusinput: async () => {
+    const results = await executeScript(() => {
+      const selector = 'input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]):not([type=image]):not([type=file]):not([type=reset]):not([disabled]), textarea:not([disabled]), [contenteditable="true"], [contenteditable=""]'
+      const elements = document.querySelectorAll<HTMLElement>(selector)
+      for (const el of elements) {
+        const rect = el.getBoundingClientRect()
+        if (rect.width > 0 && rect.height > 0) {
+          el.focus()
+          return true
+        }
+      }
+      return false
+    })
+    if (!results?.[0]?.result) {
+      showPageToast('No text input found on page')
+    }
+    return true
+  },
+
   // -- Disable (no-op) --
   disable: () => true,
 
