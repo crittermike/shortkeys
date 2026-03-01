@@ -119,8 +119,8 @@ export default defineBackground(() => {
         code,
         label,
         blacklist: 'whitelist',
-        sitesArray: [new URL(tab.url || '').hostname + '*'],
-        sites: new URL(tab.url || '').hostname + '*',
+        sitesArray: ['*' + new URL(tab.url || '').hostname + '*'],
+        sites: '*' + new URL(tab.url || '').hostname + '*',
         enabled: true,
       }
       existing.push(newShortcut)
