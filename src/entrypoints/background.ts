@@ -106,12 +106,9 @@ export default defineBackground(() => {
 
     try {
       const response = await chrome.tabs.sendMessage(tab.id, { action: 'getClickSelector' })
-      if (!response?.selector) return
+      if (!response?.code) return
 
-      const { selector, tagName, text } = response
-      const label = text
-        ? `Click "${text.length > 30 ? text.slice(0, 30) + '…' : text}"`
-        : `Click ${tagName} element`
+      const { code, label } = response
 
       const raw = await loadKeys()
       const existing = JSON.parse(raw || '[]')
@@ -119,7 +116,7 @@ export default defineBackground(() => {
         id: uuid(),
         key: '',
         action: 'javascript',
-        code: `document.querySelector('${selector.replace(/'/g, "\\'")  }')?.click()`,
+        code,
         label,
         blacklist: 'whitelist',
         sitesArray: [new URL(tab.url || '').hostname + '*'],

@@ -2,7 +2,7 @@ import Mousetrap from 'mousetrap'
 import { fetchConfig, shouldStopCallback } from '@/utils/content-logic'
 import { ACTION_CATEGORIES } from '@/utils/actions-registry'
 import { activateLinkHints, deactivateLinkHints, isLinkHintModeActive } from '@/utils/link-hints'
-import { generateSelector } from '@/utils/css-selector'
+import { generateClickCode } from '@/utils/css-selector'
 import type { KeySetting } from '@/utils/url-matching'
 
 export default defineContentScript({
@@ -290,12 +290,10 @@ export default defineContentScript({
         showEditUrlBar()
       } else if (message.action === 'getClickSelector') {
         if (lastRightClickedElement) {
-          const selector = generateSelector(lastRightClickedElement)
-          const tagName = lastRightClickedElement.tagName.toLowerCase()
-          const text = (lastRightClickedElement.textContent || '').trim().slice(0, 50)
-          sendResponse({ selector, tagName, text })
+          const { code, label } = generateClickCode(lastRightClickedElement)
+          sendResponse({ code, label })
         } else {
-          sendResponse({ selector: null })
+          sendResponse({ code: null })
         }
         return true
       }

@@ -6,139 +6,144 @@ import { describe, it, expect, beforeEach } from 'vitest'
 // Polyfill CSS.escape for jsdom (not available in jsdom)
 if (typeof globalThis.CSS === 'undefined') {
   ;(globalThis as any).CSS = {
-    escape: (value: string) => value.replace(/([\\#.:()[\]{}|!$%&*+,/;<=>?@^`~'"\s])/g, '\\$1'),
+    escape: (value: string) => value.replace(/([\\\-#.:()[\]{}|!$%&*+,/;<=>?@^`~'"\s])/g, '\\$1'),
   }
 }
-import { generateSelector } from '../src/utils/css-selector'
+import { generateClickCode } from '../src/utils/css-selector'
 
-describe('generateSelector', () => {
+describe('generateClickCode', () => {
   beforeEach(() => {
     document.body.innerHTML = ''
   })
 
-  it('returns #id for element with unique ID', () => {
+  it('uses getElementById for element with unique ID', () => {
     document.body.innerHTML = '<div id="unique">Hello</div>'
     const el = document.getElementById('unique')!
-    expect(generateSelector(el)).toBe('#unique')
+    const { code } = generateClickCode(el)
+    expect(code).toContain("getElementById('unique')")
   })
 
   it('escapes special characters in IDs', () => {
     document.body.innerHTML = '<div id="my.element">Hello</div>'
     const el = document.getElementById('my.element')!
-    expect(generateSelector(el)).toBe('#my\\.element')
+    const { code } = generateClickCode(el)
+    expect(code).toContain("getElementById('my.element')")
   })
 
-  it('does not use ID if it is not unique on the page', () => {
+  it('uses href for links with unique href', () => {
     document.body.innerHTML = `
-      <div id="dup">First</div>
-      <div id="dup">Second</div>
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
     `
-    const els = document.querySelectorAll('#dup')
-    const selector = generateSelector(els[0])
-    // Should not be just #dup since the ID is duplicated
-    expect(selector).not.toBe('#dup')
-    // But the selector should still uniquely match the element
-    expect(document.querySelector(selector)).toBe(els[0])
+    const link = document.querySelector('a[href="/about"]')!
+    const { code, label } = generateClickCode(link)
+    expect(code).toContain("/about")
+    expect(code).toContain("querySelector")
+    expect(label).toContain('About')
   })
 
-  it('builds a path with nth-of-type for siblings of the same tag', () => {
+  it('uses aria-label when unique', () => {
     document.body.innerHTML = `
-      <ul>
-        <li>First</li>
-        <li>Second</li>
-        <li>Third</li>
-      </ul>
+      <button aria-label="Close dialog">X</button>
+      <button>OK</button>
     `
-    const secondLi = document.querySelectorAll('li')[1]
-    const selector = generateSelector(secondLi)
-    expect(selector).toContain('nth-of-type(2)')
-    expect(document.querySelector(selector)).toBe(secondLi)
+    const btn = document.querySelector('[aria-label="Close dialog"]')!
+    const { code } = generateClickCode(btn)
+    expect(code).toContain("aria-label")
+    expect(code).toContain("Close dialog")
   })
 
-  it('does not add nth-of-type when element is only child of its type', () => {
-    document.body.innerHTML = '<div><span>Only</span></div>'
-    const span = document.querySelector('span')!
-    const selector = generateSelector(span)
-    expect(selector).not.toContain('nth-of-type')
-    expect(document.querySelector(selector)).toBe(span)
-  })
-
-  it('anchors to nearest ancestor with a unique ID', () => {
+  it('uses text content for buttons with unique text', () => {
     document.body.innerHTML = `
-      <div id="container">
+      <button>Submit</button>
+      <button>Cancel</button>
+    `
+    const btn = document.querySelectorAll('button')[0]
+    const { code, label } = generateClickCode(btn)
+    expect(code).toContain("textContent")
+    expect(code).toContain("Submit")
+    expect(label).toContain('Submit')
+  })
+
+  it('uses text content for links when href is not unique', () => {
+    document.body.innerHTML = `
+      <a href="#">First</a>
+      <a href="#">Second</a>
+    `
+    const link = document.querySelectorAll('a')[0]
+    const { code } = generateClickCode(link)
+    // href="#" is shared, so it should fall back to text matching
+    expect(code).toContain("textContent")
+    expect(code).toContain("First")
+  })
+
+  it('falls back to CSS selector path for elements without semantic identifiers', () => {
+    document.body.innerHTML = `
+      <div>
         <div>
-          <span class="target">Deep</span>
+          <div></div>
+          <div></div>
+          <div></div>
         </div>
       </div>
     `
-    const span = document.querySelector('.target')!
-    const selector = generateSelector(span)
-    expect(selector).toMatch(/^#container > /)
-    expect(document.querySelector(selector)).toBe(span)
+    const target = document.querySelectorAll('div > div > div')[1]
+    const { code } = generateClickCode(target)
+    // Should use querySelector with a path-based selector
+    expect(code).toContain("querySelector")
+    expect(code).toContain("nth-of-type")
   })
 
-  it('falls back to body path when no IDs exist', () => {
-    document.body.innerHTML = '<div><p>Hello</p></div>'
-    const p = document.querySelector('p')!
-    const selector = generateSelector(p)
-    expect(selector).toMatch(/^body > /)
-    expect(document.querySelector(selector)).toBe(p)
+  it('prefers ID over text content', () => {
+    document.body.innerHTML = '<button id="submit-btn">Submit</button>'
+    const btn = document.querySelector('#submit-btn')!
+    const { code } = generateClickCode(btn)
+    expect(code).toContain("getElementById")
+    expect(code).not.toContain("textContent")
   })
 
-  it('produces a selector that uniquely matches the original element in a complex DOM', () => {
-    document.body.innerHTML = `
-      <div>
-        <ul>
-          <li><a href="/a">Link A</a></li>
-          <li><a href="/b">Link B</a></li>
-          <li><a href="/c">Link C</a></li>
-        </ul>
-        <ul>
-          <li><a href="/d">Link D</a></li>
-          <li><a href="/e">Link E</a></li>
-        </ul>
-      </div>
-    `
-    const linkB = document.querySelectorAll('a')[1]
-    const selector = generateSelector(linkB)
-    expect(document.querySelector(selector)).toBe(linkB)
+  it('prefers href over text content for links', () => {
+    document.body.innerHTML = '<a href="/unique-page">Click here</a>'
+    const link = document.querySelector('a')!
+    const { code } = generateClickCode(link)
+    expect(code).toContain("/unique-page")
+    expect(code).not.toContain("textContent")
   })
 
-  it('handles direct child of body', () => {
-    document.body.innerHTML = '<button>Click me</button>'
+  it('generates a label from text content', () => {
+    document.body.innerHTML = '<button>Save Changes</button>'
     const btn = document.querySelector('button')!
-    const selector = generateSelector(btn)
-    expect(document.querySelector(selector)).toBe(btn)
+    const { label } = generateClickCode(btn)
+    expect(label).toContain('Save Changes')
   })
 
-  it('handles deeply nested elements', () => {
-    document.body.innerHTML = `
-      <div>
-        <div>
-          <div>
-            <div>
-              <span>Deep</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    `
+  it('truncates long text in labels', () => {
+    document.body.innerHTML = `<span>${'A'.repeat(60)}</span>`
     const span = document.querySelector('span')!
-    const selector = generateSelector(span)
-    expect(document.querySelector(selector)).toBe(span)
+    const { label } = generateClickCode(span)
+    expect(label).toContain('…')
+    expect(label.length).toBeLessThan(80)
   })
 
-  it('correctly disambiguates mixed tag siblings', () => {
+  it('provides a tag-based label when no text exists', () => {
+    document.body.innerHTML = '<div id="empty"></div>'
+    const el = document.querySelector('#empty')!
+    const { label } = generateClickCode(el)
+    expect(label).toContain('div element')
+  })
+
+  it('handles complex DOM with links by href', () => {
     document.body.innerHTML = `
-      <div>
-        <span>One</span>
-        <p>Two</p>
-        <span>Three</span>
-      </div>
+      <nav>
+        <a href="/home">Home</a>
+        <a href="/products">Products</a>
+        <a href="/about">About</a>
+      </nav>
     `
-    const secondSpan = document.querySelectorAll('span')[1]
-    const selector = generateSelector(secondSpan)
-    expect(selector).toContain('nth-of-type(2)')
-    expect(document.querySelector(selector)).toBe(secondSpan)
+    const productsLink = document.querySelector('a[href="/products"]')!
+    const { code } = generateClickCode(productsLink)
+    expect(code).toContain("/products")
+    // Evaluating the code should click the right element
+    expect(code).toContain("click()")
   })
 })
