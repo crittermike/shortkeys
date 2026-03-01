@@ -111,6 +111,20 @@ async function main() {
   await sw.evaluate((shortcuts) => {
     return (globalThis as any).chrome.storage.local.set({ keys: JSON.stringify(shortcuts) })
   }, testShortcuts)
+
+  // Screenshot: Onboarding wizard (before marking done)
+  console.log('Capturing onboarding wizard...')
+  const onboardPage = await context.newPage()
+  await onboardPage.setViewportSize({ width: 1280, height: 900 })
+  await onboardPage.goto(`chrome-extension://${extensionId}/options.html`)
+  await onboardPage.waitForSelector('.onboarding-wizard', { timeout: 5000 })
+  await onboardPage.waitForTimeout(500)
+  await onboardPage.screenshot({
+    path: path.join(SCREENSHOT_DIR, 'onboarding-wizard.png'),
+    fullPage: true,
+  })
+  await onboardPage.close()
+
   // Also mark onboarding done
   const setupPage = await context.newPage()
   await setupPage.goto(`chrome-extension://${extensionId}/options.html`)
@@ -184,6 +198,7 @@ async function main() {
   console.log('  - popup-empty.png')
   console.log('  - popup-quick-add.png')
   console.log('  - popup-quick-add-dropdown.png')
+  console.log('  - onboarding-wizard.png')
   console.log('  - options-comfortable.png')
   console.log('  - options-condensed.png')
   console.log('  - options-analytics.png')

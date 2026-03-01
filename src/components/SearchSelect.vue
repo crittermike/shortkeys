@@ -28,7 +28,7 @@ const inputRef = ref<HTMLInputElement>()
 const listRef = ref<HTMLDivElement>()
 
 const allOptions = computed(() => {
-  const result: { group: string; value: string; label: string }[] = []
+  const result: { group: string; value: string; label: string; sublabel?: string }[] = []
   for (const [group, opts] of Object.entries(props.options)) {
     for (const opt of opts) {
       result.push({ group, ...opt })
@@ -46,10 +46,9 @@ const filtered = computed(() => {
   if (!query.value) return allOptions.value
   const q = query.value.toLowerCase()
   return allOptions.value.filter(
-    (o) => o.label.toLowerCase().includes(q) || o.group.toLowerCase().includes(q),
+    (o) => o.label.toLowerCase().includes(q) || o.group.toLowerCase().includes(q) || (o.sublabel && o.sublabel.toLowerCase().includes(q)),
   )
 })
-
 const groupedFiltered = computed(() => {
   const groups: Record<string, typeof filtered.value> = {}
   for (const opt of filtered.value) {

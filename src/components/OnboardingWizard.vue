@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
-import { ACTION_CATEGORIES } from '@/utils/actions-registry'
+import { ACTION_CATEGORIES, getActionDescription, getActionLabel } from '@/utils/actions-registry'
 import { getBrowserConflict } from '@/utils/shortcut-conflicts'
 
 const emit = defineEmits<{
@@ -15,19 +15,19 @@ const selectedAction = ref('')
 const shortcutKey = ref('')
 
 const POPULAR_ACTIONS = [
-  { id: 'newtab', label: 'New tab', icon: 'mdi-tab-plus' },
-  { id: 'closetab', label: 'Close tab', icon: 'mdi-tab-remove' },
-  { id: 'reopentab', label: 'Reopen last closed tab', icon: 'mdi-tab-unselected' },
-  { id: 'nexttab', label: 'Next tab', icon: 'mdi-arrow-right-bold' },
-  { id: 'prevtab', label: 'Previous tab', icon: 'mdi-arrow-left-bold' },
-  { id: 'scrolldown', label: 'Scroll down', icon: 'mdi-arrow-down' },
-  { id: 'scrollup', label: 'Scroll up', icon: 'mdi-arrow-up' },
-  { id: 'back', label: 'Go back', icon: 'mdi-arrow-left' },
-  { id: 'forward', label: 'Go forward', icon: 'mdi-arrow-right' },
-  { id: 'copyurl', label: 'Copy URL', icon: 'mdi-content-copy' },
-  { id: 'toggledarkmode', label: 'Toggle dark mode on current page', icon: 'mdi-theme-light-dark' },
-  { id: 'reload', label: 'Reload page', icon: 'mdi-refresh' },
-]
+  { id: 'newtab', icon: 'mdi-tab-plus' },
+  { id: 'closetab', icon: 'mdi-tab-remove' },
+  { id: 'reopentab', icon: 'mdi-tab-unselected' },
+  { id: 'nexttab', icon: 'mdi-arrow-right-bold' },
+  { id: 'prevtab', icon: 'mdi-arrow-left-bold' },
+  { id: 'scrolldown', icon: 'mdi-arrow-down' },
+  { id: 'scrollup', icon: 'mdi-arrow-up' },
+  { id: 'back', icon: 'mdi-arrow-left' },
+  { id: 'forward', icon: 'mdi-arrow-right' },
+  { id: 'copyurl', icon: 'mdi-content-copy' },
+  { id: 'toggledarkmode', icon: 'mdi-theme-light-dark' },
+  { id: 'reload', icon: 'mdi-refresh' },
+].map(a => ({ ...a, label: getActionLabel(a.id) || a.id, description: getActionDescription(a.id) }))
 
 const selectedActionLabel = computed(() => {
   return POPULAR_ACTIONS.find(a => a.id === selectedAction.value)?.label || ''
@@ -101,6 +101,7 @@ const skip = () => {
             >
               <i :class="['mdi', action.icon, 'action-icon']"></i>
               <span class="action-label">{{ action.label }}</span>
+              <span v-if="action.description" class="action-desc">{{ action.description }}</span>
             </button>
           </div>
         </div>
@@ -306,6 +307,14 @@ const skip = () => {
   font-size: 13px;
   font-weight: 600;
   text-align: center;
+}
+
+.action-desc {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.4;
 }
 
 .recorder-wrap {

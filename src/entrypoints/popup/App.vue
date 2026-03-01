@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
-import { ACTION_CATEGORIES } from '@/utils/actions-registry'
+import { ACTION_CATEGORIES, getActionOptionsForSelect } from '@/utils/actions-registry'
 import type { KeySetting } from '@/utils/url-matching'
 import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
 import SearchSelect from '@/components/SearchSelect.vue'
@@ -138,7 +138,7 @@ onMounted(async () => {
       </div>
       <div class="quick-add-field">
         <label class="quick-add-label">Action</label>
-        <SearchSelect v-model="newAction" :options="ACTION_CATEGORIES" placeholder="Choose an action…" />
+        <SearchSelect v-model="newAction" :options="getActionOptionsForSelect()" placeholder="Choose an action…" />
       </div>
       <div class="quick-add-actions">
         <button class="quick-add-cancel" @click="cancelCreating" type="button">Cancel</button>
