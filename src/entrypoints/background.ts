@@ -129,8 +129,9 @@ export default defineBackground(() => {
       existing.push(newShortcut)
       await saveKeys(existing)
 
-      // Open options page so user can assign a key combo
-      chrome.runtime.openOptionsPage()
+      // Open options page with highlight param so the new shortcut is visible
+      const optionsUrl = chrome.runtime.getURL(`options.html#highlight=${newShortcut.id}`)
+      chrome.tabs.create({ url: optionsUrl })
     } catch {
       // Content script may not be loaded on this page (e.g. chrome:// pages)
     }

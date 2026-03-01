@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { ACTION_CATEGORIES } from '@/utils/actions-registry'
 import SearchSelect from '@/components/SearchSelect.vue'
 import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
@@ -103,6 +103,30 @@ onMounted(async () => {
   
   if (localStorage.getItem('shortkeys-onboarding-done') !== 'true') {
     showOnboarding.value = true
+  }
+
+  // Check for highlight param from context menu shortcut creation
+  const hash = window.location.hash
+  if (hash.startsWith('#highlight=')) {
+    const highlightId = hash.slice('#highlight='.length)
+    const idx = keys.value.findIndex((k) => k.id === highlightId)
+    if (idx !== -1) {
+      // Expand the shortcut details so user can assign a key
+      expandedRow.value = idx
+      // Ensure the group is not collapsed
+      const group = keys.value[idx].group
+      if (group) collapsedGroups.value.delete(group)
+      // Wait for DOM update, then scroll to the card and flash it
+      await nextTick()
+      const card = document.querySelector(`[data-shortcut-id="${highlightId}"]`)
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        card.classList.add('highlight-flash')
+        setTimeout(() => card.classList.remove('highlight-flash'), 2000)
+      }
+    }
+    // Clean up the hash so it doesn't persist on reload
+    history.replaceState(null, '', window.location.pathname)
   }
 })
 
@@ -337,6 +361,7 @@ onUnmounted(() => {
               <div
                 v-for="index in (groupedIndices.get(group) || [])"
                 :key="keys[index].id"
+                :data-shortcut-id="keys[index].id"
                 :class="['shortcut-card', { disabled: keys[index].enabled === false, dragging: dragIndex === index }]"
                 draggable="true"
                 @dragstart="onDragStart(index)"
@@ -2106,5 +2131,17 @@ a:hover { text-decoration: underline; }
 [data-density="condensed"] .shortcut-actions .btn-icon {
   font-size: 14px;
   padding: 9px;
+}
+
+/* Highlight flash for newly created shortcuts (e.g. from context menu) */
+@keyframes highlight-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.5); }
+  50% { box-shadow: 0 0 0 8px rgba(67, 97, 238, 0.2); }
+  100% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0); }
+}
+.highlight-flash {
+  animation: highlight-pulse 0.6s ease-in-out 3;
+  outline: 2px solid var(--blue, #4361ee);
+  outline-offset: 2px;
 }
 </style>
