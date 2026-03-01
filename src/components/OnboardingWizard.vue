@@ -3,11 +3,14 @@ import { ref, computed } from 'vue'
 import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
 import { ACTION_CATEGORIES } from '@/utils/actions-registry'
 import { getBrowserConflict } from '@/utils/shortcut-conflicts'
+import { ALL_PACKS } from '@/packs'
+import type { ShortcutPack } from '@/packs'
 
 const emit = defineEmits<{
   (e: 'finish', shortcut: { key: string; action: string }): void
   (e: 'skip'): void
   (e: 'done'): void
+  (e: 'installPack', pack: ShortcutPack): void
 }>()
 
 const step = ref(1)
@@ -45,10 +48,19 @@ const MORE_ACTIONS = [
   { id: 'disable', label: 'Do nothing (disable browser shortcut)', icon: 'mdi-cancel' },
 ]
 
+// Featured packs shown initially (3 = fills one row)
+const INITIAL_PACKS = ALL_PACKS.slice(0, 3)
+const MORE_PACKS = ALL_PACKS.slice(3)
+
+
 const ALL_ACTIONS = [...INITIAL_ACTIONS, ...MORE_ACTIONS]
 
 const visibleActions = computed(() => {
   return showMoreActions.value ? ALL_ACTIONS : INITIAL_ACTIONS
+})
+
+const visiblePacks = computed(() => {
+  return showMoreActions.value ? ALL_PACKS : INITIAL_PACKS
 })
 
 const currentAction = computed(() => {
@@ -151,7 +163,7 @@ const skip = () => {
         <!-- Step 1: Choose actions -->
         <div v-if="step === 1" class="step-panel">
           <h2 class="step-title">Quick start</h2>
-          <p class="step-desc">Pick a few actions to get started — you can always add, remove, or change shortcuts later.</p>
+          <p class="step-desc">Pick a few actions below, then assign shortcuts. You can always change these later.</p>
           
           <div class="action-grid">
             <button 
@@ -171,9 +183,28 @@ const skip = () => {
             </button>
           </div>
 
+          <h3 class="packs-heading">Or try a shortcut pack</h3>
+          <div class="pack-mini-grid">
+            <button
+              v-for="pack in visiblePacks"
+              :key="pack.id"
+              class="pack-mini-card"
+              :style="{ '--pack-accent': pack.color }"
+              @click="emit('installPack', pack)"
+              type="button"
+            >
+              <span class="pack-mini-icon">{{ pack.icon }}</span>
+              <div class="pack-mini-info">
+                <span class="pack-mini-name">{{ pack.name }}</span>
+                <span class="pack-mini-meta">{{ pack.shortcuts.length }} shortcuts</span>
+              </div>
+              <i class="mdi mdi-chevron-right pack-mini-arrow"></i>
+            </button>
+          </div>
+
           <div class="show-more-wrap">
             <button class="btn-show-more" @click="toggleShowMore" type="button">
-              {{ showMoreActions ? 'Show fewer' : `Show more actions (${MORE_ACTIONS.length} more)` }}
+              {{ showMoreActions ? 'Show fewer' : `Show more (${MORE_ACTIONS.length + MORE_PACKS.length} more)` }}
               <i :class="['mdi', showMoreActions ? 'mdi-chevron-up' : 'mdi-chevron-down']"></i>
             </button>
           </div>
@@ -482,11 +513,13 @@ const skip = () => {
 
 .step-1-actions {
   justify-content: center;
+  display: flex;
 }
 
 .btn-next-step {
   width: 100%;
   max-width: 300px;
+  margin: 0 auto;
   padding: 12px;
   font-size: 15px;
   font-weight: 600;
@@ -709,6 +742,85 @@ const skip = () => {
   background: var(--bg-elevated);
   border-color: var(--border-light);
   color: var(--text);
+}
+
+/* ── Pack mini cards ── */
+.packs-heading {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 24px 0 12px;
+  text-align: center;
+}
+
+.pack-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.pack-mini-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--pack-accent, var(--blue));
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  color: var(--text);
+}
+
+.pack-mini-card:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-light);
+  border-left-color: var(--pack-accent, var(--blue));
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.pack-mini-icon {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.pack-mini-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.pack-mini-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pack-mini-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.pack-mini-arrow {
+  font-size: 16px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.pack-mini-card:hover .pack-mini-arrow {
+  transform: translateX(2px);
+  color: var(--text-secondary);
 }
 
 /* Animations */

@@ -142,16 +142,34 @@ async function main() {
     fullPage: true,
   })
 
-  // 8. Screenshot: Options page — Analytics tab
+  // 8b. Screenshot: Options page — Packs tab
+  console.log('Capturing options page (Packs tab)...')
+  const packsPage = await context.newPage()
+  await packsPage.setViewportSize({ width: 1280, height: 800 })
+  await packsPage.goto(`chrome-extension://${extensionId}/options.html`)
+  await packsPage.waitForSelector('.app-main', { timeout: 5000 })
+  await packsPage.waitForTimeout(500)
+  // Click the Packs tab (2nd tab button, index 1)
+  const packsTabButtons = packsPage.locator('.tab-btn')
+  await packsTabButtons.nth(1).click()
+  await packsPage.waitForTimeout(500)
+  await packsPage.screenshot({
+    path: path.join(SCREENSHOT_DIR, 'options-packs.png'),
+    fullPage: false,
+  })
+
+  await packsPage.close()
+
+  // 8c. Screenshot: Options page — Analytics tab
   console.log('Capturing options page (Analytics tab)...')
   const analyticsPage = await context.newPage()
   await analyticsPage.setViewportSize({ width: 1280, height: 800 })
   await analyticsPage.goto(`chrome-extension://${extensionId}/options.html`)
   await analyticsPage.waitForSelector('.app-main', { timeout: 5000 })
   await analyticsPage.waitForTimeout(500)
-  // Click the Analytics tab (4th tab button)
+  // Click the Analytics tab (5th tab button, index 4)
   const tabButtons = analyticsPage.locator('.tab-btn')
-  await tabButtons.nth(3).click()
+  await tabButtons.nth(4).click()
   await analyticsPage.waitForTimeout(500)
   await analyticsPage.screenshot({
     path: path.join(SCREENSHOT_DIR, 'options-analytics.png'),
@@ -167,9 +185,9 @@ async function main() {
   await importPage.goto(`chrome-extension://${extensionId}/options.html`)
   await importPage.waitForSelector('.app-main', { timeout: 5000 })
   await importPage.waitForTimeout(500)
-  // Click the Import tab (2nd tab button, index 1)
+  // Click the Import tab (3rd tab button, index 2)
   const importTabButtons = importPage.locator('.tab-btn')
-  await importTabButtons.nth(1).click()
+  await importTabButtons.nth(2).click()
   await importPage.waitForTimeout(500)
   await importPage.screenshot({
     path: path.join(SCREENSHOT_DIR, 'options-import.png'),
@@ -185,7 +203,7 @@ async function main() {
   console.log('  - popup-quick-add.png')
   console.log('  - popup-quick-add-dropdown.png')
   console.log('  - options-comfortable.png')
-  console.log('  - options-condensed.png')
+  console.log('  - options-packs.png')
   console.log('  - options-analytics.png')
   console.log('  - options-import.png')
 }
