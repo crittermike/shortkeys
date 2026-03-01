@@ -15,12 +15,18 @@ const actionLabels = computed(() => {
   return map
 })
 
-/** ACTION_CATEGORIES without 'macro' to prevent recursive macros */
+/** ACTION_CATEGORIES without 'macro' to prevent recursive macros, with descriptions as sublabels */
 const macroActionOptions = computed(() => {
-  const filtered: Record<string, { value: string; label: string }[]> = {}
+  const filtered: Record<string, { value: string; label: string; sublabel?: string }[]> = {}
   for (const [category, actions] of Object.entries(ACTION_CATEGORIES)) {
     const withoutMacro = actions.filter((a) => a.value !== 'macro')
-    if (withoutMacro.length > 0) filtered[category] = withoutMacro
+    if (withoutMacro.length > 0) {
+      filtered[category] = withoutMacro.map((a) => ({
+        value: a.value,
+        label: a.label,
+        sublabel: a.description,
+      }))
+    }
   }
   return filtered
 })

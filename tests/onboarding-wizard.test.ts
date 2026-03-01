@@ -14,7 +14,7 @@ import { getBrowserConflict } from '../src/utils/shortcut-conflicts'
 const POPULAR_ACTIONS = [
   { id: 'newtab', label: 'New tab', icon: 'mdi-tab-plus' },
   { id: 'closetab', label: 'Close tab', icon: 'mdi-tab-remove' },
-  { id: 'reopentab', label: 'Reopen last closed tab', icon: 'mdi-tab-unselected' },
+  { id: 'reopentab', label: 'Reopen closed tab', icon: 'mdi-tab-unselected' },
   { id: 'nexttab', label: 'Next tab', icon: 'mdi-arrow-right-bold' },
   { id: 'prevtab', label: 'Previous tab', icon: 'mdi-arrow-left-bold' },
   { id: 'scrolldown', label: 'Scroll down', icon: 'mdi-arrow-down' },
@@ -22,7 +22,7 @@ const POPULAR_ACTIONS = [
   { id: 'back', label: 'Go back', icon: 'mdi-arrow-left' },
   { id: 'forward', label: 'Go forward', icon: 'mdi-arrow-right' },
   { id: 'copyurl', label: 'Copy URL', icon: 'mdi-content-copy' },
-  { id: 'toggledarkmode', label: 'Toggle dark mode on current page', icon: 'mdi-theme-light-dark' },
+  { id: 'toggledarkmode', label: 'Toggle dark mode', icon: 'mdi-theme-light-dark' },
   { id: 'reload', label: 'Reload page', icon: 'mdi-refresh' },
 ]
 
