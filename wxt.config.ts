@@ -135,6 +135,7 @@ export default defineConfig({
       'notifications',
       'activeTab',
       'userScripts',
+      'contextMenus',
     ],
     optional_permissions: ['clipboardRead'],
     host_permissions: ['*://*/*'],
