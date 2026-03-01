@@ -203,6 +203,74 @@ describe('handleAction', () => {
       await handleAction('movetableft')
       expect(mockTabsMove).not.toHaveBeenCalled()
     })
+
+    it('joins tab group when moving left next to a grouped tab', async () => {
+      const activeTab = { ...defaultTab, id: 3, index: 2, groupId: -1 }
+      const groupedTab = { id: 2, index: 1, groupId: 5 }
+      mockTabsQuery
+        .mockResolvedValueOnce([activeTab])
+        .mockResolvedValueOnce([{ id: 1, index: 0 }, groupedTab, activeTab])
+      await handleAction('movetableft')
+      expect(mockTabsMove).toHaveBeenCalledWith(3, { index: 1 })
+      expect(chrome.tabs.group).toHaveBeenCalledWith({ tabIds: [3], groupId: 5 })
+    })
+
+    it('joins tab group when moving right next to a grouped tab', async () => {
+      const activeTab = { ...defaultTab, id: 3, index: 1, groupId: -1 }
+      const groupedTab = { id: 4, index: 2, groupId: 7 }
+      mockTabsQuery
+        .mockResolvedValueOnce([activeTab])
+        .mockResolvedValueOnce([{ id: 1, index: 0 }, activeTab, groupedTab])
+      await handleAction('movetabright')
+      expect(mockTabsMove).toHaveBeenCalledWith(3, { index: 2 })
+      expect(chrome.tabs.group).toHaveBeenCalledWith({ tabIds: [3], groupId: 7 })
+    })
+
+    it('leaves tab group when moving left away from group', async () => {
+      const activeTab = { ...defaultTab, id: 3, index: 2, groupId: 5 }
+      const ungroupedTab = { id: 2, index: 1, groupId: -1 }
+      mockTabsQuery
+        .mockResolvedValueOnce([activeTab])
+        .mockResolvedValueOnce([{ id: 1, index: 0 }, ungroupedTab, activeTab])
+      await handleAction('movetableft')
+      expect(mockTabsMove).toHaveBeenCalledWith(3, { index: 1 })
+      expect(chrome.tabs.ungroup).toHaveBeenCalledWith(3)
+    })
+
+    it('leaves tab group when moving right away from group', async () => {
+      const activeTab = { ...defaultTab, id: 3, index: 1, groupId: 5 }
+      const ungroupedTab = { id: 4, index: 2, groupId: -1 }
+      mockTabsQuery
+        .mockResolvedValueOnce([activeTab])
+        .mockResolvedValueOnce([{ id: 1, index: 0 }, activeTab, ungroupedTab])
+      await handleAction('movetabright')
+      expect(mockTabsMove).toHaveBeenCalledWith(3, { index: 2 })
+      expect(chrome.tabs.ungroup).toHaveBeenCalledWith(3)
+    })
+
+    it('stays in same group when moving left within group', async () => {
+      const activeTab = { ...defaultTab, id: 3, index: 2, groupId: 5 }
+      const sameGroupTab = { id: 2, index: 1, groupId: 5 }
+      mockTabsQuery
+        .mockResolvedValueOnce([activeTab])
+        .mockResolvedValueOnce([{ id: 1, index: 0 }, sameGroupTab, activeTab])
+      await handleAction('movetableft')
+      expect(mockTabsMove).toHaveBeenCalledWith(3, { index: 1 })
+      expect(chrome.tabs.group).not.toHaveBeenCalled()
+      expect(chrome.tabs.ungroup).not.toHaveBeenCalled()
+    })
+
+    it('stays in same group when moving right within group', async () => {
+      const activeTab = { ...defaultTab, id: 3, index: 1, groupId: 5 }
+      const sameGroupTab = { id: 4, index: 2, groupId: 5 }
+      mockTabsQuery
+        .mockResolvedValueOnce([activeTab])
+        .mockResolvedValueOnce([{ id: 1, index: 0 }, activeTab, sameGroupTab])
+      await handleAction('movetabright')
+      expect(mockTabsMove).toHaveBeenCalledWith(3, { index: 2 })
+      expect(chrome.tabs.group).not.toHaveBeenCalled()
+      expect(chrome.tabs.ungroup).not.toHaveBeenCalled()
+    })
   })
 
   describe('window management', () => {

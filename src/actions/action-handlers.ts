@@ -326,14 +326,36 @@ const actionHandlers: Record<string, ActionHandler> = {
   movetableft: async () => {
     const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
     if (tab.index > 0) {
+      const allTabs = await browser.tabs.query({ currentWindow: true })
+      const leftNeighbor = allTabs.find((t: any) => t.index === tab.index - 1)
       await browser.tabs.move(tab.id!, { index: tab.index - 1 })
+      if (chrome.tabs?.group && chrome.tabs?.ungroup && leftNeighbor) {
+        const neighborGroupId = (leftNeighbor as any).groupId ?? -1
+        const tabGroupId = (tab as any).groupId ?? -1
+        if (neighborGroupId !== -1 && neighborGroupId !== tabGroupId) {
+          await chrome.tabs.group({ tabIds: [tab.id!], groupId: neighborGroupId })
+        } else if (tabGroupId !== -1 && neighborGroupId !== tabGroupId) {
+          await chrome.tabs.ungroup(tab.id!)
+        }
+      }
     }
     return true
   },
 
   movetabright: async () => {
     const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
+    const allTabs = await browser.tabs.query({ currentWindow: true })
+    const rightNeighbor = allTabs.find((t: any) => t.index === tab.index + 1)
     await browser.tabs.move(tab.id!, { index: tab.index + 1 })
+    if (chrome.tabs?.group && chrome.tabs?.ungroup && rightNeighbor) {
+      const neighborGroupId = (rightNeighbor as any).groupId ?? -1
+      const tabGroupId = (tab as any).groupId ?? -1
+      if (neighborGroupId !== -1 && neighborGroupId !== tabGroupId) {
+        await chrome.tabs.group({ tabIds: [tab.id!], groupId: neighborGroupId })
+      } else if (tabGroupId !== -1 && neighborGroupId !== tabGroupId) {
+        await chrome.tabs.ungroup(tab.id!)
+      }
+    }
     return true
   },
 
