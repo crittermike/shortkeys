@@ -11,26 +11,51 @@ const emit = defineEmits<{
 }>()
 
 const step = ref(1)
-const selectedAction = ref('')
+const selectedActions = ref<string[]>([])
+const currentActionIndex = ref(0)
 const shortcutKey = ref('')
+const showMoreActions = ref(false)
 
-const POPULAR_ACTIONS = [
-  { id: 'newtab', label: 'New tab', icon: 'mdi-tab-plus' },
-  { id: 'closetab', label: 'Close tab', icon: 'mdi-tab-remove' },
-  { id: 'reopentab', label: 'Reopen last closed tab', icon: 'mdi-tab-unselected' },
-  { id: 'nexttab', label: 'Next tab', icon: 'mdi-arrow-right-bold' },
-  { id: 'prevtab', label: 'Previous tab', icon: 'mdi-arrow-left-bold' },
-  { id: 'scrolldown', label: 'Scroll down', icon: 'mdi-arrow-down' },
-  { id: 'scrollup', label: 'Scroll up', icon: 'mdi-arrow-up' },
-  { id: 'back', label: 'Go back', icon: 'mdi-arrow-left' },
-  { id: 'forward', label: 'Go forward', icon: 'mdi-arrow-right' },
-  { id: 'copyurl', label: 'Copy URL', icon: 'mdi-content-copy' },
+const recordedShortcuts = ref<{ actionId: string; actionLabel: string; icon: string; key: string }[]>([])
+
+const INITIAL_ACTIONS = [
   { id: 'toggledarkmode', label: 'Toggle dark mode on current page', icon: 'mdi-theme-light-dark' },
-  { id: 'reload', label: 'Reload page', icon: 'mdi-refresh' },
+  { id: 'copyurl', label: 'Copy URL', icon: 'mdi-content-copy' },
+  { id: 'copytitleurlmarkdown', label: 'Copy as markdown link [title](url)', icon: 'mdi-language-markdown' },
+  { id: 'movetableft', label: 'Move tab left', icon: 'mdi-arrow-left-bold' },
+  { id: 'movetabright', label: 'Move tab right', icon: 'mdi-arrow-right-bold' },
+  { id: 'lastusedtab', label: 'Switch to last used tab', icon: 'mdi-swap-horizontal' },
+  { id: 'javascript', label: 'Run JavaScript', icon: 'mdi-language-javascript' },
+  { id: 'linkhints', label: 'Show link hints (click)', icon: 'mdi-cursor-default-click-outline' },
+  { id: 'reopentab', label: 'Reopen last closed tab', icon: 'mdi-tab-unselected' },
+  { id: 'togglepin', label: 'Pin/unpin tab', icon: 'mdi-pin' },
 ]
 
-const selectedActionLabel = computed(() => {
-  return POPULAR_ACTIONS.find(a => a.id === selectedAction.value)?.label || ''
+const MORE_ACTIONS = [
+  { id: 'focusinput', label: 'Focus first text input on page', icon: 'mdi-form-textbox' },
+  { id: 'showcheatsheet', label: 'Show shortcut cheat sheet overlay', icon: 'mdi-help-circle-outline' },
+  { id: 'openclipboardurl', label: 'Open URL from clipboard', icon: 'mdi-clipboard-arrow-right-outline' },
+  { id: 'closeduplicatetabs', label: 'Close duplicate tabs', icon: 'mdi-tab-minus' },
+  { id: 'audibletab', label: 'Jump to tab playing audio/video', icon: 'mdi-volume-high' },
+  { id: 'sorttabs', label: 'Sort tabs alphabetically by title', icon: 'mdi-sort-alphabetical-ascending' },
+  { id: 'videospeedup', label: 'Speed up video (0.25x)', icon: 'mdi-fast-forward' },
+  { id: 'macro', label: 'Run a macro (chain multiple actions)', icon: 'mdi-play-box-multiple-outline' },
+  { id: 'togglebookmark', label: 'Bookmark/unbookmark current page', icon: 'mdi-bookmark-outline' },
+  { id: 'editurl', label: 'Edit current URL and navigate', icon: 'mdi-pencil-outline' },
+  { id: 'urlup', label: 'Go up one level in URL path', icon: 'mdi-arrow-up-bold' },
+  { id: 'disable', label: 'Do nothing (disable browser shortcut)', icon: 'mdi-cancel' },
+]
+
+const ALL_ACTIONS = [...INITIAL_ACTIONS, ...MORE_ACTIONS]
+
+const visibleActions = computed(() => {
+  return showMoreActions.value ? ALL_ACTIONS : INITIAL_ACTIONS
+})
+
+const currentAction = computed(() => {
+  if (selectedActions.value.length === 0) return null
+  const id = selectedActions.value[currentActionIndex.value]
+  return ALL_ACTIONS.find(a => a.id === id) || null
 })
 
 const conflictWarning = computed(() => {
@@ -39,76 +64,143 @@ const conflictWarning = computed(() => {
   return conflict ? `Overrides browser shortcut: ${conflict}` : null
 })
 
-const selectAction = (actionId: string) => {
-  selectedAction.value = actionId
-  step.value = 2
+const toggleAction = (actionId: string) => {
+  const index = selectedActions.value.indexOf(actionId)
+  if (index > -1) {
+    selectedActions.value.splice(index, 1)
+  } else {
+    selectedActions.value.push(actionId)
+  }
+}
+
+const toggleShowMore = () => {
+  showMoreActions.value = !showMoreActions.value
+}
+
+const goToStep2 = () => {
+  if (selectedActions.value.length > 0) {
+    step.value = 2
+    currentActionIndex.value = 0
+    shortcutKey.value = ''
+    recordedShortcuts.value = []
+  }
 }
 
 const goBack = () => {
-  step.value = 1
+  if (currentActionIndex.value > 0) {
+    currentActionIndex.value--
+    shortcutKey.value = ''
+  } else {
+    step.value = 1
+  }
 }
 
-const goNext = () => {
-  if (shortcutKey.value) {
+const skipCurrent = () => {
+  advanceOrFinish()
+}
+
+const recordNext = () => {
+  if (shortcutKey.value && currentAction.value) {
+    recordedShortcuts.value.push({
+      actionId: currentAction.value.id,
+      actionLabel: currentAction.value.label,
+      icon: currentAction.value.icon,
+      key: shortcutKey.value
+    })
+    emit('finish', { key: shortcutKey.value, action: currentAction.value.id })
+  }
+  advanceOrFinish()
+}
+
+const advanceOrFinish = () => {
+  if (currentActionIndex.value < selectedActions.value.length - 1) {
+    currentActionIndex.value++
+    shortcutKey.value = ''
+  } else {
     step.value = 3
   }
 }
 
 const finish = () => {
-  emit('finish', { key: shortcutKey.value, action: selectedAction.value })
   emit('done')
-}
-
-const addAnother = () => {
-  emit('finish', { key: shortcutKey.value, action: selectedAction.value })
-  // Reset wizard
-  step.value = 1
-  selectedAction.value = ''
-  shortcutKey.value = ''
 }
 
 const skip = () => {
   emit('skip')
 }
 </script>
-
 <template>
   <div class="onboarding-wizard">
     <div class="wizard-header">
       <div class="step-indicator">
         <div :class="['step-dot', { active: step >= 1, current: step === 1 }]">1</div>
+        <div class="step-label" :class="{ active: step >= 1 }">Choose actions</div>
         <div :class="['step-line', { active: step >= 2 }]"></div>
         <div :class="['step-dot', { active: step >= 2, current: step === 2 }]">2</div>
+        <div class="step-label" :class="{ active: step >= 2 }">Assign shortcuts</div>
         <div :class="['step-line', { active: step >= 3 }]"></div>
         <div :class="['step-dot', { active: step >= 3, current: step === 3 }]">3</div>
+        <div class="step-label" :class="{ active: step >= 3 }">All set!</div>
       </div>
     </div>
 
     <div class="wizard-content">
-      <!-- Step 1: Pick an action -->
       <Transition name="fade" mode="out-in">
+        <!-- Step 1: Choose actions -->
         <div v-if="step === 1" class="step-panel">
-          <h2 class="step-title">Pick an action</h2>
-          <p class="step-desc">Choose what you want your first shortcut to do.</p>
+          <h2 class="step-title">Choose actions</h2>
+          <p class="step-desc">Select the actions you want to create shortcuts for.</p>
           
           <div class="action-grid">
             <button 
-              v-for="action in POPULAR_ACTIONS" 
+              v-for="action in visibleActions" 
               :key="action.id"
-              class="action-card"
-              @click="selectAction(action.id)"
+              :class="['action-card', { 'selected': selectedActions.includes(action.id) }]"
+              @click="toggleAction(action.id)"
               type="button"
             >
-              <i :class="['mdi', action.icon, 'action-icon']"></i>
+              <div class="action-card-header">
+                <i :class="['mdi', action.icon, 'action-icon']"></i>
+                <div class="checkbox-indicator">
+                  <i v-if="selectedActions.includes(action.id)" class="mdi mdi-check"></i>
+                </div>
+              </div>
               <span class="action-label">{{ action.label }}</span>
+            </button>
+          </div>
+
+          <div class="show-more-wrap">
+            <button class="btn-show-more" @click="toggleShowMore" type="button">
+              {{ showMoreActions ? 'Show fewer' : `Show more actions (${MORE_ACTIONS.length} more)` }}
+              <i :class="['mdi', showMoreActions ? 'mdi-chevron-up' : 'mdi-chevron-down']"></i>
+            </button>
+          </div>
+
+          <div class="step-actions step-1-actions">
+            <button 
+              class="btn btn-primary btn-next-step" 
+              @click="goToStep2" 
+              :disabled="selectedActions.length === 0"
+              type="button"
+            >
+              Next — Set up {{ selectedActions.length }} shortcut{{ selectedActions.length === 1 ? '' : 's' }} <i class="mdi mdi-arrow-right"></i>
             </button>
           </div>
         </div>
 
-        <!-- Step 2: Record a shortcut -->
+        <!-- Step 2: Record shortcuts -->
         <div v-else-if="step === 2" class="step-panel">
-          <h2 class="step-title">Record a shortcut</h2>
-          <p class="step-desc">Press the keys you want to use for <strong>{{ selectedActionLabel }}</strong>.</p>
+          <div class="progress-wrap">
+            <div class="progress-text">Shortcut {{ currentActionIndex + 1 }} of {{ selectedActions.length }}</div>
+            <div class="progress-bar">
+              <div class="progress-fill" :style="{ width: `${((currentActionIndex + 1) / selectedActions.length) * 100}%` }"></div>
+            </div>
+          </div>
+
+          <div class="current-action-display" v-if="currentAction">
+            <i :class="['mdi', currentAction.icon]"></i>
+            <h2>{{ currentAction.label }}</h2>
+          </div>
           
           <div class="recorder-wrap">
             <ShortcutRecorder v-model="shortcutKey" />
@@ -123,41 +215,45 @@ const skip = () => {
             <button class="btn btn-secondary" @click="goBack" type="button">
               <i class="mdi mdi-arrow-left"></i> Back
             </button>
-            <button 
-              class="btn btn-primary" 
-              @click="goNext" 
-              :disabled="!shortcutKey"
-              type="button"
-            >
-              Next <i class="mdi mdi-arrow-right"></i>
-            </button>
+            <div class="right-actions">
+              <button class="btn btn-secondary btn-skip" @click="skipCurrent" type="button">
+                Skip
+              </button>
+              <button 
+                class="btn btn-primary" 
+                @click="recordNext" 
+                :disabled="!shortcutKey"
+                type="button"
+              >
+                Next <i class="mdi mdi-arrow-right"></i>
+              </button>
+            </div>
           </div>
         </div>
 
         <!-- Step 3: Success -->
         <div v-else-if="step === 3" class="step-panel success-panel">
           <div class="confetti-wrap">
-            <div class="confetti-icon">🎉</div>
+            <i class="mdi mdi-check-circle success-icon"></i>
           </div>
-          <h2 class="step-title">You're all set!</h2>
-          <p class="step-desc">Your shortcut is ready to use.</p>
+          <h2 class="step-title">You created {{ recordedShortcuts.length }} shortcut{{ recordedShortcuts.length === 1 ? '' : 's' }}!</h2>
+          <p class="step-desc">Your shortcuts are ready to use.</p>
           
-          <div class="success-summary">
-            <div class="summary-keys">
-              <kbd v-for="k in shortcutKey.split('+')" :key="k">{{ k }}</kbd>
-            </div>
-            <i class="mdi mdi-arrow-right summary-arrow"></i>
-            <div class="summary-action">
-              <i :class="['mdi', POPULAR_ACTIONS.find(a => a.id === selectedAction)?.icon]"></i>
-              {{ selectedActionLabel }}
+          <div class="success-summary-list">
+            <div class="success-summary" v-for="(shortcut, idx) in recordedShortcuts" :key="idx">
+              <div class="summary-keys">
+                <kbd v-for="k in shortcut.key.split('+')" :key="k">{{ k }}</kbd>
+              </div>
+              <i class="mdi mdi-arrow-right summary-arrow"></i>
+              <div class="summary-action">
+                <i :class="['mdi', shortcut.icon]"></i>
+                {{ shortcut.actionLabel }}
+              </div>
             </div>
           </div>
 
           <div class="step-actions success-actions">
-            <button class="btn btn-primary" @click="addAnother" type="button">
-              <i class="mdi mdi-plus"></i> Add another shortcut
-            </button>
-            <button class="btn btn-secondary" @click="finish" type="button">
+            <button class="btn btn-primary" @click="finish" type="button">
               <i class="mdi mdi-check"></i> Done
             </button>
           </div>
@@ -170,10 +266,9 @@ const skip = () => {
     </div>
   </div>
 </template>
-
 <style scoped>
 .onboarding-wizard {
-  max-width: 640px;
+  max-width: 680px;
   margin: 40px auto;
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -221,6 +316,17 @@ const skip = () => {
   background: var(--blue);
   color: #fff;
   box-shadow: 0 0 0 4px var(--blue-bg);
+}
+
+.step-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: color 0.3s ease;
+}
+
+.step-label.active {
+  color: var(--text);
 }
 
 .step-line {
@@ -276,11 +382,11 @@ const skip = () => {
   padding: 16px;
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
   color: var(--text);
+  text-align: left;
 }
 
 .action-card:hover {
@@ -290,22 +396,156 @@ const skip = () => {
   box-shadow: 0 4px 12px var(--shadow);
 }
 
+.action-card.selected {
+  background: var(--blue-bg);
+  border-color: var(--blue);
+}
+
+.action-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+}
+
 .action-icon {
-  font-size: 32px;
-  color: var(--blue);
+  font-size: 28px;
+  color: var(--text-secondary);
   opacity: 0.9;
-  transition: transform 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .action-card:hover .action-icon {
-  transform: scale(1.1);
+  color: var(--blue);
+  transform: scale(1.05);
   opacity: 1;
+}
+
+.action-card.selected .action-icon {
+  color: var(--blue);
+}
+
+.checkbox-indicator {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  background: var(--bg-card);
+}
+
+.action-card.selected .checkbox-indicator {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: white;
+}
+
+.checkbox-indicator .mdi {
+  font-size: 14px;
+  font-weight: bold;
 }
 
 .action-label {
   font-size: 13px;
   font-weight: 600;
+  line-height: 1.4;
+}
+
+.show-more-wrap {
+  margin-top: 16px;
   text-align: center;
+}
+
+.btn-show-more {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+}
+
+.btn-show-more:hover {
+  background: var(--bg-elevated);
+  color: var(--text);
+}
+
+.step-1-actions {
+  justify-content: center;
+}
+
+.btn-next-step {
+  width: 100%;
+  max-width: 300px;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.progress-wrap {
+  margin-bottom: 32px;
+}
+
+.progress-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.progress-bar {
+  height: 6px;
+  background: var(--bg-elevated);
+  border-radius: 3px;
+  overflow: hidden;
+  max-width: 200px;
+  margin: 0 auto;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--blue);
+  border-radius: 3px;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.current-action-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+  animation: slideUp 0.3s ease;
+}
+
+.current-action-display .mdi {
+  font-size: 48px;
+  color: var(--blue);
+  margin-bottom: 12px;
+  background: var(--blue-bg);
+  padding: 16px;
+  border-radius: 20px;
+}
+
+.current-action-display h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
 }
 
 .recorder-wrap {
@@ -338,8 +578,19 @@ const skip = () => {
 .step-actions {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-top: auto;
   padding-top: 24px;
+}
+
+.right-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-skip {
+  background: transparent;
+  border-color: transparent;
 }
 
 .success-actions {
@@ -354,9 +605,37 @@ const skip = () => {
 }
 
 .confetti-wrap {
-  font-size: 64px;
   margin-bottom: 16px;
   animation: popIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.success-icon {
+  font-size: 72px;
+  color: #10b981; /* Green success color */
+}
+
+.success-summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 32px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.success-summary-list::-webkit-scrollbar {
+  width: 6px;
+}
+.success-summary-list::-webkit-scrollbar-track {
+  background: var(--bg-elevated);
+  border-radius: 3px;
+}
+.success-summary-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
 }
 
 .success-summary {
@@ -367,12 +646,13 @@ const skip = () => {
   padding: 16px 24px;
   border-radius: 12px;
   border: 1px solid var(--border);
-  margin-bottom: 32px;
 }
 
 .summary-keys {
   display: flex;
   gap: 4px;
+  min-width: 100px;
+  justify-content: flex-end;
 }
 
 .summary-keys kbd {
@@ -401,6 +681,7 @@ const skip = () => {
   font-size: 15px;
   font-weight: 600;
   color: var(--text);
+  text-align: left;
 }
 
 .summary-action .mdi {
@@ -440,10 +721,27 @@ const skip = () => {
   opacity: 0;
 }
 
+/* Staggered grid fade for items */
+.staggered-fade-move,
+.staggered-fade-enter-active,
+.staggered-fade-leave-active {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.staggered-fade-enter-from,
+.staggered-fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px) scale(0.95);
+}
+
+.staggered-fade-leave-active {
+  position: absolute;
+}
+
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(15px);
   }
   to {
     opacity: 1;

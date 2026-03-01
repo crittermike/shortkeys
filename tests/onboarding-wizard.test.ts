@@ -10,21 +10,37 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ACTION_CATEGORIES, getAllActionValues } from '../src/utils/actions-registry'
 import { getBrowserConflict } from '../src/utils/shortcut-conflicts'
 
-// The popular actions shown in the wizard's step 1
-const POPULAR_ACTIONS = [
-  { id: 'newtab', label: 'New tab', icon: 'mdi-tab-plus' },
-  { id: 'closetab', label: 'Close tab', icon: 'mdi-tab-remove' },
-  { id: 'reopentab', label: 'Reopen last closed tab', icon: 'mdi-tab-unselected' },
-  { id: 'nexttab', label: 'Next tab', icon: 'mdi-arrow-right-bold' },
-  { id: 'prevtab', label: 'Previous tab', icon: 'mdi-arrow-left-bold' },
-  { id: 'scrolldown', label: 'Scroll down', icon: 'mdi-arrow-down' },
-  { id: 'scrollup', label: 'Scroll up', icon: 'mdi-arrow-up' },
-  { id: 'back', label: 'Go back', icon: 'mdi-arrow-left' },
-  { id: 'forward', label: 'Go forward', icon: 'mdi-arrow-right' },
-  { id: 'copyurl', label: 'Copy URL', icon: 'mdi-content-copy' },
+// The initial actions shown in the wizard's step 1
+const INITIAL_ACTIONS = [
   { id: 'toggledarkmode', label: 'Toggle dark mode on current page', icon: 'mdi-theme-light-dark' },
-  { id: 'reload', label: 'Reload page', icon: 'mdi-refresh' },
+  { id: 'copyurl', label: 'Copy URL', icon: 'mdi-content-copy' },
+  { id: 'copytitleurlmarkdown', label: 'Copy as markdown link [title](url)', icon: 'mdi-language-markdown' },
+  { id: 'movetableft', label: 'Move tab left', icon: 'mdi-arrow-left-bold' },
+  { id: 'movetabright', label: 'Move tab right', icon: 'mdi-arrow-right-bold' },
+  { id: 'lastusedtab', label: 'Switch to last used tab', icon: 'mdi-swap-horizontal' },
+  { id: 'javascript', label: 'Run JavaScript', icon: 'mdi-language-javascript' },
+  { id: 'linkhints', label: 'Show link hints (click)', icon: 'mdi-cursor-default-click-outline' },
+  { id: 'reopentab', label: 'Reopen last closed tab', icon: 'mdi-tab-unselected' },
+  { id: 'togglepin', label: 'Pin/unpin tab', icon: 'mdi-pin' },
 ]
+
+// The additional actions shown when clicking "Show more actions"
+const MORE_ACTIONS = [
+  { id: 'focusinput', label: 'Focus first text input on page', icon: 'mdi-form-textbox' },
+  { id: 'showcheatsheet', label: 'Show shortcut cheat sheet overlay', icon: 'mdi-help-circle-outline' },
+  { id: 'openclipboardurl', label: 'Open URL from clipboard', icon: 'mdi-clipboard-arrow-right-outline' },
+  { id: 'closeduplicatetabs', label: 'Close duplicate tabs', icon: 'mdi-tab-minus' },
+  { id: 'audibletab', label: 'Jump to tab playing audio/video', icon: 'mdi-volume-high' },
+  { id: 'sorttabs', label: 'Sort tabs alphabetically by title', icon: 'mdi-sort-alphabetical-ascending' },
+  { id: 'videospeedup', label: 'Speed up video (0.25x)', icon: 'mdi-fast-forward' },
+  { id: 'macro', label: 'Run a macro (chain multiple actions)', icon: 'mdi-play-box-multiple-outline' },
+  { id: 'togglebookmark', label: 'Bookmark/unbookmark current page', icon: 'mdi-bookmark-outline' },
+  { id: 'editurl', label: 'Edit current URL and navigate', icon: 'mdi-pencil-outline' },
+  { id: 'urlup', label: 'Go up one level in URL path', icon: 'mdi-arrow-up-bold' },
+  { id: 'disable', label: 'Do nothing (disable browser shortcut)', icon: 'mdi-cancel' },
+]
+
+const POPULAR_ACTIONS = [...INITIAL_ACTIONS, ...MORE_ACTIONS]
 
 describe('OnboardingWizard', () => {
   describe('popular actions', () => {
@@ -66,6 +82,12 @@ describe('OnboardingWizard', () => {
         }
         expect(registryLabel).toBeDefined()
         expect(action.label).toBe(registryLabel)
+      }
+    })
+    
+    it('all "show more" actions are valid action values in the registry', () => {
+      for (const action of MORE_ACTIONS) {
+        expect(allActionValues).toContain(action.id)
       }
     })
   })
@@ -124,7 +146,7 @@ describe('OnboardingWizard', () => {
 
   describe('wizard finish payload', () => {
     it('finish event should contain key and action strings', () => {
-      const payload = { key: 'ctrl+t', action: 'newtab' }
+      const payload = { key: 'ctrl+t', action: 'toggledarkmode' }
       expect(payload).toHaveProperty('key')
       expect(payload).toHaveProperty('action')
       expect(typeof payload.key).toBe('string')
