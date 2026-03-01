@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
-import { ACTION_CATEGORIES } from '@/utils/actions-registry'
+import { ACTION_CATEGORIES, getActionDescription, getActionLabel } from '@/utils/actions-registry'
 import { getBrowserConflict } from '@/utils/shortcut-conflicts'
 import { ALL_PACKS } from '@/packs'
 import type { ShortcutPack } from '@/packs'
@@ -22,31 +22,31 @@ const showMoreActions = ref(false)
 const recordedShortcuts = ref<{ actionId: string; actionLabel: string; icon: string; key: string }[]>([])
 
 const INITIAL_ACTIONS = [
-  { id: 'toggledarkmode', label: 'Toggle dark mode on current page', icon: 'mdi-theme-light-dark' },
-  { id: 'copyurl', label: 'Copy URL', icon: 'mdi-content-copy' },
-  { id: 'copytitleurlmarkdown', label: 'Copy as markdown link [title](url)', icon: 'mdi-language-markdown' },
-  { id: 'movetableft', label: 'Move tab left', icon: 'mdi-arrow-left-bold' },
-  { id: 'movetabright', label: 'Move tab right', icon: 'mdi-arrow-right-bold' },
-  { id: 'lastusedtab', label: 'Switch to last used tab', icon: 'mdi-swap-horizontal' },
-  { id: 'javascript', label: 'Run JavaScript', icon: 'mdi-language-javascript' },
-  { id: 'linkhints', label: 'Show link hints (click)', icon: 'mdi-cursor-default-click-outline' },
-  { id: 'reopentab', label: 'Reopen last closed tab', icon: 'mdi-tab-unselected' },
-]
+  { id: 'toggledarkmode', icon: 'mdi-theme-light-dark' },
+  { id: 'copyurl', icon: 'mdi-content-copy' },
+  { id: 'copytitleurlmarkdown', icon: 'mdi-language-markdown' },
+  { id: 'movetableft', icon: 'mdi-arrow-left-bold' },
+  { id: 'movetabright', icon: 'mdi-arrow-right-bold' },
+  { id: 'lastusedtab', icon: 'mdi-swap-horizontal' },
+  { id: 'javascript', icon: 'mdi-language-javascript' },
+  { id: 'linkhints', icon: 'mdi-cursor-default-click-outline' },
+  { id: 'reopentab', icon: 'mdi-tab-unselected' },
+].map(a => ({ ...a, label: getActionLabel(a.id) || a.id, description: getActionDescription(a.id) }))
 
 const MORE_ACTIONS = [
-  { id: 'focusinput', label: 'Focus first text input on page', icon: 'mdi-form-textbox' },
-  { id: 'showcheatsheet', label: 'Show shortcut cheat sheet overlay', icon: 'mdi-help-circle-outline' },
-  { id: 'openclipboardurl', label: 'Open URL from clipboard', icon: 'mdi-clipboard-arrow-right-outline' },
-  { id: 'closeduplicatetabs', label: 'Close duplicate tabs', icon: 'mdi-tab-minus' },
-  { id: 'audibletab', label: 'Jump to tab playing audio/video', icon: 'mdi-volume-high' },
-  { id: 'sorttabs', label: 'Sort tabs alphabetically by title', icon: 'mdi-sort-alphabetical-ascending' },
-  { id: 'videospeedup', label: 'Speed up video (0.25x)', icon: 'mdi-fast-forward' },
-  { id: 'macro', label: 'Run a macro (chain multiple actions)', icon: 'mdi-play-box-multiple-outline' },
-  { id: 'togglebookmark', label: 'Bookmark/unbookmark current page', icon: 'mdi-bookmark-outline' },
-  { id: 'editurl', label: 'Edit current URL and navigate', icon: 'mdi-pencil-outline' },
-  { id: 'urlup', label: 'Go up one level in URL path', icon: 'mdi-arrow-up-bold' },
-  { id: 'disable', label: 'Do nothing (disable browser shortcut)', icon: 'mdi-cancel' },
-]
+  { id: 'focusinput', icon: 'mdi-form-textbox' },
+  { id: 'showcheatsheet', icon: 'mdi-help-circle-outline' },
+  { id: 'openclipboardurl', icon: 'mdi-clipboard-arrow-right-outline' },
+  { id: 'closeduplicatetabs', icon: 'mdi-tab-minus' },
+  { id: 'audibletab', icon: 'mdi-volume-high' },
+  { id: 'sorttabs', icon: 'mdi-sort-alphabetical-ascending' },
+  { id: 'videospeedup', icon: 'mdi-fast-forward' },
+  { id: 'macro', icon: 'mdi-play-box-multiple-outline' },
+  { id: 'togglebookmark', icon: 'mdi-bookmark-outline' },
+  { id: 'editurl', icon: 'mdi-pencil-outline' },
+  { id: 'urlup', icon: 'mdi-arrow-up-bold' },
+  { id: 'disable', icon: 'mdi-cancel' },
+].map(a => ({ ...a, label: getActionLabel(a.id) || a.id, description: getActionDescription(a.id) }))
 
 // Featured packs shown initially (3 = fills one row)
 const INITIAL_PACKS = ALL_PACKS.slice(0, 3)
@@ -180,6 +180,7 @@ const skip = () => {
                 </div>
               </div>
               <span class="action-label">{{ action.label }}</span>
+              <span v-if="action.description" class="action-desc">{{ action.description }}</span>
             </button>
           </div>
 
@@ -580,6 +581,14 @@ const skip = () => {
   font-weight: 700;
   color: var(--text);
   margin: 0;
+}
+
+.action-desc {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.4;
 }
 
 .recorder-wrap {

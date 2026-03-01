@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { ACTION_CATEGORIES } from '@/utils/actions-registry'
+import { ACTION_CATEGORIES, getActionOptionsForSelect } from '@/utils/actions-registry'
 import SearchSelect from '@/components/SearchSelect.vue'
 import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
 import ShortcutDetails from '@/components/ShortcutDetails.vue'
@@ -396,7 +396,7 @@ onUnmounted(() => {
                     <SearchSelect
                       :modelValue="keys[index].action"
                       @update:modelValue="onActionChange(keys[index], index, $event)"
-                      :options="ACTION_CATEGORIES"
+                      :options="getActionOptionsForSelect()"
                       placeholder="Choose action…"
                     />
                   </div>
