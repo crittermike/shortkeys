@@ -28,7 +28,6 @@ const INITIAL_ACTIONS = [
   { id: 'javascript', label: 'Run JavaScript', icon: 'mdi-language-javascript' },
   { id: 'linkhints', label: 'Show link hints (click)', icon: 'mdi-cursor-default-click-outline' },
   { id: 'reopentab', label: 'Reopen last closed tab', icon: 'mdi-tab-unselected' },
-  { id: 'togglepin', label: 'Pin/unpin tab', icon: 'mdi-pin' },
 ]
 
 const MORE_ACTIONS = [
@@ -142,14 +141,17 @@ const skip = () => {
         <div :class="['step-dot', { active: step >= 3, current: step === 3 }]">3</div>
         <div class="step-label" :class="{ active: step >= 3 }">All set!</div>
       </div>
+      <button v-if="step < 3" class="btn-skip-top" @click="skip" type="button">
+        Skip — I'll set up my own <i class="mdi mdi-arrow-right"></i>
+      </button>
     </div>
 
     <div class="wizard-content">
       <Transition name="fade" mode="out-in">
         <!-- Step 1: Choose actions -->
         <div v-if="step === 1" class="step-panel">
-          <h2 class="step-title">Choose actions</h2>
-          <p class="step-desc">Select the actions you want to create shortcuts for.</p>
+          <h2 class="step-title">Quick start</h2>
+          <p class="step-desc">Pick a few actions to get started — you can always add, remove, or change shortcuts later.</p>
           
           <div class="action-grid">
             <button 
@@ -261,9 +263,6 @@ const skip = () => {
       </Transition>
     </div>
 
-    <div v-if="step < 3" class="wizard-footer">
-      <button class="skip-link" @click="skip" type="button">Skip onboarding</button>
-    </div>
   </div>
 </template>
 <style scoped>
@@ -282,7 +281,9 @@ const skip = () => {
 .wizard-header {
   padding: 24px 24px 0;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
 .step-indicator {
@@ -371,7 +372,7 @@ const skip = () => {
 
 .action-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
 }
 
@@ -689,25 +690,25 @@ const skip = () => {
   font-size: 20px;
 }
 
-.wizard-footer {
-  padding: 16px;
-  text-align: center;
-  border-top: 1px solid var(--border-light);
-  background: var(--bg-elevated);
-}
-
-.skip-link {
+.btn-skip-top {
   background: none;
-  border: none;
-  color: var(--text-muted);
-  font-size: 13px;
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.skip-link:hover {
+  border: 1px solid var(--border);
   color: var(--text-secondary);
-  text-decoration: underline;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  }
+
+.btn-skip-top:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-light);
+  color: var(--text);
 }
 
 /* Animations */

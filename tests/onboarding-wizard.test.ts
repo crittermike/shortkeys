@@ -21,7 +21,6 @@ const INITIAL_ACTIONS = [
   { id: 'javascript', label: 'Run JavaScript', icon: 'mdi-language-javascript' },
   { id: 'linkhints', label: 'Show link hints (click)', icon: 'mdi-cursor-default-click-outline' },
   { id: 'reopentab', label: 'Reopen last closed tab', icon: 'mdi-tab-unselected' },
-  { id: 'togglepin', label: 'Pin/unpin tab', icon: 'mdi-pin' },
 ]
 
 // The additional actions shown when clicking "Show more actions"
