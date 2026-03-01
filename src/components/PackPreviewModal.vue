@@ -99,13 +99,13 @@ const keyConflictCount = computed(() => {
 
 <style scoped>
 .modal-shortcut-conflict {
-  background: #fffbeb;
-  border-left: 3px solid #f59e0b;
+  background: var(--warning-bg);
+  border-left: 3px solid var(--warning-border);
   padding-left: 9px;
 }
 .modal-shortcut-exact {
-  background: #f0f9ff;
-  border-left: 3px solid #94a3b8;
+  background: var(--info-bg);
+  border-left: 3px solid var(--text-muted);
   padding-left: 9px;
   opacity: 0.6;
 }
@@ -113,7 +113,7 @@ const keyConflictCount = computed(() => {
   display: inline-block;
   font-size: 10px;
   padding: 1px 5px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   margin-left: 6px;
   font-weight: 600;
   text-transform: uppercase;
@@ -121,49 +121,24 @@ const keyConflictCount = computed(() => {
   vertical-align: middle;
 }
 .conflict-badge.key {
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--warning-bg);
+  color: var(--warning-text);
 }
 .conflict-badge.exact {
-  background: #e2e8f0;
-  color: #475569;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
 }
 .modal-exact-notice {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  background: #f0f9ff;
-  border: 1px solid #bae6fd;
-  color: #0c4a6e;
-  border-radius: 8px;
+  background: var(--info-bg);
+  border: 1px solid var(--info-border);
+  color: var(--info-text);
+  border-radius: var(--radius-lg);
   margin-top: 12px;
   font-size: 13px;
   font-weight: 500;
-}
-.modal-exact-notice .mdi {
-  font-size: 16px;
-}
-
-[data-theme="dark"] .modal-shortcut-conflict {
-  background: rgba(245, 158, 11, 0.1);
-  border-left-color: #f59e0b;
-}
-[data-theme="dark"] .modal-shortcut-exact {
-  background: rgba(148, 163, 184, 0.1);
-  border-left-color: #64748b;
-}
-[data-theme="dark"] .conflict-badge.key {
-  background: rgba(245, 158, 11, 0.2);
-  color: #fbbf24;
-}
-[data-theme="dark"] .conflict-badge.exact {
-  background: rgba(148, 163, 184, 0.2);
-  color: #94a3b8;
-}
-[data-theme="dark"] .modal-exact-notice {
-  background: rgba(14, 165, 233, 0.1);
-  border-color: rgba(14, 165, 233, 0.3);
-  color: #7dd3fc;
 }
 </style>

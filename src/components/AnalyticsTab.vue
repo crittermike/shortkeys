@@ -184,7 +184,7 @@ function timeAgo(ts: number): string {
 <style scoped>
 .analytics-loading {
   text-align: center;
-  padding: 48px 0;
+  padding: var(--space-3xl) 0;
   color: var(--text-muted);
   font-size: 14px;
 }
@@ -192,30 +192,43 @@ function timeAgo(ts: number): string {
 .analytics-loading .mdi { margin-right: 6px; }
 
 .analytics-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 28px;
-  flex-wrap: wrap;
+display: flex;
+justify-content: space-between;
+align-items: center;
+gap: var(--space-lg);
+margin-bottom: var(--space-xl);
+flex-wrap: wrap;
 }
 
 .analytics-summary {
-  display: flex;
-  gap: 32px;
+display: flex;
+gap: var(--space-2xl);
 }
 
 .summary-stat {
-  display: flex;
-  flex-direction: column;
+display: flex;
+flex-direction: column;
   gap: 4px;
+  position: relative;
+}
+
+.summary-stat:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: calc(var(--space-2xl) / -2);
+  top: 10%;
+  height: 80%;
+  width: 1px;
+  background: var(--border-light);
+  opacity: 0.5;
 }
 
 .summary-number {
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1;
+font-size: 32px;
+font-weight: 700;
+color: var(--text);
+line-height: 1;
+letter-spacing: -0.5px;
 }
 
 .summary-label {
@@ -225,15 +238,15 @@ function timeAgo(ts: number): string {
 }
 
 .analytics-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+display: flex;
+align-items: center;
+gap: var(--space-lg);
 }
 
 .toggle-label {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-sm);
   font-size: 14px;
   color: var(--text-secondary);
   cursor: pointer;
@@ -246,19 +259,20 @@ function timeAgo(ts: number): string {
   accent-color: var(--blue);
   cursor: pointer;
 }
+
 .btn-clear {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 12px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg-elevated);
-  color: var(--text-secondary);
-  font-size: 13px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s;
+display: inline-flex;
+align-items: center;
+gap: 5px;
+padding: 5px 12px;
+border: 1px solid var(--border);
+border-radius: var(--radius-md);
+background: var(--bg-elevated);
+color: var(--text-secondary);
+font-size: 13px;
+cursor: pointer;
+white-space: nowrap;
+transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .btn-clear:hover {
@@ -272,14 +286,14 @@ function timeAgo(ts: number): string {
 }
 
 .analytics-section {
-  margin-bottom: 28px;
+margin-bottom: var(--space-xl);
 }
 
 .section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: var(--space-md);
 }
 
 .section-header .section-title {
@@ -287,46 +301,46 @@ function timeAgo(ts: number): string {
 }
 
 .section-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 12px;
+font-size: 15px;
+font-weight: 700;
+color: var(--text);
+margin-bottom: var(--space-md);
 }
 
 .chart-period-toggle {
-  display: flex;
-  gap: 2px;
-  background: var(--bg-elevated);
-  border-radius: 6px;
-  padding: 2px;
-  border: 1px solid var(--border-light);
+display: flex;
+gap: 2px;
+background: var(--bg-elevated);
+border-radius: var(--radius-md);
+padding: 2px;
+border: 1px solid var(--border-light);
 }
 
 .period-btn {
-  padding: 4px 12px;
-  border: none;
-  border-radius: 5px;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
+padding: 4px 12px;
+border: none;
+border-radius: 5px;
+background: transparent;
+color: var(--text-secondary);
+font-size: 12px;
+font-weight: 500;
+cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .period-btn:hover { color: var(--text); }
 
 .period-btn.active {
   background: var(--blue);
-  color: #fff;
+  color: white;
 }
 
 .chart-container {
   position: relative;
   background: var(--bg-elevated);
   border: 1px solid var(--border-light);
-  border-radius: 10px;
-  padding: 16px 16px 28px;
+  border-radius: var(--radius-xl);
+  padding: 16px 16px var(--space-xl);
 }
 
 .usage-chart {
@@ -341,9 +355,9 @@ function timeAgo(ts: number): string {
 }
 
 .chart-bar {
-  fill: var(--blue);
-  opacity: 0.8;
-  transition: opacity 0.15s;
+fill: var(--blue);
+opacity: 0.8;
+transition: opacity 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .chart-bar:hover {
@@ -366,19 +380,20 @@ function timeAgo(ts: number): string {
 
 
 .analytics-table {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-light);
-  border-radius: 10px;
-  overflow: hidden;
+background: var(--bg-elevated);
+border: 1px solid var(--border-light);
+border-radius: var(--radius-xl);
+overflow: hidden;
+transition: box-shadow 0.15s ease;
 }
 
 .table-row {
-  display: flex;
-  align-items: center;
-  padding: 10px 16px;
-  gap: 12px;
-  border-bottom: 1px solid var(--border-light);
-  transition: background 0.1s;
+display: flex;
+align-items: center;
+padding: 10px 16px;
+gap: var(--space-md);
+border-bottom: 1px solid var(--border-light);
+transition: background 0.15s ease;
 }
 
 .table-row:last-child { border-bottom: none; }
@@ -420,7 +435,7 @@ function timeAgo(ts: number): string {
   padding: 2px 10px;
   background: var(--blue-bg);
   color: var(--blue);
-  border-radius: 12px;
+  border-radius: var(--radius-full);
   font-size: 12px;
   font-weight: 600;
 }
@@ -432,14 +447,14 @@ function timeAgo(ts: number): string {
 }
 
 .unused-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 16px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-light);
-  border-radius: 8px;
-  gap: 12px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 8px 16px;
+background: var(--bg-elevated);
+border: 1px solid var(--border-light);
+border-radius: var(--radius-lg);
+gap: var(--space-md);
 }
 
 .unused-label {
@@ -460,7 +475,7 @@ function timeAgo(ts: number): string {
 
 .analytics-empty {
   text-align: center;
-  padding: 48px 0;
+  padding: var(--space-3xl) 0;
   color: var(--text-muted);
 }
 
@@ -472,18 +487,18 @@ function timeAgo(ts: number): string {
 .analytics-privacy {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-sm);
   font-size: 12px;
   color: var(--text-muted);
   margin-top: 16px;
   padding: 12px 16px;
   background: var(--bg-elevated);
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-light);
 }
 
 .analytics-privacy .mdi {
-  font-size: 16px;
-  color: #10b981;
+font-size: 16px;
+color: var(--success);
 }
 </style>

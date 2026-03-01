@@ -72,8 +72,11 @@ watch(
 
 <style scoped>
 .cm-wrap {
-  border-radius: 0 0 10px 10px;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  border: 1px solid var(--border, #e2e8f0);
+  border-top: none;
   overflow: hidden;
+  transition: border-color 0.15s ease;
 }
 
 .cm-wrap :deep(.cm-editor) {

@@ -60,10 +60,12 @@ const jsShortcutCount = computed(() => {
   margin-bottom: 0;
 }
 .btn-warning {
-  background: #ef4444;
+  background: var(--danger);
   color: #fff;
+  transition: all 0.15s ease;
+  font-weight: 600;
 }
 .btn-warning:hover {
-  background: #dc2626;
+  background: var(--danger-hover);
 }
 </style>

@@ -136,7 +136,7 @@ function handleInputKeydown(e: KeyboardEvent) {
 }
 
 .recorder-wrap .field-input {
-  border-radius: 6px 0 0 6px;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
   border-right: none;
   flex: 1;
 }
@@ -151,26 +151,31 @@ function handleInputKeydown(e: KeyboardEvent) {
   gap: 4px;
   padding: 0 10px;
   border: 1px solid var(--border, #e2e8f0);
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
   background: var(--bg-elevated, #f8fafc);
   color: var(--text-secondary, #64748b);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
   white-space: nowrap;
 }
 
 .record-btn:hover {
   background: var(--bg-hover, #f1f5f9);
   color: var(--text, #1a1a2e);
+  border-color: var(--text-placeholder, #cbd5e1);
 }
 
 .record-btn.recording {
-  background: #fef2f2;
-  border-color: #fca5a5;
-  color: #ef4444;
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+  color: var(--danger);
   animation: pulse 1s infinite;
+}
+
+.record-btn.recording:hover {
+  filter: brightness(0.95);
 }
 
 .record-btn .mdi {
@@ -178,7 +183,7 @@ function handleInputKeydown(e: KeyboardEvent) {
 }
 
 .record-btn.recording .mdi {
-  color: #ef4444;
+  color: var(--danger);
 }
 
 @keyframes pulse {
