@@ -5,6 +5,7 @@ import SearchSelect from '@/components/SearchSelect.vue'
 import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
 import ShortcutDetails from '@/components/ShortcutDetails.vue'
 import ImportTab from '@/components/ImportTab.vue'
+import PacksTab from '@/components/PacksTab.vue'
 import PackPreviewModal from '@/components/PackPreviewModal.vue'
 import CommunityPackModal from '@/components/CommunityPackModal.vue'
 import JsWarningDialog from '@/components/JsWarningDialog.vue'
@@ -23,6 +24,7 @@ import { useImportExport } from '@/composables/useImportExport'
 import { useJsTools } from '@/composables/useJsTools'
 import { useUndoRedo } from '@/composables/useUndoRedo'
 import { useViewDensity } from '@/composables/useViewDensity'
+import { usePacks } from '@/composables/usePacks'
 
 // --- Composables ---
 const { darkMode, initTheme, toggleTheme } = useTheme()
@@ -49,6 +51,7 @@ const { shareGroup, publishToCommunity } = useImportExport()
 const { refreshTabs, loadBookmarks } = useJsTools()
 const { init: initUndoRedo, undo, redo, canUndo, canRedo } = useUndoRedo()
 const { density, initDensity, toggleDensity } = useViewDensity()
+const { previewPack } = usePacks()
 
 // --- Lifecycle ---
 initTheme()
@@ -64,6 +67,11 @@ const handleWizardFinish = async (shortcut: { key: string; action: string }) => 
   keys.value[newIndex].key = shortcut.key
   keys.value[newIndex].action = shortcut.action
   await saveShortcuts()
+}
+
+const handlePackInstall = (pack: import('@/packs').ShortcutPack) => {
+  previewPack.value = pack
+  completeOnboarding()
 }
 
 const completeOnboarding = () => {
@@ -157,12 +165,15 @@ onUnmounted(() => {
           <i class="mdi mdi-keyboard"></i> Shortcuts
         </button>
         <button :class="['tab-btn', { active: activeTab === 1 }]" @click="activeTab = 1">
-          <i class="mdi mdi-import"></i> Import
+          <i class="mdi mdi-package-variant"></i> Packs
         </button>
         <button :class="['tab-btn', { active: activeTab === 2 }]" @click="activeTab = 2">
-          <i class="mdi mdi-export"></i> Export
+          <i class="mdi mdi-import"></i> Import
         </button>
         <button :class="['tab-btn', { active: activeTab === 3 }]" @click="activeTab = 3">
+          <i class="mdi mdi-export"></i> Export
+        </button>
+        <button :class="['tab-btn', { active: activeTab === 4 }]" @click="activeTab = 4">
           <i class="mdi mdi-chart-line"></i> Analytics
         </button>
       </div>
@@ -224,6 +235,7 @@ onUnmounted(() => {
             @finish="handleWizardFinish"
             @skip="completeOnboarding"
             @done="completeOnboarding"
+            @installPack="handlePackInstall"
           />
           <div v-else class="empty-state">
           <div class="empty-state-icon">
@@ -427,8 +439,13 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- Import Tab -->
+      <!-- Packs Tab -->
       <div v-show="activeTab === 1" class="tab-content">
+        <PacksTab />
+      </div>
+
+      <!-- Import Tab -->
+      <div v-show="activeTab === 2" class="tab-content">
         <ImportTab />
       </div>
 
@@ -438,12 +455,12 @@ onUnmounted(() => {
       <JsWarningDialog />
 
       <!-- Export Tab -->
-      <div v-show="activeTab === 2" class="tab-content">
+      <div v-show="activeTab === 3" class="tab-content">
         <ExportTab />
       </div>
 
       <!-- Analytics Tab -->
-      <div v-show="activeTab === 3" class="tab-content">
+      <div v-show="activeTab === 4" class="tab-content">
         <AnalyticsTab />
       </div>
     </main>

@@ -26,17 +26,18 @@ test.describe('Options Page', () => {
     await expect(page.locator('.brand-text')).toHaveText('Shortkeys')
   })
 
-  test('shows tab bar with Shortcuts, Import, Export, and Analytics tabs', async ({
+  test('shows tab bar with Shortcuts, Packs, Import, Export, and Analytics tabs', async ({
     context,
     extensionId,
   }) => {
     const page = await openOptionsPage(context, extensionId)
     const tabs = page.locator('.tab-btn')
-    await expect(tabs).toHaveCount(4)
+    await expect(tabs).toHaveCount(5)
     await expect(tabs.nth(0)).toContainText('Shortcuts')
-    await expect(tabs.nth(1)).toContainText('Import')
-    await expect(tabs.nth(2)).toContainText('Export')
-    await expect(tabs.nth(3)).toContainText('Analytics')
+    await expect(tabs.nth(1)).toContainText('Packs')
+    await expect(tabs.nth(2)).toContainText('Import')
+    await expect(tabs.nth(3)).toContainText('Export')
+    await expect(tabs.nth(4)).toContainText('Analytics')
   })
 
   test('shows empty state when no shortcuts exist', async ({ context, extensionId }) => {
@@ -250,10 +251,10 @@ test.describe('Options Page', () => {
 
     // The wizard should appear for a fresh install
     await expect(page.locator('.onboarding-wizard')).toBeVisible({ timeout: 5000 })
-    await expect(page.locator('.step-title')).toHaveText('Pick an action')
+    await expect(page.locator('.step-title')).toHaveText('Quick start')
 
     // Skip onboarding
-    await page.locator('.skip-link').click()
+    await page.locator('.btn-skip-top').click()
 
     // The wizard should disappear, showing the empty state
     await expect(page.locator('.onboarding-wizard')).not.toBeVisible()
