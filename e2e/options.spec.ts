@@ -254,7 +254,7 @@ test.describe('Options Page', () => {
     await expect(page.locator('.step-title')).toHaveText('Quick start')
 
     // Skip onboarding
-    await page.locator('.skip-link').click()
+    await page.locator('.btn-skip-top').click()
 
     // The wizard should disappear, showing the empty state
     await expect(page.locator('.onboarding-wizard')).not.toBeVisible()
