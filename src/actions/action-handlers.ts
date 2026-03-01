@@ -327,14 +327,15 @@ const actionHandlers: Record<string, ActionHandler> = {
     const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
     if (tab.index > 0) {
       const allTabs = await browser.tabs.query({ currentWindow: true })
-      const leftNeighbor = allTabs.find((t: any) => t.index === tab.index - 1)
+      // After moving left, the new left neighbor is at original index - 2
+      const newLeftNeighbor = allTabs.find((t: any) => t.index === tab.index - 2)
       await browser.tabs.move(tab.id!, { index: tab.index - 1 })
-      if (chrome.tabs?.group && chrome.tabs?.ungroup && leftNeighbor) {
-        const neighborGroupId = (leftNeighbor as any).groupId ?? -1
+      if (chrome.tabs?.group && chrome.tabs?.ungroup) {
+        const neighborGroupId = newLeftNeighbor ? ((newLeftNeighbor as any).groupId ?? -1) : -1
         const tabGroupId = (tab as any).groupId ?? -1
         if (neighborGroupId !== -1 && neighborGroupId !== tabGroupId) {
           await chrome.tabs.group({ tabIds: [tab.id!], groupId: neighborGroupId })
-        } else if (tabGroupId !== -1 && neighborGroupId !== tabGroupId) {
+        } else if (tabGroupId !== -1 && neighborGroupId !== tabGroupId && newLeftNeighbor) {
           await chrome.tabs.ungroup(tab.id!)
         }
       }
@@ -345,14 +346,15 @@ const actionHandlers: Record<string, ActionHandler> = {
   movetabright: async () => {
     const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
     const allTabs = await browser.tabs.query({ currentWindow: true })
-    const rightNeighbor = allTabs.find((t: any) => t.index === tab.index + 1)
+    // After moving right, the new right neighbor is at original index + 2
+    const newRightNeighbor = allTabs.find((t: any) => t.index === tab.index + 2)
     await browser.tabs.move(tab.id!, { index: tab.index + 1 })
-    if (chrome.tabs?.group && chrome.tabs?.ungroup && rightNeighbor) {
-      const neighborGroupId = (rightNeighbor as any).groupId ?? -1
+    if (chrome.tabs?.group && chrome.tabs?.ungroup) {
+      const neighborGroupId = newRightNeighbor ? ((newRightNeighbor as any).groupId ?? -1) : -1
       const tabGroupId = (tab as any).groupId ?? -1
       if (neighborGroupId !== -1 && neighborGroupId !== tabGroupId) {
         await chrome.tabs.group({ tabIds: [tab.id!], groupId: neighborGroupId })
-      } else if (tabGroupId !== -1 && neighborGroupId !== tabGroupId) {
+      } else if (tabGroupId !== -1 && neighborGroupId !== tabGroupId && newRightNeighbor) {
         await chrome.tabs.ungroup(tab.id!)
       }
     }
