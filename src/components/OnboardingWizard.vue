@@ -726,6 +726,7 @@ const skip = () => {
 .success-summary {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-lg);
   background: var(--bg-elevated);
   padding: 16px 24px;
