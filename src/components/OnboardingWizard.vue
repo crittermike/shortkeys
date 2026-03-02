@@ -303,8 +303,8 @@ const skip = () => {
   margin: 40px auto;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-lg);
+  border-radius: 24px;
+  box-shadow: var(--shadow-xl);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -325,9 +325,9 @@ const skip = () => {
 }
 
 .step-dot {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
   background: var(--bg-elevated);
   border: 2px solid var(--border);
   color: var(--text-muted);
@@ -336,7 +336,7 @@ const skip = () => {
   justify-content: center;
   font-size: 13px;
   font-weight: 700;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .step-dot.active {
@@ -348,14 +348,14 @@ const skip = () => {
 .step-dot.current {
   background: var(--blue);
   color: #fff;
-  box-shadow: 0 0 0 4px var(--blue-bg);
+  box-shadow: 0 0 0 6px var(--blue-bg);
 }
 
 .step-label {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-muted);
-  transition: color 0.3s ease;
+  transition: color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .step-label.active {
@@ -366,7 +366,7 @@ const skip = () => {
   width: 40px;
   height: 2px;
   background: var(--border);
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .step-line.active {
@@ -393,6 +393,7 @@ const skip = () => {
   color: var(--text);
   margin: 0 0 8px;
   text-align: center;
+  letter-spacing: -0.02em;
 }
 
 .step-desc {
@@ -411,13 +412,13 @@ const skip = () => {
 .action-card {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  padding: 16px;
+  border-radius: var(--radius-2xl);
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   color: var(--text);
   text-align: left;
 }
@@ -425,13 +426,14 @@ const skip = () => {
 .action-card:hover {
   background: var(--bg-hover);
   border-color: var(--border-light);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
 }
 
 .action-card.selected {
   background: var(--blue-bg);
   border-color: var(--blue);
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .action-card-header {
@@ -442,10 +444,10 @@ const skip = () => {
 }
 
 .action-icon {
-  font-size: 28px;
+  font-size: 32px;
   color: var(--text-secondary);
   opacity: 0.9;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .action-card:hover .action-icon {
@@ -461,12 +463,12 @@ const skip = () => {
 .checkbox-indicator {
   width: 20px;
   height: 20px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   border: 2px solid var(--border-light);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   background: var(--bg-card);
 }
 
@@ -544,9 +546,9 @@ const skip = () => {
 }
 
 .progress-bar {
-  height: 6px;
+  height: 8px;
   background: var(--bg-elevated);
-  border-radius: 3px;
+  border-radius: var(--radius-full);
   overflow: hidden;
   max-width: 200px;
   margin: 0 auto;
@@ -555,7 +557,7 @@ const skip = () => {
 .progress-fill {
   height: 100%;
   background: var(--blue);
-  border-radius: 3px;
+  border-radius: var(--radius-full);
   transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -568,12 +570,12 @@ const skip = () => {
 }
 
 .current-action-display .mdi {
-  font-size: 48px;
+  font-size: 56px;
   color: var(--blue);
   margin-bottom: 12px;
   background: var(--blue-bg);
   padding: 16px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-2xl);
 }
 
 .current-action-display h2 {
@@ -681,8 +683,9 @@ const skip = () => {
   gap: var(--space-lg);
   background: var(--bg-elevated);
   padding: 16px 24px;
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-2xl);
   border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
 }
 
 .summary-keys {
@@ -694,7 +697,7 @@ const skip = () => {
 
 .summary-keys kbd {
   display: inline-block;
-  padding: 6px 10px;
+  padding: 8px 12px;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -703,7 +706,7 @@ const skip = () => {
   font-weight: 600;
   color: var(--text);
   text-transform: capitalize;
-  box-shadow: 0 2px 0 var(--border);
+  box-shadow: 0 3px 0 var(--border);
 }
 
 .summary-arrow {
@@ -734,12 +737,12 @@ const skip = () => {
   font-weight: 600;
   cursor: pointer;
   padding: 8px 16px;
-  border-radius: var(--radius-lg);
-  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  border-radius: var(--radius-xl);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  }
+}
 
 .btn-skip-top:hover {
   background: var(--bg-elevated);
@@ -750,7 +753,7 @@ const skip = () => {
 /* ── Pack mini cards ── */
 .packs-heading {
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-secondary);
   margin: 24px 0 12px;
   text-align: center;
@@ -766,13 +769,13 @@ const skip = () => {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
+  padding: 12px 16px;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-left: 3px solid var(--pack-accent, var(--blue));
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   text-align: left;
   color: var(--text);
 }
@@ -782,7 +785,7 @@ const skip = () => {
   border-color: var(--border-light);
   border-left-color: var(--pack-accent, var(--blue));
   transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
 }
 
 .pack-mini-icon {
@@ -818,7 +821,7 @@ const skip = () => {
   font-size: 16px;
   color: var(--text-muted);
   flex-shrink: 0;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .pack-mini-card:hover .pack-mini-arrow {

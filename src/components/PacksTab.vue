@@ -138,9 +138,10 @@ onMounted(() => {
   text-align: center;
   color: var(--text-muted);
   background: var(--bg-elevated);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-2xl);
   border: 1px dashed var(--border);
   gap: 12px;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .community-loading .mdi, .community-error .mdi, .community-empty .mdi {
   font-size: 32px;
@@ -155,19 +156,19 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: var(--space-xs);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-secondary);
   margin-top: -6px;
 }
 .community-badge {
   background: var(--bg-hover);
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  border-radius: var(--radius-md);
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 600;
   color: var(--text-muted);
-  transition: all 0.15s ease;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 </style>

@@ -116,13 +116,13 @@ const keyConflictCount = computed(() => {
 .modal-author-badge {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   margin-top: 8px;
-  font-size: 12px;
+  font-size: 13px;
   opacity: 0.9;
 }
 .community-badge {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.25);
   padding: 2px 6px;
   border-radius: var(--radius-sm);
   font-size: 10px;
@@ -134,39 +134,46 @@ const keyConflictCount = computed(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 14px;
+  padding: 12px 18px;
   background: var(--warning-bg);
   border: 1px solid var(--warning-border);
   color: var(--warning-text);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   margin-bottom: 16px;
   font-size: 13px;
   font-weight: 500;
 }
 .modal-js-warning .mdi {
-  font-size: 16px;
+  font-size: 18px;
 }
 .modal-shortcut-conflict {
   background: var(--warning-bg);
   border-left: 3px solid var(--warning-border);
   padding-left: 9px;
+  border-top-left-radius: var(--radius-md);
+  border-bottom-left-radius: var(--radius-md);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .modal-shortcut-exact {
   background: var(--info-bg);
   border-left: 3px solid var(--text-muted);
   padding-left: 9px;
   opacity: 0.6;
+  border-top-left-radius: var(--radius-md);
+  border-bottom-left-radius: var(--radius-md);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .conflict-badge {
   display: inline-block;
   font-size: 10px;
-  padding: 1px 5px;
-  border-radius: var(--radius-sm);
+  padding: 2px 7px;
+  border-radius: var(--radius-md);
   margin-left: 6px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.3px;
   vertical-align: middle;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .conflict-badge.key {
   background: var(--warning-bg);
@@ -180,13 +187,15 @@ const keyConflictCount = computed(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 14px;
+  padding: 12px 16px;
   background: var(--info-bg);
   border: 1px solid var(--info-border);
   color: var(--info-text);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   margin-top: 12px;
   font-size: 13px;
   font-weight: 500;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 </style>
