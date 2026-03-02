@@ -72,15 +72,18 @@ watch(
 
 <style scoped>
 .cm-wrap {
-  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-  border: 1px solid var(--border, #e2e8f0);
-  border-top: none;
+  border-radius: 0;
+  border: none;
   overflow: hidden;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.cm-wrap:focus-within {
+  box-shadow: var(--shadow-md);
+  border-color: var(--blue, #4f46e5);
 }
 
 .cm-wrap :deep(.cm-editor) {
-  min-height: 180px;
+  min-height: 200px;
 }
 
 .cm-wrap :deep(.cm-editor.cm-focused) {

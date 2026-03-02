@@ -45,14 +45,16 @@ const jsShortcutCount = computed(() => {
 
 <style scoped>
 .warning-panel {
-  max-width: 480px;
+  max-width: 520px;
+  border-radius: var(--radius-xl);
 }
 .warning-header {
   background: #f59e0b;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
 }
 .warning-text {
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.6;
   margin: 0 0 12px;
   color: var(--text);
 }
@@ -62,10 +64,13 @@ const jsShortcutCount = computed(() => {
 .btn-warning {
   background: var(--danger);
   color: #fff;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   font-weight: 600;
+  padding: 10px 20px;
 }
 .btn-warning:hover {
   background: var(--danger-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 </style>

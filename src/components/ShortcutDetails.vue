@@ -34,9 +34,7 @@ function isBookmarkAction(action: string): boolean {
 
     <article v-if="isBuiltInAction(keys[index].action)" class="alert alert-info">
       <i class="mdi mdi-information-outline"></i>
-      Also available via the browser's native
-      <strong>Keyboard Shortcuts</strong> settings.
-      <a href="https://github.com/mikecrittenden/shortkeys/wiki/FAQs-and-Troubleshooting#Do_I_use_the_browsers_Keyboard_Shortcuts_settings_or_the_Shortkeys_options_page" target="_blank">Learn more →</a>
+      <span>Also available via the browser's native <strong>Keyboard Shortcuts</strong> settings. <a href="https://github.com/mikecrittenden/shortkeys/wiki/FAQs-and-Troubleshooting#Do_I_use_the_browsers_Keyboard_Shortcuts_settings_or_the_Shortkeys_options_page" target="_blank">Learn more &rarr;</a></span>
     </article>
 
     <!-- Code editor for JS (full-width, prominent) -->

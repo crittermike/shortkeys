@@ -136,7 +136,7 @@ function handleInputKeydown(e: KeyboardEvent) {
 }
 
 .recorder-wrap .field-input {
-  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
   border-right: none;
   flex: 1;
 }
@@ -149,15 +149,15 @@ function handleInputKeydown(e: KeyboardEvent) {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 0 10px;
-  border: 1px solid var(--border, #e2e8f0);
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  padding: 0 14px;
+  border: 1.5px solid var(--border, #e2e8f0);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
   background: var(--bg-elevated, #f8fafc);
   color: var(--text-secondary, #64748b);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
 }
 
@@ -165,13 +165,15 @@ function handleInputKeydown(e: KeyboardEvent) {
   background: var(--bg-hover, #f1f5f9);
   color: var(--text, #1a1a2e);
   border-color: var(--text-placeholder, #cbd5e1);
+  transform: translateY(-1px);
 }
 
 .record-btn.recording {
   background: var(--danger-bg);
   border-color: var(--danger-border);
   color: var(--danger);
-  animation: pulse 1s infinite;
+  animation: pulse 1.5s infinite cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
 }
 
 .record-btn.recording:hover {
@@ -187,8 +189,9 @@ function handleInputKeydown(e: KeyboardEvent) {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50% { transform: scale(0.95); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
 
 @media (max-width: 600px) {
