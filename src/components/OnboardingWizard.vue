@@ -10,7 +10,7 @@ const emit = defineEmits<{
   (e: 'finish', shortcut: { key: string; action: string }): void
   (e: 'skip'): void
   (e: 'done'): void
-  (e: 'installPack', pack: ShortcutPack): void
+  (e: 'installPacks', packs: ShortcutPack[]): void
 }>()
 
 const step = ref(1)
@@ -18,6 +18,7 @@ const selectedActions = ref<string[]>([])
 const currentActionIndex = ref(0)
 const shortcutKey = ref('')
 const showMoreActions = ref(false)
+const selectedPacks = ref<ShortcutPack[]>([])
 
 const recordedShortcuts = ref<{ actionId: string; actionLabel: string; icon: string; key: string }[]>([])
 
@@ -84,6 +85,15 @@ const toggleAction = (actionId: string) => {
   }
 }
 
+const togglePack = (pack: ShortcutPack) => {
+  const index = selectedPacks.value.findIndex(p => p.id === pack.id)
+  if (index > -1) {
+    selectedPacks.value.splice(index, 1)
+  } else {
+    selectedPacks.value.push(pack)
+  }
+}
+
 const toggleShowMore = () => {
   showMoreActions.value = !showMoreActions.value
 }
@@ -94,6 +104,9 @@ const goToStep2 = () => {
     currentActionIndex.value = 0
     shortcutKey.value = ''
     recordedShortcuts.value = []
+  } else if (selectedPacks.value.length > 0) {
+    // No individual actions selected, skip straight to success
+    step.value = 3
   }
 }
 
@@ -133,6 +146,9 @@ const advanceOrFinish = () => {
 }
 
 const finish = () => {
+  if (selectedPacks.value.length > 0) {
+    emit('installPacks', selectedPacks.value)
+  }
   emit('done')
 }
 
@@ -189,9 +205,9 @@ const skip = () => {
             <button
               v-for="pack in visiblePacks"
               :key="pack.id"
-              class="pack-mini-card"
+              :class="['pack-mini-card', { selected: selectedPacks.some(p => p.id === pack.id) }]"
               :style="{ '--pack-accent': pack.color }"
-              @click="emit('installPack', pack)"
+              @click="togglePack(pack)"
               type="button"
             >
               <span class="pack-mini-icon">{{ pack.icon }}</span>
@@ -199,7 +215,9 @@ const skip = () => {
                 <span class="pack-mini-name">{{ pack.name }}</span>
                 <span class="pack-mini-meta">{{ pack.shortcuts.length }} shortcuts</span>
               </div>
-              <i class="mdi mdi-chevron-right pack-mini-arrow"></i>
+              <div class="checkbox-indicator pack-check">
+                <i v-if="selectedPacks.some(p => p.id === pack.id)" class="mdi mdi-check"></i>
+              </div>
             </button>
           </div>
 
@@ -214,10 +232,21 @@ const skip = () => {
             <button 
               class="btn btn-primary btn-next-step" 
               @click="goToStep2" 
-              :disabled="selectedActions.length === 0"
+              :disabled="selectedActions.length === 0 && selectedPacks.length === 0"
               type="button"
             >
-              Next — Set up {{ selectedActions.length }} shortcut{{ selectedActions.length === 1 ? '' : 's' }} <i class="mdi mdi-arrow-right"></i>
+              <template v-if="selectedActions.length > 0 && selectedPacks.length > 0">
+                Next — Set up {{ selectedActions.length }} shortcut{{ selectedActions.length === 1 ? '' : 's' }} + {{ selectedPacks.length }} pack{{ selectedPacks.length === 1 ? '' : 's' }} <i class="mdi mdi-arrow-right"></i>
+              </template>
+              <template v-else-if="selectedActions.length > 0">
+                Next — Set up {{ selectedActions.length }} shortcut{{ selectedActions.length === 1 ? '' : 's' }} <i class="mdi mdi-arrow-right"></i>
+              </template>
+              <template v-else-if="selectedPacks.length > 0">
+                Next — Install {{ selectedPacks.length }} pack{{ selectedPacks.length === 1 ? '' : 's' }} <i class="mdi mdi-arrow-right"></i>
+              </template>
+              <template v-else>
+                Next <i class="mdi mdi-arrow-right"></i>
+              </template>
             </button>
           </div>
         </div>
@@ -270,11 +299,21 @@ const skip = () => {
           <div class="confetti-wrap">
             <i class="mdi mdi-check-circle success-icon"></i>
           </div>
-          <h2 class="step-title">You created {{ recordedShortcuts.length }} shortcut{{ recordedShortcuts.length === 1 ? '' : 's' }}!</h2>
+          <h2 class="step-title">
+            <template v-if="recordedShortcuts.length > 0 && selectedPacks.length > 0">
+              You created {{ recordedShortcuts.length }} shortcut{{ recordedShortcuts.length === 1 ? '' : 's' }} and added {{ selectedPacks.length }} pack{{ selectedPacks.length === 1 ? '' : 's' }}!
+            </template>
+            <template v-else-if="selectedPacks.length > 0">
+              You added {{ selectedPacks.length }} shortcut pack{{ selectedPacks.length === 1 ? '' : 's' }}!
+            </template>
+            <template v-else>
+              You created {{ recordedShortcuts.length }} shortcut{{ recordedShortcuts.length === 1 ? '' : 's' }}!
+            </template>
+          </h2>
           <p class="step-desc">Your shortcuts are ready to use.</p>
           
-          <div class="success-summary-list">
-            <div class="success-summary" v-for="(shortcut, idx) in recordedShortcuts" :key="idx">
+          <div class="success-summary-list" v-if="recordedShortcuts.length > 0 || selectedPacks.length > 0">
+            <div class="success-summary" v-for="(shortcut, idx) in recordedShortcuts" :key="'s-' + idx">
               <div class="summary-keys">
                 <kbd v-for="k in shortcut.key.split('+')" :key="k">{{ k }}</kbd>
               </div>
@@ -282,6 +321,13 @@ const skip = () => {
               <div class="summary-action">
                 <i :class="['mdi', shortcut.icon]"></i>
                 {{ shortcut.actionLabel }}
+              </div>
+            </div>
+            <div class="success-summary pack-summary" v-for="pack in selectedPacks" :key="'p-' + pack.id">
+              <span class="pack-mini-icon">{{ pack.icon }}</span>
+              <div class="summary-action">
+                <strong>{{ pack.name }}</strong>
+                <span class="pack-summary-meta">{{ pack.shortcuts.length }} shortcuts</span>
               </div>
             </div>
           </div>
@@ -305,7 +351,7 @@ const skip = () => {
   border: 1px solid var(--border);
   border-radius: 24px;
   box-shadow: var(--shadow-xl);
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
 }
@@ -761,7 +807,7 @@ const skip = () => {
 
 .pack-mini-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
   gap: 10px;
 }
 
@@ -817,16 +863,38 @@ const skip = () => {
   font-weight: 500;
 }
 
-.pack-mini-arrow {
-  font-size: 16px;
-  color: var(--text-muted);
+.pack-check {
+  margin-left: auto;
   flex-shrink: 0;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.pack-mini-card:hover .pack-mini-arrow {
-  transform: translateX(2px);
-  color: var(--text-secondary);
+.pack-mini-card.selected {
+  background: var(--blue-bg);
+  border-color: var(--blue);
+  border-left-color: var(--blue);
+}
+
+.pack-mini-card.selected .checkbox-indicator {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: white;
+}
+
+.pack-summary {
+  gap: var(--space-md);
+}
+
+.pack-summary .pack-mini-icon {
+  font-size: 24px;
+  min-width: 100px;
+  text-align: right;
+}
+
+.pack-summary-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-left: 8px;
 }
 
 /* Animations */

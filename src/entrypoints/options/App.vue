@@ -51,7 +51,7 @@ const { shareGroup, publishToCommunity } = useImportExport()
 const { refreshTabs, loadBookmarks } = useJsTools()
 const { init: initUndoRedo, undo, redo, canUndo, canRedo } = useUndoRedo()
 const { density, initDensity, toggleDensity } = useViewDensity()
-const { previewPack } = usePacks()
+const { previewPack, installPack } = usePacks()
 
 // --- Lifecycle ---
 initTheme()
@@ -69,9 +69,10 @@ const handleWizardFinish = async (shortcut: { key: string; action: string }) => 
   await saveShortcuts()
 }
 
-const handlePackInstall = (pack: import('@/packs').ShortcutPack) => {
-  previewPack.value = pack
-  completeOnboarding()
+const handleOnboardingPacks = async (packs: import('@/packs').ShortcutPack[]) => {
+  for (const pack of packs) {
+    await installPack(pack)
+  }
 }
 
 const completeOnboarding = () => {
@@ -236,7 +237,7 @@ onUnmounted(() => {
             @finish="handleWizardFinish"
             @skip="completeOnboarding"
             @done="completeOnboarding"
-            @installPack="handlePackInstall"
+            @installPacks="handleOnboardingPacks"
           />
           <div v-else class="empty-state">
           <div class="empty-state-icon">
