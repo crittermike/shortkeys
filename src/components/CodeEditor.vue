@@ -72,8 +72,8 @@ watch(
 
 <style scoped>
 .cm-wrap {
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 0;
+  border: none;
   overflow: hidden;
   transition: border-color 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }

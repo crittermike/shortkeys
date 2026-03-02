@@ -131,7 +131,7 @@ onUnmounted(() => {
         </div>
         <nav class="header-links">
           <a href="https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck/reviews" target="_blank">Review</a>
-          <a href="https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys" target="_blank">Docs</a>
+          <a href="https://www.shortkeys.app/docs/" target="_blank">Docs</a>
           <a href="https://github.com/mikecrittenden/shortkeys/issues" target="_blank">Support</a>
           <a href="https://github.com/mikecrittenden/shortkeys" target="_blank">GitHub</a>
           <div class="header-divider"></div>
@@ -181,9 +181,10 @@ onUnmounted(() => {
       <!-- Shortcuts Tab -->
       <div v-show="activeTab === 0" class="tab-content">
         <article v-if="needsUserScripts()" class="alert alert-warning">
-          <strong>Allow User Scripts</strong> —
-          In order for JavaScript actions to work, you must first allow User Scripts in your
-          browser extension details page. Then come back and save your shortcuts.
+          <i class="mdi mdi-alert-circle-outline"></i>
+          <div>
+            <strong>Allow User Scripts</strong> — In order for JavaScript actions to work, you must first allow User Scripts in your browser extension details page. Then come back and save your shortcuts.
+          </div>
         </article>
 
         <!-- Stats bar -->
@@ -349,7 +350,7 @@ onUnmounted(() => {
               <div
                 v-for="index in (groupedIndices.get(group) || [])"
                 :key="keys[index].id"
-                :class="['shortcut-card', { disabled: keys[index].enabled === false, dragging: dragIndex === index }]"
+                :class="['shortcut-card', { disabled: keys[index].enabled === false, dragging: dragIndex === index, expanded: expandedRow === index }]"
                 draggable="true"
                 @dragstart="onDragStart(index)"
                 @dragover="onDragOver($event, index)"
@@ -573,9 +574,9 @@ onUnmounted(() => {
   --success-bg: rgba(52,211,153,0.12);
   --success-border: rgba(52,211,153,0.25);
   --success-text: #6ee7b7;
-  --warning-bg: rgba(245,158,11,0.12);
-  --warning-border: rgba(245,158,11,0.25);
-  --warning-text: #fcd34d;
+  --warning-bg: rgba(245,158,11,0.08);
+  --warning-border: rgba(245,158,11,0.15);
+  --warning-text: #f59e0b;
   --info-bg: rgba(99,102,241,0.12);
   --info-border: rgba(99,102,241,0.25);
   --info-text: #a5b4fc;
@@ -1028,6 +1029,14 @@ a:hover { text-decoration: underline; }
 .shortcut-card:hover { background: var(--bg-elevated); }
 .shortcut-card.disabled { opacity: 0.45; }
 .shortcut-card.dragging { opacity: 0.4; box-shadow: var(--shadow-lg); outline: 2px solid var(--blue); outline-offset: -2px; }
+.shortcut-card.expanded {
+  border-left: 3px solid var(--blue);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin: 4px 0;
+  background: var(--bg-card);
+}
+.shortcut-card.expanded:hover { background: var(--bg-card); }
 
 .shortcut-header {
   display: flex;
@@ -1450,7 +1459,7 @@ a:hover { text-decoration: underline; }
 .code-editor-wrap {
   border-radius: var(--radius-lg);
   overflow: hidden;
-  border: 1px solid #1e293b;
+  border: 1px solid var(--border);
   margin-bottom: 4px;
 }
 
@@ -1459,7 +1468,7 @@ a:hover { text-decoration: underline; }
   justify-content: space-between;
   align-items: center;
   padding: 6px 8px 6px 14px;
-  background: #1e293b;
+  background: #282c34;
   gap: var(--space-sm);
 }
 
@@ -1604,28 +1613,37 @@ a:hover { text-decoration: underline; }
   box-shadow: var(--shadow-sm);
 }
 
-.alert-warning { background: var(--warning-bg); border: 1px solid var(--warning-border); color: var(--warning-text); }
-.alert-info { background: var(--info-bg); border: 1px solid var(--info-border); color: var(--info-text); }
-.alert-info .mdi, .alert-warning .mdi { 
+.alert-warning { background: var(--warning-bg); border: none; border-left: 3px solid var(--warning-text); color: var(--warning-text); }
+.alert-info { background: var(--info-bg); border: none; border-left: 3px solid var(--info-text); color: var(--info-text); }
+.alert-info .mdi, .alert-warning .mdi {
   margin-right: 0;
-  font-size: 18px;
-  margin-top: -2px;
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 1px;
 }
 
 /* ── Buttons ── */
 .action-bar {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
   margin-top: var(--space-3xl);
-  padding: 24px 32px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
-  background: var(--bg-card);
-  box-shadow: var(--shadow-lg);
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   position: sticky;
   bottom: 24px;
   z-index: 50;
+  pointer-events: none;
+}
+.action-bar .btn {
+  pointer-events: auto;
+  padding: 12px 28px;
+  font-size: 14px;
+  border-radius: var(--radius-full);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .btn {

@@ -214,7 +214,7 @@ watch(isOpen, (val) => {
   border-top: none;
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   box-shadow: var(--shadow-xl);
-  z-index: 50;
+  z-index: 100;
   padding: 6px;
   backdrop-filter: blur(8px);
 }
