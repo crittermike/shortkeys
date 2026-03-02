@@ -998,7 +998,7 @@ a:hover { text-decoration: underline; }
   background: transparent;
   border: none;
   border-top: 1px dashed var(--border-light);
-  border-radius: 0;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   color: var(--text-muted);
   font-size: 12px;
   font-weight: 500;
@@ -1310,7 +1310,7 @@ a:hover { text-decoration: underline; }
 .delay-input {
   width: 70px !important;
   text-align: right;
-  padding: 4px 6px !important;
+  padding: 7px 8px !important;
   font-size: 12px !important;
 }
 
@@ -1608,7 +1608,7 @@ a:hover { text-decoration: underline; }
   margin-bottom: 20px;
   line-height: 1.6;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
   box-shadow: var(--shadow-sm);
 }
