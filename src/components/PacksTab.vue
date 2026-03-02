@@ -138,7 +138,7 @@ onMounted(() => {
   text-align: center;
   color: var(--text-muted);
   background: var(--bg-elevated);
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   border: 1px dashed var(--border);
   gap: 12px;
 }
@@ -147,14 +147,14 @@ onMounted(() => {
   opacity: 0.5;
 }
 .community-error {
-  color: #ef4444;
-  background: #fef2f2;
-  border-color: #fecaca;
+  color: var(--danger);
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
 }
 .pack-author {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-xs);
   font-size: 12px;
   color: var(--text-secondary);
   margin-top: -6px;
@@ -162,11 +162,12 @@ onMounted(() => {
 .community-badge {
   background: var(--bg-hover);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 600;
   color: var(--text-muted);
+  transition: all 0.15s ease;
 }
 </style>

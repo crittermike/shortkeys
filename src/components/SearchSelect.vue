@@ -168,9 +168,9 @@ watch(isOpen, (val) => {
 
 .ss-trigger {
   width: 100%;
-  padding: 8px 12px;
+  padding: var(--space-sm) var(--space-md);
   border: 1px solid var(--border, #e2e8f0);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background: var(--bg-input, #fff);
   font-size: 14px;
   color: var(--text, #1a1a2e);
@@ -179,10 +179,10 @@ watch(isOpen, (val) => {
   align-items: center;
   justify-content: space-between;
   text-align: left;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .ss-trigger:hover { border-color: var(--text-placeholder, #cbd5e1); }
-.ss-trigger:focus { outline: none; border-color: var(--blue, #4361ee); box-shadow: 0 0 0 3px var(--blue-bg, rgba(67,97,238,0.12)); }
+.ss-trigger:focus { outline: none; border-color: var(--blue, #4361ee); box-shadow: var(--focus-ring); }
 
 .ss-trigger-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ss-trigger-text.placeholder { color: var(--text-muted, #94a3b8); }
@@ -192,14 +192,14 @@ watch(isOpen, (val) => {
 
 .ss-search {
   width: 100%;
-  padding: 8px 12px;
+  padding: var(--space-sm) var(--space-md);
   border: 1px solid var(--blue, #4361ee);
-  border-radius: 6px 6px 0 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
   font-size: 14px;
   color: var(--text, #1a1a2e);
   background: var(--bg-input, #fff);
   outline: none;
-  box-shadow: 0 0 0 3px var(--blue-bg, rgba(67,97,238,0.12));
+  box-shadow: var(--focus-ring);
 }
 
 .ss-dropdown {
@@ -212,19 +212,23 @@ watch(isOpen, (val) => {
   background: var(--bg-input, #fff);
   border: 1px solid var(--border, #e2e8f0);
   border-top: none;
-  border-radius: 0 0 6px 6px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  box-shadow: var(--shadow-lg);
   z-index: 50;
+}
+[data-theme="dark"] .ss-dropdown {
+  border-color: var(--border);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
 }
 
 .ss-group-label {
-  padding: 6px 12px 4px;
+  padding: 6px var(--space-md) 4px;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--text-muted, #94a3b8);
-  background: var(--bg-elevated, #f8fafc);
+  background: var(--bg-hover, #f1f5f9);
   position: sticky;
   top: 0;
 }
@@ -232,15 +236,20 @@ watch(isOpen, (val) => {
 .ss-option {
   display: block;
   width: 100%;
-  padding: 7px 12px 7px 20px;
+  padding: 7px var(--space-md) 7px 20px;
   border: none;
+  border-left: 2px solid transparent;
   background: none;
   text-align: left;
   font-size: 13px;
   color: var(--text, #334155);
   cursor: pointer;
+  transition: background 0.1s ease, color 0.1s ease, border-color 0.1s ease;
 }
-.ss-option.highlighted { background: var(--bg-hover, #f1f5f9); }
+.ss-option.highlighted { 
+  background: var(--bg-hover, #f1f5f9); 
+  border-left: 2px solid var(--blue, #4361ee);
+}
 .ss-option.selected { color: var(--blue, #4361ee); font-weight: 600; }
 
 .ss-opt-label { display: block; }
@@ -254,5 +263,6 @@ watch(isOpen, (val) => {
   max-width: 100%;
 }
 
-.ss-empty { padding: 16px; text-align: center; color: var(--text-muted, #94a3b8); font-size: 13px; }
+.ss-empty { padding: var(--space-lg); text-align: center; color: var(--text-muted, #94a3b8); font-size: 13px; }
+
 </style>

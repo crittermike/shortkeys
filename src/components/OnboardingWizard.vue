@@ -303,8 +303,8 @@ const skip = () => {
   margin: 40px auto;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  box-shadow: 0 10px 30px var(--shadow);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -315,13 +315,13 @@ const skip = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-md);
 }
 
 .step-indicator {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .step-dot {
@@ -374,7 +374,7 @@ const skip = () => {
 }
 
 .wizard-content {
-  padding: 32px 40px;
+  padding: var(--space-2xl) var(--space-3xl);
   min-height: 360px;
   display: flex;
   flex-direction: column;
@@ -405,17 +405,17 @@ const skip = () => {
 .action-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: var(--space-md);
 }
 
 .action-card {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-xl);
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-md);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
   color: var(--text);
@@ -426,7 +426,7 @@ const skip = () => {
   background: var(--bg-hover);
   border-color: var(--border-light);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px var(--shadow);
+  box-shadow: var(--shadow-md);
 }
 
 .action-card.selected {
@@ -461,7 +461,7 @@ const skip = () => {
 .checkbox-indicator {
   width: 20px;
   height: 20px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 2px solid var(--border-light);
   display: flex;
   align-items: center;
@@ -501,10 +501,10 @@ const skip = () => {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-xs);
   padding: 8px 16px;
-  border-radius: 20px;
-  transition: all 0.2s ease;
+  border-radius: var(--radius-full);
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .btn-show-more:hover {
@@ -526,7 +526,7 @@ const skip = () => {
   font-weight: 600;
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .progress-wrap {
@@ -573,7 +573,7 @@ const skip = () => {
   margin-bottom: 12px;
   background: var(--blue-bg);
   padding: 16px;
-  border-radius: 20px;
+  border-radius: var(--radius-full);
 }
 
 .current-action-display h2 {
@@ -601,21 +601,15 @@ const skip = () => {
   max-width: 400px;
   margin: 0 auto 24px;
   width: 100%;
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-  color: #92400e;
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+  color: var(--warning-text);
   padding: 12px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   font-size: 13px;
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-[data-theme="dark"] .conflict-warning {
-  background: rgba(146, 64, 14, 0.2);
-  border-color: rgba(253, 230, 138, 0.2);
-  color: #fde68a;
+  gap: var(--space-sm);
 }
 
 .step-actions {
@@ -628,7 +622,7 @@ const skip = () => {
 
 .right-actions {
   display: flex;
-  gap: 12px;
+  gap: var(--space-md);
 }
 
 .btn-skip {
@@ -638,7 +632,7 @@ const skip = () => {
 
 .success-actions {
   justify-content: center;
-  gap: 16px;
+  gap: var(--space-lg);
 }
 
 .success-panel {
@@ -654,13 +648,13 @@ const skip = () => {
 
 .success-icon {
   font-size: 72px;
-  color: #10b981; /* Green success color */
+  color: var(--success);
 }
 
 .success-summary-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-md);
   margin-bottom: 32px;
   width: 100%;
   max-width: 480px;
@@ -684,16 +678,16 @@ const skip = () => {
 .success-summary {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-lg);
   background: var(--bg-elevated);
   padding: 16px 24px;
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   border: 1px solid var(--border);
 }
 
 .summary-keys {
   display: flex;
-  gap: 4px;
+  gap: var(--space-xs);
   min-width: 100px;
   justify-content: flex-end;
 }
@@ -703,7 +697,7 @@ const skip = () => {
   padding: 6px 10px;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-family: 'SF Mono', Menlo, monospace;
   font-size: 14px;
   font-weight: 600;
@@ -720,7 +714,7 @@ const skip = () => {
 .summary-action {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
   font-size: 15px;
   font-weight: 600;
   color: var(--text);
@@ -740,8 +734,8 @@ const skip = () => {
   font-weight: 600;
   cursor: pointer;
   padding: 8px 16px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  border-radius: var(--radius-lg);
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -776,7 +770,7 @@ const skip = () => {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-left: 3px solid var(--pack-accent, var(--blue));
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: left;
@@ -788,7 +782,7 @@ const skip = () => {
   border-color: var(--border-light);
   border-left-color: var(--pack-accent, var(--blue));
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px var(--shadow);
+  box-shadow: var(--shadow-sm);
 }
 
 .pack-mini-icon {
