@@ -19,6 +19,7 @@ const currentActionIndex = ref(0)
 const shortcutKey = ref('')
 const showMoreActions = ref(false)
 const selectedPacks = ref<ShortcutPack[]>([])
+const previewingPack = ref<ShortcutPack | null>(null)
 
 const recordedShortcuts = ref<{ actionId: string; actionLabel: string; icon: string; key: string }[]>([])
 
@@ -90,8 +91,19 @@ const togglePack = (pack: ShortcutPack) => {
   if (index > -1) {
     selectedPacks.value.splice(index, 1)
   } else {
-    selectedPacks.value.push(pack)
+    previewingPack.value = pack
   }
+}
+
+const confirmPack = () => {
+  if (previewingPack.value) {
+    selectedPacks.value.push(previewingPack.value)
+    previewingPack.value = null
+  }
+}
+
+const closePreview = () => {
+  previewingPack.value = null
 }
 
 const toggleShowMore = () => {
@@ -340,6 +352,45 @@ const skip = () => {
         </div>
       </Transition>
     </div>
+
+
+    <!-- Pack Preview Modal -->
+    <Transition name="modal">
+      <div v-if="previewingPack" class="modal-overlay pack-preview-overlay" @click.self="closePreview">
+        <div class="modal-panel pack-preview-panel">
+          <div class="modal-header" :style="{ background: previewingPack.color }">
+            <span class="modal-icon">{{ previewingPack.icon }}</span>
+            <div>
+              <h2 class="modal-title">{{ previewingPack.name }}</h2>
+              <p class="modal-subtitle">{{ previewingPack.description }}</p>
+            </div>
+            <button class="modal-close" @click="closePreview" type="button">
+              <i class="mdi mdi-close"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="modal-shortcuts">
+              <div
+                v-for="s in previewingPack.shortcuts"
+                :key="s.key"
+                class="modal-shortcut-row"
+              >
+                <span class="modal-shortcut-label">{{ s.label || s.action }}</span>
+                <span class="modal-shortcut-keys">
+                  <kbd v-for="(part, pi) in s.key.split('+')" :key="pi">{{ part }}</kbd>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" @click="closePreview" type="button">Cancel</button>
+            <button class="btn btn-primary" @click="confirmPack" type="button">
+              <i class="mdi mdi-plus"></i> Add {{ previewingPack.shortcuts.length }} shortcut{{ previewingPack.shortcuts.length !== 1 ? 's' : '' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
 
   </div>
 </template>
@@ -949,5 +1000,14 @@ const skip = () => {
     opacity: 1;
     transform: scale(1) rotate(0);
   }
+}
+
+/* ── Pack Preview Modal ── */
+.pack-preview-overlay {
+  z-index: 1000;
+}
+
+.pack-preview-panel {
+  max-width: 540px;
 }
 </style>
