@@ -794,11 +794,11 @@ a:hover { text-decoration: underline; }
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 5px 12px;
+  padding: 4px 10px;
   border-radius: var(--radius-full);
   font-size: 12px;
   font-weight: 600;
-  background: var(--bg-hover);
+  background: var(--bg-elevated);
   color: var(--text-secondary);
   border: 1px solid var(--border-light);
 }
@@ -825,15 +825,15 @@ a:hover { text-decoration: underline; }
 .search-input {
   width: 100%;
   padding: 7px 32px 7px 32px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
   font-size: 13px;
   color: var(--text);
   background: var(--bg-card);
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.search-input:focus { outline: none; border-color: var(--blue); }
+.search-input:focus { outline: none; border-color: var(--blue); box-shadow: var(--focus-ring); }
 .search-input::placeholder { color: var(--text-placeholder); }
 
 .search-clear {
@@ -864,7 +864,8 @@ a:hover { text-decoration: underline; }
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
-  transition: box-shadow 0.2s;
+  transition: box-shadow 0.2s ease;
+  overflow: visible;
 }
 
 .shortcut-group[style*="display: none"] + .shortcut-group { margin-top: 0; }
@@ -873,8 +874,8 @@ a:hover { text-decoration: underline; }
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: 10px 14px;
-  background: var(--bg-card);
+  padding: 12px 16px;
+  background: var(--bg-elevated);
   border-bottom: 1px solid var(--border-light);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
@@ -896,11 +897,15 @@ a:hover { text-decoration: underline; }
 .group-collapse:hover { color: var(--text-secondary); }
 
 .group-name {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   color: var(--text);
   cursor: default;
   user-select: none;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 11px;
 }
 
 .group-name-input {
@@ -920,8 +925,9 @@ a:hover { text-decoration: underline; }
   font-weight: 600;
   color: var(--text-muted);
   background: var(--bg-hover);
-  padding: 2px 8px;
+  padding: 1px 7px;
   border-radius: var(--radius-full);
+  line-height: 1.5;
 }
 
 .group-actions {
@@ -989,34 +995,35 @@ a:hover { text-decoration: underline; }
   transition: all 0.15s;
 }
 
-.btn-add-to-group:hover { background: var(--bg-hover); color: var(--text-secondary); }
-.btn-add-to-group .mdi { font-size: 14px; }
+.btn-add-to-group:hover { background: var(--bg-elevated); color: var(--text-secondary); }
 .shortcut-list {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  padding: 8px;
+  gap: 1px;
+  padding: 6px;
+  background: var(--border-light);
 }
 
 .shortcut-card {
-  background: var(--bg-elevated);
-  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
   box-shadow: none;
-  border: 1px solid transparent;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  margin-bottom: 4px;
+  border: none;
+  transition: all 0.15s ease;
+  margin-bottom: 0;
+  position: relative;
 }
 
 .shortcut-card:last-child { margin-bottom: 0; }
-.shortcut-card:hover { background: var(--bg-hover); border-color: var(--border-light); }
+.shortcut-card:hover { background: var(--bg-elevated); }
 .shortcut-card.disabled { opacity: 0.45; }
-.shortcut-card.dragging { opacity: 0.4; box-shadow: var(--shadow-lg); border-color: var(--blue); }
+.shortcut-card.dragging { opacity: 0.4; box-shadow: var(--shadow-lg); outline: 2px solid var(--blue); outline-offset: -2px; }
 
 .shortcut-header {
   display: flex;
   align-items: center;
   gap: var(--space-xs);
-  padding: 8px 14px 0 8px;
+  padding: 6px 12px 0 6px;
 }
 
 .drag-handle {
@@ -1026,32 +1033,35 @@ a:hover { text-decoration: underline; }
   padding: 2px;
   flex-shrink: 0;
   transition: color 0.15s;
-  opacity: 0.5;
+  opacity: 0;
 }
 
-.drag-handle:hover { color: var(--text-muted); opacity: 1; }
-.shortcut-card.dragging .drag-handle { cursor: grabbing; }
+.shortcut-card:hover .drag-handle { opacity: 0.5; }
+.drag-handle:hover { color: var(--text-muted); opacity: 1 !important; }
+.shortcut-card.dragging .drag-handle { cursor: grabbing; opacity: 1 !important; }
 
 .shortcut-label-title {
   flex: 1;
   min-width: 0;
   border: none;
   background: transparent;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   outline: none;
   padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s;
 }
 
 .shortcut-label-title::placeholder { color: var(--text-placeholder); }
-.shortcut-label-title:focus { color: var(--text); }
+.shortcut-label-title:focus { color: var(--text); background: var(--bg-input); box-shadow: var(--focus-ring); }
 
 .shortcut-row {
   display: flex;
   align-items: flex-end;
   gap: var(--space-sm);
-  padding: 10px 14px 14px;
+  padding: 6px 12px 10px;
 }
 
 .field-group {
@@ -1065,21 +1075,21 @@ a:hover { text-decoration: underline; }
 .behavior-col { flex: 1; min-width: 0; }
 
 .field-label {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 10px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  color: var(--text-placeholder);
 }
 
 .field-input, .field-select, .field-textarea {
   width: 100%;
-  padding: 8px 12px;
-  border: 1px solid var(--border);
+  padding: 7px 11px;
+  border: 1.5px solid var(--border);
   border-radius: var(--radius-md);
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text);
-  background: var(--bg-card);
+  background: var(--bg-input);
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
@@ -1103,22 +1113,22 @@ a:hover { text-decoration: underline; }
 }
 
 .btn-icon {
-  padding: 7px;
+  padding: 6px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
-  background: var(--bg-card);
-  color: var(--text-secondary);
+  background: transparent;
+  color: var(--text-muted);
   cursor: pointer;
   transition: all 0.15s;
   font-size: 16px;
   flex-shrink: 0;
 }
 
-.btn-icon:hover { background: var(--bg-hover); color: var(--text); border-color: var(--border); }
+.btn-icon:hover { background: var(--bg-hover); color: var(--text-secondary); border-color: var(--border); }
 .btn-delete:hover { background: var(--danger-bg); color: var(--danger); border-color: var(--danger-border); }
 .shortcut-header .toggle { flex-shrink: 0; }
 
@@ -1126,8 +1136,8 @@ a:hover { text-decoration: underline; }
 /* ── Details panel ── */
 .shortcut-details {
   border-top: 1px solid var(--border-light);
-  padding: 12px 20px;
-  background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-card) 100%);
+  padding: 12px 16px;
+  background: var(--bg-elevated);
 }
 
 /* ── Conflict warnings ── */
@@ -1594,10 +1604,10 @@ a:hover { text-decoration: underline; }
 }
 
 .btn {
-  padding: 10px 20px;
+  padding: 9px 18px;
   border: none;
-  border-radius: var(--radius-lg);
-  font-size: 14px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1608,12 +1618,13 @@ a:hover { text-decoration: underline; }
 }
 
 .btn-primary { background: var(--blue); color: #fff; box-shadow: 0 1px 3px var(--blue-bg); }
-.btn-primary:hover { background: var(--blue-hover); box-shadow: 0 4px 12px var(--blue-bg); transform: translateY(-1px); }
+.btn-primary:hover { background: var(--blue-hover); box-shadow: 0 4px 14px var(--blue-bg); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); box-shadow: 0 1px 2px var(--blue-bg); }
 
 .btn-secondary { background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border); }
 .btn-secondary:hover { background: var(--bg-hover); border-color: var(--border); color: var(--text); }
 
-.btn-sm { padding: 6px 14px; font-size: 12px; border-radius: var(--radius-md); }
+.btn-sm { padding: 5px 12px; font-size: 12px; border-radius: var(--radius-md); }
 
 /* ── Toast ── */
 .toast {
@@ -1732,20 +1743,19 @@ a:hover { text-decoration: underline; }
 /* ── Pack grid ── */
 .pack-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: var(--space-lg);
 }
 
 .pack-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-top: 4px solid var(--pack-color, #4361ee);
   border-radius: var(--radius-xl);
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
 }
@@ -1756,22 +1766,20 @@ a:hover { text-decoration: underline; }
   top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
-  background: linear-gradient(180deg, var(--pack-color) 0%, transparent 100%);
+  height: 3px;
+  background: var(--pack-color, var(--blue));
   opacity: 0;
-  transition: opacity 0.2s ease;
-  pointer-events: none;
-  z-index: 0;
+  transition: opacity 0.25s ease;
 }
 
 .pack-card:hover { 
-  box-shadow: 0 8px 24px var(--shadow-hover); 
-  transform: translateY(-2px);
-  border-color: var(--border-light);
+  box-shadow: var(--shadow-md); 
+  transform: translateY(-3px);
+  border-color: var(--border);
 }
 
 .pack-card:hover::before {
-  opacity: 0.04;
+  opacity: 1;
 }
 
 .pack-header {
@@ -1837,7 +1845,7 @@ a:hover { text-decoration: underline; }
   justify-content: center;
 }
 
-.btn-sm { padding: 6px 14px; font-size: 12px; }
+/* .btn-sm duplicate removed */
 
 /* ── JSON Import ── */
 .json-import-card {
