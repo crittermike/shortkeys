@@ -589,7 +589,7 @@ const skip = () => {
   font-size: 11px;
   font-weight: 400;
   color: var(--text-muted);
-  text-align: center;
+  text-align: left;
   line-height: 1.4;
 }
 
