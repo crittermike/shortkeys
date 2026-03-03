@@ -931,8 +931,8 @@ actionHandlers.switchprofile = async (request) => {
     const group = k.group || 'My Shortcuts'
     k.enabled = profile.enabledGroups.includes(group)
   }
-  await saveKeys(allKeys)
   await saveActiveProfile(profileId)
+  await saveKeys(allKeys)
   await showPageToast(`Switched to ${profile.icon} ${profile.name}`)
   return true
 }
@@ -943,8 +943,8 @@ actionHandlers.clearprofile = async () => {
   for (const k of allKeys) {
     k.enabled = true
   }
-  await saveKeys(allKeys)
   await saveActiveProfile(null)
+  await saveKeys(allKeys)
   await showPageToast('All shortcuts enabled')
   return true
 }

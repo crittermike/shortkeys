@@ -60,8 +60,8 @@ export async function handleProfileMenuClick(menuItemId: string): Promise<void> 
     const raw = await loadKeys()
     const allKeys = JSON.parse(raw || '[]')
     for (const k of allKeys) k.enabled = true
-    await saveKeys(allKeys)
     await saveActiveProfile(null)
+    await saveKeys(allKeys)
     return
   }
 
@@ -76,7 +76,7 @@ export async function handleProfileMenuClick(menuItemId: string): Promise<void> 
       const group = k.group || 'My Shortcuts'
       k.enabled = profile.enabledGroups.includes(group)
     }
-    await saveKeys(allKeys)
     await saveActiveProfile(profileId)
+    await saveKeys(allKeys)
   }
 }

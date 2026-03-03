@@ -238,8 +238,8 @@ export default defineBackground(() => {
           const group = k.group || 'My Shortcuts'
           k.enabled = profile.enabledGroups.includes(group)
         }
-        await saveKeys(allKeys)
         await saveActiveProfile(profileId)
+        await saveKeys(allKeys)
         sendResponse({ success: true })
       })()
       return true
@@ -252,8 +252,8 @@ export default defineBackground(() => {
         for (const k of allKeys) {
           k.enabled = true
         }
-        await saveKeys(allKeys)
         await saveActiveProfile(null)
+        await saveKeys(allKeys)
         sendResponse({ success: true })
       })()
       return true
