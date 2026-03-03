@@ -5,9 +5,23 @@ import { initLastUsedTabTracking, switchToLastUsedTab } from '@/actions/last-use
 import captureScreenshot from '@/actions/capture-screenshot'
 import { loadKeys, saveKeys, migrateLocalToSync, onKeysChanged, loadGroupSettings, loadProfiles, loadActiveProfile, saveActiveProfile } from '@/utils/storage'
 import { trackUsage } from '@/utils/usage-tracking'
+import { buildProfileContextMenu, handleProfileMenuClick } from '@/utils/profile-context-menu'
+import { updateProfileBadge } from '@/utils/profile-badge'
 
 export default defineBackground(() => {
   initLastUsedTabTracking()
+
+  // Initialize profile context menu and badge on service worker start
+  buildProfileContextMenu()
+  updateProfileBadge()
+
+  // ── Profile context menu ──────────────────────────────────────
+  if (chrome.contextMenus) {
+    chrome.contextMenus.onClicked.addListener(async (info) => {
+      await handleProfileMenuClick(String(info.menuItemId))
+    })
+  }
+
 
   async function checkKeys(): Promise<void> {
     const raw = await loadKeys()
@@ -68,6 +82,8 @@ export default defineBackground(() => {
 
   onKeysChanged(() => {
     registerUserScript()
+    buildProfileContextMenu()
+    updateProfileBadge()
     // Notify all tabs to re-fetch their shortcuts
     chrome.tabs.query({}).then((tabs) => {
       for (const tab of tabs) {
@@ -83,6 +99,8 @@ export default defineBackground(() => {
       await migrateLocalToSync()
       await checkKeys()
       registerUserScript()
+      buildProfileContextMenu()
+      updateProfileBadge()
       // Show what's new page
       chrome.tabs.create({ url: 'https://shortkeys.app/welcome' })
     } else if (details.reason === 'install') {
