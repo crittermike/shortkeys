@@ -434,11 +434,13 @@ onUnmounted(() => {
           </template>
         </div>
 
-        <div v-if="keys.length > 0 && !showOnboarding" class="action-bar">
-          <button class="btn btn-primary" @click="saveShortcuts">
-            <i class="mdi mdi-content-save"></i> Save shortcuts
-          </button>
-        </div>
+        <Transition name="toast">
+          <div v-if="keys.length > 0 && !showOnboarding && dirty" class="action-bar">
+            <button class="btn btn-primary" @click="saveShortcuts">
+              <i class="mdi mdi-content-save"></i> Save shortcuts
+            </button>
+          </div>
+        </Transition>
       </div>
 
       <!-- Packs Tab -->
