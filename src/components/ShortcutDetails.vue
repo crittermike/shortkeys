@@ -6,6 +6,7 @@ import { useShortcuts } from '@/composables/useShortcuts'
 import { useSearch } from '@/composables/useSearch'
 import { useMacros } from '@/composables/useMacros'
 import { useJsTools } from '@/composables/useJsTools'
+import { useProfiles } from '@/composables/useProfiles'
 
 const props = defineProps<{
   index: number
@@ -19,6 +20,7 @@ const {
   userscriptUrl, userscriptLoading, userscriptMessage,
   refreshTabs, testJavascript, importUserscript, loadBookmarks,
 } = useJsTools()
+const { profiles } = useProfiles()
 
 function isScrollAction(action: string): boolean {
   return (SCROLL_ACTIONS as readonly string[]).includes(action)
@@ -153,6 +155,15 @@ function isBookmarkAction(action: string): boolean {
       <div v-if="keys[index].action === 'inserttext'" class="detail-field">
         <label>Text to insert</label>
         <textarea class="field-textarea mono" v-model="keys[index].inserttext" rows="2" placeholder="Text to type into the focused field…"></textarea>
+      </div>
+
+      <div v-if="keys[index].action === 'switchprofile'" class="detail-field">
+        <label>Profile to activate</label>
+        <select class="field-input" v-model="keys[index].profileId">
+          <option value="" disabled>Choose a profile…</option>
+          <option v-for="p in profiles" :key="p.id" :value="p.id">{{ p.icon }} {{ p.name }}</option>
+        </select>
+        <p v-if="profiles.length === 0" class="hint-text">No profiles created yet. Create one in the Profiles section above.</p>
       </div>
       <div v-if="keys[index].action === 'macro'" class="macro-builder">
         <div class="field-label-row">

@@ -70,6 +70,7 @@ export interface KeySetting {
   currentWindow?: boolean
   enabled?: boolean
   group?: string
+  profileId?: string
   macroSteps?: MacroStep[]
 }
 

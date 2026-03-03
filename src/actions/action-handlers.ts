@@ -918,7 +918,7 @@ for (const snippet of JS_SNIPPETS) {
 
 // -- Profile switching (background-only) --
 actionHandlers.switchprofile = async (request) => {
-  const profileId = (request as any).profileId as string | undefined
+  const profileId = request.profileId
   if (!profileId) return false
 
   const profileList = await loadProfiles()
