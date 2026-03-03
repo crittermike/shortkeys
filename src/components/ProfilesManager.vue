@@ -84,91 +84,101 @@ function handleSwitch(id: string) {
 </script>
 
 <template>
-  <div class="profiles-bar">
-    <!-- Compact inline bar -->
-    <div class="profiles-inline">
-      <div class="profiles-label">
-        <i class="mdi mdi-account-switch-outline"></i>
-        <span>Profiles</span>
-      </div>
-      <div class="profiles-pills">
-        <button
-          v-for="profile in profiles"
-          :key="profile.id"
-          :class="['profile-pill', { active: activeProfileId === profile.id }]"
-          @click="handleSwitch(profile.id)"
-          :title="activeProfileId === profile.id ? 'Click to deactivate' : `Switch to ${profile.name}`"
-          type="button"
-        >
-          <span class="pill-icon">{{ profile.icon }}</span>
-          <span class="pill-name">{{ profile.name }}</span>
-        </button>
-        <button class="profile-pill profile-pill-add" @click="managing ? startCreating() : (managing = true)" title="Manage profiles" type="button">
-          <i :class="managing ? 'mdi mdi-plus' : 'mdi mdi-cog-outline'"></i>
-        </button>
-      </div>
-      <button v-if="managing" class="profiles-close" @click="managing = false; cancelCreating(); cancelEditing()" title="Close" type="button">
-        <i class="mdi mdi-close"></i>
+  <div class="profiles-manager">
+    <!-- Layer 1: Empty state (no profiles exist) -->
+    <div v-if="profiles.length === 0 && !managing" class="profiles-empty-inline">
+      <span class="empty-text">✨ Create a profile to switch between group presets</span>
+      <button class="empty-create-btn" @click="managing = true; startCreating()" type="button">
+        + New profile
       </button>
     </div>
 
-    <!-- Expanded manage panel -->
-    <Transition name="expand">
-      <div v-if="managing" class="profiles-panel">
-        <!-- Create form -->
-        <div v-if="creating" class="profile-form">
-          <div class="form-row">
-            <div class="icon-picker">
-              <button
-                v-for="icon in ICONS"
-                :key="icon"
-                :class="['icon-btn', { active: newIcon === icon }]"
-                @click="newIcon = icon"
-                type="button"
-              >{{ icon }}</button>
-            </div>
-            <input
-              class="profile-name-input"
-              v-model="newName"
-              placeholder="Profile name…"
-              @keydown.enter="confirmCreate"
-              @keydown.escape="cancelCreating"
-              autofocus
-            />
-          </div>
-          <div class="form-actions">
-            <button class="btn-sm btn-ghost" @click="cancelCreating" type="button">Cancel</button>
-            <button class="btn-sm btn-primary-sm" @click="confirmCreate" :disabled="!newName.trim()" type="button">Create profile</button>
-          </div>
+    <!-- Layer 2 & 3 wrapper -->
+    <div v-if="profiles.length > 0 || managing" class="profiles-container">
+      
+      <!-- Layer 2: Pill switcher bar -->
+      <div v-if="!managing || profiles.length > 0" class="profiles-pill-bar">
+        <div class="profiles-label">
+          <i class="mdi mdi-account-switch-outline"></i>
+          <span>Profiles</span>
         </div>
+        
+        <div class="profiles-pills" v-if="profiles.length > 0">
+          <button
+            v-for="profile in profiles"
+            :key="profile.id"
+            :class="['profile-pill', { active: activeProfileId === profile.id }]"
+            @click="handleSwitch(profile.id)"
+            :title="activeProfileId === profile.id ? 'Click to deactivate' : `Switch to ${profile.name}`"
+            type="button"
+          >
+            <span class="pill-icon">{{ profile.icon }}</span>
+            <span class="pill-name">{{ profile.name }}</span>
+          </button>
+        </div>
+        
+        <button v-if="!managing && profiles.length > 0" class="manage-pill" @click="managing = true" title="Manage profiles" type="button">
+          <i class="mdi mdi-cog-outline"></i>
+        </button>
+        
+        <button v-if="managing" class="manage-close-btn" @click="managing = false; cancelCreating(); cancelEditing()" title="Close management" type="button">
+          <span>Done</span>
+          <i class="mdi mdi-check"></i>
+        </button>
+      </div>
 
-        <!-- Profile list -->
-        <div v-if="!creating && profiles.length > 0" class="profile-list">
-          <div v-for="profile in profiles" :key="profile.id" class="profile-item">
-            <template v-if="editingId === profile.id">
-              <!-- Editing mode -->
-              <div class="profile-form profile-form-inline">
-                <div class="form-row">
-                  <div class="icon-picker">
-                    <button
-                      v-for="icon in ICONS"
-                      :key="icon"
-                      :class="['icon-btn', { active: newIcon === icon }]"
-                      @click="newIcon = icon"
-                      type="button"
-                    >{{ icon }}</button>
+      <!-- Layer 3: Manage panel -->
+      <Transition name="expand">
+        <div v-if="managing" class="manage-panel">
+          
+          <!-- Create form (top of panel) -->
+          <div v-if="creating" class="create-form-card">
+            <div class="form-header">Create New Profile</div>
+            <div class="form-row">
+              <div class="icon-picker">
+                <button
+                  v-for="icon in ICONS"
+                  :key="icon"
+                  :class="['icon-btn', { active: newIcon === icon }]"
+                  @click="newIcon = icon"
+                  type="button"
+                >{{ icon }}</button>
+              </div>
+              <input
+                class="profile-name-input"
+                v-model="newName"
+                placeholder="Profile name…"
+                @keydown.enter="confirmCreate"
+                @keydown.escape="cancelCreating"
+                autofocus
+              />
+            </div>
+            <div class="form-actions">
+              <button class="btn-ghost" @click="cancelCreating" type="button">Cancel</button>
+              <button class="btn-primary" @click="confirmCreate" :disabled="!newName.trim()" type="button">Create</button>
+            </div>
+          </div>
+
+          <!-- Card grid -->
+          <div class="profiles-grid">
+            <div v-for="profile in profiles" :key="profile.id" class="profile-card">
+              
+              <template v-if="editingId === profile.id">
+                <!-- Edit Mode -->
+                <div class="card-edit-mode">
+                  <div class="edit-row">
+                    <div class="icon-picker mini-picker">
+                      <button
+                        v-for="icon in ICONS"
+                        :key="icon"
+                        :class="['icon-btn', { active: newIcon === icon }]"
+                        @click="newIcon = icon"
+                        type="button"
+                      >{{ icon }}</button>
+                    </div>
+                    <input class="profile-name-input" v-model="newName" @keydown.enter="confirmEdit" @keydown.escape="cancelEditing" autofocus />
                   </div>
-                  <input
-                    class="profile-name-input"
-                    v-model="newName"
-                    @keydown.enter="confirmEdit"
-                    @keydown.escape="cancelEditing"
-                    autofocus
-                  />
-                </div>
-                <div class="profile-groups">
-                  <span class="groups-label">Enabled groups:</span>
-                  <div class="groups-chips">
+                  <div class="card-groups">
                     <button
                       v-for="group in groupNames"
                       :key="group"
@@ -177,94 +187,149 @@ function handleSwitch(id: string) {
                       type="button"
                     >{{ group }}</button>
                   </div>
+                  <div class="card-actions">
+                    <button class="btn-ghost" @click="cancelEditing" type="button">Cancel</button>
+                    <button class="btn-primary" @click="confirmEdit" :disabled="!newName.trim()" type="button">Save</button>
+                  </div>
                 </div>
-                <div class="form-actions">
-                  <button class="btn-sm btn-ghost" @click="cancelEditing" type="button">Cancel</button>
-                  <button class="btn-sm btn-ghost" @click="captureCurrentState(profile.id); cancelEditing()" type="button" title="Save the current group enabled/disabled state to this profile">
-                    <i class="mdi mdi-camera-outline"></i> Capture current
-                  </button>
-                  <button class="btn-sm btn-primary-sm" @click="confirmEdit" :disabled="!newName.trim()" type="button">Save</button>
+              </template>
+
+              <template v-else>
+                <!-- View Mode -->
+                <div class="card-header">
+                  <div class="card-title">
+                    <span class="card-icon">{{ profile.icon }}</span>
+                    <span class="card-name">{{ profile.name }}</span>
+                  </div>
+                  <div class="card-controls">
+                    <button class="icon-action" @click="startEditing(profile.id)" title="Edit profile" type="button"><i class="mdi mdi-pencil-outline"></i></button>
+                    <button class="icon-action danger" @click="handleDelete(profile.id)" title="Delete profile" type="button"><i class="mdi mdi-delete-outline"></i></button>
+                  </div>
                 </div>
-              </div>
-            </template>
-            <template v-else>
-              <!-- Display mode -->
-              <div class="profile-item-row">
-                <button
-                  :class="['profile-switch-btn', { active: activeProfileId === profile.id }]"
-                  @click="handleSwitch(profile.id)"
-                  type="button"
-                >
-                  <span class="profile-icon">{{ profile.icon }}</span>
-                  <span class="profile-name">{{ profile.name }}</span>
-                  <span v-if="activeProfileId === profile.id" class="profile-active-badge">Active</span>
-                </button>
-                <span class="profile-group-count">{{ profile.enabledGroups.length }} group{{ profile.enabledGroups.length !== 1 ? 's' : '' }}</span>
-                <div class="profile-item-actions">
-                  <button class="btn-icon-xs" @click="startEditing(profile.id)" title="Edit profile" type="button">
-                    <i class="mdi mdi-pencil-outline"></i>
-                  </button>
-                  <button class="btn-icon-xs btn-danger-icon" @click="handleDelete(profile.id)" title="Delete profile" type="button">
-                    <i class="mdi mdi-delete-outline"></i>
+                
+                <div class="card-groups">
+                  <button
+                    v-for="group in groupNames"
+                    :key="group"
+                    :class="['group-chip', { active: profile.enabledGroups.includes(group) }]"
+                    @click="toggleProfileGroup(profile.id, group)"
+                    title="Toggle group"
+                    type="button"
+                  >{{ group }}</button>
+                </div>
+
+                <div class="card-footer">
+                  <button class="capture-link" @click="captureCurrentState(profile.id)" type="button">
+                    <i class="mdi mdi-camera-outline"></i> Capture current state
                   </button>
                 </div>
-              </div>
-            </template>
+              </template>
+            </div>
+
+            <!-- Add new profile card -->
+            <button v-if="!creating" class="add-profile-card" @click="startCreating" type="button">
+              <i class="mdi mdi-plus"></i>
+              <span>New Profile</span>
+            </button>
           </div>
-        </div>
 
-        <!-- Empty state within panel -->
-        <div v-if="!creating && profiles.length === 0" class="profiles-empty">
-          <p>Profiles let you quickly switch between sets of enabled groups — e.g., "Work", "Media", "Browsing".</p>
-          <button class="btn-sm btn-primary-sm" @click="startCreating" type="button">
-            <i class="mdi mdi-plus"></i> Create your first profile
-          </button>
         </div>
-
-        <!-- Add button when profiles exist -->
-        <div v-if="!creating && profiles.length > 0" class="profiles-panel-footer">
-          <button class="btn-sm btn-ghost" @click="startCreating" type="button">
-            <i class="mdi mdi-plus"></i> New profile
-          </button>
-        </div>
-      </div>
-    </Transition>
+      </Transition>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.profiles-bar {
-  margin-bottom: 16px;
-  background: var(--bg-card, #fff);
-  border: 1px solid var(--border, #e5e7eb);
-  border-radius: 10px;
+/* Expand transition */
+.expand-enter-active, .expand-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: top;
+  overflow: hidden;
+}
+.expand-enter-from, .expand-leave-to {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(-4px);
+}
+.expand-enter-to, .expand-leave-from {
+  opacity: 1;
+  max-height: 800px;
+  transform: translateY(0);
 }
 
-.profiles-inline {
+.profiles-manager {
+  margin-bottom: var(--space-lg, 16px);
+}
+
+/* Layer 1: Empty state */
+.profiles-empty-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-md, 12px);
+  padding: var(--space-xs, 4px) var(--space-md, 12px);
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border-light, #f0f1f4);
+  border-radius: var(--radius-full, 9999px);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,0.05));
+}
+
+.empty-text {
+  font-size: 13px;
+  color: var(--text-secondary, #4b5563);
+}
+
+.empty-create-btn {
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue, #4f46e5);
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.empty-create-btn:hover {
+  color: var(--blue-hover, #4338ca);
+  text-decoration: underline;
+}
+
+/* Layer 2: Container */
+.profiles-container {
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: var(--radius-xl, 14px);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,0.05));
+  overflow: visible; /* Prevent dropdown clipping if any */
+}
+
+/* Layer 2: Pill switcher bar */
+.profiles-pill-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-md, 12px);
   padding: 10px 14px;
 }
 
 .profiles-label {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--space-xs, 4px);
   color: var(--text-muted, #9ca3af);
   font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.5px;
 }
 
-.profiles-label .mdi { font-size: 15px; }
+.profiles-label .mdi {
+  font-size: 16px;
+}
 
 .profiles-pills {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-sm, 8px);
   flex-wrap: wrap;
   flex: 1;
 }
@@ -272,123 +337,289 @@ function handleSwitch(id: string) {
 .profile-pill {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px 12px;
+  gap: 6px;
+  padding: 6px 14px;
   background: var(--bg-elevated, #f3f4f8);
   border: 1px solid var(--border-light, #f0f1f4);
-  border-radius: 20px;
-  font-size: 12px;
+  border-radius: var(--radius-full, 9999px);
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-secondary, #4b5563);
   cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .profile-pill:hover {
   background: var(--bg-hover, #eef0f5);
   border-color: var(--border, #e5e7eb);
+  transform: translateY(-1px);
 }
 
 .profile-pill.active {
   background: var(--blue-bg, rgba(79,70,229,0.1));
   border-color: var(--blue, #4f46e5);
   color: var(--blue, #4f46e5);
+  box-shadow: 0 2px 4px var(--blue-bg, rgba(79,70,229,0.1));
 }
 
-.pill-icon { font-size: 14px; }
-.pill-name { line-height: 1; }
+.pill-icon { font-size: 15px; }
 
-.profile-pill-add {
-  padding: 5px 10px;
-  gap: 0;
+.manage-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full, 9999px);
+  background: var(--bg-elevated, #f3f4f8);
+  border: 1px solid var(--border-light, #f0f1f4);
+  color: var(--text-secondary, #4b5563);
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.profile-pill-add .mdi {
+.manage-pill:hover {
+  background: var(--bg-hover, #eef0f5);
+  color: var(--text, #111827);
+  border-color: var(--border, #e5e7eb);
+}
+
+.manage-pill .mdi { font-size: 18px; }
+
+.manage-close-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  background: var(--blue, #4f46e5);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-full, 9999px);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.manage-close-btn:hover {
+  background: var(--blue-hover, #4338ca);
+}
+
+/* Layer 3: Manage panel */
+.manage-panel {
+  border-top: 1px solid var(--border-light, #f0f1f4);
+  padding: var(--space-lg, 16px);
+  background: var(--bg-elevated, #f3f4f8);
+  border-radius: 0 0 var(--radius-xl, 14px) var(--radius-xl, 14px);
+}
+
+/* Card Grid */
+.profiles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-md, 12px);
+}
+
+/* Cards */
+.profile-card {
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border-light, #f0f1f4);
+  border-radius: var(--radius-lg, 10px);
+  padding: var(--space-md, 12px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md, 12px);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,0.05));
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.profile-card:hover {
+  box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(0,0,0,0.1));
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm, 8px);
+  font-weight: 600;
+  color: var(--text, #111827);
   font-size: 15px;
 }
 
-.profiles-close {
-  background: none;
+.card-icon { font-size: 18px; }
+
+.card-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.icon-action {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md, 8px);
   border: none;
+  background: transparent;
+  color: var(--text-muted, #9ca3af);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.icon-action:hover {
+  background: var(--bg-hover, #eef0f5);
+  color: var(--text, #111827);
+}
+
+.icon-action.danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.card-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.group-chip {
+  padding: 4px 10px;
+  border-radius: var(--radius-full, 9999px);
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--border, #e5e7eb);
+  background: var(--bg-elevated, #f3f4f8);
   color: var(--text-muted, #9ca3af);
   cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
+  transition: all 0.2s;
 }
 
-.profiles-close:hover {
+.group-chip:hover {
+  border-color: var(--text-secondary, #4b5563);
+}
+
+.group-chip.active {
+  background: var(--blue-bg, rgba(79,70,229,0.1));
+  border-color: var(--blue, #4f46e5);
+  color: var(--blue, #4f46e5);
+}
+
+.card-footer {
+  margin-top: auto;
+  padding-top: var(--space-sm, 8px);
+  border-top: 1px dashed var(--border-light, #f0f1f4);
+}
+
+.capture-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #9ca3af);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: color 0.2s;
+}
+
+.capture-link:hover {
+  color: var(--blue, #4f46e5);
+}
+
+.capture-link .mdi {
+  font-size: 14px;
+}
+
+.add-profile-card {
+  background: transparent;
+  border: 2px dashed var(--border, #e5e7eb);
+  border-radius: var(--radius-lg, 10px);
+  padding: var(--space-lg, 16px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm, 8px);
+  color: var(--text-muted, #9ca3af);
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 140px;
+  transition: all 0.2s;
+}
+
+.add-profile-card:hover {
+  border-color: var(--blue, #4f46e5);
+  color: var(--blue, #4f46e5);
+  background: var(--blue-bg, rgba(79,70,229,0.1));
+}
+
+.add-profile-card .mdi {
+  font-size: 24px;
+}
+
+/* Forms */
+.create-form-card {
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border-light, #f0f1f4);
+  border-radius: var(--radius-lg, 10px);
+  padding: var(--space-md, 12px) var(--space-lg, 16px);
+  margin-bottom: var(--space-lg, 16px);
+  box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(0,0,0,0.1));
+}
+
+.form-header {
+  font-weight: 600;
+  font-size: 14px;
   color: var(--text, #111827);
-  background: var(--bg-hover, #eef0f5);
+  margin-bottom: var(--space-md, 12px);
 }
 
-/* Panel */
-.profiles-panel {
-  border-top: 1px solid var(--border-light, #f0f1f4);
-  padding: 12px 14px;
-}
-
-/* Expand transition */
-.expand-enter-active, .expand-leave-active {
-  transition: all 0.2s ease;
-  overflow: hidden;
-}
-.expand-enter-from, .expand-leave-to {
-  opacity: 0;
-  max-height: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-}
-.expand-enter-to, .expand-leave-from {
-  opacity: 1;
-  max-height: 500px;
-}
-
-/* Form */
-.profile-form {
-  margin-bottom: 8px;
-}
-
-.profile-form-inline {
-  padding: 10px;
-  background: var(--bg-elevated, #f3f4f8);
-  border-radius: 8px;
-  margin-bottom: 0;
-}
-
-.form-row {
+.form-row, .edit-row {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  align-items: flex-start;
+  gap: var(--space-md, 12px);
+  margin-bottom: var(--space-md, 12px);
+  flex-wrap: wrap;
 }
 
 .icon-picker {
   display: flex;
-  gap: 2px;
   flex-wrap: wrap;
-  max-width: 220px;
+  gap: 4px;
+  max-width: 260px;
+}
+
+.icon-picker.mini-picker {
+  max-width: 100%;
 }
 
 .icon-btn {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--border-light, #f0f1f4);
+  background: var(--bg-elevated, #f3f4f8);
+  font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-card, #fff);
-  border: 1px solid var(--border-light, #f0f1f4);
-  border-radius: 6px;
-  font-size: 14px;
   cursor: pointer;
-  transition: all 0.1s;
+  transition: all 0.2s;
 }
 
 .icon-btn:hover {
-  border-color: var(--border, #e5e7eb);
   transform: scale(1.1);
+  border-color: var(--border, #e5e7eb);
 }
 
 .icon-btn.active {
@@ -399,14 +630,15 @@ function handleSwitch(id: string) {
 
 .profile-name-input {
   flex: 1;
-  padding: 6px 10px;
+  min-width: 150px;
+  padding: 8px 12px;
   border: 1px solid var(--border, #e5e7eb);
-  border-radius: 6px;
-  font-size: 13px;
+  border-radius: var(--radius-md, 8px);
+  font-size: 14px;
   color: var(--text, #111827);
   background: var(--bg-input, #fff);
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color 0.2s;
 }
 
 .profile-name-input:focus {
@@ -417,204 +649,53 @@ function handleSwitch(id: string) {
   color: var(--text-placeholder, #d1d5db);
 }
 
-.form-actions {
+.form-actions, .card-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 6px;
+  gap: var(--space-sm, 8px);
 }
 
-/* Groups in edit mode */
-.profile-groups {
-  margin-bottom: 8px;
-}
-
-.groups-label {
-  display: block;
-  font-size: 11px;
-  color: var(--text-muted, #9ca3af);
-  margin-bottom: 4px;
-  font-weight: 500;
-}
-
-.groups-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.group-chip {
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 500;
-  border: 1px solid var(--border, #e5e7eb);
-  background: var(--bg-card, #fff);
-  color: var(--text-muted, #9ca3af);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.group-chip:hover {
-  border-color: var(--text-muted, #9ca3af);
-}
-
-.group-chip.active {
-  background: var(--blue-bg, rgba(79,70,229,0.1));
-  border-color: var(--blue, #4f46e5);
-  color: var(--blue, #4f46e5);
-}
-
-/* Buttons */
-.btn-sm {
-  padding: 5px 12px;
-  font-size: 12px;
-  font-weight: 500;
-  border-radius: 6px;
-  cursor: pointer;
-  border: none;
-  transition: all 0.15s;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+.card-actions {
+  margin-top: var(--space-sm, 8px);
+  border-top: 1px dashed var(--border-light, #f0f1f4);
+  padding-top: var(--space-md, 12px);
 }
 
 .btn-ghost {
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--radius-md, 8px);
   background: transparent;
   color: var(--text-secondary, #4b5563);
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
 .btn-ghost:hover {
   background: var(--bg-hover, #eef0f5);
+  color: var(--text, #111827);
 }
 
-.btn-primary-sm {
+.btn-primary {
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--radius-md, 8px);
   background: var(--blue, #4f46e5);
-  color: white;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-.btn-primary-sm:hover:not(:disabled) {
+.btn-primary:hover:not(:disabled) {
   background: var(--blue-hover, #4338ca);
 }
 
-.btn-primary-sm:disabled {
+.btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-/* Profile list */
-.profile-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 8px;
-}
-
-.profile-item-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 2px 0;
-}
-
-.profile-switch-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  background: var(--bg-elevated, #f3f4f8);
-  border: 1px solid var(--border-light, #f0f1f4);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.15s;
-  flex: 1;
-  min-width: 0;
-}
-
-.profile-switch-btn:hover {
-  background: var(--bg-hover, #eef0f5);
-  border-color: var(--border, #e5e7eb);
-}
-
-.profile-switch-btn.active {
-  background: var(--blue-bg, rgba(79,70,229,0.1));
-  border-color: var(--blue, #4f46e5);
-}
-
-.profile-icon { font-size: 16px; flex-shrink: 0; }
-
-.profile-name {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text, #111827);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.profile-active-badge {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--blue, #4f46e5);
-  background: var(--blue-bg, rgba(79,70,229,0.1));
-  padding: 1px 6px;
-  border-radius: 8px;
-  flex-shrink: 0;
-}
-
-.profile-group-count {
-  font-size: 11px;
-  color: var(--text-muted, #9ca3af);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.profile-item-actions {
-  display: flex;
-  gap: 2px;
-  flex-shrink: 0;
-}
-
-.btn-icon-xs {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: transparent;
-  color: var(--text-muted, #9ca3af);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s;
-  font-size: 15px;
-}
-
-.btn-icon-xs:hover {
-  background: var(--bg-hover, #eef0f5);
-  color: var(--text, #111827);
-}
-
-.btn-danger-icon:hover {
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.08);
-}
-
-/* Empty state */
-.profiles-empty {
-  text-align: center;
-  padding: 8px 0;
-}
-
-.profiles-empty p {
-  font-size: 12px;
-  color: var(--text-muted, #9ca3af);
-  margin-bottom: 10px;
-  line-height: 1.5;
-}
-
-.profiles-panel-footer {
-  display: flex;
-  justify-content: center;
-  padding-top: 4px;
 }
 </style>
