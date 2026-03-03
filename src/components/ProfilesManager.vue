@@ -15,7 +15,10 @@ const {
   captureCurrentState,
 } = useProfiles()
 
-const { groupNames } = useGroups()
+const { groupNames: allGroupNames, groupedIndices } = useGroups()
+
+/** Only groups that actually have shortcuts (filters out phantom "My Shortcuts" when no ungrouped shortcuts exist) */
+const groupNames = computed(() => allGroupNames.value.filter(g => (groupedIndices.value.get(g)?.length ?? 0) > 0))
 
 const managing = ref(false)
 const creating = ref(false)
