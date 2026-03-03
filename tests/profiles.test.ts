@@ -414,6 +414,137 @@ describe('clearprofile', () => {
   })
 })
 
+describe('cycleprofiles', () => {
+  it('returns false and shows toast when no profiles exist', async () => {
+    mockSyncGet.mockResolvedValueOnce({})  // loadProfiles sync -> no profiles
+    mockLocalGet.mockResolvedValueOnce({ profiles: '[]' })  // loadProfiles local fallback
+
+    const result = await handleAction('cycleprofiles')
+
+    expect(result).toBe(false)
+    expect(mockShowPageToast).toHaveBeenCalledWith('No profiles configured')
+  })
+
+  it('cycles from no active profile to first profile', async () => {
+    const profiles = [
+      { id: 'p1', name: 'Work', icon: '💼', enabledGroups: ['Dev'] },
+      { id: 'p2', name: 'Home', icon: '🏠', enabledGroups: ['Media'] },
+    ]
+    const keys = [
+      { key: 'a', action: 'newtab', group: 'Dev' },
+      { key: 'b', action: 'closetab', group: 'Media' },
+    ]
+    mockSyncGet.mockResolvedValueOnce({})  // loadProfiles sync -> empty
+    mockLocalGet.mockResolvedValueOnce({ profiles: JSON.stringify(profiles) })  // loadProfiles local
+    mockLocalGet.mockResolvedValueOnce({ activeProfile: null })  // loadActiveProfile
+    mockSyncGet.mockResolvedValueOnce({ keys: JSON.stringify(keys) })  // loadKeys sync
+
+    const result = await handleAction('cycleprofiles')
+
+    expect(result).toBe(true)
+    expect(mockShowPageToast).toHaveBeenCalledWith('Switched to 💼 Work')
+    const savedCall = mockSyncSet.mock.calls.find((c: any[]) => c[0].keys)
+    const savedKeys = JSON.parse(savedCall![0].keys)
+    expect(savedKeys[0].enabled).toBe(true)  // Dev -> in Work
+    expect(savedKeys[1].enabled).toBe(false) // Media -> not in Work
+  })
+
+  it('cycles from first profile to second profile', async () => {
+    const profiles = [
+      { id: 'p1', name: 'Work', icon: '💼', enabledGroups: ['Dev'] },
+      { id: 'p2', name: 'Home', icon: '🏠', enabledGroups: ['Media'] },
+    ]
+    const keys = [
+      { key: 'a', action: 'newtab', group: 'Dev', enabled: true },
+      { key: 'b', action: 'closetab', group: 'Media', enabled: false },
+    ]
+    mockSyncGet.mockResolvedValueOnce({})  // loadProfiles sync -> empty
+    mockLocalGet.mockResolvedValueOnce({ profiles: JSON.stringify(profiles) })  // loadProfiles local
+    mockLocalGet.mockResolvedValueOnce({ activeProfile: 'p1' })  // loadActiveProfile
+    mockSyncGet.mockResolvedValueOnce({ keys: JSON.stringify(keys) })  // loadKeys sync
+
+    const result = await handleAction('cycleprofiles')
+
+    expect(result).toBe(true)
+    expect(mockShowPageToast).toHaveBeenCalledWith('Switched to 🏠 Home')
+    const savedCall = mockSyncSet.mock.calls.find((c: any[]) => c[0].keys)
+    const savedKeys = JSON.parse(savedCall![0].keys)
+    expect(savedKeys[0].enabled).toBe(false) // Dev -> not in Home
+    expect(savedKeys[1].enabled).toBe(true)  // Media -> in Home
+  })
+
+  it('cycles from last profile to all shortcuts', async () => {
+    const profiles = [
+      { id: 'p1', name: 'Work', icon: '💼', enabledGroups: ['Dev'] },
+      { id: 'p2', name: 'Home', icon: '🏠', enabledGroups: ['Media'] },
+    ]
+    const keys = [
+      { key: 'a', action: 'newtab', group: 'Dev', enabled: false },
+      { key: 'b', action: 'closetab', group: 'Media', enabled: true },
+    ]
+    mockSyncGet.mockResolvedValueOnce({})  // loadProfiles sync -> empty
+    mockLocalGet.mockResolvedValueOnce({ profiles: JSON.stringify(profiles) })  // loadProfiles local
+    mockLocalGet.mockResolvedValueOnce({ activeProfile: 'p2' })  // loadActiveProfile
+    mockSyncGet.mockResolvedValueOnce({ keys: JSON.stringify(keys) })  // loadKeys sync
+
+    const result = await handleAction('cycleprofiles')
+
+    expect(result).toBe(true)
+    expect(mockShowPageToast).toHaveBeenCalledWith('All shortcuts enabled')
+    expect(mockLocalSet).toHaveBeenCalledWith({ activeProfile: null })
+    const savedCall = mockSyncSet.mock.calls.find((c: any[]) => c[0].keys)
+    const savedKeys = JSON.parse(savedCall![0].keys)
+    expect(savedKeys.every((k: any) => k.enabled === true)).toBe(true)
+  })
+
+  it('cycles from deleted profile to all shortcuts', async () => {
+    const profiles = [
+      { id: 'p1', name: 'Work', icon: '💼', enabledGroups: ['Dev'] },
+    ]
+    const keys = [{ key: 'a', action: 'newtab', enabled: false }]
+    mockSyncGet.mockResolvedValueOnce({})  // loadProfiles sync -> empty
+    mockLocalGet.mockResolvedValueOnce({ profiles: JSON.stringify(profiles) })  // loadProfiles local
+    mockLocalGet.mockResolvedValueOnce({ activeProfile: 'deleted-id' })  // loadActiveProfile (deleted)
+    mockSyncGet.mockResolvedValueOnce({ keys: JSON.stringify(keys) })  // loadKeys sync
+
+    const result = await handleAction('cycleprofiles')
+
+    expect(result).toBe(true)
+    expect(mockShowPageToast).toHaveBeenCalledWith('All shortcuts enabled')
+    expect(mockLocalSet).toHaveBeenCalledWith({ activeProfile: null })
+  })
+
+  it('handles single profile cycle correctly', async () => {
+    const profiles = [
+      { id: 'p1', name: 'Work', icon: '💼', enabledGroups: ['Dev'] },
+    ]
+    const keys = [{ key: 'a', action: 'newtab', group: 'Dev' }]
+    // No active -> switch to p1
+    mockSyncGet.mockResolvedValueOnce({})  // loadProfiles sync -> empty
+    mockLocalGet.mockResolvedValueOnce({ profiles: JSON.stringify(profiles) })  // loadProfiles local
+    mockLocalGet.mockResolvedValueOnce({ activeProfile: null })  // loadActiveProfile
+    mockSyncGet.mockResolvedValueOnce({ keys: JSON.stringify(keys) })  // loadKeys sync
+
+    let result = await handleAction('cycleprofiles')
+    expect(result).toBe(true)
+    expect(mockShowPageToast).toHaveBeenCalledWith('Switched to 💼 Work')
+
+    vi.clearAllMocks()
+    mockSyncGet.mockResolvedValue({})
+    mockLocalGet.mockResolvedValue({})
+
+    // p1 active -> cycle to all shortcuts
+    mockSyncGet.mockResolvedValueOnce({})  // loadProfiles sync -> empty
+    mockLocalGet.mockResolvedValueOnce({ profiles: JSON.stringify(profiles) })  // loadProfiles local
+    mockLocalGet.mockResolvedValueOnce({ activeProfile: 'p1' })  // loadActiveProfile
+    mockSyncGet.mockResolvedValueOnce({ keys: JSON.stringify([{ key: 'a', action: 'newtab', group: 'Dev', enabled: true }]) })  // loadKeys sync
+
+    result = await handleAction('cycleprofiles')
+    expect(result).toBe(true)
+    expect(mockShowPageToast).toHaveBeenCalledWith('All shortcuts enabled')
+  })
+})
+
 // ============================================================
 // Profile Data Integrity
 // ============================================================
@@ -495,10 +626,15 @@ describe('profile actions in registry', () => {
     expect(allActions).toContain('clearprofile')
   })
 
+  it('cycleprofiles action is registered', () => {
+    const allActions = getAllActionValues()
+    expect(allActions).toContain('cycleprofiles')
+  })
+
   it('profiles category exists in ACTION_CATEGORIES', () => {
     const profileActions = ACTION_CATEGORIES['Profiles']
     expect(profileActions).toBeDefined()
-    expect(profileActions.length).toBeGreaterThanOrEqual(2)
+    expect(profileActions.length).toBeGreaterThanOrEqual(3)
   })
 
   it('profile actions have labels', () => {

@@ -937,6 +937,43 @@ actionHandlers.switchprofile = async (request) => {
   return true
 }
 
+actionHandlers.cycleprofiles = async () => {
+  const profileList = await loadProfiles()
+  if (profileList.length === 0) {
+    await showPageToast('No profiles configured')
+    return false
+  }
+
+  const currentId = await loadActiveProfile()
+  const currentIndex = currentId ? profileList.findIndex((p) => p.id === currentId) : -1
+
+  // If we're on the last profile (or not found), cycle to "all shortcuts"
+  // If we're on "all shortcuts" (null), cycle to profile[0]
+  if (currentId !== null && (currentIndex === -1 || currentIndex >= profileList.length - 1)) {
+    // Clear to all shortcuts
+    const raw = await loadKeys()
+    const allKeys: KeySetting[] = JSON.parse(raw || '[]')
+    for (const k of allKeys) k.enabled = true
+    await saveActiveProfile(null)
+    await saveKeys(allKeys)
+    await showPageToast('All shortcuts enabled')
+    return true
+  }
+
+  // Advance to the next profile
+  const nextProfile = profileList[currentIndex + 1]
+  const raw = await loadKeys()
+  const allKeys: KeySetting[] = JSON.parse(raw || '[]')
+  for (const k of allKeys) {
+    const group = k.group || 'My Shortcuts'
+    k.enabled = nextProfile.enabledGroups.includes(group)
+  }
+  await saveActiveProfile(nextProfile.id)
+  await saveKeys(allKeys)
+  await showPageToast(`Switched to ${nextProfile.icon} ${nextProfile.name}`)
+  return true
+}
+
 actionHandlers.clearprofile = async () => {
   const raw = await loadKeys()
   const allKeys: KeySetting[] = JSON.parse(raw || '[]')
