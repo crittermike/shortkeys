@@ -4,11 +4,16 @@ import { ACTION_CATEGORIES, getActionOptionsForSelect } from '@/utils/actions-re
 import type { KeySetting } from '@/utils/url-matching'
 import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
 import SearchSelect from '@/components/SearchSelect.vue'
+import type { Profile } from '@/utils/storage'
+
 
 const query = ref('')
 const keys = ref<KeySetting[]>([])
 const selectedIndex = ref(0)
 const searchInput = ref<HTMLInputElement | null>(null)
+const profileList = ref<Profile[]>([])
+const activeProfileId = ref<string | null>(null)
+
 
 const creating = ref(false)
 const newKey = ref('')
@@ -107,12 +112,31 @@ function openSettings() {
   window.close()
 }
 
+async function switchProfileFromPopup(profileId: string | null) {
+  if (profileId === null || activeProfileId.value === profileId) {
+    await chrome.runtime.sendMessage({ action: 'clearProfile' })
+    activeProfileId.value = null
+  } else {
+    await chrome.runtime.sendMessage({ action: 'switchProfile', profileId })
+    activeProfileId.value = profileId
+  }
+  // Reload keys since profile switch changed enabled state
+  const saved = await loadKeys()
+  if (saved) keys.value = JSON.parse(saved)
+}
+
 import { loadKeys, saveKeys } from '@/utils/storage'
 
 onMounted(async () => {
   const saved = await loadKeys()
   if (saved) {
     keys.value = JSON.parse(saved)
+  }
+  // Load profiles from background
+  const profileData = await chrome.runtime.sendMessage({ action: 'getProfiles' })
+  if (profileData) {
+    profileList.value = profileData.profiles || []
+    activeProfileId.value = profileData.activeProfileId || null
   }
   await nextTick()
   searchInput.value?.focus()
@@ -130,6 +154,19 @@ onMounted(async () => {
         placeholder="Search shortcuts…"
         autofocus
       />
+    </div>
+    <div v-if="profileList.length > 0 && !creating" class="popup-profiles">
+      <button
+        v-for="profile in profileList"
+        :key="profile.id"
+        :class="['popup-profile-pill', { active: activeProfileId === profile.id }]"
+        @click="switchProfileFromPopup(profile.id)"
+        :title="activeProfileId === profile.id ? 'Click to deactivate' : `Switch to ${profile.name}`"
+        type="button"
+      >
+        <span class="popup-pill-icon">{{ profile.icon }}</span>
+        <span class="popup-pill-name">{{ profile.name }}</span>
+      </button>
     </div>
     <div v-if="creating" class="quick-add">
       <div class="quick-add-field">
@@ -490,4 +527,43 @@ body {
   padding: 5px 10px 5px 16px;
   font-size: 12px;
 }
+
+/* Profile pills in popup */
+.popup-profiles {
+  display: flex;
+  gap: 5px;
+  padding: 8px 14px;
+  border-bottom: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+}
+
+.popup-profile-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.popup-profile-pill:hover {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+
+.popup-profile-pill.active {
+  background: #eef2ff;
+  border-color: #4361ee;
+  color: #4361ee;
+}
+
+.popup-pill-icon { font-size: 12px; }
+.popup-pill-name { line-height: 1; }
 </style>

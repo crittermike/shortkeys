@@ -3,7 +3,7 @@ import { isAllowedSite, isGroupAllowed } from '@/utils/url-matching'
 import { handleAction } from '@/actions/action-handlers'
 import { initLastUsedTabTracking, switchToLastUsedTab } from '@/actions/last-used-tab'
 import captureScreenshot from '@/actions/capture-screenshot'
-import { loadKeys, saveKeys, migrateLocalToSync, onKeysChanged, loadGroupSettings } from '@/utils/storage'
+import { loadKeys, saveKeys, migrateLocalToSync, onKeysChanged, loadGroupSettings, loadProfiles, loadActiveProfile, saveActiveProfile } from '@/utils/storage'
 import { trackUsage } from '@/utils/usage-tracking'
 
 export default defineBackground(() => {
@@ -196,6 +196,49 @@ export default defineBackground(() => {
         if (tab?.id) chrome.tabs.sendMessage(tab.id, request).catch(() => {})
       })
       return
+    }
+
+    // Profile-related messages from popup/options
+    if (action === 'getProfiles') {
+      ;(async () => {
+        const profileList = await loadProfiles()
+        const activeId = await loadActiveProfile()
+        sendResponse({ profiles: profileList, activeProfileId: activeId })
+      })()
+      return true
+    }
+
+    if (action === 'switchProfile') {
+      ;(async () => {
+        const profileId = request.profileId as string
+        const profileList = await loadProfiles()
+        const profile = profileList.find((p: any) => p.id === profileId)
+        if (!profile) { sendResponse({ success: false }); return }
+        const raw = await loadKeys()
+        const allKeys = JSON.parse(raw || '[]')
+        for (const k of allKeys) {
+          const group = k.group || 'My Shortcuts'
+          k.enabled = profile.enabledGroups.includes(group)
+        }
+        await saveKeys(allKeys)
+        await saveActiveProfile(profileId)
+        sendResponse({ success: true })
+      })()
+      return true
+    }
+
+    if (action === 'clearProfile') {
+      ;(async () => {
+        const raw = await loadKeys()
+        const allKeys = JSON.parse(raw || '[]')
+        for (const k of allKeys) {
+          k.enabled = true
+        }
+        await saveKeys(allKeys)
+        await saveActiveProfile(null)
+        sendResponse({ success: true })
+      })()
+      return true
     }
 
     handleAction(action, request)

@@ -1,6 +1,7 @@
 import { executeScript, showPageToast } from '../utils/execute-script'
 import { JS_SNIPPETS } from '../utils/js-snippets'
 import type { KeySetting } from '../utils/url-matching'
+import { loadKeys, saveKeys, loadProfiles, loadActiveProfile, saveActiveProfile } from '../utils/storage'
 
 type ActionHandler = (request: KeySetting) => Promise<boolean> | boolean
 
@@ -913,6 +914,39 @@ for (const snippet of JS_SNIPPETS) {
     await executeScript((c: string) => new Function(c)(), [code])
     return true
   }
+}
+
+// -- Profile switching (background-only) --
+actionHandlers.switchprofile = async (request) => {
+  const profileId = (request as any).profileId as string | undefined
+  if (!profileId) return false
+
+  const profileList = await loadProfiles()
+  const profile = profileList.find((p) => p.id === profileId)
+  if (!profile) return false
+
+  const raw = await loadKeys()
+  const allKeys: KeySetting[] = JSON.parse(raw || '[]')
+  for (const k of allKeys) {
+    const group = k.group || 'My Shortcuts'
+    k.enabled = profile.enabledGroups.includes(group)
+  }
+  await saveKeys(allKeys)
+  await saveActiveProfile(profileId)
+  await showPageToast(`Switched to ${profile.icon} ${profile.name}`)
+  return true
+}
+
+actionHandlers.clearprofile = async () => {
+  const raw = await loadKeys()
+  const allKeys: KeySetting[] = JSON.parse(raw || '[]')
+  for (const k of allKeys) {
+    k.enabled = true
+  }
+  await saveKeys(allKeys)
+  await saveActiveProfile(null)
+  await showPageToast('All shortcuts enabled')
+  return true
 }
 
 /**

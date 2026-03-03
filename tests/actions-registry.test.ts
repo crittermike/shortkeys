@@ -22,7 +22,8 @@ describe('ACTION_CATEGORIES', () => {
     expect(categories).toContain('Page Tools')
     expect(categories).toContain('Link Hints')
     expect(categories).toContain('Page Scripts')
-    expect(categories).toHaveLength(12)
+    expect(categories).toContain('Profiles')
+    expect(categories).toHaveLength(13)
   })
 
   it('has valid structure for every action', () => {

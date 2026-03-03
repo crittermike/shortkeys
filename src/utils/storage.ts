@@ -197,3 +197,78 @@ export async function loadGroupSettings(): Promise<Record<string, GroupSettings>
   }
   return {}
 }
+
+export interface Profile {
+  id: string
+  name: string
+  icon: string
+  enabledGroups: string[]
+}
+
+/**
+ * Save profiles to synced storage.
+ * Profiles are small (just names and group lists), so they always fit in sync.
+ */
+export async function saveProfiles(profiles: Profile[]): Promise<void> {
+  const json = JSON.stringify(profiles)
+  if (browser.storage.sync) {
+    try {
+      await browser.storage.sync.set({ profiles: json })
+      await browser.storage.local.set({ profiles: json })
+      return
+    } catch (e) {
+      console.error('[Shortkeys] Sync save failed for profiles, falling back to local:', e)
+    }
+  }
+  try {
+    await browser.storage.local.set({ profiles: json })
+  } catch (e) {
+    console.error('[Shortkeys] Local save failed for profiles:', e)
+  }
+}
+
+/**
+ * Load profiles from storage. Checks sync first, then local.
+ */
+export async function loadProfiles(): Promise<Profile[]> {
+  if (browser.storage.sync) {
+    try {
+      const syncData = await browser.storage.sync.get('profiles')
+      if (syncData.profiles) return JSON.parse(syncData.profiles as string)
+    } catch (e) {
+      console.error('[Shortkeys] Failed to load profiles from sync, trying local:', e)
+    }
+  }
+  try {
+    const localData = await browser.storage.local.get('profiles')
+    if (localData.profiles) return JSON.parse(localData.profiles as string)
+  } catch (e) {
+    console.error('[Shortkeys] Failed to load profiles from local:', e)
+  }
+  return []
+}
+
+/**
+ * Save the active profile ID to local storage (device-specific, not synced).
+ * Active profile is per-device since different devices may need different profiles.
+ */
+export async function saveActiveProfile(profileId: string | null): Promise<void> {
+  try {
+    await browser.storage.local.set({ activeProfile: profileId })
+  } catch (e) {
+    console.error('[Shortkeys] Failed to save active profile:', e)
+  }
+}
+
+/**
+ * Load the active profile ID from local storage.
+ */
+export async function loadActiveProfile(): Promise<string | null> {
+  try {
+    const data = await browser.storage.local.get('activeProfile')
+    return (data.activeProfile as string) || null
+  } catch (e) {
+    console.error('[Shortkeys] Failed to load active profile:', e)
+    return null
+  }
+}

@@ -787,7 +787,7 @@ describe('handleAction', () => {
   describe('coverage of all registered actions', () => {
     const allActions = getAllActionValues()
     // These require special handling (imports from other modules, not in actionHandlers)
-    const specialActions = ['lastusedtab', 'capturescreenshot', 'capturefullsizescreenshot', 'forcecapturefullsizescreenshot']
+    const specialActions = ['lastusedtab', 'capturescreenshot', 'capturefullsizescreenshot', 'forcecapturefullsizescreenshot', 'switchprofile', 'clearprofile']
 
     // These actions are handled in the content script, not the background action handlers
     const contentScriptActions = ['javascript', 'trigger', 'buttonnexttab', 'showcheatsheet', 'toggledarkmode', 'editurl', 'linkhints', 'linkhintsnew']

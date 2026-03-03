@@ -12,6 +12,7 @@ import JsWarningDialog from '@/components/JsWarningDialog.vue'
 import ExportTab from '@/components/ExportTab.vue'
 import AnalyticsTab from '@/components/AnalyticsTab.vue'
 import OnboardingWizard from '@/components/OnboardingWizard.vue'
+import ProfilesManager from '@/components/ProfilesManager.vue'
 import { useTheme } from '@/composables/useTheme'
 import { useToast } from '@/composables/useToast'
 import { useShortcuts } from '@/composables/useShortcuts'
@@ -25,6 +26,7 @@ import { useJsTools } from '@/composables/useJsTools'
 import { useUndoRedo } from '@/composables/useUndoRedo'
 import { useViewDensity } from '@/composables/useViewDensity'
 import { usePacks } from '@/composables/usePacks'
+import { useProfiles } from '@/composables/useProfiles'
 
 // --- Composables ---
 const { darkMode, initTheme, toggleTheme } = useTheme()
@@ -52,6 +54,7 @@ const { refreshTabs, loadBookmarks } = useJsTools()
 const { init: initUndoRedo, undo, redo, canUndo, canRedo } = useUndoRedo()
 const { density, initDensity, toggleDensity } = useViewDensity()
 const { previewPack, installPack } = usePacks()
+const { loadProfilesFromStorage } = useProfiles()
 
 // --- Lifecycle ---
 initTheme()
@@ -104,6 +107,7 @@ function handleBeforeUnload(e: BeforeUnloadEvent) {
 onMounted(async () => {
   await loadSavedKeys()
   await loadGroupSettingsFromStorage()
+  await loadProfilesFromStorage()
   refreshTabs()
   document.addEventListener('click', () => { groupMenuOpen.value = null })
   document.addEventListener('keydown', handleKeydown)
@@ -257,6 +261,9 @@ onUnmounted(() => {
           </div>
           </div>
         </template>
+
+        <!-- Profiles -->
+        <ProfilesManager v-if="keys.length > 0 && !showOnboarding" />
 
         <!-- Grouped shortcut rows -->
         <div v-if="keys.length > 0 && !showOnboarding" class="shortcut-groups">
