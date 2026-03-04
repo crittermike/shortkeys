@@ -1288,6 +1288,7 @@ a:hover { text-decoration: underline; }
   background: var(--bg-card, #fff);
   border: 1px solid var(--border, #e0e0e0);
   border-radius: var(--radius-lg);
+  flex-wrap: wrap;
 }
 
 .macro-step-num {
@@ -1332,6 +1333,10 @@ a:hover { text-decoration: underline; }
   width: 26px !important;
   height: 26px !important;
   font-size: 14px !important;
+}
+.macro-step-code {
+  width: 100%;
+  margin-top: var(--space-xs);
 }
 
 .btn-add-step {

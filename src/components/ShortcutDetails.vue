@@ -195,6 +195,10 @@ function isBookmarkAction(action: string): boolean {
                 <i class="mdi mdi-close"></i>
               </button>
             </div>
+            <!-- Code editor for JS macro step -->
+            <div v-if="step.action === 'javascript'" class="macro-step-code">
+              <CodeEditor :modelValue="step.code || ''" @update:modelValue="step.code = $event" />
+            </div>
           </div>
         </div>
         <button
