@@ -7,8 +7,22 @@ export function useDragDrop() {
   const { keys } = useShortcuts()
 
   const dragIndex = ref<number | null>(null)
+  const handleActive = ref(false)
 
-  function onDragStart(index: number) {
+  function onHandleMouseDown() {
+    handleActive.value = true
+    const onUp = () => {
+      handleActive.value = false
+      document.removeEventListener('mouseup', onUp)
+    }
+    document.addEventListener('mouseup', onUp)
+  }
+
+  function onDragStart(e: DragEvent, index: number) {
+    if (!handleActive.value) {
+      e.preventDefault()
+      return
+    }
     const { pushUndo } = useUndoRedo()
     pushUndo('Shortcuts reordered')
     dragIndex.value = index
@@ -36,5 +50,5 @@ export function useDragDrop() {
     dragIndex.value = null
   }
 
-  return { dragIndex, onDragStart, onDragOver, onDragOverGroup, onDragEnd }
+  return { dragIndex, handleActive, onHandleMouseDown, onDragStart, onDragOver, onDragOverGroup, onDragEnd }
 }

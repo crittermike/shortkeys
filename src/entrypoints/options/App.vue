@@ -46,7 +46,7 @@ const {
   loadGroupSettingsFromStorage, persistGroupSettings,
 } = useGroups()
 const { convertToMacro } = useMacros()
-const { dragIndex, onDragStart, onDragOver, onDragOverGroup, onDragEnd } = useDragDrop()
+const { dragIndex, handleActive, onHandleMouseDown, onDragStart, onDragOver, onDragOverGroup, onDragEnd } = useDragDrop()
 const { shareGroup, publishToCommunity } = useImportExport()
 const { refreshTabs, loadBookmarks } = useJsTools()
 const { init: initUndoRedo, undo, redo, canUndo, canRedo } = useUndoRedo()
@@ -352,14 +352,14 @@ onUnmounted(() => {
                 v-for="index in (groupedIndices.get(group) || [])"
                 :key="keys[index].id"
                 :class="['shortcut-card', { disabled: keys[index].enabled === false, dragging: dragIndex === index, expanded: expandedRow === index }]"
-                draggable="true"
-                @dragstart="onDragStart(index)"
+                :draggable="handleActive"
+                @dragstart="onDragStart($event, index)"
                 @dragover="onDragOver($event, index)"
                 @dragend="onDragEnd"
               >
                 <!-- Editable label above the card -->
                 <div class="shortcut-header">
-                  <i class="mdi mdi-drag-vertical drag-handle" title="Drag to reorder"></i>
+                  <i class="mdi mdi-drag-vertical drag-handle" title="Drag to reorder" @mousedown="onHandleMouseDown"></i>
                   <input
                     class="shortcut-label-title"
                     type="text"
