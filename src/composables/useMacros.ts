@@ -31,13 +31,17 @@ export function useMacros() {
   function convertToMacro(row: KeySetting, index: number) {
     const previousAction = row.action
     row.action = 'macro'
-    row.macroSteps = previousAction ? [{ action: previousAction }] : []
+    row.macroSteps = previousAction ? [{ action: previousAction, code: previousAction === 'javascript' ? row.code : undefined }] : []
     expandedRow.value = index
   }
 
   function convertToSingleAction(row: KeySetting) {
-    const firstAction = row.macroSteps?.[0]?.action || ''
+    const firstStep = row.macroSteps?.[0]
+    const firstAction = firstStep?.action || ''
     row.action = firstAction
+    if (firstAction === 'javascript' && firstStep?.code) {
+      row.code = firstStep.code
+    }
     row.macroSteps = undefined
   }
 

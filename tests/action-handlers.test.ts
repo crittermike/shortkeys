@@ -682,6 +682,37 @@ describe('handleAction', () => {
       expect(result).toBe(true)
       expect(mockTabsCreate).toHaveBeenCalled()
     })
+
+    it('executes JS macro step code via executeScript', async () => {
+      const { executeScript } = await import('../src/utils/execute-script')
+      vi.mocked(executeScript).mockClear()
+
+      await handleAction('macro', {
+        key: 'a',
+        action: 'macro',
+        macroSteps: [
+          { action: 'javascript', code: 'console.log("hello")' },
+        ],
+      })
+
+      expect(executeScript).toHaveBeenCalledTimes(1)
+      expect(executeScript).toHaveBeenCalledWith(expect.any(Function), ['console.log("hello")'])
+    })
+
+    it('skips JS macro step with no code', async () => {
+      const { executeScript } = await import('../src/utils/execute-script')
+      vi.mocked(executeScript).mockClear()
+
+      await handleAction('macro', {
+        key: 'a',
+        action: 'macro',
+        macroSteps: [
+          { action: 'javascript' },
+        ],
+      })
+
+      expect(executeScript).not.toHaveBeenCalled()
+    })
   })
 
   describe('URL increment/decrement (#754)', () => {
