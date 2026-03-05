@@ -139,6 +139,11 @@ export const ACTION_CATEGORIES: Record<string, ActionDefinition[]> = {
     { value: 'linkhints', label: 'Click a link via keyboard', description: 'Show letter labels on links — type to click one without a mouse' },
     { value: 'linkhintsnew', label: 'Open link in new tab via keyboard', description: 'Show letter labels on links — type to open one in a new tab' },
   ],
+  Profiles: [
+    { value: 'switchprofile', label: 'Switch to specific profile', description: 'Switch to a chosen profile to enable/disable groups' },
+    { value: 'cycleprofiles', label: 'Cycle to next profile', description: 'Cycle through profiles in order, then back to all shortcuts' },
+    { value: 'clearprofile', label: 'Clear active profile', description: 'Deactivate the current profile and enable all shortcuts' },
+  ],
   'Page Scripts': JS_SNIPPETS.map((s) => ({ value: 'script-' + s.id, label: s.name, description: s.description })),
 }
 

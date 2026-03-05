@@ -3,11 +3,25 @@ import { isAllowedSite, isGroupAllowed } from '@/utils/url-matching'
 import { handleAction } from '@/actions/action-handlers'
 import { initLastUsedTabTracking, switchToLastUsedTab } from '@/actions/last-used-tab'
 import captureScreenshot from '@/actions/capture-screenshot'
-import { loadKeys, saveKeys, migrateLocalToSync, onKeysChanged, loadGroupSettings } from '@/utils/storage'
+import { loadKeys, saveKeys, migrateLocalToSync, onKeysChanged, loadGroupSettings, loadProfiles, loadActiveProfile, saveActiveProfile } from '@/utils/storage'
 import { trackUsage } from '@/utils/usage-tracking'
+import { buildProfileContextMenu, handleProfileMenuClick } from '@/utils/profile-context-menu'
+import { updateProfileBadge } from '@/utils/profile-badge'
 
 export default defineBackground(() => {
   initLastUsedTabTracking()
+
+  // Initialize profile context menu and badge on service worker start
+  buildProfileContextMenu()
+  updateProfileBadge()
+
+  // ── Profile context menu ──────────────────────────────────────
+  if (chrome.contextMenus) {
+    chrome.contextMenus.onClicked.addListener(async (info) => {
+      await handleProfileMenuClick(String(info.menuItemId))
+    })
+  }
+
 
   async function checkKeys(): Promise<void> {
     const raw = await loadKeys()
@@ -68,6 +82,8 @@ export default defineBackground(() => {
 
   onKeysChanged(() => {
     registerUserScript()
+    buildProfileContextMenu()
+    updateProfileBadge()
     // Notify all tabs to re-fetch their shortcuts
     chrome.tabs.query({}).then((tabs) => {
       for (const tab of tabs) {
@@ -83,6 +99,8 @@ export default defineBackground(() => {
       await migrateLocalToSync()
       await checkKeys()
       registerUserScript()
+      buildProfileContextMenu()
+      updateProfileBadge()
       // Show what's new page
       chrome.tabs.create({ url: 'https://shortkeys.app/welcome' })
     } else if (details.reason === 'install') {
@@ -196,6 +214,49 @@ export default defineBackground(() => {
         if (tab?.id) chrome.tabs.sendMessage(tab.id, request).catch(() => {})
       })
       return
+    }
+
+    // Profile-related messages from popup/options
+    if (action === 'getProfiles') {
+      ;(async () => {
+        const profileList = await loadProfiles()
+        const activeId = await loadActiveProfile()
+        sendResponse({ profiles: profileList, activeProfileId: activeId })
+      })()
+      return true
+    }
+
+    if (action === 'switchProfile') {
+      ;(async () => {
+        const profileId = request.profileId as string
+        const profileList = await loadProfiles()
+        const profile = profileList.find((p: any) => p.id === profileId)
+        if (!profile) { sendResponse({ success: false }); return }
+        const raw = await loadKeys()
+        const allKeys = JSON.parse(raw || '[]')
+        for (const k of allKeys) {
+          const group = k.group || 'My Shortcuts'
+          k.enabled = profile.enabledGroups.includes(group)
+        }
+        await saveActiveProfile(profileId)
+        await saveKeys(allKeys)
+        sendResponse({ success: true })
+      })()
+      return true
+    }
+
+    if (action === 'clearProfile') {
+      ;(async () => {
+        const raw = await loadKeys()
+        const allKeys = JSON.parse(raw || '[]')
+        for (const k of allKeys) {
+          k.enabled = true
+        }
+        await saveActiveProfile(null)
+        await saveKeys(allKeys)
+        sendResponse({ success: true })
+      })()
+      return true
     }
 
     handleAction(action, request)
