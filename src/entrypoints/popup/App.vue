@@ -91,15 +91,24 @@ function onKeydown(e: KeyboardEvent) {
   if (e.key === 'ArrowDown') {
     e.preventDefault()
     selectedIndex.value = Math.min(selectedIndex.value + 1, filtered.value.length - 1)
+    scrollToSelected()
   } else if (e.key === 'ArrowUp') {
     e.preventDefault()
     selectedIndex.value = Math.max(selectedIndex.value - 1, 0)
+    scrollToSelected()
   } else if (e.key === 'Enter') {
     e.preventDefault()
     if (filtered.value[selectedIndex.value]) {
       triggerShortcut(filtered.value[selectedIndex.value])
     }
   }
+}
+
+function scrollToSelected() {
+  nextTick(() => {
+    const el = document.querySelector('.result-row.selected') as HTMLElement | null
+    el?.scrollIntoView({ block: 'nearest' })
+  })
 }
 
 function openSettings() {
