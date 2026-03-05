@@ -892,7 +892,13 @@ actionHandlers.macro = async (request) => {
       await new Promise((resolve) => setTimeout(resolve, step.delay))
     }
 
-    if (CONTENT_SCRIPT_ACTIONS.includes(step.action)) {
+    if (step.action === 'javascript') {
+      // Run JS macro step directly via executeScript (step carries its own code)
+      const code = step.code || ''
+      if (code) {
+        await executeScript((c: string) => new Function(c)(), [code])
+      }
+    } else if (CONTENT_SCRIPT_ACTIONS.includes(step.action)) {
       // Forward content-script-only actions to the active tab
       const [tab] = await browser.tabs.query({ active: true, currentWindow: true })
       if (tab?.id) {

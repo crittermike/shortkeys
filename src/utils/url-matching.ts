@@ -39,6 +39,7 @@ export function normalizeUrlPattern(pattern: string): string {
 export interface MacroStep {
   action: string
   delay?: number
+  code?: string
 }
 
 export interface GroupSettings {
