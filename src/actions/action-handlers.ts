@@ -213,20 +213,128 @@ const actionHandlers: Record<string, ActionHandler> = {
     return true
   },
 
-  grouptab: async () => {
-    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
-    if (tab.id && chrome.tabs.group) {
-      await chrome.tabs.group({ tabIds: [tab.id] })
-      showPageToast('✓ Tab added to new group')
+  grouptab: async (request) => {
+    if (!chrome.tabs.group) return true
+    const tabs = await browser.tabs.query({ currentWindow: true, highlighted: true })
+    const tabIds = tabs.map((t) => t.id!).filter(Boolean)
+    if (tabIds.length === 0) return true
+    const groupId = await chrome.tabs.group({ tabIds })
+    if (request.groupname && chrome.tabGroups?.update) {
+      await chrome.tabGroups.update(groupId, { title: request.groupname })
     }
+    showPageToast(`✓ ${tabIds.length === 1 ? 'Tab' : tabIds.length + ' tabs'} added to new group`)
     return true
   },
 
   ungrouptab: async () => {
+    if (!chrome.tabs.ungroup) return true
+    const tabs = await browser.tabs.query({ currentWindow: true, highlighted: true })
+    const tabIds = tabs.map((t) => t.id!).filter(Boolean)
+    if (tabIds.length === 0) return true
+    await chrome.tabs.ungroup(tabIds)
+    showPageToast(`✓ ${tabIds.length === 1 ? 'Tab' : tabIds.length + ' tabs'} removed from group`)
+    return true
+  },
+
+  togglegrouptab: async (request) => {
+    if (!chrome.tabs.group || !chrome.tabs.ungroup) return true
+    const tabs = await browser.tabs.query({ currentWindow: true, highlighted: true })
+    if (tabs.length === 0) return true
+    // If any selected tab is grouped, ungroup all; otherwise group all
+    const grouped = tabs.filter((t) => (t as any).groupId !== undefined && (t as any).groupId !== -1)
+    if (grouped.length > 0) {
+      await chrome.tabs.ungroup(tabs.map((t) => t.id!).filter(Boolean))
+      showPageToast(`✓ ${tabs.length === 1 ? 'Tab' : tabs.length + ' tabs'} ungrouped`)
+    } else {
+      const tabIds = tabs.map((t) => t.id!).filter(Boolean)
+      const groupId = await chrome.tabs.group({ tabIds })
+      if (request.groupname && chrome.tabGroups?.update) {
+        await chrome.tabGroups.update(groupId, { title: request.groupname })
+      }
+      showPageToast(`✓ ${tabs.length === 1 ? 'Tab' : tabs.length + ' tabs'} grouped`)
+    }
+    return true
+  },
+
+  namegroup: async (request) => {
+    if (!chrome.tabGroups?.update) return true
     const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
-    if (tab.id && chrome.tabs.ungroup) {
-      await chrome.tabs.ungroup(tab.id)
-      showPageToast('✓ Tab removed from group')
+    const groupId = (tab as any).groupId ?? -1
+    if (groupId === -1) {
+      showPageToast('Tab is not in a group')
+      return true
+    }
+    if (request.groupname) {
+      await chrome.tabGroups.update(groupId, { title: request.groupname })
+      showPageToast(`✓ Group named "${request.groupname}"`)
+    }
+    return true
+  },
+
+  collapsegroup: async () => {
+    if (!chrome.tabGroups?.update) return true
+    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
+    const groupId = (tab as any).groupId ?? -1
+    if (groupId === -1) {
+      showPageToast('Tab is not in a group')
+      return true
+    }
+    await chrome.tabGroups.update(groupId, { collapsed: true })
+    showPageToast('✓ Group collapsed')
+    return true
+  },
+
+  expandgroup: async () => {
+    if (!chrome.tabGroups?.update) return true
+    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
+    const groupId = (tab as any).groupId ?? -1
+    if (groupId === -1) {
+      showPageToast('Tab is not in a group')
+      return true
+    }
+    await chrome.tabGroups.update(groupId, { collapsed: false })
+    showPageToast('✓ Group expanded')
+    return true
+  },
+
+  togglecollapsegroup: async () => {
+    if (!chrome.tabGroups?.get || !chrome.tabGroups?.update) return true
+    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
+    const groupId = (tab as any).groupId ?? -1
+    if (groupId === -1) {
+      showPageToast('Tab is not in a group')
+      return true
+    }
+    const group = await chrome.tabGroups.get(groupId)
+    await chrome.tabGroups.update(groupId, { collapsed: !group.collapsed })
+    showPageToast(group.collapsed ? '✓ Group expanded' : '✓ Group collapsed')
+    return true
+  },
+
+  selecttableft: async () => {
+    const tabs = await browser.tabs.query({ currentWindow: true })
+    const highlighted = await browser.tabs.query({ currentWindow: true, highlighted: true })
+    if (highlighted.length === 0 || tabs.length === 0) return true
+    // Find leftmost highlighted tab and extend selection one to the left
+    const indices = highlighted.map((t) => t.index).sort((a, b) => a - b)
+    const leftmost = indices[0]
+    if (leftmost > 0 && chrome.tabs.highlight) {
+      const newIndices = [...new Set([leftmost - 1, ...indices])]
+      await chrome.tabs.highlight({ tabs: newIndices })
+    }
+    return true
+  },
+
+  selecttabright: async () => {
+    const tabs = await browser.tabs.query({ currentWindow: true })
+    const highlighted = await browser.tabs.query({ currentWindow: true, highlighted: true })
+    if (highlighted.length === 0 || tabs.length === 0) return true
+    // Find rightmost highlighted tab and extend selection one to the right
+    const indices = highlighted.map((t) => t.index).sort((a, b) => a - b)
+    const rightmost = indices[indices.length - 1]
+    if (rightmost < tabs.length - 1 && chrome.tabs.highlight) {
+      const newIndices = [...new Set([...indices, rightmost + 1])]
+      await chrome.tabs.highlight({ tabs: newIndices })
     }
     return true
   },

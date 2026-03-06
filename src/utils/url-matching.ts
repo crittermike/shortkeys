@@ -72,6 +72,7 @@ export interface KeySetting {
   enabled?: boolean
   group?: string
   macroSteps?: MacroStep[]
+  groupname?: string
 }
 
 /**
