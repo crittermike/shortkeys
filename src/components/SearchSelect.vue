@@ -239,6 +239,7 @@ watch(isOpen, (val) => {
   display: block;
   width: 100%;
   padding: 7px var(--space-md) 7px 12px;
+  margin: 3px 0;
   border: none;
   border-radius: var(--radius-md);
   background: none;
