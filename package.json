@@ -1,6 +1,6 @@
 {
   "name": "shortkeys",
-  "version": "5.0.0-alpha.8",
+  "version": "5.0.0-beta.1",
   "description": "Custom keyboard shortcuts for your browser",
   "scripts": {
     "dev": "wxt",
