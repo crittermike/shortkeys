@@ -140,6 +140,11 @@ function isBookmarkAction(action: string): boolean {
         <input class="field-input mono" v-model="keys[index].openurl" placeholder="https://example.com" />
       </div>
 
+      <div v-if="['grouptab', 'togglegrouptab', 'namegroup'].includes(keys[index].action)" class="detail-field">
+        <label>Group name</label>
+        <input class="field-input" v-model="keys[index].groupname" placeholder="e.g. Research" />
+      </div>
+
       <div v-if="keys[index].action === 'openapp'" class="detail-field">
         <label>App ID <span class="hint">(from extensions page)</span></label>
         <input class="field-input mono" v-model="keys[index].openappid" />

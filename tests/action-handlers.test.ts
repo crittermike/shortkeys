@@ -71,7 +71,8 @@ globalThis.browser = browserMock
 globalThis.chrome = {
   ...browserMock,
   downloads: { search: vi.fn(), show: vi.fn() },
-  tabs: { ...browserMock.tabs, group: vi.fn().mockResolvedValue(1), ungroup: vi.fn().mockResolvedValue(undefined) },
+  tabs: { ...browserMock.tabs, group: vi.fn().mockResolvedValue(1), ungroup: vi.fn().mockResolvedValue(undefined), highlight: vi.fn().mockResolvedValue(undefined) },
+  tabGroups: { update: vi.fn().mockResolvedValue(undefined), get: vi.fn().mockResolvedValue({ collapsed: false }), query: vi.fn().mockResolvedValue([]) },
 }
 
 // Now import the module under test
@@ -441,15 +442,151 @@ describe('handleAction', () => {
     })
   })
 
-  describe('tab groups (#455)', () => {
-    it('adds tab to new group', async () => {
+  describe('tab groups (#786)', () => {
+    it('grouptab groups all highlighted tabs', async () => {
+      mockTabsQuery.mockResolvedValue([{ id: 1, index: 0 }, { id: 2, index: 1 }])
       await handleAction('grouptab')
-      expect(chrome.tabs.group).toHaveBeenCalledWith({ tabIds: [1] })
+      expect(chrome.tabs.group).toHaveBeenCalledWith({ tabIds: [1, 2] })
     })
 
-    it('removes tab from group', async () => {
+    it('grouptab sets group name when groupname is provided', async () => {
+      mockTabsQuery.mockResolvedValue([{ id: 1, index: 0 }])
+      await handleAction('grouptab', { groupname: 'Research' } as any)
+      expect(chrome.tabs.group).toHaveBeenCalledWith({ tabIds: [1] })
+      expect(chrome.tabGroups.update).toHaveBeenCalledWith(1, { title: 'Research' })
+    })
+
+    it('grouptab does nothing when no highlighted tabs', async () => {
+      mockTabsQuery.mockResolvedValue([])
+      await handleAction('grouptab')
+      expect(chrome.tabs.group).not.toHaveBeenCalled()
+    })
+
+    it('grouptab returns true when chrome.tabs.group is unavailable', async () => {
+      const originalGroup = chrome.tabs.group
+      // @ts-ignore
+      chrome.tabs.group = undefined
+      const result = await handleAction('grouptab')
+      expect(result).toBe(true)
+      chrome.tabs.group = originalGroup
+    })
+
+    it('ungrouptab ungroups all highlighted tabs', async () => {
+      mockTabsQuery.mockResolvedValue([{ id: 3, index: 0 }, { id: 4, index: 1 }])
       await handleAction('ungrouptab')
-      expect(chrome.tabs.ungroup).toHaveBeenCalledWith(1)
+      expect(chrome.tabs.ungroup).toHaveBeenCalledWith([3, 4])
+    })
+
+    it('ungrouptab does nothing when no highlighted tabs', async () => {
+      mockTabsQuery.mockResolvedValue([])
+      await handleAction('ungrouptab')
+      expect(chrome.tabs.ungroup).not.toHaveBeenCalled()
+    })
+
+    it('togglegrouptab ungroups when any tab is grouped', async () => {
+      mockTabsQuery.mockResolvedValue([{ id: 1, index: 0, groupId: 5 }, { id: 2, index: 1, groupId: -1 }])
+      await handleAction('togglegrouptab')
+      expect(chrome.tabs.ungroup).toHaveBeenCalledWith([1, 2])
+      expect(chrome.tabs.group).not.toHaveBeenCalled()
+    })
+
+    it('togglegrouptab groups when no tab is grouped', async () => {
+      mockTabsQuery.mockResolvedValue([{ id: 1, index: 0, groupId: -1 }, { id: 2, index: 1, groupId: -1 }])
+      await handleAction('togglegrouptab')
+      expect(chrome.tabs.group).toHaveBeenCalledWith({ tabIds: [1, 2] })
+      expect(chrome.tabs.ungroup).not.toHaveBeenCalled()
+    })
+
+    it('togglegrouptab sets group name when grouping', async () => {
+      mockTabsQuery.mockResolvedValue([{ id: 1, index: 0, groupId: -1 }])
+      await handleAction('togglegrouptab', { groupname: 'Work' } as any)
+      expect(chrome.tabs.group).toHaveBeenCalledWith({ tabIds: [1] })
+      expect(chrome.tabGroups.update).toHaveBeenCalledWith(1, { title: 'Work' })
+    })
+
+    it('namegroup sets title on current tab group', async () => {
+      mockTabsQuery.mockResolvedValue([{ id: 1, index: 0, groupId: 7 }])
+      await handleAction('namegroup', { groupname: 'My Group' } as any)
+      expect(chrome.tabGroups.update).toHaveBeenCalledWith(7, { title: 'My Group' })
+    })
+
+    it('namegroup shows toast when tab is not in a group', async () => {
+      mockTabsQuery.mockResolvedValue([{ id: 1, index: 0, groupId: -1 }])
+      await handleAction('namegroup', { groupname: 'Test' } as any)
+      expect(chrome.tabGroups.update).not.toHaveBeenCalled()
+      expect(mockShowPageToast).toHaveBeenCalledWith('Tab is not in a group')
+    })
+
+    it('collapsegroup collapses current tab group', async () => {
+      mockTabsQuery.mockResolvedValue([{ id: 1, index: 0, groupId: 3 }])
+      await handleAction('collapsegroup')
+      expect(chrome.tabGroups.update).toHaveBeenCalledWith(3, { collapsed: true })
+    })
+
+    it('collapsegroup shows toast when tab is not in a group', async () => {
+      mockTabsQuery.mockResolvedValue([{ id: 1, index: 0, groupId: -1 }])
+      await handleAction('collapsegroup')
+      expect(chrome.tabGroups.update).not.toHaveBeenCalled()
+      expect(mockShowPageToast).toHaveBeenCalledWith('Tab is not in a group')
+    })
+
+    it('expandgroup expands current tab group', async () => {
+      mockTabsQuery.mockResolvedValue([{ id: 1, index: 0, groupId: 3 }])
+      await handleAction('expandgroup')
+      expect(chrome.tabGroups.update).toHaveBeenCalledWith(3, { collapsed: false })
+    })
+
+    it('togglecollapsegroup expands a collapsed group', async () => {
+      mockTabsQuery.mockResolvedValue([{ id: 1, index: 0, groupId: 3 }])
+      vi.mocked(chrome.tabGroups.get).mockResolvedValueOnce({ collapsed: true } as any)
+      await handleAction('togglecollapsegroup')
+      expect(chrome.tabGroups.update).toHaveBeenCalledWith(3, { collapsed: false })
+    })
+
+    it('togglecollapsegroup collapses an expanded group', async () => {
+      mockTabsQuery.mockResolvedValue([{ id: 1, index: 0, groupId: 3 }])
+      vi.mocked(chrome.tabGroups.get).mockResolvedValueOnce({ collapsed: false } as any)
+      await handleAction('togglecollapsegroup')
+      expect(chrome.tabGroups.update).toHaveBeenCalledWith(3, { collapsed: true })
+    })
+
+    it('togglecollapsegroup shows toast when tab is not in a group', async () => {
+      mockTabsQuery.mockResolvedValue([{ id: 1, index: 0, groupId: -1 }])
+      await handleAction('togglecollapsegroup')
+      expect(chrome.tabGroups.update).not.toHaveBeenCalled()
+      expect(mockShowPageToast).toHaveBeenCalledWith('Tab is not in a group')
+    })
+
+    it('selecttableft extends selection one tab to the left', async () => {
+      mockTabsQuery
+        .mockResolvedValueOnce([{ id: 1, index: 0 }, { id: 2, index: 1 }, { id: 3, index: 2 }]) // all tabs
+        .mockResolvedValueOnce([{ id: 2, index: 1 }]) // highlighted tabs
+      await handleAction('selecttableft')
+      expect(chrome.tabs.highlight).toHaveBeenCalledWith({ tabs: [0, 1] })
+    })
+
+    it('selecttableft does nothing when already at leftmost position', async () => {
+      mockTabsQuery
+        .mockResolvedValueOnce([{ id: 1, index: 0 }, { id: 2, index: 1 }]) // all tabs
+        .mockResolvedValueOnce([{ id: 1, index: 0 }]) // highlighted tabs (already leftmost)
+      await handleAction('selecttableft')
+      expect(chrome.tabs.highlight).not.toHaveBeenCalled()
+    })
+
+    it('selecttabright extends selection one tab to the right', async () => {
+      mockTabsQuery
+        .mockResolvedValueOnce([{ id: 1, index: 0 }, { id: 2, index: 1 }, { id: 3, index: 2 }]) // all tabs
+        .mockResolvedValueOnce([{ id: 2, index: 1 }]) // highlighted tabs
+      await handleAction('selecttabright')
+      expect(chrome.tabs.highlight).toHaveBeenCalledWith({ tabs: [1, 2] })
+    })
+
+    it('selecttabright does nothing when already at rightmost position', async () => {
+      mockTabsQuery
+        .mockResolvedValueOnce([{ id: 1, index: 0 }, { id: 2, index: 1 }]) // all tabs
+        .mockResolvedValueOnce([{ id: 2, index: 1 }]) // highlighted tabs (already rightmost)
+      await handleAction('selecttabright')
+      expect(chrome.tabs.highlight).not.toHaveBeenCalled()
     })
   })
 
