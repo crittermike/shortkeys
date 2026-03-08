@@ -7,6 +7,12 @@ type ActionHandler = (request: KeySetting) => Promise<boolean> | boolean
 /** Actions handled in the content script, not the background action registry. */
 const CONTENT_SCRIPT_ACTIONS = ['javascript', 'showcheatsheet', 'toggledarkmode', 'trigger', 'editurl', 'linkhints', 'linkhintsnew']
 
+/**
+ * Tracks groups that were expanded by movetableft/movetabright so we can
+ * re-collapse them when the tab later leaves the group, even across multiple moves.
+ */
+export const expandedByMove = new Map<number, boolean>()
+
 /** Maximum number of steps allowed in a macro. */
 const MAX_MACRO_STEPS = 10
 
@@ -435,16 +441,45 @@ const actionHandlers: Record<string, ActionHandler> = {
     const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
     if (tab.index > 0) {
       const allTabs = await browser.tabs.query({ currentWindow: true })
-      // After moving left, the new left neighbor is at original index - 2
       const newLeftNeighbor = allTabs.find((t: any) => t.index === tab.index - 2)
+      const tabGroupId = (tab as any).groupId ?? -1
+      // Snapshot source collapsed state BEFORE tabs.move (Chrome auto-expands on move)
+      let sourceWasCollapsed = false
+      if (tabGroupId !== -1 && chrome.tabGroups?.get) {
+        try { sourceWasCollapsed = (await chrome.tabGroups.get(tabGroupId)).collapsed } catch { }
+      }
+      // Also check our memory of groups we previously expanded
+      if (!sourceWasCollapsed && tabGroupId !== -1 && expandedByMove.has(tabGroupId)) {
+        sourceWasCollapsed = true
+      }
       await browser.tabs.move(tab.id!, { index: tab.index - 1 })
       if (chrome.tabs?.group && chrome.tabs?.ungroup) {
         const neighborGroupId = newLeftNeighbor ? ((newLeftNeighbor as any).groupId ?? -1) : -1
-        const tabGroupId = (tab as any).groupId ?? -1
         if (neighborGroupId !== -1 && neighborGroupId !== tabGroupId) {
+          // Joining a different group: snapshot destination collapsed state
+          let destWasCollapsed = false
+          if (chrome.tabGroups?.get) {
+            try { destWasCollapsed = (await chrome.tabGroups.get(neighborGroupId)).collapsed } catch { }
+          }
+          if (!destWasCollapsed && expandedByMove.has(neighborGroupId)) {
+            destWasCollapsed = true
+          }
           await chrome.tabs.group({ tabIds: [tab.id!], groupId: neighborGroupId })
-        } else if (tabGroupId !== -1 && neighborGroupId !== tabGroupId && newLeftNeighbor) {
+          if (destWasCollapsed && chrome.tabGroups?.update) {
+            await chrome.tabGroups.update(neighborGroupId, { collapsed: false })
+            expandedByMove.set(neighborGroupId, true)
+          }
+          if (sourceWasCollapsed && chrome.tabGroups?.update) {
+            try { await chrome.tabGroups.update(tabGroupId, { collapsed: true }) } catch { }
+            expandedByMove.delete(tabGroupId)
+          }
+        } else if (tabGroupId !== -1 && neighborGroupId !== tabGroupId) {
+          // Leaving a group (into ungrouped space or edge of tab bar)
           await chrome.tabs.ungroup(tab.id!)
+          if (sourceWasCollapsed && chrome.tabGroups?.update) {
+            try { await chrome.tabGroups.update(tabGroupId, { collapsed: true }) } catch { }
+            expandedByMove.delete(tabGroupId)
+          }
         }
       }
     }
@@ -454,16 +489,44 @@ const actionHandlers: Record<string, ActionHandler> = {
   movetabright: async () => {
     const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
     const allTabs = await browser.tabs.query({ currentWindow: true })
-    // After moving right, the new right neighbor is at original index + 2
     const newRightNeighbor = allTabs.find((t: any) => t.index === tab.index + 2)
+    const tabGroupId = (tab as any).groupId ?? -1
+    // Snapshot source collapsed state BEFORE tabs.move (Chrome auto-expands on move)
+    let sourceWasCollapsed = false
+    if (tabGroupId !== -1 && chrome.tabGroups?.get) {
+      try { sourceWasCollapsed = (await chrome.tabGroups.get(tabGroupId)).collapsed } catch { }
+    }
+    if (!sourceWasCollapsed && tabGroupId !== -1 && expandedByMove.has(tabGroupId)) {
+      sourceWasCollapsed = true
+    }
     await browser.tabs.move(tab.id!, { index: tab.index + 1 })
     if (chrome.tabs?.group && chrome.tabs?.ungroup) {
       const neighborGroupId = newRightNeighbor ? ((newRightNeighbor as any).groupId ?? -1) : -1
-      const tabGroupId = (tab as any).groupId ?? -1
       if (neighborGroupId !== -1 && neighborGroupId !== tabGroupId) {
+        // Joining a different group: snapshot destination collapsed state
+        let destWasCollapsed = false
+        if (chrome.tabGroups?.get) {
+          try { destWasCollapsed = (await chrome.tabGroups.get(neighborGroupId)).collapsed } catch { }
+        }
+        if (!destWasCollapsed && expandedByMove.has(neighborGroupId)) {
+          destWasCollapsed = true
+        }
         await chrome.tabs.group({ tabIds: [tab.id!], groupId: neighborGroupId })
-      } else if (tabGroupId !== -1 && neighborGroupId !== tabGroupId && newRightNeighbor) {
+        if (destWasCollapsed && chrome.tabGroups?.update) {
+          await chrome.tabGroups.update(neighborGroupId, { collapsed: false })
+          expandedByMove.set(neighborGroupId, true)
+        }
+        if (sourceWasCollapsed && chrome.tabGroups?.update) {
+          try { await chrome.tabGroups.update(tabGroupId, { collapsed: true }) } catch { }
+          expandedByMove.delete(tabGroupId)
+        }
+      } else if (tabGroupId !== -1 && neighborGroupId !== tabGroupId) {
+        // Leaving a group (into ungrouped space or edge of tab bar)
         await chrome.tabs.ungroup(tab.id!)
+        if (sourceWasCollapsed && chrome.tabGroups?.update) {
+          try { await chrome.tabGroups.update(tabGroupId, { collapsed: true }) } catch { }
+          expandedByMove.delete(tabGroupId)
+        }
       }
     }
     return true
