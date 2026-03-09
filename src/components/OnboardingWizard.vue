@@ -1,27 +1,41 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
+import CodeEditor from '@/components/CodeEditor.vue'
 import { ACTION_CATEGORIES, getActionDescription, getActionLabel } from '@/utils/actions-registry'
 import { getBrowserConflict } from '@/utils/shortcut-conflicts'
 import { ALL_PACKS } from '@/packs'
 import type { ShortcutPack } from '@/packs'
 
+export interface OnboardingShortcutPayload {
+  key: string
+  action: string
+  code?: string
+  blacklist?: boolean | string
+  activeInInputs?: boolean
+  sites?: string
+}
+
 const emit = defineEmits<{
-  (e: 'finish', shortcut: { key: string; action: string }): void
+  (e: 'finish', payload: { shortcuts: OnboardingShortcutPayload[]; packs: ShortcutPack[] }): void
   (e: 'skip'): void
-  (e: 'done'): void
-  (e: 'installPacks', packs: ShortcutPack[]): void
 }>()
+
+interface Draft {
+  key: string
+  code: string
+  blacklist: boolean | string
+  activeInInputs: boolean
+  sites: string
+}
 
 const step = ref(1)
 const selectedActions = ref<string[]>([])
 const currentActionIndex = ref(0)
-const shortcutKey = ref('')
 const showMoreActions = ref(false)
 const selectedPacks = ref<ShortcutPack[]>([])
 const previewingPack = ref<ShortcutPack | null>(null)
-
-const recordedShortcuts = ref<{ actionId: string; actionLabel: string; icon: string; key: string }[]>([])
+const drafts = ref<Record<string, Draft>>({})
 
 const INITIAL_ACTIONS = [
   { id: 'toggledarkmode', icon: 'mdi-theme-light-dark' },
@@ -71,6 +85,35 @@ const currentAction = computed(() => {
   return ALL_ACTIONS.find(a => a.id === id) || null
 })
 
+const currentDraft = computed(() => {
+  if (!currentAction.value) return null
+  return drafts.value[currentAction.value.id] || null
+})
+
+const shortcutKey = computed({
+  get: () => currentDraft.value?.key || '',
+  set: (value: string) => {
+    if (currentDraft.value) currentDraft.value.key = value
+  },
+})
+
+const canAdvance = computed(() => {
+  if (!shortcutKey.value) return false
+  if (currentAction.value?.id === 'javascript' && !currentDraft.value?.code?.trim()) return false
+  return true
+})
+
+const recordedShortcuts = computed(() => {
+  return selectedActions.value
+    .map(id => {
+      const draft = drafts.value[id]
+      const action = ALL_ACTIONS.find(a => a.id === id)
+      if (!draft?.key || !action) return null
+      return { actionId: id, actionLabel: action.label, icon: action.icon, key: draft.key }
+    })
+    .filter((s): s is NonNullable<typeof s> => s !== null)
+})
+
 const conflictWarning = computed(() => {
   if (!shortcutKey.value) return null
   const conflict = getBrowserConflict(shortcutKey.value)
@@ -110,12 +153,19 @@ const toggleShowMore = () => {
   showMoreActions.value = !showMoreActions.value
 }
 
+const ensureDrafts = () => {
+  for (const id of selectedActions.value) {
+    if (!drafts.value[id]) {
+      drafts.value[id] = { key: '', code: '', blacklist: false, activeInInputs: false, sites: '' }
+    }
+  }
+}
+
 const goToStep2 = () => {
   if (selectedActions.value.length > 0) {
     step.value = 2
     currentActionIndex.value = 0
-    shortcutKey.value = ''
-    recordedShortcuts.value = []
+    ensureDrafts()
   } else if (selectedPacks.value.length > 0) {
     // No individual actions selected, skip straight to success
     step.value = 3
@@ -125,43 +175,48 @@ const goToStep2 = () => {
 const goBack = () => {
   if (currentActionIndex.value > 0) {
     currentActionIndex.value--
-    shortcutKey.value = ''
   } else {
     step.value = 1
   }
 }
 
 const skipCurrent = () => {
+  if (currentAction.value) {
+    drafts.value[currentAction.value.id] = { key: '', code: '', blacklist: false, activeInInputs: false, sites: '' }
+  }
   advanceOrFinish()
 }
 
 const recordNext = () => {
-  if (shortcutKey.value && currentAction.value) {
-    recordedShortcuts.value.push({
-      actionId: currentAction.value.id,
-      actionLabel: currentAction.value.label,
-      icon: currentAction.value.icon,
-      key: shortcutKey.value
-    })
-    emit('finish', { key: shortcutKey.value, action: currentAction.value.id })
-  }
   advanceOrFinish()
 }
 
 const advanceOrFinish = () => {
   if (currentActionIndex.value < selectedActions.value.length - 1) {
     currentActionIndex.value++
-    shortcutKey.value = ''
+    ensureDrafts()
   } else {
     step.value = 3
   }
 }
 
 const finish = () => {
-  if (selectedPacks.value.length > 0) {
-    emit('installPacks', selectedPacks.value)
-  }
-  emit('done')
+  const shortcuts: OnboardingShortcutPayload[] = selectedActions.value
+    .map(id => {
+      const draft = drafts.value[id]
+      if (!draft?.key) return null
+      const payload: OnboardingShortcutPayload = { key: draft.key, action: id }
+      if (id === 'javascript' && draft.code) payload.code = draft.code
+      if (draft.activeInInputs) payload.activeInInputs = true
+      if (draft.blacklist) {
+        payload.blacklist = draft.blacklist
+        payload.sites = draft.sites || ''
+      }
+      return payload
+    })
+    .filter((s): s is OnboardingShortcutPayload => s !== null)
+
+  emit('finish', { shortcuts, packs: selectedPacks.value })
 }
 
 const skip = () => {
@@ -176,7 +231,7 @@ const skip = () => {
         <div class="step-label" :class="{ active: step >= 1 }">Choose actions</div>
         <div :class="['step-line', { active: step >= 2 }]"></div>
         <div :class="['step-dot', { active: step >= 2, current: step === 2 }]">2</div>
-        <div class="step-label" :class="{ active: step >= 2 }">Assign shortcuts</div>
+        <div class="step-label" :class="{ active: step >= 2 }">Set up shortcuts</div>
         <div :class="['step-line', { active: step >= 3 }]"></div>
         <div :class="['step-dot', { active: step >= 3, current: step === 3 }]">3</div>
         <div class="step-label" :class="{ active: step >= 3 }">All set!</div>
@@ -277,8 +332,70 @@ const skip = () => {
             <h2>{{ currentAction.label }}</h2>
           </div>
           
-          <div class="recorder-wrap">
-            <ShortcutRecorder v-model="shortcutKey" />
+          <div class="setup-stack">
+            <div class="setup-card">
+              <label class="setup-label">Shortcut</label>
+              <div class="recorder-wrap">
+                <ShortcutRecorder v-model="shortcutKey" />
+              </div>
+              <p class="setup-hint">Press a shortcut or type it manually. You can change it later.</p>
+            </div>
+
+            <div v-if="currentDraft && currentAction?.id === 'javascript'" class="setup-card">
+              <h3 class="setup-card-title"><i class="mdi mdi-code-braces"></i> JavaScript to run</h3>
+              <p class="setup-card-desc">This code runs on the current page when the shortcut is pressed.</p>
+              <div class="code-editor-wrap onboarding-code-editor">
+                <CodeEditor :modelValue="currentDraft.code" @update:modelValue="currentDraft.code = $event" />
+              </div>
+            </div>
+
+            <div v-if="currentDraft" class="setup-card">
+              <h3 class="setup-card-title">Where it works</h3>
+              <p class="setup-card-desc">Optionally limit to certain sites or allow in form inputs.</p>
+              <div class="activation-bar">
+                <div class="site-filter-inline">
+                  <div class="segmented">
+                    <button
+                      :class="['seg-btn', { active: !currentDraft.blacklist || currentDraft.blacklist === 'false' }]"
+                      @click="currentDraft.blacklist = false"
+                      type="button"
+                    >
+                      <i class="mdi mdi-earth"></i> All sites
+                    </button>
+                    <button
+                      :class="['seg-btn', { active: currentDraft.blacklist === true || currentDraft.blacklist === 'true' }]"
+                      @click="currentDraft.blacklist = true"
+                      type="button"
+                    >
+                      <i class="mdi mdi-earth-minus"></i> Except…
+                    </button>
+                    <button
+                      :class="['seg-btn', { active: currentDraft.blacklist === 'whitelist' }]"
+                      @click="currentDraft.blacklist = 'whitelist'"
+                      type="button"
+                    >
+                      <i class="mdi mdi-earth-plus"></i> Only on…
+                    </button>
+                  </div>
+                </div>
+                <div class="toggle-row-inline">
+                  <span class="toggle-label-sm">Active in form inputs</span>
+                  <button :class="['toggle', { on: currentDraft.activeInInputs }]" @click="currentDraft.activeInInputs = !currentDraft.activeInInputs" type="button">
+                    <span class="toggle-knob"></span>
+                  </button>
+                </div>
+              </div>
+              <textarea
+                v-if="currentDraft.blacklist && currentDraft.blacklist !== 'false'"
+                class="field-textarea mono site-patterns"
+                v-model="currentDraft.sites"
+                rows="3"
+                :placeholder="currentDraft.blacklist === 'whitelist' ? 'Sites to activate on…\n*example.com*' : 'Sites to disable on…\n*example.com*'"
+              ></textarea>
+              <p v-if="currentDraft.blacklist && currentDraft.blacklist !== 'false'" class="setup-hint">
+                One pattern per line. Wildcards like <code>*://mail.google.com/*</code> work.
+              </p>
+            </div>
           </div>
 
           <div v-if="conflictWarning" class="conflict-warning">
@@ -297,7 +414,7 @@ const skip = () => {
               <button 
                 class="btn btn-primary" 
                 @click="recordNext" 
-                :disabled="!shortcutKey"
+                :disabled="!canAdvance"
                 type="button"
               >
                 Next <i class="mdi mdi-arrow-right"></i>
@@ -682,6 +799,72 @@ const skip = () => {
   margin: 0;
 }
 
+.setup-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto 24px;
+}
+
+.setup-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.setup-label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.setup-card-title {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.setup-card-desc {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.setup-hint {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.setup-hint code {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1px 5px;
+  font-family: 'SF Mono', Menlo, monospace;
+  font-size: 11px;
+  color: var(--text);
+}
+
+.setup-card .recorder-wrap {
+  max-width: none;
+  margin: 0;
+}
+
+.onboarding-code-editor {
+  margin-bottom: 0;
+}
+
 .action-desc {
   font-size: 11px;
   font-weight: 400;
@@ -697,7 +880,7 @@ const skip = () => {
 }
 
 .conflict-warning {
-  max-width: 400px;
+  max-width: 680px;
   margin: 0 auto 24px;
   width: 100%;
   background: var(--warning-bg);

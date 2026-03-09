@@ -143,20 +143,55 @@ describe('OnboardingWizard', () => {
   })
 
   describe('wizard finish payload', () => {
-    it('finish event should contain key and action strings', () => {
-      const payload = { key: 'ctrl+t', action: 'toggledarkmode' }
-      expect(payload).toHaveProperty('key')
-      expect(payload).toHaveProperty('action')
-      expect(typeof payload.key).toBe('string')
-      expect(typeof payload.action).toBe('string')
+    it('finish event should contain shortcuts array and packs array', () => {
+      const payload = {
+        shortcuts: [{ key: 'ctrl+t', action: 'toggledarkmode' }],
+        packs: [],
+      }
+      expect(payload).toHaveProperty('shortcuts')
+      expect(payload).toHaveProperty('packs')
+      expect(Array.isArray(payload.shortcuts)).toBe(true)
+      expect(payload.shortcuts[0]).toHaveProperty('key')
+      expect(payload.shortcuts[0]).toHaveProperty('action')
     })
 
     it('finish payload action should be a valid action', () => {
       const allActions = getAllActionValues()
       for (const action of POPULAR_ACTIONS) {
-        const payload = { key: 'ctrl+shift+a', action: action.id }
-        expect(allActions).toContain(payload.action)
+        const payload = {
+          shortcuts: [{ key: 'ctrl+shift+a', action: action.id }],
+          packs: [],
+        }
+        expect(allActions).toContain(payload.shortcuts[0].action)
       }
+    })
+
+    it('javascript action payload includes code field', () => {
+      const payload = {
+        shortcuts: [{
+          key: 'ctrl+j',
+          action: 'javascript',
+          code: 'document.body.style.background = "red"',
+        }],
+        packs: [],
+      }
+      expect(payload.shortcuts[0].code).toBeTruthy()
+    })
+
+    it('payload can include site filter and activeInInputs', () => {
+      const payload = {
+        shortcuts: [{
+          key: 'ctrl+d',
+          action: 'toggledarkmode',
+          blacklist: 'whitelist' as boolean | string,
+          sites: '*example.com*',
+          activeInInputs: true,
+        }],
+        packs: [],
+      }
+      expect(payload.shortcuts[0].blacklist).toBe('whitelist')
+      expect(payload.shortcuts[0].sites).toBe('*example.com*')
+      expect(payload.shortcuts[0].activeInInputs).toBe(true)
     })
   })
 })
