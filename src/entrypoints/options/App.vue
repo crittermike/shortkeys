@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { ACTION_CATEGORIES, getActionOptionsForSelect } from '@/utils/actions-registry'
+import { getExtensionManagementUrl, openExtensionManagementPage } from '@/utils/extension-management'
 import SearchSelect from '@/components/SearchSelect.vue'
 import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
 import ShortcutDetails from '@/components/ShortcutDetails.vue'
@@ -60,6 +61,7 @@ initDensity()
 
 const activeTab = ref(0)
 const showOnboarding = ref(false)
+const extensionManagementUrl = getExtensionManagementUrl()
 
 const handleWizardFinish = async (shortcut: { key: string; action: string }) => {
   addShortcut()
@@ -184,7 +186,16 @@ onUnmounted(() => {
         <article v-if="needsUserScripts()" class="alert alert-warning">
           <i class="mdi mdi-alert-circle-outline"></i>
           <div>
-            <strong>Allow User Scripts</strong> — In order for JavaScript actions to work, you must first allow User Scripts in your browser extension details page. Then come back and save your shortcuts.
+            <strong>Allow User Scripts</strong> — In order for JavaScript actions to work, you must first allow User Scripts in your browser extension details page.
+            <a
+              :href="extensionManagementUrl"
+              class="alert-link"
+              rel="noreferrer"
+              @click.prevent="openExtensionManagementPage()"
+            >
+              Open extension details
+            </a>
+            and then come back and save your shortcuts.
           </div>
         </article>
 
@@ -1629,6 +1640,13 @@ a:hover { text-decoration: underline; }
   flex-shrink: 0;
   margin-top: 1px;
 }
+.alert-link {
+  color: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.alert-link:hover { color: inherit; }
 
 /* ── Buttons ── */
 .action-bar {

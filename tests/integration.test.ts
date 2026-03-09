@@ -227,6 +227,15 @@ describe('App.vue template correctness', () => {
     const strayRowBindings = template.match(/(?:v-model|v-if|:modelValue|@click|:class)="[^"]*\brow\b[^"]*"/g) || []
     expect(strayRowBindings, `Found stray row bindings: ${strayRowBindings.join(', ')}`).toHaveLength(0)
   })
+
+  it('includes an extension details link in the Allow User Scripts alert', async () => {
+    const fs = await import('fs')
+    const content = fs.readFileSync('src/entrypoints/options/App.vue', 'utf-8')
+
+    expect(content).toMatch(/<article v-if="needsUserScripts\(\)"[\s\S]*Open extension details[\s\S]*<\/article>/)
+    expect(content).toContain(':href="extensionManagementUrl"')
+    expect(content).toContain('@click.prevent="openExtensionManagementPage()"')
+  })
 })
 
 describe('v4.x → v5.0 migration compatibility', () => {
