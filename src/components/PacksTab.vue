@@ -29,19 +29,20 @@ onMounted(() => {
         <p class="tab-desc">One-click install curated shortcut collections. They'll appear as a group you can customize or remove.</p>
       </div>
       
-      <div class="pack-grid">
-        <div v-for="pack in ALL_PACKS" :key="pack.id" class="pack-card" :style="{ borderTopColor: pack.color, '--pack-color': pack.color }">
-          <div class="pack-header">
-            <div class="pack-icon">{{ pack.icon }}</div>
-            <div class="pack-info">
-              <div class="pack-name">{{ pack.name }}</div>
-              <div class="pack-meta">{{ pack.shortcuts.length }} shortcuts</div>
+      <div class="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
+        <div v-for="pack in ALL_PACKS" :key="pack.id" class="bg-surface-card border border-border-default rounded-[14px] p-5 flex flex-col gap-3.5 transition-all duration-250 relative overflow-hidden hover:shadow-md hover:-translate-y-[3px] group">
+          <div class="absolute top-0 left-0 right-0 h-[3px] opacity-0 group-hover:opacity-100 transition-opacity duration-250" :style="{ background: pack.color || 'var(--blue)' }"></div>
+          <div class="flex items-center gap-4 relative z-[1]">
+            <div class="text-[32px] leading-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)] transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-[5deg]">{{ pack.icon }}</div>
+            <div class="flex-1 flex flex-col gap-0.5">
+              <div class="text-base font-bold text-text-primary tracking-tight">{{ pack.name }}</div>
+              <div class="text-xs font-semibold text-text-muted uppercase tracking-wider">{{ pack.shortcuts.length }} shortcuts</div>
             </div>
           </div>
-          <div class="pack-desc">{{ pack.description }}</div>
-          <div class="pack-actions">
-            <button class="btn btn-secondary btn-sm" @click="previewPack = pack" type="button">Preview</button>
-            <button class="btn btn-primary btn-sm" @click="previewPack = pack" type="button">
+          <div class="text-[13px] text-text-secondary leading-relaxed flex-1 relative z-[1]">{{ pack.description }}</div>
+          <div class="flex gap-2 mt-auto relative z-[1]">
+            <button class="btn btn-secondary btn-sm flex-1 justify-center" @click="previewPack = pack" type="button">Preview</button>
+            <button class="btn btn-primary btn-sm flex-1 justify-center" @click="previewPack = pack" type="button">
               <i class="mdi mdi-plus"></i> Add
             </button>
           </div>
@@ -59,14 +60,14 @@ onMounted(() => {
       </div>
 
       <!-- Loading -->
-      <div v-if="communityLoading" class="community-loading">
-        <i class="mdi mdi-loading mdi-spin"></i>
+      <div v-if="communityLoading" class="flex flex-col items-center justify-center py-12 px-6 text-center text-text-muted bg-surface-elevated rounded-[18px] border border-dashed border-border-default gap-3 transition-all duration-400">
+        <i class="mdi mdi-loading mdi-spin text-[32px] opacity-50"></i>
         <span>Loading community packs…</span>
       </div>
 
       <!-- Error -->
-      <div v-else-if="communityError" class="community-error">
-        <i class="mdi mdi-alert-circle-outline"></i>
+      <div v-else-if="communityError" class="flex flex-col items-center justify-center py-12 px-6 text-center text-text-muted bg-surface-elevated rounded-[18px] border border-dashed border-border-default gap-3 transition-all duration-400 !text-danger !bg-danger-bg !border-danger-border">
+        <i class="mdi mdi-alert-circle-outline text-[32px] opacity-50"></i>
         <span>{{ communityError }}</span>
         <button class="btn btn-secondary btn-sm" @click="fetchCommunityPacks" type="button">
           <i class="mdi mdi-refresh"></i> Retry
@@ -76,8 +77,8 @@ onMounted(() => {
       <!-- Loaded -->
       <template v-else>
         <!-- Filters -->
-        <div class="community-filters">
-          <div class="search-wrap">
+        <div class="mb-6">
+          <div class="search-wrap max-w-[400px]">
             <i class="mdi mdi-magnify search-icon"></i>
             <input
               class="search-input"
@@ -92,26 +93,27 @@ onMounted(() => {
         </div>
 
         <!-- Empty -->
-        <div v-if="filteredCommunityPacks.length === 0" class="community-empty">
-          <i class="mdi mdi-package-variant-closed"></i>
+        <div v-if="filteredCommunityPacks.length === 0" class="flex flex-col items-center justify-center py-12 px-6 text-center text-text-muted bg-surface-elevated rounded-[18px] border border-dashed border-border-default gap-3 transition-all duration-400">
+          <i class="mdi mdi-package-variant-closed text-[32px] opacity-50"></i>
           <span>No community packs found{{ communitySearchQuery ? ' matching your search' : '' }}</span>
         </div>
 
         <!-- Pack grid -->
-        <div v-else class="pack-grid">
-          <div v-for="pack in filteredCommunityPacks" :key="pack.id" class="pack-card" :style="{ borderTopColor: pack.color, '--pack-color': pack.color }">
-            <div class="pack-header">
-              <div class="pack-icon">{{ pack.icon }}</div>
-              <div class="pack-info">
-                <div class="pack-name">{{ pack.name }} <span class="community-badge">Community</span></div>
-                <div class="pack-meta">{{ pack.shortcutCount }} shortcuts</div>
+        <div v-else class="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
+          <div v-for="pack in filteredCommunityPacks" :key="pack.id" class="bg-surface-card border border-border-default rounded-[14px] p-5 flex flex-col gap-3.5 transition-all duration-250 relative overflow-hidden hover:shadow-md hover:-translate-y-[3px] group">
+            <div class="absolute top-0 left-0 right-0 h-[3px] opacity-0 group-hover:opacity-100 transition-opacity duration-250" :style="{ background: pack.color || 'var(--blue)' }"></div>
+            <div class="flex items-center gap-4 relative z-[1]">
+              <div class="text-[32px] leading-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)] transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-[5deg]">{{ pack.icon }}</div>
+              <div class="flex-1 flex flex-col gap-0.5">
+                <div class="text-base font-bold text-text-primary tracking-tight">{{ pack.name }} <span class="bg-surface-hover px-2 py-0.5 rounded-lg text-[10px] uppercase tracking-wider font-semibold text-text-muted transition-all duration-400">Community</span></div>
+                <div class="text-xs font-semibold text-text-muted uppercase tracking-wider">{{ pack.shortcutCount }} shortcuts</div>
               </div>
             </div>
-            <div class="pack-author"><i class="mdi mdi-account"></i> {{ pack.author }}</div>
-            <div class="pack-desc">{{ pack.description }}</div>
-            <div class="pack-actions">
-              <button class="btn btn-secondary btn-sm" @click="previewCommunityPack = pack" type="button">Preview</button>
-              <button class="btn btn-primary btn-sm" @click="requestInstallCommunityPack(pack)" type="button">
+            <div class="flex items-center gap-1 text-[13px] text-text-secondary -mt-1.5"><i class="mdi mdi-account"></i> {{ pack.author }}</div>
+            <div class="text-[13px] text-text-secondary leading-relaxed flex-1 relative z-[1]">{{ pack.description }}</div>
+            <div class="flex gap-2 mt-auto relative z-[1]">
+              <button class="btn btn-secondary btn-sm flex-1 justify-center" @click="previewCommunityPack = pack" type="button">Preview</button>
+              <button class="btn btn-primary btn-sm flex-1 justify-center" @click="requestInstallCommunityPack(pack)" type="button">
                 <i class="mdi mdi-plus"></i> Add
               </button>
             </div>
@@ -121,54 +123,3 @@ onMounted(() => {
     </div>
   </div>
 </template>
-
-<style scoped>
-.community-filters {
-  margin-bottom: 24px;
-}
-.community-filters .search-wrap {
-  max-width: 400px;
-}
-.community-loading, .community-error, .community-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 24px;
-  text-align: center;
-  color: var(--text-muted);
-  background: var(--bg-elevated);
-  border-radius: var(--radius-2xl);
-  border: 1px dashed var(--border);
-  gap: 12px;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.community-loading .mdi, .community-error .mdi, .community-empty .mdi {
-  font-size: 32px;
-  opacity: 0.5;
-}
-.community-error {
-  color: var(--danger);
-  background: var(--danger-bg);
-  border-color: var(--danger-border);
-}
-.pack-author {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  font-size: 13px;
-  color: var(--text-secondary);
-  margin-top: -6px;
-}
-.community-badge {
-  background: var(--bg-hover);
-  padding: 2px 8px;
-  border-radius: var(--radius-md);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 600;
-  color: var(--text-muted);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-</style>

@@ -224,80 +224,80 @@ const skip = () => {
 }
 </script>
 <template>
-  <div class="onboarding-wizard">
-    <div class="wizard-header">
-      <div class="step-indicator">
-        <div :class="['step-dot', { active: step >= 1, current: step === 1 }]">1</div>
-        <div class="step-label" :class="{ active: step >= 1 }">Choose actions</div>
-        <div :class="['step-line', { active: step >= 2 }]"></div>
-        <div :class="['step-dot', { active: step >= 2, current: step === 2 }]">2</div>
-        <div class="step-label" :class="{ active: step >= 2 }">Set up shortcuts</div>
-        <div :class="['step-line', { active: step >= 3 }]"></div>
-        <div :class="['step-dot', { active: step >= 3, current: step === 3 }]">3</div>
-        <div class="step-label" :class="{ active: step >= 3 }">All set!</div>
+  <div class="bg-surface-card border border-border-default rounded-[18px] shadow-xl max-w-[680px] mx-auto my-10 flex flex-col">
+    <div class="px-8 pt-8 pb-0 flex flex-col items-center gap-4">
+      <div class="flex items-center gap-2">
+        <div :class="['w-8 h-8 rounded-full bg-surface-elevated border-2 border-border-default text-text-muted flex items-center justify-center text-[13px] font-bold transition-all duration-400', { '!bg-accent-bg !border-accent !text-accent': step >= 1, '!bg-accent !text-white shadow-[0_0_0_6px_var(--blue-bg)]': step === 1 }]">1</div>
+        <div :class="['text-[13px] font-semibold text-text-muted transition-colors duration-400', { '!text-text-primary': step >= 1 }]">Choose actions</div>
+        <div :class="['w-10 h-[2px] bg-border-default transition-all duration-400', { '!bg-accent': step >= 2 }]"></div>
+        <div :class="['w-8 h-8 rounded-full bg-surface-elevated border-2 border-border-default text-text-muted flex items-center justify-center text-[13px] font-bold transition-all duration-400', { '!bg-accent-bg !border-accent !text-accent': step >= 2, '!bg-accent !text-white shadow-[0_0_0_6px_var(--blue-bg)]': step === 2 }]">2</div>
+        <div :class="['text-[13px] font-semibold text-text-muted transition-colors duration-400', { '!text-text-primary': step >= 2 }]">Set up shortcuts</div>
+        <div :class="['w-10 h-[2px] bg-border-default transition-all duration-400', { '!bg-accent': step >= 3 }]"></div>
+        <div :class="['w-8 h-8 rounded-full bg-surface-elevated border-2 border-border-default text-text-muted flex items-center justify-center text-[13px] font-bold transition-all duration-400', { '!bg-accent-bg !border-accent !text-accent': step >= 3, '!bg-accent !text-white shadow-[0_0_0_6px_var(--blue-bg)]': step === 3 }]">3</div>
+        <div :class="['text-[13px] font-semibold text-text-muted transition-colors duration-400', { '!text-text-primary': step >= 3 }]">All set!</div>
       </div>
-      <button v-if="step < 3" class="btn-skip-top" @click="skip" type="button">
+      <button v-if="step < 3" class="text-[13px] text-text-secondary font-semibold bg-transparent border border-border-default px-4 py-2 rounded-[14px] cursor-pointer transition-all duration-200 inline-flex items-center gap-1.5 hover:bg-surface-elevated hover:text-text-primary" @click="skip" type="button">
         Skip — I'll set up my own <i class="mdi mdi-arrow-right"></i>
       </button>
     </div>
 
-    <div class="wizard-content">
+    <div class="px-12 py-8 min-h-[360px] flex flex-col">
       <Transition name="fade" mode="out-in">
         <!-- Step 1: Choose actions -->
-        <div v-if="step === 1" class="step-panel">
-          <h2 class="step-title">Quick start</h2>
-          <p class="step-desc">Pick a few actions below, then assign shortcuts. You can always change these later.</p>
+        <div v-if="step === 1" class="flex flex-col flex-1 animate-[slideUp_0.3s_cubic-bezier(0.16,1,0.3,1)]">
+          <h2 class="text-xl font-bold text-text-primary mb-2 tracking-tight text-center">Quick start</h2>
+          <p class="text-[15px] text-text-secondary mb-6 leading-relaxed text-center">Pick a few actions below, then assign shortcuts. You can always change these later.</p>
           
-          <div class="action-grid">
+          <div class="grid grid-cols-3 gap-3 mb-8">
             <button 
               v-for="action in visibleActions" 
               :key="action.id"
-              :class="['action-card', { 'selected': selectedActions.includes(action.id) }]"
+              :class="['flex flex-col gap-3 p-5 bg-surface-elevated border border-border-default rounded-[18px] cursor-pointer transition-all duration-200 text-left hover:bg-surface-hover hover:-translate-y-[3px] hover:shadow-lg', { '!bg-accent-bg !border-accent shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)]': selectedActions.includes(action.id) }]"
               @click="toggleAction(action.id)"
               type="button"
             >
-              <div class="action-card-header">
-                <i :class="['mdi', action.icon, 'action-icon']"></i>
-                <div class="checkbox-indicator">
-                  <i v-if="selectedActions.includes(action.id)" class="mdi mdi-check"></i>
+              <div class="flex justify-between items-start w-full">
+                <i :class="['mdi', action.icon, 'text-[32px] text-text-secondary opacity-90 transition-all duration-200', { '!text-accent': selectedActions.includes(action.id) }]"></i>
+                <div :class="['w-5 h-5 rounded-[10px] border-2 border-border-light bg-surface-card flex items-center justify-center transition-all duration-200', { '!bg-accent !border-accent !text-white': selectedActions.includes(action.id) }]">
+                  <i v-if="selectedActions.includes(action.id)" class="mdi mdi-check text-sm font-bold"></i>
                 </div>
               </div>
-              <span class="action-label">{{ action.label }}</span>
-              <span v-if="action.description" class="action-desc">{{ action.description }}</span>
+              <span class="text-[13px] font-semibold leading-[1.4]">{{ action.label }}</span>
+              <span v-if="action.description" class="text-[11px] font-normal text-text-muted text-left leading-[1.4]">{{ action.description }}</span>
             </button>
           </div>
 
-          <h3 class="packs-heading">Or try a shortcut pack</h3>
-          <div class="pack-mini-grid">
+          <h3 class="text-[15px] font-bold text-text-secondary my-6 text-center">Or try a shortcut pack</h3>
+          <div class="grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-2.5 mb-4">
             <button
               v-for="pack in visiblePacks"
               :key="pack.id"
-              :class="['pack-mini-card', { selected: selectedPacks.some(p => p.id === pack.id) }]"
-              :style="{ '--pack-accent': pack.color }"
+              :class="['flex items-center gap-2.5 px-4 py-3 bg-surface-elevated border border-border-default border-l-[3px] rounded-[14px] cursor-pointer transition-all duration-200 text-left hover:bg-surface-hover hover:-translate-y-px hover:shadow-md', selectedPacks.some(p => p.id === pack.id) ? '!bg-accent-bg !border-accent' : '']"
+              :style="{ borderLeftColor: pack.color || 'var(--blue)' }"
               @click="togglePack(pack)"
               type="button"
             >
-              <span class="pack-mini-icon">{{ pack.icon }}</span>
-              <div class="pack-mini-info">
-                <span class="pack-mini-name">{{ pack.name }}</span>
-                <span class="pack-mini-meta">{{ pack.shortcuts.length }} shortcuts</span>
+              <span class="text-xl shrink-0">{{ pack.icon }}</span>
+              <div class="flex-1 min-w-0 flex flex-col gap-px">
+                <span class="text-sm font-medium text-text-primary truncate">{{ pack.name }}</span>
+                <span class="text-xs text-text-muted">{{ pack.shortcuts.length }} shortcuts</span>
               </div>
-              <div class="checkbox-indicator pack-check">
+              <div :class="['w-5 h-5 rounded-full border-2 border-border-default flex items-center justify-center shrink-0 transition-all duration-200 text-xs ml-auto', { '!border-accent !bg-accent !text-white': selectedPacks.some(p => p.id === pack.id) }]">
                 <i v-if="selectedPacks.some(p => p.id === pack.id)" class="mdi mdi-check"></i>
               </div>
             </button>
           </div>
 
-          <div class="show-more-wrap">
-            <button class="btn-show-more" @click="toggleShowMore" type="button">
+          <div class="text-center mb-4">
+            <button class="text-[13px] text-text-secondary font-semibold bg-transparent border-none cursor-pointer inline-flex items-center gap-1 px-4 py-2 rounded-full transition-all duration-200 hover:bg-surface-elevated hover:text-text-primary" @click="toggleShowMore" type="button">
               {{ showMoreActions ? 'Show fewer' : `Show more (${MORE_ACTIONS.length + MORE_PACKS.length} more)` }}
               <i :class="['mdi', showMoreActions ? 'mdi-chevron-up' : 'mdi-chevron-down']"></i>
             </button>
           </div>
 
-          <div class="step-actions step-1-actions">
+          <div class="flex items-center justify-center mt-6 pt-4 border-t border-border-light">
             <button 
-              class="btn btn-primary btn-next-step" 
+              class="px-4 py-3 border-none rounded-lg text-[15px] font-semibold cursor-pointer transition-all duration-200 flex items-center justify-center gap-2 bg-accent text-white hover:bg-accent-hover w-full max-w-[300px] mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
               @click="goToStep2" 
               :disabled="selectedActions.length === 0 && selectedPacks.length === 0"
               type="button"
@@ -319,39 +319,39 @@ const skip = () => {
         </div>
 
         <!-- Step 2: Record shortcuts -->
-        <div v-else-if="step === 2" class="step-panel">
-          <div class="progress-wrap">
-            <div class="progress-text">Shortcut {{ currentActionIndex + 1 }} of {{ selectedActions.length }}</div>
-            <div class="progress-bar">
-              <div class="progress-fill" :style="{ width: `${((currentActionIndex + 1) / selectedActions.length) * 100}%` }"></div>
-            </div>
+        <div v-else-if="step === 2" class="flex flex-col flex-1 animate-[slideUp_0.3s_cubic-bezier(0.16,1,0.3,1)]">
+          <div class="flex flex-col items-center mb-8 animate-[slideUp_0.3s_ease]" v-if="currentAction">
+            <i :class="['mdi', currentAction.icon, 'text-[56px] text-accent mb-3 bg-accent-bg p-4 rounded-[18px]']"></i>
+            <h2 class="text-2xl font-bold text-text-primary m-0">{{ currentAction.label }}</h2>
           </div>
 
-          <div class="current-action-display" v-if="currentAction">
-            <i :class="['mdi', currentAction.icon]"></i>
-            <h2>{{ currentAction.label }}</h2>
+          <div class="mb-8">
+            <div class="text-[13px] font-semibold text-text-secondary mb-2 text-center uppercase tracking-wider">Shortcut {{ currentActionIndex + 1 }} of {{ selectedActions.length }}</div>
+            <div class="h-2 bg-surface-elevated rounded-full overflow-hidden max-w-[200px] mx-auto">
+              <div class="h-full bg-accent rounded-full transition-all duration-500" :style="{ width: `${((currentActionIndex + 1) / selectedActions.length) * 100}%` }"></div>
+            </div>
           </div>
           
-          <div class="setup-stack">
-            <div class="setup-card">
-              <label class="setup-label">Shortcut</label>
-              <div class="recorder-wrap">
+          <div class="flex flex-col gap-4 w-full max-w-[680px] mx-auto mb-6">
+            <div class="bg-surface-elevated border border-border-default rounded-[18px] p-5 shadow-sm">
+              <label class="block mb-3 text-xs font-bold tracking-[0.08em] uppercase text-text-secondary">Shortcut</label>
+              <div>
                 <ShortcutRecorder v-model="shortcutKey" />
               </div>
-              <p class="setup-hint">Press a shortcut or type it manually. You can change it later.</p>
+              <p class="mt-2.5 mb-0 text-xs text-text-muted">Press a shortcut or type it manually. You can change it later.</p>
             </div>
 
-            <div v-if="currentDraft && currentAction?.id === 'javascript'" class="setup-card">
-              <h3 class="setup-card-title"><i class="mdi mdi-code-braces"></i> JavaScript to run</h3>
-              <p class="setup-card-desc">This code runs on the current page when the shortcut is pressed.</p>
-              <div class="code-editor-wrap onboarding-code-editor">
+            <div v-if="currentDraft && currentAction?.id === 'javascript'" class="bg-surface-elevated border border-border-default rounded-[18px] p-5 shadow-sm">
+              <h3 class="mt-0 mb-1 text-base font-bold text-text-primary"><i class="mdi mdi-code-braces"></i> JavaScript to run</h3>
+              <p class="mt-0 mb-3.5 text-[13px] leading-normal text-text-secondary">This code runs on the current page when the shortcut is pressed.</p>
+              <div class="code-editor-wrap !mb-0">
                 <CodeEditor :modelValue="currentDraft.code" @update:modelValue="currentDraft.code = $event" />
               </div>
             </div>
 
-            <div v-if="currentDraft" class="setup-card">
-              <h3 class="setup-card-title">Where it works</h3>
-              <p class="setup-card-desc">Optionally limit to certain sites or allow in form inputs.</p>
+            <div v-if="currentDraft" class="bg-surface-elevated border border-border-default rounded-[18px] p-5 shadow-sm">
+              <h3 class="mt-0 mb-1 text-base font-bold text-text-primary">Where it works</h3>
+              <p class="mt-0 mb-3.5 text-[13px] leading-normal text-text-secondary">Optionally limit to certain sites or allow in form inputs.</p>
               <div class="activation-bar">
                 <div class="site-filter-inline">
                   <div class="segmented">
@@ -392,27 +392,27 @@ const skip = () => {
                 rows="3"
                 :placeholder="currentDraft.blacklist === 'whitelist' ? 'Sites to activate on…\n*example.com*' : 'Sites to disable on…\n*example.com*'"
               ></textarea>
-              <p v-if="currentDraft.blacklist && currentDraft.blacklist !== 'false'" class="setup-hint">
-                One pattern per line. Wildcards like <code>*://mail.google.com/*</code> work.
+              <p v-if="currentDraft.blacklist && currentDraft.blacklist !== 'false'" class="mt-2.5 mb-0 text-xs text-text-muted">
+                One pattern per line. Wildcards like <code class="bg-surface-card border border-border-default rounded-sm px-[5px] py-px font-mono text-[11px] text-text-primary">*://mail.google.com/*</code> work.
               </p>
             </div>
           </div>
 
-          <div v-if="conflictWarning" class="conflict-warning">
+          <div v-if="conflictWarning" class="flex items-center gap-2 px-3 py-2 bg-warning-bg border border-warning-border rounded-lg text-xs text-warning-text mt-3 font-medium">
             <i class="mdi mdi-alert-outline"></i>
             {{ conflictWarning }}
           </div>
 
-          <div class="step-actions">
-            <button class="btn btn-secondary" @click="goBack" type="button">
+          <div class="flex items-center justify-between mt-6 pt-4 border-t border-border-light">
+            <button class="px-4 py-2 rounded-lg text-[13px] font-semibold cursor-pointer transition-all duration-200 inline-flex items-center gap-1.5 bg-surface-card text-text-secondary border border-border-default hover:bg-surface-hover" @click="goBack" type="button">
               <i class="mdi mdi-arrow-left"></i> Back
             </button>
-            <div class="right-actions">
-              <button class="btn btn-secondary btn-skip" @click="skipCurrent" type="button">
+            <div class="flex gap-2">
+              <button class="text-sm text-text-muted bg-transparent border-none cursor-pointer font-medium hover:text-text-secondary" @click="skipCurrent" type="button">
                 Skip
               </button>
               <button 
-                class="btn btn-primary" 
+                class="px-4 py-2 border-none rounded-lg text-[13px] font-semibold cursor-pointer transition-all duration-200 inline-flex items-center gap-1.5 bg-accent text-white hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed" 
                 @click="recordNext" 
                 :disabled="!canAdvance"
                 type="button"
@@ -424,11 +424,11 @@ const skip = () => {
         </div>
 
         <!-- Step 3: Success -->
-        <div v-else-if="step === 3" class="step-panel success-panel">
-          <div class="confetti-wrap">
-            <i class="mdi mdi-check-circle success-icon"></i>
+        <div v-else-if="step === 3" class="flex flex-col flex-1 animate-[slideUp_0.3s_cubic-bezier(0.16,1,0.3,1)] text-center py-4 items-center justify-center">
+          <div class="text-4xl mb-4 animate-[popIn_0.5s_cubic-bezier(0.16,1,0.3,1)]">
+            <i class="mdi mdi-check-circle text-[48px] mb-3 animate-[popIn_0.5s_cubic-bezier(0.16,1,0.3,1)_0.2s_both] text-success"></i>
           </div>
-          <h2 class="step-title">
+          <h2 class="text-xl font-bold text-text-primary mb-2 tracking-tight">
             <template v-if="recordedShortcuts.length > 0 && selectedPacks.length > 0">
               You created {{ recordedShortcuts.length }} shortcut{{ recordedShortcuts.length === 1 ? '' : 's' }} and added {{ selectedPacks.length }} pack{{ selectedPacks.length === 1 ? '' : 's' }}!
             </template>
@@ -439,30 +439,30 @@ const skip = () => {
               You created {{ recordedShortcuts.length }} shortcut{{ recordedShortcuts.length === 1 ? '' : 's' }}!
             </template>
           </h2>
-          <p class="step-desc">Your shortcuts are ready to use.</p>
+          <p class="text-[15px] text-text-secondary mb-6 leading-relaxed">Your shortcuts are ready to use.</p>
           
-          <div class="success-summary-list" v-if="recordedShortcuts.length > 0 || selectedPacks.length > 0">
-            <div class="success-summary" v-for="(shortcut, idx) in recordedShortcuts" :key="'s-' + idx">
-              <div class="summary-keys">
-                <kbd v-for="k in shortcut.key.split('+')" :key="k">{{ k }}</kbd>
+          <div class="flex flex-col gap-4 mb-8 w-full max-w-[480px] max-h-[250px] overflow-y-auto pr-2" v-if="recordedShortcuts.length > 0 || selectedPacks.length > 0">
+            <div class="flex items-center justify-center gap-4 bg-surface-elevated px-6 py-4 rounded-2xl border border-border-default shadow-sm" v-for="(shortcut, idx) in recordedShortcuts" :key="'s-' + idx">
+              <div class="flex gap-1 min-w-[100px] justify-end">
+                <kbd v-for="k in shortcut.key.split('+')" :key="k" class="inline-block px-3 py-2 bg-surface-card border border-border-default rounded-md font-mono text-sm font-semibold text-text-primary capitalize shadow-[0_3px_0_var(--color-border-default)]">{{ k }}</kbd>
               </div>
-              <i class="mdi mdi-arrow-right summary-arrow"></i>
-              <div class="summary-action">
-                <i :class="['mdi', shortcut.icon]"></i>
+              <i class="mdi mdi-arrow-right text-text-muted text-xl"></i>
+              <div class="flex items-center gap-2 text-[15px] font-semibold text-text-primary text-left">
+                <i :class="['mdi', shortcut.icon, 'text-accent text-xl']"></i>
                 {{ shortcut.actionLabel }}
               </div>
             </div>
-            <div class="success-summary pack-summary" v-for="pack in selectedPacks" :key="'p-' + pack.id">
-              <span class="pack-mini-icon">{{ pack.icon }}</span>
-              <div class="summary-action">
+            <div class="flex items-center justify-center gap-4 bg-surface-elevated px-6 py-4 rounded-2xl border border-border-default shadow-sm" v-for="pack in selectedPacks" :key="'p-' + pack.id">
+              <span class="text-2xl min-w-[100px] text-right shrink-0">{{ pack.icon }}</span>
+              <div class="flex items-center gap-2 text-[15px] font-semibold text-text-primary text-left">
                 <strong>{{ pack.name }}</strong>
-                <span class="pack-summary-meta">{{ pack.shortcuts.length }} shortcuts</span>
+                <span class="text-xs text-text-muted font-normal ml-2">{{ pack.shortcuts.length }} shortcuts</span>
               </div>
             </div>
           </div>
 
-          <div class="step-actions success-actions">
-            <button class="btn btn-primary" @click="finish" type="button">
+          <div class="flex gap-2 justify-center mt-4">
+            <button class="px-4 py-2 border-none rounded-lg text-[13px] font-semibold cursor-pointer transition-all duration-200 inline-flex items-center gap-1.5 bg-accent text-white hover:bg-accent-hover" @click="finish" type="button">
               <i class="mdi mdi-check"></i> Done
             </button>
           </div>
@@ -473,8 +473,8 @@ const skip = () => {
 
     <!-- Pack Preview Modal -->
     <Transition name="modal">
-      <div v-if="previewingPack" class="modal-overlay pack-preview-overlay" @click.self="closePreview">
-        <div class="modal-panel pack-preview-panel">
+      <div v-if="previewingPack" class="modal-overlay z-[1000]" @click.self="closePreview">
+        <div class="modal-panel max-w-[540px]">
           <div class="modal-header" :style="{ background: previewingPack.color }">
             <span class="modal-icon">{{ previewingPack.icon }}</span>
             <div>
@@ -500,8 +500,8 @@ const skip = () => {
             </div>
           </div>
           <div class="modal-footer">
-            <button class="btn btn-secondary" @click="closePreview" type="button">Cancel</button>
-            <button class="btn btn-primary" @click="confirmPack" type="button">
+            <button class="px-4 py-2 rounded-lg text-[13px] font-semibold cursor-pointer transition-all duration-200 inline-flex items-center gap-1.5 bg-surface-card text-text-secondary border border-border-default hover:bg-surface-hover" @click="closePreview" type="button">Cancel</button>
+            <button class="px-4 py-2 border-none rounded-lg text-[13px] font-semibold cursor-pointer transition-all duration-200 inline-flex items-center gap-1.5 bg-accent text-white hover:bg-accent-hover" @click="confirmPack" type="button">
               <i class="mdi mdi-plus"></i> Add {{ previewingPack.shortcuts.length }} shortcut{{ previewingPack.shortcuts.length !== 1 ? 's' : '' }}
             </button>
           </div>
@@ -511,686 +511,3 @@ const skip = () => {
 
   </div>
 </template>
-<style scoped>
-.onboarding-wizard {
-  max-width: 680px;
-  margin: 40px auto;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  box-shadow: var(--shadow-xl);
-  overflow: visible;
-  display: flex;
-  flex-direction: column;
-}
-
-.wizard-header {
-  padding: 24px 24px 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-md);
-}
-
-.step-indicator {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-}
-
-.step-dot {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-full);
-  background: var(--bg-elevated);
-  border: 2px solid var(--border);
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 700;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.step-dot.active {
-  background: var(--blue-bg);
-  border-color: var(--blue);
-  color: var(--blue);
-}
-
-.step-dot.current {
-  background: var(--blue);
-  color: #fff;
-  box-shadow: 0 0 0 6px var(--blue-bg);
-}
-
-.step-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-muted);
-  transition: color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.step-label.active {
-  color: var(--text);
-}
-
-.step-line {
-  width: 40px;
-  height: 2px;
-  background: var(--border);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.step-line.active {
-  background: var(--blue);
-}
-
-.wizard-content {
-  padding: var(--space-2xl) var(--space-3xl);
-  min-height: 360px;
-  display: flex;
-  flex-direction: column;
-}
-
-.step-panel {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.step-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--text);
-  margin: 0 0 8px;
-  text-align: center;
-  letter-spacing: -0.02em;
-}
-
-.step-desc {
-  font-size: 15px;
-  color: var(--text-secondary);
-  margin: 0 0 32px;
-  text-align: center;
-}
-
-.action-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-md);
-}
-
-.action-card {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  color: var(--text);
-  text-align: left;
-}
-
-.action-card:hover {
-  background: var(--bg-hover);
-  border-color: var(--border-light);
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-lg);
-}
-
-.action-card.selected {
-  background: var(--blue-bg);
-  border-color: var(--blue);
-  box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
-}
-
-.action-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  width: 100%;
-}
-
-.action-icon {
-  font-size: 32px;
-  color: var(--text-secondary);
-  opacity: 0.9;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.action-card:hover .action-icon {
-  color: var(--blue);
-  transform: scale(1.05);
-  opacity: 1;
-}
-
-.action-card.selected .action-icon {
-  color: var(--blue);
-}
-
-.checkbox-indicator {
-  width: 20px;
-  height: 20px;
-  border-radius: var(--radius-lg);
-  border: 2px solid var(--border-light);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  background: var(--bg-card);
-}
-
-.action-card.selected .checkbox-indicator {
-  background: var(--blue);
-  border-color: var(--blue);
-  color: white;
-}
-
-.checkbox-indicator .mdi {
-  font-size: 14px;
-  font-weight: bold;
-}
-
-.action-label {
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.4;
-}
-
-.show-more-wrap {
-  margin-top: 16px;
-  text-align: center;
-}
-
-.btn-show-more {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  padding: 8px 16px;
-  border-radius: var(--radius-full);
-  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.btn-show-more:hover {
-  background: var(--bg-elevated);
-  color: var(--text);
-}
-
-.step-1-actions {
-  justify-content: center;
-  display: flex;
-}
-
-.btn-next-step {
-  width: 100%;
-  max-width: 300px;
-  margin: 0 auto;
-  padding: 12px;
-  font-size: 15px;
-  font-weight: 600;
-  display: flex;
-  justify-content: center;
-  gap: var(--space-sm);
-}
-
-.progress-wrap {
-  margin-bottom: 32px;
-}
-
-.progress-text {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin-bottom: 8px;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.progress-bar {
-  height: 8px;
-  background: var(--bg-elevated);
-  border-radius: var(--radius-full);
-  overflow: hidden;
-  max-width: 200px;
-  margin: 0 auto;
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--blue);
-  border-radius: var(--radius-full);
-  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.current-action-display {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 32px;
-  animation: slideUp 0.3s ease;
-}
-
-.current-action-display .mdi {
-  font-size: 56px;
-  color: var(--blue);
-  margin-bottom: 12px;
-  background: var(--blue-bg);
-  padding: 16px;
-  border-radius: var(--radius-2xl);
-}
-
-.current-action-display h2 {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--text);
-  margin: 0;
-}
-
-.setup-stack {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-lg);
-  width: 100%;
-  max-width: 680px;
-  margin: 0 auto 24px;
-}
-
-.setup-card {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
-  padding: 20px;
-  box-shadow: var(--shadow-sm);
-}
-
-.setup-label {
-  display: block;
-  margin-bottom: 12px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-}
-
-.setup-card-title {
-  margin: 0 0 4px;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.setup-card-desc {
-  margin: 0 0 14px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--text-secondary);
-}
-
-.setup-hint {
-  margin: 10px 0 0;
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.setup-hint code {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 1px 5px;
-  font-family: 'SF Mono', Menlo, monospace;
-  font-size: 11px;
-  color: var(--text);
-}
-
-.setup-card .recorder-wrap {
-  max-width: none;
-  margin: 0;
-}
-
-.onboarding-code-editor {
-  margin-bottom: 0;
-}
-
-.action-desc {
-  font-size: 11px;
-  font-weight: 400;
-  color: var(--text-muted);
-  text-align: left;
-  line-height: 1.4;
-}
-
-.recorder-wrap {
-  max-width: 400px;
-  margin: 0 auto 24px;
-  width: 100%;
-}
-
-.conflict-warning {
-  max-width: 680px;
-  margin: 0 auto 24px;
-  width: 100%;
-  background: var(--warning-bg);
-  border: 1px solid var(--warning-border);
-  color: var(--warning-text);
-  padding: 12px 16px;
-  border-radius: var(--radius-lg);
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-}
-
-.step-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: auto;
-  padding-top: 24px;
-}
-
-.right-actions {
-  display: flex;
-  gap: var(--space-md);
-}
-
-.btn-skip {
-  background: transparent;
-  border-color: transparent;
-}
-
-.success-actions {
-  justify-content: center;
-  gap: var(--space-lg);
-}
-
-.success-panel {
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-.confetti-wrap {
-  margin-bottom: 16px;
-  animation: popIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.success-icon {
-  font-size: 72px;
-  color: var(--success);
-}
-
-.success-summary-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-  margin-bottom: 32px;
-  width: 100%;
-  max-width: 480px;
-  max-height: 250px;
-  overflow-y: auto;
-  padding-right: 8px;
-}
-
-.success-summary-list::-webkit-scrollbar {
-  width: 6px;
-}
-.success-summary-list::-webkit-scrollbar-track {
-  background: var(--bg-elevated);
-  border-radius: 3px;
-}
-.success-summary-list::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
-}
-
-.success-summary {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-lg);
-  background: var(--bg-elevated);
-  padding: 16px 24px;
-  border-radius: var(--radius-2xl);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
-}
-
-.summary-keys {
-  display: flex;
-  gap: var(--space-xs);
-  min-width: 100px;
-  justify-content: flex-end;
-}
-
-.summary-keys kbd {
-  display: inline-block;
-  padding: 8px 12px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  font-family: 'SF Mono', Menlo, monospace;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-  text-transform: capitalize;
-  box-shadow: 0 3px 0 var(--border);
-}
-
-.summary-arrow {
-  color: var(--text-muted);
-  font-size: 20px;
-}
-
-.summary-action {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text);
-  text-align: left;
-}
-
-.summary-action .mdi {
-  color: var(--blue);
-  font-size: 20px;
-}
-
-.btn-skip-top {
-  background: none;
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 8px 16px;
-  border-radius: var(--radius-xl);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.btn-skip-top:hover {
-  background: var(--bg-elevated);
-  border-color: var(--border-light);
-  color: var(--text);
-}
-
-/* ── Pack mini cards ── */
-.packs-heading {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  margin: 24px 0 12px;
-  text-align: center;
-}
-
-.pack-mini-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 10px;
-}
-
-.pack-mini-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--pack-accent, var(--blue));
-  border-radius: var(--radius-xl);
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  text-align: left;
-  color: var(--text);
-}
-
-.pack-mini-card:hover {
-  background: var(--bg-hover);
-  border-color: var(--border-light);
-  border-left-color: var(--pack-accent, var(--blue));
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-.pack-mini-icon {
-  font-size: 22px;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.pack-mini-info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.pack-mini-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.pack-mini-meta {
-  font-size: 11px;
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-.pack-check {
-  margin-left: auto;
-  flex-shrink: 0;
-}
-
-.pack-mini-card.selected {
-  background: var(--blue-bg);
-  border-color: var(--blue);
-  border-left-color: var(--blue);
-}
-
-.pack-mini-card.selected .checkbox-indicator {
-  background: var(--blue);
-  border-color: var(--blue);
-  color: white;
-}
-
-.pack-summary {
-  gap: var(--space-md);
-}
-
-.pack-summary .pack-mini-icon {
-  font-size: 24px;
-  min-width: 100px;
-  text-align: right;
-}
-
-.pack-summary-meta {
-  font-size: 12px;
-  color: var(--text-muted);
-  font-weight: 400;
-  margin-left: 8px;
-}
-
-/* Animations */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* Staggered grid fade for items */
-.staggered-fade-move,
-.staggered-fade-enter-active,
-.staggered-fade-leave-active {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.staggered-fade-enter-from,
-.staggered-fade-leave-to {
-  opacity: 0;
-  transform: translateY(10px) scale(0.95);
-}
-
-.staggered-fade-leave-active {
-  position: absolute;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes popIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.5) rotate(-10deg);
-  }
-  50% {
-    transform: scale(1.1) rotate(5deg);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) rotate(0);
-  }
-}
-
-/* ── Pack Preview Modal ── */
-.pack-preview-overlay {
-  z-index: 1000;
-}
-
-.pack-preview-panel {
-  max-width: 540px;
-}
-</style>

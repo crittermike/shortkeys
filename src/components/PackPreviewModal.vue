@@ -26,67 +26,67 @@ const keyConflictCount = computed(() => {
 
 <template>
   <Transition name="modal">
-    <div v-if="previewPack" class="modal-overlay" @click.self="previewPack = null">
-      <div class="modal-panel">
-        <div class="modal-header" :style="{ background: previewPack.color }">
-          <span class="modal-icon">{{ previewPack.icon }}</span>
+    <div v-if="previewPack" class="fixed inset-0 z-[100] bg-black/30 backdrop-blur-[16px] flex items-center justify-center p-6" @click.self="previewPack = null">
+      <div class="modal-panel bg-surface-card rounded-3xl w-full max-w-[580px] max-h-[85vh] flex flex-col overflow-hidden shadow-xl border border-border-light">
+        <div class="flex items-center gap-4 px-8 py-6 text-white relative" :style="{ background: previewPack.color }">
+          <span class="text-4xl shrink-0">{{ previewPack.icon }}</span>
           <div>
-            <h2 class="modal-title">{{ previewPack.name }}</h2>
-            <p class="modal-subtitle">{{ previewPack.description }}</p>
+            <h2 class="text-lg font-bold m-0">{{ previewPack.name }}</h2>
+            <p class="text-[13px] opacity-85 mt-1 m-0">{{ previewPack.description }}</p>
           </div>
-          <button class="modal-close" @click="previewPack = null" type="button">
+          <button class="absolute top-3 right-3 bg-white/20 border-none text-white w-7 h-7 rounded-full flex items-center justify-center cursor-pointer text-base transition-colors duration-150 hover:bg-white/35" @click="previewPack = null" type="button">
             <i class="mdi mdi-close"></i>
           </button>
         </div>
-        <div class="modal-body">
-          <div class="modal-shortcuts">
+        <div class="px-8 py-6 overflow-y-auto flex-1">
+          <div class="flex flex-col gap-0.5">
             <div
               v-for="(s, si) in previewPack.shortcuts"
               :key="s.key"
-              class="modal-shortcut-row"
+              class="flex justify-between items-center px-4 py-3 rounded-[10px] gap-3 transition-colors duration-200 odd:bg-surface-elevated hover:bg-surface-hover"
               :class="{
-                'modal-shortcut-conflict': conflicts.has(si) && conflicts.get(si)!.type === 'key',
-                'modal-shortcut-exact': conflicts.has(si) && conflicts.get(si)!.type === 'exact',
+                'bg-warning-bg border-l-[3px] border-l-warning-border pl-[9px] rounded-l-lg transition-all duration-400': conflicts.has(si) && conflicts.get(si)!.type === 'key',
+                'bg-info-bg border-l-[3px] border-l-text-muted pl-[9px] opacity-60 rounded-l-lg transition-all duration-400': conflicts.has(si) && conflicts.get(si)!.type === 'exact',
               }"
             >
-              <span class="modal-shortcut-label">
+              <span class="text-[13px] text-text-primary">
                 {{ s.label || s.action }}
-                <span v-if="conflicts.has(si) && conflicts.get(si)!.type === 'exact'" class="conflict-badge exact">duplicate</span>
-                <span v-else-if="conflicts.has(si)" class="conflict-badge key">conflict</span>
+                <span v-if="conflicts.has(si) && conflicts.get(si)!.type === 'exact'" class="inline-block text-[10px] px-[7px] py-[2px] rounded-lg ml-1.5 font-semibold uppercase tracking-wider align-middle transition-all duration-400 bg-surface-hover text-text-secondary">duplicate</span>
+                <span v-else-if="conflicts.has(si)" class="inline-block text-[10px] px-[7px] py-[2px] rounded-lg ml-1.5 font-semibold uppercase tracking-wider align-middle transition-all duration-400 bg-warning-bg text-warning-text">conflict</span>
               </span>
-              <span class="modal-shortcut-keys">
-                <kbd v-for="(part, pi) in s.key.split('+')" :key="pi">{{ part }}</kbd>
+              <span class="flex gap-[3px] shrink-0">
+                <kbd v-for="(part, pi) in s.key.split('+')" :key="pi" class="inline-block px-[7px] py-[2px] bg-surface-hover border border-border-default rounded-[5px] font-mono text-[11px] text-text-secondary capitalize">{{ part }}</kbd>
               </span>
             </div>
           </div>
 
-          <div v-if="exactDuplicateCount > 0" class="modal-exact-notice">
+          <div v-if="exactDuplicateCount > 0" class="flex items-center gap-2 px-4 py-3 bg-info-bg border border-info-border text-info-text rounded-[14px] mt-3 text-[13px] font-medium shadow-sm transition-all duration-400">
             <i class="mdi mdi-information-outline"></i>
             {{ exactDuplicateCount }} exact duplicate{{ exactDuplicateCount > 1 ? 's' : '' }} will be skipped automatically (same key and action already exist)
           </div>
 
-          <div v-if="keyConflictCount > 0" class="modal-conflicts">
-            <div class="modal-conflict-header">
+          <div v-if="keyConflictCount > 0" class="mt-4 px-4 py-3 bg-warning-bg border border-warning-border rounded-[10px]">
+            <div class="text-[13px] font-semibold text-warning-text mb-2.5 flex items-center gap-1.5">
               <i class="mdi mdi-alert-outline"></i>
               {{ keyConflictCount }} shortcut{{ keyConflictCount > 1 ? 's' : '' }} conflict with your existing shortcuts
             </div>
-            <div class="modal-conflict-options">
-              <label class="radio-option">
+            <div class="flex flex-col gap-2">
+              <label class="flex items-center gap-2 text-[13px] text-text-secondary cursor-pointer">
                 <input type="radio" v-model="packConflictMode" value="replace" />
                 <span>Replace my shortcuts with pack versions</span>
               </label>
-              <label class="radio-option">
+              <label class="flex items-center gap-2 text-[13px] text-text-secondary cursor-pointer">
                 <input type="radio" v-model="packConflictMode" value="skip" />
                 <span>Skip conflicting shortcuts</span>
               </label>
-              <label class="radio-option">
+              <label class="flex items-center gap-2 text-[13px] text-text-secondary cursor-pointer">
                 <input type="radio" v-model="packConflictMode" value="keep" />
                 <span>Keep both (I'll sort it out later)</span>
               </label>
             </div>
           </div>
         </div>
-        <div class="modal-footer">
+        <div class="flex justify-end gap-3 px-8 py-5 border-t border-border-default bg-surface-elevated">
           <button class="btn btn-secondary" @click="previewPack = null" type="button">Cancel</button>
           <button class="btn btn-primary" @click="installPack(previewPack)" type="button">
             <i class="mdi mdi-plus"></i> Add {{ addCount }} shortcut{{ addCount !== 1 ? 's' : '' }}
@@ -96,58 +96,3 @@ const keyConflictCount = computed(() => {
     </div>
   </Transition>
 </template>
-
-<style scoped>
-.modal-shortcut-conflict {
-  background: var(--warning-bg);
-  border-left: 3px solid var(--warning-border);
-  padding-left: 9px;
-  border-top-left-radius: var(--radius-md);
-  border-bottom-left-radius: var(--radius-md);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.modal-shortcut-exact {
-  background: var(--info-bg);
-  border-left: 3px solid var(--text-muted);
-  padding-left: 9px;
-  opacity: 0.6;
-  border-top-left-radius: var(--radius-md);
-  border-bottom-left-radius: var(--radius-md);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.conflict-badge {
-  display: inline-block;
-  font-size: 10px;
-  padding: 2px 7px;
-  border-radius: var(--radius-md);
-  margin-left: 6px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  vertical-align: middle;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.conflict-badge.key {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-}
-.conflict-badge.exact {
-  background: var(--bg-hover);
-  color: var(--text-secondary);
-}
-.modal-exact-notice {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  background: var(--info-bg);
-  border: 1px solid var(--info-border);
-  color: var(--info-text);
-  border-radius: var(--radius-xl);
-  margin-top: 12px;
-  font-size: 13px;
-  font-weight: 500;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-</style>

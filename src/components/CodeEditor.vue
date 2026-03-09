@@ -67,26 +67,10 @@ watch(
 </script>
 
 <template>
-  <div ref="editorEl" class="cm-wrap"></div>
+  <div ref="editorEl" class="cm-wrap rounded-none border-none overflow-hidden transition-[border-color,box-shadow] duration-150 focus-within:shadow-md focus-within:border-accent"></div>
 </template>
 
 <style scoped>
-.cm-wrap {
-  border-radius: 0;
-  border: none;
-  overflow: hidden;
-  transition: border-color 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.cm-wrap:focus-within {
-  box-shadow: var(--shadow-md);
-  border-color: var(--blue, #4f46e5);
-}
-
-.cm-wrap :deep(.cm-editor) {
-  min-height: 200px;
-}
-
-.cm-wrap :deep(.cm-editor.cm-focused) {
-  outline: none;
-}
+.cm-wrap :deep(.cm-editor) { min-height: 200px; }
+.cm-wrap :deep(.cm-editor.cm-focused) { outline: none; }
 </style>

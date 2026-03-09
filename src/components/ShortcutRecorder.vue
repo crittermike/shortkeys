@@ -106,9 +106,9 @@ function handleInputKeydown(e: KeyboardEvent) {
 </script>
 
 <template>
-  <div class="recorder-wrap">
+  <div class="flex gap-0 w-full">
     <input
-      class="field-input shortcut-input"
+      class="field-input shortcut-input peer !rounded-r-none !border-r-0 flex-1"
       type="text"
       placeholder="e.g. ctrl+shift+k"
       :value="modelValue"
@@ -117,84 +117,16 @@ function handleInputKeydown(e: KeyboardEvent) {
       :readonly="recording"
     />
     <button
-      :class="['record-btn', { recording }]"
+      :class="[
+        'flex items-center gap-1 px-4 border-[1.5px] border-border-default rounded-r-[10px] rounded-l-none bg-surface-elevated text-text-secondary text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap hover:bg-surface-hover hover:text-text-primary hover:-translate-y-px peer-focus:border-accent',
+        { '!bg-danger-bg !border-danger-border !text-danger animate-[pulse-recording_1.5s_infinite_cubic-bezier(0.16,1,0.3,1)] shadow-[0_0_12px_rgba(239,68,68,0.4)]': recording },
+      ]"
       @click="recording ? stopRecording() : startRecording()"
       type="button"
       :title="recording ? 'Click to stop recording' : 'Record shortcut'"
     >
-      <i :class="recording ? 'mdi mdi-stop-circle' : 'mdi mdi-record-circle-outline'"></i>
-      <span class="record-text">{{ recording ? 'Stop' : 'Record' }}</span>
+      <i :class="[recording ? 'mdi mdi-stop-circle' : 'mdi mdi-record-circle-outline', 'text-sm']"></i>
+      <span class="hidden sm:inline">{{ recording ? 'Stop' : 'Record' }}</span>
     </button>
   </div>
 </template>
-
-<style scoped>
-.recorder-wrap {
-  display: flex;
-  gap: 0;
-  width: 100%;
-}
-
-.recorder-wrap .field-input {
-  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
-  border-right: none;
-  flex: 1;
-}
-
-.recorder-wrap .field-input:focus + .record-btn {
-  border-color: var(--blue, #4361ee);
-}
-
-.record-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0 14px;
-  border: 1.5px solid var(--border, #e2e8f0);
-  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
-  background: var(--bg-elevated, #f8fafc);
-  color: var(--text-secondary, #64748b);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  white-space: nowrap;
-}
-
-.record-btn:hover {
-  background: var(--bg-hover, #f1f5f9);
-  color: var(--text, #1a1a2e);
-  border-color: var(--text-placeholder, #cbd5e1);
-  transform: translateY(-1px);
-}
-
-.record-btn.recording {
-  background: var(--danger-bg);
-  border-color: var(--danger-border);
-  color: var(--danger);
-  animation: pulse 1.5s infinite cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
-}
-
-.record-btn.recording:hover {
-  filter: brightness(0.95);
-}
-
-.record-btn .mdi {
-  font-size: 14px;
-}
-
-.record-btn.recording .mdi {
-  color: var(--danger);
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-  50% { transform: scale(0.95); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-}
-
-@media (max-width: 600px) {
-  .record-text { display: none; }
-}
-</style>

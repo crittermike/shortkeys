@@ -117,156 +117,48 @@ watch(isOpen, (val) => {
 </script>
 
 <template>
-  <div class="search-select">
-    <button v-if="!isOpen" class="ss-trigger" @click="open" type="button">
-      <span :class="['ss-trigger-text', { placeholder: !modelValue }]">
+  <div class="search-select relative w-full">
+    <button v-if="!isOpen" class="w-full px-3 py-[9px] border-[1.5px] border-border-default rounded-[10px] bg-surface-input text-sm text-text-primary cursor-pointer flex items-center justify-between text-left transition-[border-color,box-shadow] duration-150 hover:border-text-placeholder focus:outline-none focus:border-accent focus:shadow-[var(--focus-ring)]" @click="open" type="button">
+      <span :class="['flex-1 overflow-hidden text-ellipsis whitespace-nowrap', { 'text-text-muted': !modelValue }]">
         {{ selectedLabel || placeholder || 'Choose…' }}
       </span>
-      <i class="mdi mdi-chevron-down ss-chevron"></i>
+      <i class="mdi mdi-chevron-down text-text-muted text-base shrink-0"></i>
     </button>
 
-    <div v-else class="ss-dropdown-wrap">
+    <div v-else class="relative">
       <input
         ref="inputRef"
-        class="ss-search"
+        class="w-full px-3 py-[9px] border-[1.5px] border-accent rounded-t-[10px] text-sm text-text-primary bg-surface-input outline-none shadow-[var(--focus-ring)]"
         type="text"
         v-model="query"
         :placeholder="selectedLabel || 'Type to search…'"
         @keydown="onKeydown"
       />
-      <div ref="listRef" class="ss-dropdown">
+      <div ref="listRef" class="absolute top-full left-0 right-0 max-h-[280px] overflow-y-auto bg-surface-input border-[1.5px] border-border-default border-t-0 rounded-b-[10px] shadow-xl z-[100] p-1.5 backdrop-blur-sm">
         <template v-if="filtered.length">
           <template v-for="(opts, group) in groupedFiltered" :key="group">
-            <div class="ss-group-label">{{ group }}</div>
+            <div class="px-3 pt-2 pb-1.5 text-xs font-bold uppercase tracking-wider text-text-muted bg-surface-hover sticky top-0">{{ group }}</div>
             <button
               v-for="opt in opts"
               :key="opt.value"
               :class="[
-                'ss-option',
+                'block w-full px-3 py-[9px] pl-3 my-[3px] border-none rounded-lg bg-none text-left text-sm text-text-primary cursor-pointer transition-all duration-150',
                 {
-                  selected: opt.value === modelValue,
-                  highlighted: filtered.indexOf(opt) === highlightIndex,
+                  'text-accent font-semibold': opt.value === modelValue,
+                  'highlighted bg-surface-hover pl-4 text-accent': filtered.indexOf(opt) === highlightIndex,
                 },
               ]"
               @mouseenter="highlightIndex = filtered.indexOf(opt)"
               @click="select(opt.value)"
               type="button"
             >
-              <span class="ss-opt-label">{{ opt.label }}</span>
-              <span v-if="opt.sublabel" class="ss-opt-sub">{{ opt.sublabel }}</span>
+              <span class="block">{{ opt.label }}</span>
+              <span v-if="opt.sublabel" class="block text-xs text-text-muted whitespace-nowrap overflow-hidden text-ellipsis max-w-full">{{ opt.sublabel }}</span>
             </button>
           </template>
         </template>
-        <div v-else class="ss-empty">No matching actions</div>
+        <div v-else class="p-4 text-center text-text-muted text-[13px] italic">No matching actions</div>
       </div>
     </div>
   </div>
 </template>
-
-<style scoped>
-.search-select { position: relative; width: 100%; }
-
-.ss-trigger {
-  width: 100%;
-  padding: var(--space-sm) var(--space-md);
-  border: 1.5px solid var(--border, #e2e8f0);
-  border-radius: var(--radius-lg);
-  background: var(--bg-input, #fff);
-  font-size: 14px;
-  color: var(--text, #1a1a2e);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  text-align: left;
-  transition: border-color 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.ss-trigger:hover { border-color: var(--text-placeholder, #cbd5e1); }
-.ss-trigger:focus { outline: none; border-color: var(--blue, #4361ee); box-shadow: var(--focus-ring); }
-
-.ss-trigger-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ss-trigger-text.placeholder { color: var(--text-muted, #94a3b8); }
-.ss-chevron { color: var(--text-muted, #94a3b8); font-size: 16px; flex-shrink: 0; }
-
-.ss-dropdown-wrap { position: relative; }
-
-.ss-search {
-  width: 100%;
-  padding: var(--space-sm) var(--space-md);
-  border: 1.5px solid var(--blue, #4361ee);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  font-size: 14px;
-  color: var(--text, #1a1a2e);
-  background: var(--bg-input, #fff);
-  outline: none;
-  box-shadow: var(--focus-ring);
-}
-
-.ss-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  max-height: 280px;
-  overflow-y: auto;
-  background: var(--bg-input, #fff);
-  border: 1.5px solid var(--border, #e2e8f0);
-  border-top: none;
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-  box-shadow: var(--shadow-xl);
-  z-index: 100;
-  padding: 6px;
-  backdrop-filter: blur(8px);
-}
-[data-theme="dark"] .ss-dropdown {
-  border-color: var(--border);
-  box-shadow: var(--shadow-xl);
-}
-
-.ss-group-label {
-  padding: 6px var(--space-md) 4px;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  color: var(--text-muted, #94a3b8);
-  background: var(--bg-hover, #f1f5f9);
-  position: sticky;
-  top: 0;
-}
-
-.ss-option {
-  display: block;
-  width: 100%;
-  padding: 7px var(--space-md) 7px 12px;
-  margin: 3px 0;
-  border: none;
-  border-radius: var(--radius-md);
-  background: none;
-  text-align: left;
-  font-size: 13px;
-  color: var(--text, #334155);
-  cursor: pointer;
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.ss-option.highlighted { 
-  background: var(--bg-hover, #f1f5f9); 
-  padding-left: 16px;
-  color: var(--blue, #4361ee);
-}
-.ss-option.selected { color: var(--blue, #4361ee); font-weight: 600; }
-
-.ss-opt-label { display: block; }
-.ss-opt-sub {
-  display: block;
-  font-size: 11px;
-  color: var(--text-muted, #94a3b8);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-
-.ss-empty { padding: var(--space-lg); text-align: center; color: var(--text-muted, #94a3b8); font-size: 13px; font-style: italic; }
-
-</style>
