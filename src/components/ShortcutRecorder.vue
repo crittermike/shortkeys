@@ -149,12 +149,12 @@ function handleInputKeydown(e: KeyboardEvent) {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 0 14px;
+  padding: 0 16px;
   border: 1.5px solid var(--border, #e2e8f0);
   border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
   background: var(--bg-elevated, #f8fafc);
   color: var(--text-secondary, #64748b);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);

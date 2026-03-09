@@ -168,7 +168,7 @@ watch(isOpen, (val) => {
 
 .ss-trigger {
   width: 100%;
-  padding: var(--space-sm) var(--space-md);
+  padding: 9px var(--space-md);
   border: 1.5px solid var(--border, #e2e8f0);
   border-radius: var(--radius-lg);
   background: var(--bg-input, #fff);
@@ -192,7 +192,7 @@ watch(isOpen, (val) => {
 
 .ss-search {
   width: 100%;
-  padding: var(--space-sm) var(--space-md);
+  padding: 9px var(--space-md);
   border: 1.5px solid var(--blue, #4361ee);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   font-size: 14px;
@@ -224,7 +224,7 @@ watch(isOpen, (val) => {
 }
 
 .ss-group-label {
-  padding: 6px var(--space-md) 4px;
+  padding: 8px var(--space-md) 6px;
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
@@ -238,13 +238,13 @@ watch(isOpen, (val) => {
 .ss-option {
   display: block;
   width: 100%;
-  padding: 7px var(--space-md) 7px 12px;
+  padding: 9px var(--space-md) 9px 12px;
   margin: 3px 0;
   border: none;
   border-radius: var(--radius-md);
   background: none;
   text-align: left;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text, #334155);
   cursor: pointer;
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
@@ -259,7 +259,7 @@ watch(isOpen, (val) => {
 .ss-opt-label { display: block; }
 .ss-opt-sub {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-muted, #94a3b8);
   white-space: nowrap;
   overflow: hidden;

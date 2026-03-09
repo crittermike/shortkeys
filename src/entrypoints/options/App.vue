@@ -606,7 +606,7 @@ html, body {
   background-attachment: fixed;
   color: var(--text);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -733,12 +733,12 @@ a:hover { text-decoration: underline; }
 }
 
 .tab-btn {
-  padding: 8px 18px;
+  padding: 10px 20px;
   border: none;
   border-radius: var(--radius-md);
   background: transparent;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -800,9 +800,9 @@ a:hover { text-decoration: underline; }
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 4px 10px;
+  padding: 6px 12px;
   border-radius: var(--radius-full);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   background: var(--bg-elevated);
   color: var(--text-secondary);
@@ -880,7 +880,7 @@ a:hover { text-decoration: underline; }
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: 12px 16px;
+  padding: 14px 16px;
   background: var(--bg-elevated);
   border-bottom: 1px solid var(--border-light);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
@@ -903,15 +903,13 @@ a:hover { text-decoration: underline; }
 .group-collapse:hover { color: var(--text-secondary); }
 
 .group-name {
-  font-size: 13px;
   font-weight: 700;
   color: var(--text);
   cursor: default;
   user-select: none;
-  letter-spacing: -0.01em;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .group-name-input {
@@ -927,11 +925,11 @@ a:hover { text-decoration: underline; }
 }
 
 .group-count {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-muted);
   background: var(--bg-hover);
-  padding: 1px 7px;
+  padding: 2px 8px;
   border-radius: var(--radius-full);
   line-height: 1.5;
 }
@@ -1082,8 +1080,8 @@ a:hover { text-decoration: underline; }
 .shortcut-row {
   display: flex;
   align-items: flex-end;
-  gap: var(--space-sm);
-  padding: 6px 12px 10px;
+  gap: var(--space-md);
+  padding: 10px 16px 12px;
 }
 
 .field-group {
@@ -1097,7 +1095,7 @@ a:hover { text-decoration: underline; }
 .behavior-col { flex: 1; min-width: 0; }
 
 .field-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1106,10 +1104,10 @@ a:hover { text-decoration: underline; }
 
 .field-input, .field-select, .field-textarea {
   width: 100%;
-  padding: 7px 11px;
+  padding: 9px 12px;
   border: 1.5px solid var(--border);
   border-radius: var(--radius-md);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text);
   background: var(--bg-input);
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -1122,7 +1120,7 @@ a:hover { text-decoration: underline; }
 }
 
 .field-textarea { resize: vertical; }
-.mono { font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 13px; }
+.mono { font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 14px; }
 
 .shortcut-input { font-family: 'SF Mono', Menlo, Consolas, monospace; font-weight: 500; }
 
@@ -1158,7 +1156,7 @@ a:hover { text-decoration: underline; }
 /* ── Details panel ── */
 .shortcut-details {
   border-top: 1px solid var(--border-light);
-  padding: 12px 16px;
+  padding: 16px 20px;
   background: var(--bg-elevated);
 }
 
@@ -1284,7 +1282,7 @@ a:hover { text-decoration: underline; }
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: 6px 8px;
+  padding: 8px 10px;
   background: var(--bg-card, #fff);
   border: 1px solid var(--border, #e0e0e0);
   border-radius: var(--radius-lg);
@@ -1443,12 +1441,12 @@ a:hover { text-decoration: underline; }
 
 .seg-btn {
   flex: 1;
-  padding: 7px 8px;
+  padding: 8px 10px;
   border: none;
   border-radius: var(--radius-md);
   background: transparent;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1475,14 +1473,14 @@ a:hover { text-decoration: underline; }
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 8px 6px 14px;
+  padding: 10px 12px 10px 14px;
   background: #282c34;
   gap: var(--space-sm);
 }
 
 .code-title {
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.5px;
   display: flex;
@@ -1501,7 +1499,7 @@ a:hover { text-decoration: underline; }
 
 .run-label {
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 13px;
   white-space: nowrap;
 }
 
@@ -1521,7 +1519,7 @@ a:hover { text-decoration: underline; }
   background: transparent;
   border: none;
   color: #e2e8f0;
-  font-size: 12px;
+  font-size: 13px;
   outline: none;
   cursor: pointer;
   max-width: 200px;
@@ -1531,8 +1529,8 @@ a:hover { text-decoration: underline; }
 .tab-picker-select option { background: #1e293b; color: #e2e8f0; }
 
 .btn-run {
-  padding: 5px 14px;
-  font-size: 12px;
+  padding: 6px 16px;
+  font-size: 13px;
   border-radius: var(--radius-md);
   background: var(--success);
   color: #fff;
