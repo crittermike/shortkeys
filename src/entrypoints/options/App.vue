@@ -75,6 +75,12 @@ const handleOnboardingPacks = async (packs: import('@/packs').ShortcutPack[]) =>
   }
 }
 
+function openExtensionDetails() {
+  const isFirefox = navigator.userAgent.includes('Firefox')
+  const url = isFirefox ? 'about:addons' : `chrome://extensions/?id=${browser.runtime.id}`
+  browser.tabs.create({ url, active: true })
+}
+
 const completeOnboarding = () => {
   showOnboarding.value = false
   localStorage.setItem('shortkeys-onboarding-done', 'true')
@@ -184,7 +190,7 @@ onUnmounted(() => {
         <article v-if="needsUserScripts()" class="alert alert-warning">
           <i class="mdi mdi-alert-circle-outline"></i>
           <div>
-            <strong>Allow User Scripts</strong> — In order for JavaScript actions to work, you must first allow User Scripts in your browser extension details page. Then come back and save your shortcuts.
+            <strong>Allow User Scripts</strong> — In order for JavaScript actions to work, you must first allow User Scripts in your <a href="#" @click.prevent="openExtensionDetails">extension settings page</a>. Then come back and save your shortcuts.
           </div>
         </article>
 
@@ -1623,6 +1629,8 @@ a:hover { text-decoration: underline; }
 
 .alert-warning { background: var(--warning-bg); border: none; border-left: 3px solid var(--warning-text); color: var(--warning-text); }
 .alert-info { background: var(--info-bg); border: none; border-left: 3px solid var(--info-text); color: var(--info-text); }
+.alert a { color: inherit; text-decoration: underline; cursor: pointer; }
+.alert a:hover { opacity: 0.8; }
 .alert-info .mdi, .alert-warning .mdi {
   margin-right: 0;
   font-size: 20px;
