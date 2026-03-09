@@ -12,6 +12,8 @@ import JsWarningDialog from '@/components/JsWarningDialog.vue'
 import ExportTab from '@/components/ExportTab.vue'
 import AnalyticsTab from '@/components/AnalyticsTab.vue'
 import OnboardingWizard from '@/components/OnboardingWizard.vue'
+import type { ShortcutPack } from '@/packs'
+import type { OnboardingShortcut } from '@/utils/onboarding-shortcuts'
 import { useTheme } from '@/composables/useTheme'
 import { useToast } from '@/composables/useToast'
 import { useShortcuts } from '@/composables/useShortcuts'
@@ -61,18 +63,22 @@ initDensity()
 const activeTab = ref(0)
 const showOnboarding = ref(false)
 
-const handleWizardFinish = async (shortcut: { key: string; action: string }) => {
-  addShortcut()
-  const newIndex = keys.value.length - 1
-  keys.value[newIndex].key = shortcut.key
-  keys.value[newIndex].action = shortcut.action
-  await saveShortcuts()
-}
+const handleWizardFinish = async ({ shortcuts, packs }: { shortcuts: OnboardingShortcut[]; packs: ShortcutPack[] }) => {
+  for (const shortcut of shortcuts) {
+    addShortcut()
+    const newIndex = keys.value.length - 1
+    Object.assign(keys.value[newIndex], shortcut)
+  }
 
-const handleOnboardingPacks = async (packs: import('@/packs').ShortcutPack[]) => {
+  if (shortcuts.length > 0) {
+    await saveShortcuts()
+  }
+
   for (const pack of packs) {
     await installPack(pack)
   }
+
+  completeOnboarding()
 }
 
 const completeOnboarding = () => {
@@ -236,8 +242,6 @@ onUnmounted(() => {
             v-if="showOnboarding"
             @finish="handleWizardFinish"
             @skip="completeOnboarding"
-            @done="completeOnboarding"
-            @installPacks="handleOnboardingPacks"
           />
           <div v-else class="empty-state">
           <div class="empty-state-icon">

@@ -1,27 +1,35 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
+import CodeEditor from '@/components/CodeEditor.vue'
 import { ACTION_CATEGORIES, getActionDescription, getActionLabel } from '@/utils/actions-registry'
 import { getBrowserConflict } from '@/utils/shortcut-conflicts'
 import { ALL_PACKS } from '@/packs'
 import type { ShortcutPack } from '@/packs'
+import {
+  canContinueOnboardingShortcut,
+  createOnboardingShortcutDraft,
+  filterOnboardingRecords,
+  finalizeOnboardingShortcut,
+  reconcileOnboardingShortcutDrafts,
+  shouldShowOnboardingSitePatterns,
+  type OnboardingShortcut,
+} from '@/utils/onboarding-shortcuts'
 
 const emit = defineEmits<{
-  (e: 'finish', shortcut: { key: string; action: string }): void
+  (e: 'finish', payload: { shortcuts: OnboardingShortcut[]; packs: ShortcutPack[] }): void
   (e: 'skip'): void
-  (e: 'done'): void
-  (e: 'installPacks', packs: ShortcutPack[]): void
 }>()
 
 const step = ref(1)
 const selectedActions = ref<string[]>([])
 const currentActionIndex = ref(0)
-const shortcutKey = ref('')
 const showMoreActions = ref(false)
 const selectedPacks = ref<ShortcutPack[]>([])
 const previewingPack = ref<ShortcutPack | null>(null)
+const shortcutDrafts = ref<Record<string, OnboardingShortcut>>({})
 
-const recordedShortcuts = ref<{ actionId: string; actionLabel: string; icon: string; key: string }[]>([])
+const recordedShortcuts = ref<{ actionId: string; actionLabel: string; icon: string; key: string; shortcut: OnboardingShortcut }[]>([])
 
 const INITIAL_ACTIONS = [
   { id: 'toggledarkmode', icon: 'mdi-theme-light-dark' },
@@ -71,6 +79,22 @@ const currentAction = computed(() => {
   return ALL_ACTIONS.find(a => a.id === id) || null
 })
 
+const currentShortcut = computed(() => {
+  if (!currentAction.value) return null
+  return shortcutDrafts.value[currentAction.value.id] || null
+})
+
+const shortcutKey = computed({
+  get: () => currentShortcut.value?.key || '',
+  set: (value: string) => {
+    if (currentShortcut.value) {
+      currentShortcut.value.key = value
+    }
+  },
+})
+
+const canContinueCurrentShortcut = computed(() => canContinueOnboardingShortcut(currentShortcut.value))
+
 const conflictWarning = computed(() => {
   if (!shortcutKey.value) return null
   const conflict = getBrowserConflict(shortcutKey.value)
@@ -110,12 +134,19 @@ const toggleShowMore = () => {
   showMoreActions.value = !showMoreActions.value
 }
 
+const syncShortcutSetupState = () => {
+  shortcutDrafts.value = reconcileOnboardingShortcutDrafts(
+    selectedActions.value,
+    shortcutDrafts.value,
+  )
+  recordedShortcuts.value = filterOnboardingRecords(selectedActions.value, recordedShortcuts.value)
+}
+
 const goToStep2 = () => {
   if (selectedActions.value.length > 0) {
     step.value = 2
     currentActionIndex.value = 0
-    shortcutKey.value = ''
-    recordedShortcuts.value = []
+    syncShortcutSetupState()
   } else if (selectedPacks.value.length > 0) {
     // No individual actions selected, skip straight to success
     step.value = 3
@@ -125,25 +156,36 @@ const goToStep2 = () => {
 const goBack = () => {
   if (currentActionIndex.value > 0) {
     currentActionIndex.value--
-    shortcutKey.value = ''
   } else {
     step.value = 1
   }
 }
 
 const skipCurrent = () => {
+  if (currentAction.value) {
+    recordedShortcuts.value = recordedShortcuts.value.filter(shortcut => shortcut.actionId !== currentAction.value!.id)
+    shortcutDrafts.value[currentAction.value.id] = createOnboardingShortcutDraft(currentAction.value.id)
+  }
   advanceOrFinish()
 }
 
 const recordNext = () => {
-  if (shortcutKey.value && currentAction.value) {
-    recordedShortcuts.value.push({
+  if (currentAction.value && currentShortcut.value && canContinueCurrentShortcut.value) {
+    const shortcut = finalizeOnboardingShortcut(currentShortcut.value)
+    const nextRecord = {
       actionId: currentAction.value.id,
       actionLabel: currentAction.value.label,
       icon: currentAction.value.icon,
-      key: shortcutKey.value
-    })
-    emit('finish', { key: shortcutKey.value, action: currentAction.value.id })
+      key: shortcut.key,
+      shortcut,
+    }
+    const existingIndex = recordedShortcuts.value.findIndex(record => record.actionId === nextRecord.actionId)
+
+    if (existingIndex === -1) {
+      recordedShortcuts.value.push(nextRecord)
+    } else {
+      recordedShortcuts.value[existingIndex] = nextRecord
+    }
   }
   advanceOrFinish()
 }
@@ -151,17 +193,18 @@ const recordNext = () => {
 const advanceOrFinish = () => {
   if (currentActionIndex.value < selectedActions.value.length - 1) {
     currentActionIndex.value++
-    shortcutKey.value = ''
   } else {
     step.value = 3
   }
 }
 
 const finish = () => {
-  if (selectedPacks.value.length > 0) {
-    emit('installPacks', selectedPacks.value)
-  }
-  emit('done')
+  emit('finish', {
+    shortcuts: selectedActions.value
+      .map(actionId => recordedShortcuts.value.find(shortcut => shortcut.actionId === actionId)?.shortcut)
+      .filter((shortcut): shortcut is OnboardingShortcut => Boolean(shortcut)),
+    packs: selectedPacks.value,
+  })
 }
 
 const skip = () => {
@@ -176,7 +219,7 @@ const skip = () => {
         <div class="step-label" :class="{ active: step >= 1 }">Choose actions</div>
         <div :class="['step-line', { active: step >= 2 }]"></div>
         <div :class="['step-dot', { active: step >= 2, current: step === 2 }]">2</div>
-        <div class="step-label" :class="{ active: step >= 2 }">Assign shortcuts</div>
+        <div class="step-label" :class="{ active: step >= 2 }">Set up shortcuts</div>
         <div :class="['step-line', { active: step >= 3 }]"></div>
         <div :class="['step-dot', { active: step >= 3, current: step === 3 }]">3</div>
         <div class="step-label" :class="{ active: step >= 3 }">All set!</div>
@@ -276,9 +319,85 @@ const skip = () => {
             <i :class="['mdi', currentAction.icon]"></i>
             <h2>{{ currentAction.label }}</h2>
           </div>
-          
-          <div class="recorder-wrap">
-            <ShortcutRecorder v-model="shortcutKey" />
+
+          <div class="setup-stack">
+            <div class="setup-card">
+              <label class="setup-label">Shortcut</label>
+              <div class="recorder-wrap">
+                <ShortcutRecorder v-model="shortcutKey" />
+              </div>
+              <p class="setup-hint">Press a shortcut or type it manually. You can change it later in your shortcuts list.</p>
+            </div>
+
+            <div v-if="currentShortcut && currentShortcut.action === 'javascript'" class="setup-card">
+              <div class="setup-section-header">
+                <div>
+                  <h3 class="setup-card-title">JavaScript to run</h3>
+                  <p class="setup-card-desc">This code runs on the current page whenever the shortcut is pressed.</p>
+                </div>
+              </div>
+              <div class="code-editor-wrap onboarding-code-editor">
+                <div class="code-header">
+                  <span class="code-title"><i class="mdi mdi-code-braces"></i> JavaScript</span>
+                </div>
+                <CodeEditor :modelValue="currentShortcut.code || ''" @update:modelValue="currentShortcut.code = $event" />
+              </div>
+              <p class="setup-hint">Shortkeys will save this code with the shortcut so you can edit it later if needed.</p>
+            </div>
+
+            <div v-if="currentShortcut" class="setup-card">
+              <div class="setup-section-header">
+                <div>
+                  <h3 class="setup-card-title">Where it works</h3>
+                  <p class="setup-card-desc">Choose whether this shortcut should work in form inputs and on specific sites.</p>
+                </div>
+              </div>
+
+              <div class="activation-bar">
+                <div class="site-filter-inline">
+                  <div class="segmented">
+                    <button
+                      :class="['seg-btn', { active: !currentShortcut.blacklist || currentShortcut.blacklist === 'false' }]"
+                      @click="currentShortcut.blacklist = false"
+                      type="button"
+                    >
+                      <i class="mdi mdi-earth"></i> All sites
+                    </button>
+                    <button
+                      :class="['seg-btn', { active: currentShortcut.blacklist === true || currentShortcut.blacklist === 'true' }]"
+                      @click="currentShortcut.blacklist = true"
+                      type="button"
+                    >
+                      <i class="mdi mdi-earth-minus"></i> Except…
+                    </button>
+                    <button
+                      :class="['seg-btn', { active: currentShortcut.blacklist === 'whitelist' }]"
+                      @click="currentShortcut.blacklist = 'whitelist'"
+                      type="button"
+                    >
+                      <i class="mdi mdi-earth-plus"></i> Only on…
+                    </button>
+                  </div>
+                </div>
+                <div class="toggle-row-inline">
+                  <span class="toggle-label-sm">Active in form inputs</span>
+                  <button :class="['toggle', { on: currentShortcut.activeInInputs }]" @click="currentShortcut.activeInInputs = !currentShortcut.activeInInputs" type="button">
+                    <span class="toggle-knob"></span>
+                  </button>
+                </div>
+              </div>
+
+              <textarea
+                v-if="shouldShowOnboardingSitePatterns(currentShortcut)"
+                class="field-textarea mono site-patterns"
+                v-model="currentShortcut.sites"
+                rows="3"
+                :placeholder="currentShortcut.blacklist === 'whitelist' ? 'Sites to activate on…\n*example.com*' : 'Sites to disable on…\n*example.com*'"
+              ></textarea>
+              <p v-if="shouldShowOnboardingSitePatterns(currentShortcut)" class="setup-hint site-pattern-hint">
+                Use one pattern per line. Wildcards like <code>*://mail.google.com/*</code> work great.
+              </p>
+            </div>
           </div>
 
           <div v-if="conflictWarning" class="conflict-warning">
@@ -297,7 +416,7 @@ const skip = () => {
               <button 
                 class="btn btn-primary" 
                 @click="recordNext" 
-                :disabled="!shortcutKey"
+                :disabled="!canContinueCurrentShortcut"
                 type="button"
               >
                 Next <i class="mdi mdi-arrow-right"></i>
@@ -682,6 +801,81 @@ const skip = () => {
   margin: 0;
 }
 
+.setup-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto 24px;
+}
+
+.setup-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.setup-label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.setup-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: 14px;
+}
+
+.setup-card-title {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.setup-card-desc,
+.setup-hint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.setup-hint {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.site-pattern-hint code {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1px 5px;
+  font-family: 'SF Mono', Menlo, monospace;
+  font-size: 11px;
+  color: var(--text);
+}
+
+.setup-card .recorder-wrap {
+  max-width: none;
+  margin: 0;
+}
+
+.onboarding-code-editor {
+  margin-bottom: 0;
+}
+
 .action-desc {
   font-size: 11px;
   font-weight: 400;
@@ -697,7 +891,7 @@ const skip = () => {
 }
 
 .conflict-warning {
-  max-width: 400px;
+  max-width: 680px;
   margin: 0 auto 24px;
   width: 100%;
   background: var(--warning-bg);

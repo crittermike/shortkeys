@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 
 /**
  * Tests for the OnboardingWizard component logic.
@@ -9,6 +9,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import { ACTION_CATEGORIES, getAllActionValues } from '../src/utils/actions-registry'
 import { getBrowserConflict } from '../src/utils/shortcut-conflicts'
+import {
+  canContinueOnboardingShortcut,
+  createOnboardingShortcutDraft,
+  filterOnboardingRecords,
+  finalizeOnboardingShortcut,
+  reconcileOnboardingShortcutDrafts,
+  shouldShowOnboardingSitePatterns,
+} from '../src/utils/onboarding-shortcuts'
 
 // The initial actions shown in the wizard's step 1
 const INITIAL_ACTIONS = [
@@ -143,20 +151,116 @@ describe('OnboardingWizard', () => {
   })
 
   describe('wizard finish payload', () => {
-    it('finish event should contain key and action strings', () => {
-      const payload = { key: 'ctrl+t', action: 'toggledarkmode' }
-      expect(payload).toHaveProperty('key')
-      expect(payload).toHaveProperty('action')
-      expect(typeof payload.key).toBe('string')
-      expect(typeof payload.action).toBe('string')
+    it('finish event should contain shortcut and pack arrays', () => {
+      const payload = {
+        shortcuts: [{ key: 'ctrl+t', action: 'toggledarkmode' }],
+        packs: [],
+      }
+
+      expect(Array.isArray(payload.shortcuts)).toBe(true)
+      expect(Array.isArray(payload.packs)).toBe(true)
+      expect(payload.shortcuts[0]).toHaveProperty('key')
+      expect(payload.shortcuts[0]).toHaveProperty('action')
     })
 
-    it('finish payload action should be a valid action', () => {
+    it('finish payload actions should be valid actions', () => {
       const allActions = getAllActionValues()
       for (const action of POPULAR_ACTIONS) {
-        const payload = { key: 'ctrl+shift+a', action: action.id }
-        expect(allActions).toContain(payload.action)
+        const payload = {
+          shortcuts: [{ key: 'ctrl+shift+a', action: action.id }],
+          packs: [],
+        }
+        expect(allActions).toContain(payload.shortcuts[0].action)
       }
+    })
+  })
+
+  describe('per-shortcut setup helpers', () => {
+    it('requires JavaScript code before continuing a JavaScript shortcut', () => {
+      const draft = createOnboardingShortcutDraft('javascript')
+      draft.key = 'ctrl+shift+j'
+
+      expect(canContinueOnboardingShortcut(draft)).toBe(false)
+
+      draft.code = 'console.log("hello")'
+      expect(canContinueOnboardingShortcut(draft)).toBe(true)
+    })
+
+    it('allows non-JavaScript shortcuts to continue without extra settings', () => {
+      const draft = createOnboardingShortcutDraft('copyurl')
+      draft.key = 'ctrl+shift+c'
+
+      expect(canContinueOnboardingShortcut(draft)).toBe(true)
+    })
+
+    it('finalizes JavaScript shortcuts with code and activation settings', () => {
+      const draft = createOnboardingShortcutDraft('javascript')
+      draft.key = ' ctrl+j '
+      draft.code = 'console.log("ready")'
+      draft.activeInInputs = true
+      draft.blacklist = 'whitelist'
+      draft.sites = '*github.com*\n*example.com*'
+
+      expect(finalizeOnboardingShortcut(draft)).toEqual({
+        key: 'ctrl+j',
+        action: 'javascript',
+        code: 'console.log("ready")',
+        activeInInputs: true,
+        blacklist: 'whitelist',
+        sites: '*github.com*\n*example.com*',
+      })
+    })
+
+    it('omits site filters when the shortcut should run on all sites', () => {
+      const draft = createOnboardingShortcutDraft('copyurl')
+      draft.key = 'ctrl+shift+c'
+      draft.sites = '*github.com*'
+
+      expect(shouldShowOnboardingSitePatterns(draft)).toBe(false)
+      expect(finalizeOnboardingShortcut(draft)).toEqual({
+        key: 'ctrl+shift+c',
+        action: 'copyurl',
+      })
+    })
+
+    it('preserves existing drafts when returning to step 2', () => {
+      const javascriptDraft = createOnboardingShortcutDraft('javascript')
+      javascriptDraft.key = 'ctrl+shift+j'
+      javascriptDraft.code = 'console.log("hello")'
+      javascriptDraft.blacklist = 'whitelist'
+      javascriptDraft.sites = '*github.com*'
+      javascriptDraft.activeInInputs = true
+
+      const reconciled = reconcileOnboardingShortcutDrafts(
+        ['javascript', 'copyurl'],
+        {
+          javascript: javascriptDraft,
+        },
+      )
+
+      expect(reconciled.javascript).toEqual(javascriptDraft)
+      expect(reconciled.copyurl).toEqual(createOnboardingShortcutDraft('copyurl'))
+    })
+
+    it('drops recorded shortcuts for actions that were deselected', () => {
+      const records = [
+        { actionId: 'javascript', shortcut: createOnboardingShortcutDraft('javascript') },
+        { actionId: 'copyurl', shortcut: createOnboardingShortcutDraft('copyurl') },
+      ]
+
+      expect(filterOnboardingRecords(['javascript'], records)).toEqual([records[0]])
+    })
+  })
+
+  describe('step 2 setup UI', () => {
+    it('includes JavaScript and activation controls in the wizard template', async () => {
+      const fs = await import('fs')
+      const content = fs.readFileSync('src/components/OnboardingWizard.vue', 'utf-8')
+
+      expect(content).toContain('<CodeEditor')
+      expect(content).toContain('Active in form inputs')
+      expect(content).toContain('All sites')
+      expect(content).toContain('Only on…')
     })
   })
 })

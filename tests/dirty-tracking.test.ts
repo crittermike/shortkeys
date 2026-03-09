@@ -6,11 +6,12 @@ vi.mock('@/utils/storage', () => ({
   loadKeys: vi.fn().mockResolvedValue(null),
 }))
 
-  import { useShortcuts } from '../src/composables/useShortcuts'
-import { loadKeys } from '../src/utils/storage'
+import { useShortcuts } from '../src/composables/useShortcuts'
+import { loadKeys, saveKeys } from '../src/utils/storage'
 import type { KeySetting } from '../src/utils/url-matching'
 
 const mockLoadKeys = vi.mocked(loadKeys)
+const mockSaveKeys = vi.mocked(saveKeys)
 
 function makeKey(overrides: Partial<KeySetting> = {}): KeySetting {
   return {
@@ -101,6 +102,34 @@ describe('dirty tracking', () => {
 
     await saveShortcuts()
     expect(dirty.value).toBe(false)
+  })
+
+  it('persists onboarding shortcut settings when saving', async () => {
+    mockLoadKeys.mockResolvedValueOnce(JSON.stringify([]))
+    const { keys, addShortcut, saveShortcuts, loadSavedKeys } = useShortcuts()
+    await loadSavedKeys()
+
+    addShortcut()
+    keys.value[0].key = 'ctrl+shift+j'
+    keys.value[0].action = 'javascript'
+    keys.value[0].code = 'console.log("hello")'
+    keys.value[0].activeInInputs = true
+    keys.value[0].blacklist = 'whitelist'
+    keys.value[0].sites = '*github.com*\n*example.com*'
+
+    await saveShortcuts()
+
+    const savedKeys = mockSaveKeys.mock.calls.at(-1)?.[0] as KeySetting[]
+    expect(savedKeys).toHaveLength(1)
+    expect(savedKeys[0]).toMatchObject({
+      key: 'ctrl+shift+j',
+      action: 'javascript',
+      code: 'console.log("hello")',
+      activeInInputs: true,
+      blacklist: 'whitelist',
+      sites: '*github.com*\n*example.com*',
+      sitesArray: ['*github.com*', '*example.com*'],
+    })
   })
 
   it('becomes clean after deleteShortcut (auto-saves)', async () => {
