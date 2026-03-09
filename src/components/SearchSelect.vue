@@ -118,7 +118,7 @@ watch(isOpen, (val) => {
 
 <template>
   <div class="search-select relative w-full">
-    <button v-if="!isOpen" class="w-full px-3 py-[9px] border-[1.5px] border-border-default rounded-[10px] bg-surface-input text-sm text-text-primary cursor-pointer flex items-center justify-between text-left transition-[border-color,box-shadow] duration-150 hover:border-text-placeholder focus:outline-none focus:border-accent focus:shadow-[var(--focus-ring)]" @click="open" type="button">
+    <button v-if="!isOpen" class="w-full px-3 py-[9px] border border-border-default rounded-xl bg-surface text-sm text-text-primary cursor-pointer flex items-center justify-between text-left transition-[border-color,box-shadow] duration-150 hover:border-border-default focus:outline-none focus:border-blue-500/50 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.15)]" @click="open" type="button">
       <span :class="['flex-1 overflow-hidden text-ellipsis whitespace-nowrap', { 'text-text-muted': !modelValue }]">
         {{ selectedLabel || placeholder || 'Choose…' }}
       </span>
@@ -128,16 +128,16 @@ watch(isOpen, (val) => {
     <div v-else class="relative">
       <input
         ref="inputRef"
-        class="w-full px-3 py-[9px] border-[1.5px] border-accent rounded-t-[10px] text-sm text-text-primary bg-surface-input outline-none shadow-[var(--focus-ring)]"
+        class="w-full px-3 py-[9px] border border-blue-500/50 rounded-t-xl text-sm text-text-primary bg-surface outline-none shadow-[0_0_0_3px_rgba(59,130,246,0.15)]"
         type="text"
         v-model="query"
         :placeholder="selectedLabel || 'Type to search…'"
         @keydown="onKeydown"
       />
-      <div ref="listRef" class="absolute top-full left-0 right-0 max-h-[280px] overflow-y-auto bg-surface-input border-[1.5px] border-border-default border-t-0 rounded-b-[10px] shadow-xl z-[100] p-1.5 backdrop-blur-sm">
+      <div ref="listRef" class="absolute top-full left-0 right-0 max-h-[280px] overflow-y-auto bg-surface border border-border-default border-t-0 rounded-b-xl shadow-2xl z-[100] p-1.5 backdrop-blur-sm">
         <template v-if="filtered.length">
           <template v-for="(opts, group) in groupedFiltered" :key="group">
-            <div class="px-3 pt-2 pb-1.5 text-xs font-bold uppercase tracking-wider text-text-muted bg-surface-hover sticky top-0">{{ group }}</div>
+            <div class="px-3 pt-2 pb-1.5 text-xs font-bold uppercase tracking-wider text-text-muted bg-surface-card sticky top-0 rounded-md">{{ group }}</div>
             <button
               v-for="opt in opts"
               :key="opt.value"
@@ -145,7 +145,7 @@ watch(isOpen, (val) => {
                 'block w-full px-3 py-[9px] pl-3 my-[3px] border-none rounded-lg bg-none text-left text-sm text-text-primary cursor-pointer transition-all duration-150',
                 {
                   'text-accent font-semibold': opt.value === modelValue,
-                  'highlighted bg-surface-hover pl-4 text-accent': filtered.indexOf(opt) === highlightIndex,
+                  'highlighted bg-surface-elevated pl-4 text-accent': filtered.indexOf(opt) === highlightIndex,
                 },
               ]"
               @mouseenter="highlightIndex = filtered.indexOf(opt)"

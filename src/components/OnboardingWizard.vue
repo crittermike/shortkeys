@@ -352,34 +352,32 @@ const skip = () => {
             <div v-if="currentDraft" class="bg-surface-elevated border border-border-default rounded-[18px] p-5 shadow-sm">
               <h3 class="mt-0 mb-1 text-base font-bold text-text-primary">Where it works</h3>
               <p class="mt-0 mb-3.5 text-[13px] leading-normal text-text-secondary">Optionally limit to certain sites or allow in form inputs.</p>
-              <div class="activation-bar">
-                <div class="site-filter-inline">
-                  <div class="segmented">
-                    <button
-                      :class="['seg-btn', { active: !currentDraft.blacklist || currentDraft.blacklist === 'false' }]"
-                      @click="currentDraft.blacklist = false"
-                      type="button"
-                    >
-                      <i class="mdi mdi-earth"></i> All sites
-                    </button>
-                    <button
-                      :class="['seg-btn', { active: currentDraft.blacklist === true || currentDraft.blacklist === 'true' }]"
-                      @click="currentDraft.blacklist = true"
-                      type="button"
-                    >
-                      <i class="mdi mdi-earth-minus"></i> Except…
-                    </button>
-                    <button
-                      :class="['seg-btn', { active: currentDraft.blacklist === 'whitelist' }]"
-                      @click="currentDraft.blacklist = 'whitelist'"
-                      type="button"
-                    >
-                      <i class="mdi mdi-earth-plus"></i> Only on…
-                    </button>
-                  </div>
+              <div class="flex items-center justify-between gap-4">
+                <div class="flex items-center gap-1 bg-surface-card p-1 rounded-xl border border-border-default shadow-inner">
+                  <button
+                    :class="['px-4 py-1.5 text-[11px] font-bold rounded-lg transition-colors', (!currentDraft.blacklist || currentDraft.blacklist === 'false') ? 'bg-surface-elevated text-text-primary shadow-lg' : 'text-text-muted hover:text-text-primary']"
+                    @click="currentDraft.blacklist = false"
+                    type="button"
+                  >
+                    <i class="mdi mdi-earth"></i> All sites
+                  </button>
+                  <button
+                    :class="['px-4 py-1.5 text-[11px] font-bold rounded-lg transition-colors', (currentDraft.blacklist === true || currentDraft.blacklist === 'true') ? 'bg-surface-elevated text-text-primary shadow-lg' : 'text-text-muted hover:text-text-primary']"
+                    @click="currentDraft.blacklist = true"
+                    type="button"
+                  >
+                    <i class="mdi mdi-earth-minus"></i> Except…
+                  </button>
+                  <button
+                    :class="['px-4 py-1.5 text-[11px] font-bold rounded-lg transition-colors', currentDraft.blacklist === 'whitelist' ? 'bg-surface-elevated text-text-primary shadow-lg' : 'text-text-muted hover:text-text-primary']"
+                    @click="currentDraft.blacklist = 'whitelist'"
+                    type="button"
+                  >
+                    <i class="mdi mdi-earth-plus"></i> Only on…
+                  </button>
                 </div>
-                <div class="toggle-row-inline">
-                  <span class="toggle-label-sm">Active in form inputs</span>
+                <div class="flex items-center gap-2 shrink-0">
+                  <span class="text-[10px] uppercase font-black text-text-muted tracking-tighter">Form Inputs</span>
                   <button :class="['toggle', { on: currentDraft.activeInInputs }]" @click="currentDraft.activeInInputs = !currentDraft.activeInInputs" type="button">
                     <span class="toggle-knob"></span>
                   </button>

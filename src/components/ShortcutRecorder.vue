@@ -103,23 +103,64 @@ function handleInputKeydown(e: KeyboardEvent) {
     emit('update:modelValue', combo)
   }
 }
+
+import { computed } from 'vue'
+
+const keyBadges = computed(() => {
+  if (!props.modelValue) return []
+  // Split sequences (space-separated combos like "j j") into groups,
+  // then split each combo on "+" into individual keys
+  return props.modelValue.split(' ').map(combo => combo.split('+'))
+})
+
+const showBadges = computed(() => {
+  return props.modelValue && !editingManually.value
+})
+
+const editingManually = ref(false)
+
+function startManualEdit() {
+  editingManually.value = true
+}
+
+function finishManualEdit() {
+  editingManually.value = false
+}
 </script>
 
 <template>
   <div class="flex gap-0 w-full">
+    <!-- Key badge display (when has value and not editing) -->
+    <div
+      v-if="showBadges && !recording"
+      class="flex-1 flex items-center gap-2 bg-surface border border-border-default rounded-l-xl px-4 py-2 shadow-inner cursor-text min-h-[42px]"
+      @click="startManualEdit"
+    >
+      <template v-for="(combo, ci) in keyBadges" :key="ci">
+        <span v-if="ci > 0" class="text-text-muted text-xs mx-0.5">then</span>
+        <template v-for="(key, ki) in combo" :key="`${ci}-${ki}`">
+          <span v-if="ki > 0" class="text-text-placeholder font-bold text-xs">+</span>
+          <kbd class="px-2.5 py-1 bg-surface-elevated border-b-2 border-border-default rounded-md text-xs font-mono text-text-primary shadow-sm capitalize">{{ key }}</kbd>
+        </template>
+      </template>
+    </div>
+    <!-- Text input (when empty, editing, or recording) -->
     <input
-      class="field-input shortcut-input peer !rounded-r-none !border-r-0 flex-1"
+      v-else
+      ref="inputEl"
+      class="shortcut-input flex-1 bg-surface border border-border-default rounded-l-xl px-4 py-2.5 text-text-primary font-mono text-sm outline-none placeholder:text-text-muted focus:border-border-default peer !border-r-0"
       type="text"
-      placeholder="e.g. ctrl+shift+k"
+      :placeholder="recording ? 'Press keys…' : 'e.g. ctrl+shift+k'"
       :value="modelValue"
       @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
       @keydown="handleInputKeydown"
+      @blur="finishManualEdit"
       :readonly="recording"
     />
     <button
       :class="[
-        'flex items-center gap-1 px-4 border-[1.5px] border-border-default rounded-r-[10px] rounded-l-none bg-surface-elevated text-text-secondary text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap hover:bg-surface-hover hover:text-text-primary hover:-translate-y-px peer-focus:border-accent',
-        { '!bg-danger-bg !border-danger-border !text-danger animate-[pulse-recording_1.5s_infinite_cubic-bezier(0.16,1,0.3,1)] shadow-[0_0_12px_rgba(239,68,68,0.4)]': recording },
+        'flex items-center gap-1 px-4 border border-border-default rounded-r-xl rounded-l-none bg-surface-elevated text-text-secondary text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap hover:bg-surface-hover hover:text-text-primary',
+        { '!bg-red-500/10 !border-red-500/30 !text-red-400 animate-[pulse-recording_1.5s_infinite_cubic-bezier(0.16,1,0.3,1)] shadow-[0_0_12px_rgba(239,68,68,0.4)]': recording },
       ]"
       @click="recording ? stopRecording() : startRecording()"
       type="button"

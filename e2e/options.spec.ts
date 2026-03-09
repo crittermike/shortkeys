@@ -23,7 +23,7 @@ test.describe('Options Page', () => {
   test('loads and displays the header', async ({ context, extensionId }) => {
     const page = await openOptionsPage(context, extensionId)
     await expect(page).toHaveTitle('Shortkeys Options')
-    await expect(page.locator('.brand-text')).toHaveText('Shortkeys')
+    await expect(page.locator('header span', { hasText: 'Shortkeys' })).toBeVisible()
   })
 
   test('shows tab bar with Shortcuts, Packs, Import, Export, and Analytics tabs', async ({
@@ -45,7 +45,7 @@ test.describe('Options Page', () => {
 
     // Empty state should be visible with CTA buttons
     await expect(page.locator('.empty-state')).toBeVisible({ timeout: 5000 })
-    await expect(page.locator('.empty-state-title')).toHaveText('No shortcuts yet')
+    await expect(page.locator('.empty-state h2')).toHaveText('No shortcuts yet')
     await expect(page.locator('.empty-state .btn-primary')).toContainText('Create your first shortcut')
     await expect(page.locator('.empty-state .btn-secondary')).toContainText('Browse shortcut packs')
   })
@@ -59,8 +59,8 @@ test.describe('Options Page', () => {
     await page.locator('.shortcut-label-title').first().fill('Test Shortcut')
 
     // Open the behavior dropdown and select an action
-    await page.locator('.ss-trigger').first().click()
-    await page.locator('.ss-option', { hasText: 'New tab' }).first().click()
+    await page.locator('.search-select button').first().click()
+    await page.locator('.search-select button', { hasText: 'New tab' }).first().click()
 
     // Save
     await page.locator('.btn-primary', { hasText: 'Save shortcuts' }).click()
@@ -74,8 +74,8 @@ test.describe('Options Page', () => {
     // Create first shortcut from blank slate
     await createFirstShortcut(page)
     await page.locator('.shortcut-label-title').first().fill('Persist Test')
-    await page.locator('.ss-trigger').first().click()
-    await page.locator('.ss-option', { hasText: 'New tab' }).first().click()
+    await page.locator('.search-select button').first().click()
+    await page.locator('.search-select button', { hasText: 'New tab' }).first().click()
     await page.locator('.btn-primary', { hasText: 'Save shortcuts' }).click()
     await expect(page.locator('.toast')).toBeVisible({ timeout: 5000 })
 
@@ -90,8 +90,8 @@ test.describe('Options Page', () => {
     await createFirstShortcut(page)
     await page.locator('.shortcut-label-title').first().fill('Delete Me')
     // Must select an action so the shortcut isn't stripped as empty on save
-    await page.locator('.ss-trigger').first().click()
-    await page.locator('.ss-option', { hasText: 'New tab' }).first().click()
+    await page.locator('.search-select button').first().click()
+    await page.locator('.search-select button', { hasText: 'New tab' }).first().click()
     await page.locator('.btn-primary', { hasText: 'Save shortcuts' }).click()
     await expect(page.locator('.toast')).toBeVisible({ timeout: 5000 })
 
@@ -123,7 +123,7 @@ test.describe('Options Page', () => {
     await expect(toggle).not.toHaveClass(/on/)
 
     // The card should be marked disabled
-    await expect(page.locator('.shortcut-card').first()).toHaveClass(/disabled/)
+    await expect(page.locator('.shortcut-card').first()).toHaveClass(/opacity-45/)
   })
 
   test('can create a new group', async ({ context, extensionId }) => {
@@ -147,11 +147,11 @@ test.describe('Options Page', () => {
     await page.locator('.tab-btn', { hasText: 'Import' }).click()
 
     // Import content should be visible
-    await expect(page.locator('.field-textarea')).toBeVisible()
+    await expect(page.locator('textarea')).toBeVisible()
 
     // Click Export tab
     await page.locator('.tab-btn', { hasText: 'Export' }).click()
-    await expect(page.locator('.export-pre')).toBeVisible()
+    await expect(page.locator('pre')).toBeVisible()
 
     // Click back to Shortcuts tab
     await page.locator('.tab-btn', { hasText: 'Shortcuts' }).click()
@@ -168,7 +168,7 @@ test.describe('Options Page', () => {
     await page.locator('.shortcut-label-title').first().fill('Alpha Shortcut')
 
     // Add a second shortcut
-    await page.locator('.stats-actions .btn-sm', { hasText: 'Add shortcut' }).click()
+    await page.locator('.stats-bar .btn-sm', { hasText: 'Add shortcut' }).click()
     await expect(page.locator('.shortcut-card')).toHaveCount(2)
     await page.locator('.shortcut-label-title').last().fill('Beta Shortcut')
 
@@ -187,14 +187,14 @@ test.describe('Options Page', () => {
     // Create first shortcut from blank slate
     await createFirstShortcut(page)
     await page.locator('.shortcut-label-title').first().fill('Round Trip Test')
-    await page.locator('.ss-trigger').first().click()
-    await page.locator('.ss-option', { hasText: 'New tab' }).first().click()
+    await page.locator('.search-select button').first().click()
+    await page.locator('.search-select button', { hasText: 'New tab' }).first().click()
     await page.locator('.btn-primary', { hasText: 'Save shortcuts' }).click()
     await expect(page.locator('.toast')).toBeVisible({ timeout: 5000 })
 
     // Go to Export tab and copy the JSON
     await page.locator('.tab-btn', { hasText: 'Export' }).click()
-    const exportPre = page.locator('.export-pre')
+    const exportPre = page.locator('pre')
     await expect(exportPre).toBeVisible({ timeout: 5000 })
     const exportedJson = await exportPre.textContent()
     expect(exportedJson).toContain('Round Trip Test')
@@ -207,10 +207,10 @@ test.describe('Options Page', () => {
 
     // Import the JSON
     await page.locator('.tab-btn', { hasText: 'Import' }).click()
-    const importTextarea = page.locator('.field-textarea')
+    const importTextarea = page.locator('textarea')
     await expect(importTextarea).toBeVisible({ timeout: 5000 })
     await importTextarea.fill(exportedJson!)
-    await page.locator('.btn-primary', { hasText: 'Import JSON' }).click()
+    await page.locator('button', { hasText: 'Import JSON' }).click()
 
     // Verify shortcut is back
     await page.locator('.tab-btn', { hasText: 'Shortcuts' }).click()
@@ -250,14 +250,13 @@ test.describe('Options Page', () => {
     await page.goto(`chrome-extension://${extensionId}/options.html`)
 
     // The wizard should appear for a fresh install
-    await expect(page.locator('.onboarding-wizard')).toBeVisible({ timeout: 5000 })
-    await expect(page.locator('.step-title')).toHaveText('Quick start')
+    await expect(page.getByRole('heading', { name: 'Quick start' })).toBeVisible({ timeout: 5000 })
 
     // Skip onboarding
-    await page.locator('.btn-skip-top').click()
+    await page.getByRole('button', { name: /set up my own/ }).click()
 
     // The wizard should disappear, showing the empty state
-    await expect(page.locator('.onboarding-wizard')).not.toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Quick start' })).not.toBeVisible()
     await expect(page.locator('.empty-state')).toBeVisible({ timeout: 5000 })
   })
 })

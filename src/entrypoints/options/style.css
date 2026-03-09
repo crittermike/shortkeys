@@ -25,6 +25,21 @@
   --color-accent-hover: var(--blue-hover);
   --color-accent-bg: var(--blue-bg);
 
+  /* Card colors */
+  --color-card: var(--card-bg);
+  --color-card-half: var(--card-bg-half);
+  --color-card-dim: var(--card-bg-dim);
+  --color-card-deep: var(--card-bg-deep);
+  --color-card-deeper: var(--card-bg-deeper);
+  --color-card-deepest: var(--card-bg-deepest);
+  --color-card-border: var(--card-border);
+  --color-card-border-muted: var(--card-border-muted);
+  --color-card-text: var(--card-text);
+  --color-card-text-secondary: var(--card-text-secondary);
+  --color-card-text-muted: var(--card-text-muted);
+  --color-card-text-dim: var(--card-text-dim);
+  --color-card-footer: var(--card-footer-bg);
+
   --color-danger: var(--c-danger);
   --color-danger-hover: var(--c-danger-hover);
   --color-danger-bg: var(--c-danger-bg);
@@ -98,6 +113,21 @@
   --border: #e5e7eb;
   --border-light: #f0f1f4;
 
+  /* Card-specific colors (light mode) */
+  --card-bg: #ffffff;
+  --card-bg-half: rgba(255,255,255,0.5);
+  --card-bg-dim: rgba(249,250,251,0.2);
+  --card-bg-deep: #f3f4f6;
+  --card-bg-deeper: #e5e7eb;
+  --card-bg-deepest: #f9fafb;
+  --card-border: #e5e7eb;
+  --card-border-muted: #d1d5db;
+  --card-text: #374151;
+  --card-text-secondary: #6b7280;
+  --card-text-muted: #9ca3af;
+  --card-text-dim: #d1d5db;
+  --card-footer-bg: rgba(249,250,251,0.8);
+
   --blue: #4f46e5;
   --blue-hover: #4338ca;
   --blue-bg: rgba(79,70,229,0.1);
@@ -124,19 +154,34 @@
 
 /* ── Dark Theme ── */
 [data-theme="dark"] {
-  --bg: #0c0f1a;
-  --bg-card: #161b2e;
-  --bg-elevated: #1c2237;
-  --bg-input: #0c0f1a;
-  --bg-hover: #242b42;
+  --bg: #09090b;
+  --bg-card: #18181b;
+  --bg-elevated: #27272a;
+  --bg-input: #09090b;
+  --bg-hover: #3f3f46;
 
-  --text: #e8eaf0;
-  --text-secondary: #8b92a8;
-  --text-muted: #565e78;
-  --text-placeholder: #3d4560;
+  --text: #e4e4e7;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --text-placeholder: #52525b;
 
-  --border: #2a3150;
-  --border-light: #1e2440;
+  --border: #3f3f46;
+  --border-light: #27272a;
+
+  /* Card-specific colors (dark mode — zinc palette) */
+  --card-bg: #18181b;
+  --card-bg-half: rgba(24,24,27,0.5);
+  --card-bg-dim: rgba(24,24,27,0.2);
+  --card-bg-deep: #27272a;
+  --card-bg-deeper: rgba(24,24,27,0.5);
+  --card-bg-deepest: #09090b;
+  --card-border: #3f3f46;
+  --card-border-muted: #52525b;
+  --card-text: #d4d4d8;
+  --card-text-secondary: #a1a1aa;
+  --card-text-muted: #71717a;
+  --card-text-dim: #52525b;
+  --card-footer-bg: rgba(0,0,0,0.2);
 
   --blue: #6366f1;
   --blue-hover: #818cf8;
@@ -512,9 +557,10 @@ a:hover { text-decoration: underline; }
 [data-density="condensed"] .conflict-warnings { padding: 0 10px 4px; }
 [data-density="condensed"] .group-header { padding: 5px 10px; }
 [data-density="condensed"] .btn-add-to-group { padding: 3px 6px; font-size: 11px; }
+[data-density="condensed"] .shortcut-actions { top: 0; right: 4px; }
 [data-density="condensed"] .shortcut-actions .btn-icon { font-size: 14px; padding: 9px; }
 
 /* ── Dark mode header override ── */
 [data-theme="dark"] .app-header {
-  background: rgba(12,15,26,0.88);
+  background: rgba(9,9,11,0.85);
 }

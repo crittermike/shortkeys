@@ -269,31 +269,36 @@ onUnmounted(() => {
         <!-- Grouped shortcut rows -->
         <div v-if="keys.length > 0 && !showOnboarding" class="shortcut-groups flex flex-col gap-4">
           <template v-for="group in groupNames" :key="group">
-          <div v-if="groupedIndices.has(group)" class="shortcut-group flex flex-col bg-surface-card border border-border-default rounded-[14px] shadow-sm transition-shadow duration-200">
+          <div v-if="groupedIndices.has(group)" class="shortcut-group flex flex-col">
             <!-- Group header -->
-            <div class="group-header flex items-center gap-2 py-3.5 px-4 bg-surface-elevated border-b border-border-light rounded-t-[14px]" @dragover="onDragOverGroup($event, group)">
-              <button class="bg-transparent border-none text-text-muted cursor-pointer p-0.5 text-sm transition-transform duration-150 hover:text-text-primary" @click="toggleGroupCollapse(group)" type="button">
-                <i :class="collapsedGroups.has(group) ? 'mdi mdi-chevron-right' : 'mdi mdi-chevron-down'"></i>
-              </button>
-              <template v-if="editingGroupName === group">
-                <input
-                  class="group-name-input font-bold text-text-primary text-xs uppercase tracking-[0.04em] bg-surface-input border border-border-default rounded-md px-2 py-1 outline-none focus:border-accent focus:shadow-[var(--focus-ring)]"
-                  v-model="newGroupName"
-                  @keydown.enter="finishRenameGroup(group)"
-                  @blur="finishRenameGroup(group)"
-                  @keydown.escape="editingGroupName = null"
-                  ref="groupNameInput"
-                  autofocus
-                />
-              </template>
-              <template v-else>
-                <span class="group-name font-bold text-text-primary select-none uppercase tracking-[0.04em] text-xs" @dblclick="startRenameGroup(group)">{{ group }}</span>
-              </template>
-              <span class="group-count text-xs font-semibold text-text-muted bg-surface-hover px-2 py-0.5 rounded-full leading-normal">{{ groupedIndices.get(group)?.length || 0 }}</span>
-              <i v-if="hasGroupSiteRules(group)" class="mdi mdi-earth text-accent text-xs" title="Site rules active"></i>
-              <div class="ml-auto flex items-center gap-1">
+            <div class="group-header flex items-center justify-between px-2 py-3" @dragover="onDragOverGroup($event, group)">
+              <div class="flex items-center gap-3 cursor-pointer select-none" @click="toggleGroupCollapse(group)">
+                <div class="w-8 h-8 rounded-lg bg-accent/20 border border-accent/40 flex items-center justify-center">
+                  <i :class="collapsedGroups.has(group) ? 'mdi mdi-chevron-right' : 'mdi mdi-chevron-down'" class="text-accent text-base"></i>
+                </div>
+                <template v-if="editingGroupName === group">
+                  <input
+                    class="group-name-input font-bold text-text-primary text-sm uppercase tracking-wider bg-surface-input border border-border-default rounded-md px-2 py-1 outline-none focus:border-accent focus:shadow-[var(--focus-ring)]"
+                    v-model="newGroupName"
+                    @keydown.enter="finishRenameGroup(group)"
+                    @blur="finishRenameGroup(group)"
+                    @keydown.escape="editingGroupName = null"
+                    @click.stop
+                    ref="groupNameInput"
+                    autofocus
+                  />
+                </template>
+                <template v-else>
+                  <h2 class="group-name text-sm font-bold tracking-wider text-text-primary uppercase" @dblclick.stop="startRenameGroup(group)">{{ group }}</h2>
+                </template>
+                <i v-if="hasGroupSiteRules(group)" class="mdi mdi-earth text-accent text-xs" title="Site rules active"></i>
+              </div>
+              <div class="flex items-center gap-2">
+                <button class="text-[11px] bg-surface-elevated hover:bg-surface-hover text-text-primary font-bold px-3 py-1.5 rounded-lg border border-border-default transition-all" @click="addShortcutToGroup(group)" type="button" v-show="!collapsedGroups.has(group)">
+                  + Add Shortcut
+                </button>
                 <div class="relative">
-                  <button class="btn-icon p-1.5 flex items-center justify-center border border-transparent rounded-lg bg-transparent text-text-muted cursor-pointer transition-all duration-150 text-base shrink-0 hover:bg-surface-hover hover:text-text-secondary hover:border-border-default text-sm" @click.stop="toggleGroupMenu(group)" title="Group options" type="button">
+                  <button class="p-1.5 text-text-muted hover:text-text-primary transition-colors" @click.stop="toggleGroupMenu(group)" title="Group options" type="button">
                     <i class="mdi mdi-dots-vertical"></i>
                   </button>
                   <div v-if="groupMenuOpen === group" class="group-menu absolute top-full right-0 mt-2 bg-surface-card border border-border-default rounded-[14px] shadow-xl min-w-[220px] z-20 overflow-hidden p-1.5 backdrop-blur-[12px]" @click="closeGroupMenus">
@@ -355,52 +360,62 @@ onUnmounted(() => {
             </Transition>
 
             <!-- Shortcuts in this group -->
-            <div class="shortcut-list flex flex-col gap-px p-1.5 bg-border-light" v-show="!collapsedGroups.has(group)">
+            <div class="shortcut-list flex flex-col gap-4 p-2" v-show="!collapsedGroups.has(group)">
               <div
                 v-for="index in (groupedIndices.get(group) || [])"
                 :key="keys[index].id"
-                :class="['shortcut-card group bg-surface-card rounded-lg transition-all duration-150 relative hover:bg-surface-elevated', { 'disabled opacity-45': keys[index].enabled === false, 'dragging': dragIndex === index, 'expanded border-l-[3px] border-l-accent rounded-[10px] shadow-sm my-1 bg-surface-card': expandedRow === index }]"
+                :class="['shortcut-card group bg-card border rounded-2xl shadow-2xl overflow-visible text-card-text transition-all duration-150 relative', keys[index].enabled === false ? 'opacity-45' : '', dragIndex === index ? 'dragging' : '', expandedRow === index ? 'border-2 border-blue-600/50 shadow-[0_20px_50px_rgba(0,0,0,0.4)]' : 'border-card-border']"
                 :draggable="handleActive"
                 @dragstart="onDragStart($event, index)"
                 @dragover="onDragOver($event, index)"
                 @dragend="onDragEnd"
               >
-                <!-- Editable label above the card -->
-                <div class="shortcut-header flex items-center gap-1 px-3 pt-1.5">
-                  <i class="mdi mdi-drag-vertical drag-handle text-text-placeholder text-base cursor-grab p-0.5 shrink-0 transition-colors duration-150 opacity-0 group-hover:opacity-50 hover:!opacity-100 hover:text-text-muted" title="Drag to reorder" @mousedown="onHandleMouseDown"></i>
+                <!-- Top strip: drag + label + toggle + settings + delete -->
+                <div class="shortcut-header flex items-center gap-1.5 px-5 pt-3 pb-0">
+                  <i class="mdi mdi-drag-vertical drag-handle text-card-text-dim text-base cursor-grab p-0.5 shrink-0 transition-colors duration-150 opacity-0 group-hover:opacity-50 hover:!opacity-100 hover:text-card-text-muted" title="Drag to reorder" @mousedown="onHandleMouseDown"></i>
                   <input
-                    class="shortcut-label-title flex-1 min-w-0 border-none bg-transparent text-xs font-medium text-text-muted outline-none px-1 py-0.5 rounded-[5px] transition-all duration-150 placeholder:text-text-placeholder focus:text-text-primary focus:bg-surface-input focus:shadow-[var(--focus-ring)]"
+                    class="shortcut-label-title flex-1 min-w-0 border-none bg-transparent text-xs font-medium text-card-text-muted outline-none px-1 py-0.5 rounded transition-all duration-150 placeholder:text-card-text-dim focus:text-card-text focus:bg-card-deeper"
                     type="text"
                     placeholder="Untitled shortcut"
                     v-model="keys[index].label"
                   />
-                  <button
-                    :class="['toggle toggle-sm', { on: keys[index].enabled !== false }]"
-                    @click="toggleEnabled(keys[index])"
-                    type="button"
-                    :title="keys[index].enabled !== false ? 'Enabled — click to disable' : 'Disabled — click to enable'"
-                  >
-                    <span class="toggle-knob"></span>
-                  </button>
+                  <div class="shortcut-actions flex items-center gap-1 shrink-0">
+                    <button
+                      :class="['toggle toggle-sm', { on: keys[index].enabled !== false }]"
+                      @click="toggleEnabled(keys[index])"
+                      type="button"
+                      :title="keys[index].enabled !== false ? 'Enabled' : 'Disabled'"
+                    >
+                      <span class="toggle-knob"></span>
+                    </button>
+                    <button class="btn-icon p-1.5 flex items-center justify-center rounded-lg bg-transparent text-card-text-dim cursor-pointer transition-all duration-150 text-base shrink-0 hover:bg-card-deep hover:text-card-text border border-transparent" @click="toggleDetails(index)" :title="expandedRow === index ? 'Collapse' : 'Settings'">
+                      <i :class="expandedRow === index ? 'mdi mdi-chevron-up' : 'mdi mdi-cog-outline'"></i>
+                    </button>
+                    <button class="btn-icon btn-delete p-1.5 flex items-center justify-center rounded-lg bg-transparent text-card-text-dim cursor-pointer transition-all duration-150 text-base shrink-0 hover:bg-red-500/10 hover:text-red-400 border border-transparent" @click="deleteShortcut(index)" title="Delete">
+                      <i class="mdi mdi-close"></i>
+                    </button>
+                  </div>
                 </div>
-                <div class="shortcut-row flex items-end gap-3 px-4 pt-2.5 pb-3">
-                  <div class="field-group shortcut-col w-80 shrink-0 grow-0 basis-80 flex flex-col gap-1 min-w-0">
-                    <label class="field-label text-[11px] font-bold uppercase tracking-[0.06em] text-text-placeholder">Shortcut</label>
+
+                <!-- HEADER: Trigger + Behavior -->
+                <div class="shortcut-row p-5 border-b border-card-border bg-card-half flex items-start gap-6">
+                  <div class="flex-[2] min-w-0">
+                    <label class="field-label block text-[10px] uppercase tracking-widest font-bold text-card-text-muted mb-2">Trigger Shortcut</label>
                     <ShortcutRecorder
                       :modelValue="keys[index].key"
                       @update:modelValue="keys[index].key = $event"
                     />
                   </div>
-                  <div class="field-group behavior-col flex-1 min-w-0 flex flex-col gap-1">
-                    <div class="field-label-row flex items-center justify-between gap-2">
-                      <label class="field-label text-[11px] font-bold uppercase tracking-[0.06em] text-text-placeholder">Behavior</label>
+                  <div class="flex-[3] min-w-0">
+                    <div class="field-label-row flex items-baseline justify-between gap-2 mb-2">
+                      <label class="field-label block text-[10px] uppercase tracking-widest font-bold text-card-text-muted">Behavior</label>
                       <button
                         v-if="keys[index].action && keys[index].action !== 'macro'"
-                        class="text-accent text-[11px] font-medium bg-transparent border-none cursor-pointer flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:underline"
+                        class="text-blue-400 text-[10px] font-bold bg-transparent border-none cursor-pointer transition-colors hover:text-blue-300"
                         @click="convertToMacro(keys[index], index)"
                         type="button"
                       >
-                        <i class="mdi mdi-link-variant"></i> Chain multiple actions
+                        Chain
                       </button>
                     </div>
                     <SearchSelect
@@ -410,34 +425,57 @@ onUnmounted(() => {
                       placeholder="Choose action…"
                     />
                   </div>
-                  <div class="shortcut-actions flex items-center gap-0.5 shrink-0 pb-px">
-                    <button class="btn-icon p-1.5 flex items-center justify-center border border-transparent rounded-lg bg-transparent text-text-muted cursor-pointer transition-all duration-150 text-base shrink-0 hover:bg-surface-hover hover:text-text-secondary hover:border-border-default" @click="toggleDetails(index)" :title="expandedRow === index ? 'Collapse' : 'Settings'">
-                      <i :class="expandedRow === index ? 'mdi mdi-chevron-up' : 'mdi mdi-cog-outline'"></i>
-                    </button>
-                    <button class="btn-icon btn-delete p-1.5 flex items-center justify-center border border-transparent rounded-lg bg-transparent text-text-muted cursor-pointer transition-all duration-150 text-base shrink-0 hover:!bg-danger-bg hover:!text-danger hover:!border-danger-border" @click="deleteShortcut(index)" title="Delete">
-                      <i class="mdi mdi-close"></i>
+                </div>
+
+                <!-- Conflict warnings -->
+                <div v-if="getConflicts(index).length" class="conflict-warnings flex flex-wrap gap-1.5 px-5 py-2.5">
+                  <div v-for="(c, ci) in getConflicts(index)" :key="ci" :class="['inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium', c.type === 'browser' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20']">
+                    <i :class="c.type === 'browser' ? 'mdi mdi-alert-outline' : 'mdi mdi-content-duplicate'"></i>
+                    {{ c.message }}
+                  </div>
+                </div>
+
+                <!-- Expanded details (BODY) -->
+                <Transition name="expand">
+                  <ShortcutDetails v-if="expandedRow === index" :index="index" />
+                </Transition>
+
+                <!-- FOOTER: Site rules + Form inputs -->
+                <div class="px-6 py-4 bg-card-footer border-t border-card-border rounded-b-2xl flex items-center gap-4">
+                  <div class="flex items-center gap-1 bg-card p-1 rounded-xl border border-card-border shadow-inner">
+                    <button
+                      :class="['px-4 py-1.5 text-[11px] font-bold rounded-lg transition-colors', (!keys[index].blacklist || keys[index].blacklist === 'false') ? 'bg-card-deep text-white shadow-lg' : 'text-card-text-muted hover:text-card-text']"
+                      @click="keys[index].blacklist = false" type="button"
+                    >All Sites</button>
+                    <button
+                      :class="['px-4 py-1.5 text-[11px] font-bold rounded-lg transition-colors', keys[index].blacklist === 'whitelist' ? 'bg-card-deep text-white shadow-lg' : 'text-card-text-muted hover:text-card-text']"
+                      @click="keys[index].blacklist = 'whitelist'" type="button"
+                    >Include</button>
+                    <button
+                      :class="['px-4 py-1.5 text-[11px] font-bold rounded-lg transition-colors', (keys[index].blacklist === true || keys[index].blacklist === 'true') ? 'bg-card-deep text-white shadow-lg' : 'text-card-text-muted hover:text-card-text']"
+                      @click="keys[index].blacklist = true" type="button"
+                    >Exclude</button>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-[10px] uppercase font-black text-card-text-dim tracking-tighter">Form Inputs</span>
+                    <button :class="['toggle toggle-sm', { on: keys[index].activeInInputs }]" @click="keys[index].activeInInputs = !keys[index].activeInInputs" type="button">
+                      <span class="toggle-knob"></span>
                     </button>
                   </div>
                 </div>
 
-            <!-- Conflict warnings -->
-            <div v-if="getConflicts(index).length" class="conflict-warnings flex flex-wrap gap-1.5 px-4 pb-2.5">
-              <div v-for="(c, ci) in getConflicts(index)" :key="ci" :class="['conflict-pill inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium', c.type === 'browser' ? 'browser bg-warning-bg text-warning-text border border-warning-border' : 'duplicate bg-danger-bg text-danger-text border border-danger-border']">
-                <i :class="c.type === 'browser' ? 'mdi mdi-alert-outline' : 'mdi mdi-content-duplicate'"></i>
-                {{ c.message }}
+                <!-- Sites textarea (shown when Include or Exclude is active) -->
+                <div v-if="keys[index].blacklist && keys[index].blacklist !== 'false'" class="px-6 pb-4 bg-card-footer rounded-b-2xl">
+                  <textarea
+                    class="w-full bg-card-deepest border border-card-border-muted rounded-xl px-4 py-2.5 text-sm text-card-text font-mono resize-y outline-none placeholder:text-card-text-dim"
+                    v-model="keys[index].sites"
+                    rows="2"
+                    :placeholder="keys[index].blacklist === 'whitelist' ? 'Sites to activate on…\n*example.com*' : 'Sites to disable on…\n*example.com*'"
+                  ></textarea>
+                </div>
               </div>
             </div>
 
-            <!-- Expanded details -->
-            <Transition name="expand">
-              <ShortcutDetails v-if="expandedRow === index" :index="index" />
-            </Transition>
-          </div>
-            </div>
-            <!-- Add shortcut to this group -->
-            <button class="btn-add-to-group flex items-center justify-center gap-1 py-2 bg-transparent border-none border-t border-dashed border-t-border-light rounded-b-[10px] text-text-muted text-xs font-medium cursor-pointer transition-all duration-150 hover:bg-surface-elevated hover:text-text-secondary" @click="addShortcutToGroup(group)" type="button" v-show="!collapsedGroups.has(group)">
-              <i class="mdi mdi-plus"></i> Add shortcut
-            </button>
           </div>
           </template>
         </div>
