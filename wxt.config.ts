@@ -122,7 +122,6 @@ export default defineConfig({
       '85-ungrouptab': { description: 'TABS: Remove tab from group' },
       '86-togglegrouptab': { description: 'TABS: Toggle group/ungroup tab' },
       '87-namegroup': { description: 'TABS: Name current tab group' },
-      '88-collapsegroup': { description: 'TABS: Collapse selected tab group' },
       '91-selecttableft': { description: 'TABS: Select tab to the left' },
       '92-selecttabright': { description: 'TABS: Select tab to the right' },
     },

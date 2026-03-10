@@ -522,34 +522,6 @@ describe('handleAction', () => {
       expect(mockShowPageToast).toHaveBeenCalledWith('Tab is not in a group')
     })
 
-    it('collapsegroup collapses current tab group', async () => {
-      mockTabsQuery.mockResolvedValue([{ id: 1, index: 0, groupId: 3 }])
-      await handleAction('collapsegroup')
-      expect(chrome.tabGroups.update).toHaveBeenCalledWith(3, { collapsed: true })
-    })
-
-    it('collapsegroup shows a saved-group error when Chrome rejects the update', async () => {
-      mockTabsQuery.mockResolvedValue([{ id: 1, index: 0, groupId: 3 }])
-      vi.mocked(chrome.tabGroups.update).mockRejectedValueOnce(new Error('Saved groups are not editable'))
-      await handleAction('collapsegroup')
-      expect(mockShowPageToast).toHaveBeenCalledWith('Chrome cannot change saved tab groups')
-    })
-
-    it('collapsegroup shows a failure toast when the group state does not change', async () => {
-      mockTabsQuery.mockResolvedValue([{ id: 1, index: 0, groupId: 3 }])
-      vi.mocked(chrome.tabGroups.update).mockResolvedValueOnce({ collapsed: false } as any)
-      vi.mocked(chrome.tabGroups.get).mockResolvedValueOnce({ collapsed: false } as any)
-      await handleAction('collapsegroup')
-      expect(mockShowPageToast).toHaveBeenCalledWith('Chrome could not collapse this tab group')
-    })
-
-    it('collapsegroup shows toast when tab is not in a group', async () => {
-      mockTabsQuery.mockResolvedValue([{ id: 1, index: 0, groupId: -1 }])
-      await handleAction('collapsegroup')
-      expect(chrome.tabGroups.update).not.toHaveBeenCalled()
-      expect(mockShowPageToast).toHaveBeenCalledWith('Tab is not in a group')
-    })
-
     it('selecttableft extends selection one tab to the left', async () => {
       mockTabsQuery
         .mockResolvedValueOnce([{ id: 1, index: 0 }, { id: 2, index: 1 }, { id: 3, index: 2 }]) // all tabs
