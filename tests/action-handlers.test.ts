@@ -107,6 +107,11 @@ beforeEach(() => {
   mockBookmarksCreate.mockResolvedValue({ id: 'bm1' })
   mockBookmarksRemove.mockResolvedValue(undefined)
   mockManagementLaunchApp.mockResolvedValue(undefined)
+  vi.mocked(chrome.tabGroups.get).mockResolvedValue({ collapsed: false } as any)
+  vi.mocked(chrome.tabGroups.update).mockImplementation(async (_groupId, changes: any) => ({
+    collapsed: changes?.collapsed ?? false,
+    title: changes?.title ?? '',
+  }) as any)
 })
 
 describe('handleAction', () => {
@@ -523,6 +528,21 @@ describe('handleAction', () => {
       expect(chrome.tabGroups.update).toHaveBeenCalledWith(3, { collapsed: true })
     })
 
+    it('collapsegroup shows a saved-group error when Chrome rejects the update', async () => {
+      mockTabsQuery.mockResolvedValue([{ id: 1, index: 0, groupId: 3 }])
+      vi.mocked(chrome.tabGroups.update).mockRejectedValueOnce(new Error('Saved groups are not editable'))
+      await handleAction('collapsegroup')
+      expect(mockShowPageToast).toHaveBeenCalledWith('Chrome cannot change saved tab groups')
+    })
+
+    it('collapsegroup shows a failure toast when the group state does not change', async () => {
+      mockTabsQuery.mockResolvedValue([{ id: 1, index: 0, groupId: 3 }])
+      vi.mocked(chrome.tabGroups.update).mockResolvedValueOnce({ collapsed: false } as any)
+      vi.mocked(chrome.tabGroups.get).mockResolvedValueOnce({ collapsed: false } as any)
+      await handleAction('collapsegroup')
+      expect(mockShowPageToast).toHaveBeenCalledWith('Chrome could not collapse this tab group')
+    })
+
     it('collapsegroup shows toast when tab is not in a group', async () => {
       mockTabsQuery.mockResolvedValue([{ id: 1, index: 0, groupId: -1 }])
       await handleAction('collapsegroup')
@@ -534,6 +554,14 @@ describe('handleAction', () => {
       mockTabsQuery.mockResolvedValue([{ id: 1, index: 0, groupId: 3 }])
       await handleAction('expandgroup')
       expect(chrome.tabGroups.update).toHaveBeenCalledWith(3, { collapsed: false })
+    })
+
+    it('expandgroup shows a failure toast when the group state does not change', async () => {
+      mockTabsQuery.mockResolvedValue([{ id: 1, index: 0, groupId: 3 }])
+      vi.mocked(chrome.tabGroups.update).mockResolvedValueOnce({ collapsed: true } as any)
+      vi.mocked(chrome.tabGroups.get).mockResolvedValueOnce({ collapsed: true } as any)
+      await handleAction('expandgroup')
+      expect(mockShowPageToast).toHaveBeenCalledWith('Chrome could not expand this tab group')
     })
 
     it('togglecollapsegroup expands a collapsed group', async () => {
@@ -548,6 +576,16 @@ describe('handleAction', () => {
       vi.mocked(chrome.tabGroups.get).mockResolvedValueOnce({ collapsed: false } as any)
       await handleAction('togglecollapsegroup')
       expect(chrome.tabGroups.update).toHaveBeenCalledWith(3, { collapsed: true })
+    })
+
+    it('togglecollapsegroup shows a failure toast when Chrome does not collapse the group', async () => {
+      mockTabsQuery.mockResolvedValue([{ id: 1, index: 0, groupId: 3 }])
+      vi.mocked(chrome.tabGroups.get)
+        .mockResolvedValueOnce({ collapsed: false } as any)
+        .mockResolvedValueOnce({ collapsed: false } as any)
+      vi.mocked(chrome.tabGroups.update).mockResolvedValueOnce({ collapsed: false } as any)
+      await handleAction('togglecollapsegroup')
+      expect(mockShowPageToast).toHaveBeenCalledWith('Chrome could not collapse this tab group')
     })
 
     it('togglecollapsegroup shows toast when tab is not in a group', async () => {

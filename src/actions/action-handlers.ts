@@ -63,6 +63,38 @@ function copyToClipboard(text: string): void {
   )
 }
 
+function isSavedTabGroupError(error: unknown): boolean {
+  return error instanceof Error && /saved groups are not editable/i.test(error.message)
+}
+
+async function getCurrentTabGroupId(): Promise<number | null> {
+  const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
+  const groupId = (tab as any).groupId ?? -1
+  return groupId === -1 ? null : groupId
+}
+
+async function updateTabGroupCollapsed(groupId: number, collapsed: boolean): Promise<'success' | 'saved' | 'failed'> {
+  try {
+    const updatedGroup = await chrome.tabGroups!.update(groupId, { collapsed })
+    if (updatedGroup?.collapsed === collapsed) return 'success'
+    if (chrome.tabGroups?.get) {
+      const group = await chrome.tabGroups.get(groupId)
+      if (group.collapsed === collapsed) return 'success'
+    }
+  } catch (error) {
+    if (isSavedTabGroupError(error)) return 'saved'
+  }
+  return 'failed'
+}
+
+function showTabGroupCollapseError(result: 'saved' | 'failed', collapsed: boolean): void {
+  if (result === 'saved') {
+    showPageToast('Chrome cannot change saved tab groups')
+    return
+  }
+  showPageToast(collapsed ? 'Chrome could not collapse this tab group' : 'Chrome could not expand this tab group')
+}
+
 /**
  * Map of action name → handler function.
  * Each handler receives the full request object and returns true if handled.
@@ -273,41 +305,58 @@ const actionHandlers: Record<string, ActionHandler> = {
 
   collapsegroup: async () => {
     if (!chrome.tabGroups?.update) return true
-    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
-    const groupId = (tab as any).groupId ?? -1
-    if (groupId === -1) {
+    const groupId = await getCurrentTabGroupId()
+    if (groupId === null) {
       showPageToast('Tab is not in a group')
       return true
     }
-    await chrome.tabGroups.update(groupId, { collapsed: true })
-    showPageToast('✓ Group collapsed')
+    const result = await updateTabGroupCollapsed(groupId, true)
+    if (result === 'success') {
+      showPageToast('✓ Group collapsed')
+    } else {
+      showTabGroupCollapseError(result, true)
+    }
     return true
   },
 
   expandgroup: async () => {
     if (!chrome.tabGroups?.update) return true
-    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
-    const groupId = (tab as any).groupId ?? -1
-    if (groupId === -1) {
+    const groupId = await getCurrentTabGroupId()
+    if (groupId === null) {
       showPageToast('Tab is not in a group')
       return true
     }
-    await chrome.tabGroups.update(groupId, { collapsed: false })
-    showPageToast('✓ Group expanded')
+    const result = await updateTabGroupCollapsed(groupId, false)
+    if (result === 'success') {
+      showPageToast('✓ Group expanded')
+    } else {
+      showTabGroupCollapseError(result, false)
+    }
     return true
   },
 
   togglecollapsegroup: async () => {
     if (!chrome.tabGroups?.get || !chrome.tabGroups?.update) return true
-    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
-    const groupId = (tab as any).groupId ?? -1
-    if (groupId === -1) {
+    const groupId = await getCurrentTabGroupId()
+    if (groupId === null) {
       showPageToast('Tab is not in a group')
       return true
     }
-    const group = await chrome.tabGroups.get(groupId)
-    await chrome.tabGroups.update(groupId, { collapsed: !group.collapsed })
-    showPageToast(group.collapsed ? '✓ Group expanded' : '✓ Group collapsed')
+    let group: { collapsed: boolean }
+    try {
+      group = await chrome.tabGroups.get(groupId)
+    } catch (error) {
+      showTabGroupCollapseError(isSavedTabGroupError(error) ? 'saved' : 'failed', true)
+      return true
+    }
+
+    const collapsed = !group.collapsed
+    const result = await updateTabGroupCollapsed(groupId, collapsed)
+    if (result === 'success') {
+      showPageToast(group.collapsed ? '✓ Group expanded' : '✓ Group collapsed')
+    } else {
+      showTabGroupCollapseError(result, collapsed)
+    }
     return true
   },
 
