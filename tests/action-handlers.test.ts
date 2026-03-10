@@ -76,7 +76,7 @@ globalThis.chrome = {
 }
 
 // Now import the module under test
-const { handleAction, expandedByMove } = await import('../src/actions/action-handlers')
+const { handleAction } = await import('../src/actions/action-handlers')
 const { showPageToast } = await import('../src/utils/execute-script')
 const mockShowPageToast = vi.mocked(showPageToast)
 
@@ -86,7 +86,6 @@ const defaultTab = { id: 1, url: 'https://example.com', index: 2, windowId: 1, p
 
 beforeEach(() => {
   vi.clearAllMocks()
-  expandedByMove.clear()
   mockTabsQuery.mockResolvedValue([defaultTab])
   mockTabsCreate.mockResolvedValue({ id: 2 })
   mockTabsRemove.mockResolvedValue(undefined)
@@ -272,150 +271,6 @@ describe('handleAction', () => {
       expect(mockTabsMove).toHaveBeenCalledWith(3, { index: 2 })
       expect(chrome.tabs.group).not.toHaveBeenCalled()
       expect(chrome.tabs.ungroup).not.toHaveBeenCalled()
-    })
-
-    it('expands collapsed destination group when moving left into it', async () => {
-      const activeTab = { ...defaultTab, id: 3, index: 3, groupId: -1 }
-      const groupedTab = { id: 2, index: 1, groupId: 5 }
-      mockTabsQuery
-        .mockResolvedValueOnce([activeTab])
-        .mockResolvedValueOnce([{ id: 1, index: 0 }, groupedTab, { id: 4, index: 2 }, activeTab])
-      vi.mocked(chrome.tabGroups.get).mockResolvedValueOnce({ collapsed: true } as any)
-      await handleAction('movetableft')
-      expect(chrome.tabs.group).toHaveBeenCalledWith({ tabIds: [3], groupId: 5 })
-      expect(chrome.tabGroups.update).toHaveBeenCalledWith(5, { collapsed: false })
-    })
-
-    it('does not expand destination group if it was already expanded when moving left', async () => {
-      const activeTab = { ...defaultTab, id: 3, index: 3, groupId: -1 }
-      const groupedTab = { id: 2, index: 1, groupId: 5 }
-      mockTabsQuery
-        .mockResolvedValueOnce([activeTab])
-        .mockResolvedValueOnce([{ id: 1, index: 0 }, groupedTab, { id: 4, index: 2 }, activeTab])
-      vi.mocked(chrome.tabGroups.get).mockResolvedValueOnce({ collapsed: false } as any)
-      await handleAction('movetableft')
-      expect(chrome.tabs.group).toHaveBeenCalledWith({ tabIds: [3], groupId: 5 })
-      expect(chrome.tabGroups.update).not.toHaveBeenCalled()
-    })
-
-    it('expands collapsed destination group when moving right into it', async () => {
-      const activeTab = { ...defaultTab, id: 3, index: 1, groupId: -1 }
-      const groupedTab = { id: 4, index: 3, groupId: 7 }
-      mockTabsQuery
-        .mockResolvedValueOnce([activeTab])
-        .mockResolvedValueOnce([{ id: 1, index: 0 }, activeTab, { id: 2, index: 2 }, groupedTab])
-      vi.mocked(chrome.tabGroups.get).mockResolvedValueOnce({ collapsed: true } as any)
-      await handleAction('movetabright')
-      expect(chrome.tabs.group).toHaveBeenCalledWith({ tabIds: [3], groupId: 7 })
-      expect(chrome.tabGroups.update).toHaveBeenCalledWith(7, { collapsed: false })
-    })
-
-    it('re-collapses source group when moving left from a collapsed group into another', async () => {
-      const activeTab = { ...defaultTab, id: 3, index: 3, groupId: 8 }
-      const destGroupedTab = { id: 2, index: 1, groupId: 5 }
-      mockTabsQuery
-        .mockResolvedValueOnce([activeTab])
-        .mockResolvedValueOnce([{ id: 1, index: 0 }, destGroupedTab, { id: 4, index: 2 }, activeTab])
-      // First get() is source group 8 (before tabs.move), second is destination group 5 (after tabs.move)
-      vi.mocked(chrome.tabGroups.get)
-        .mockResolvedValueOnce({ collapsed: true } as any)  // source collapsed
-        .mockResolvedValueOnce({ collapsed: true } as any)  // destination collapsed
-      await handleAction('movetableft')
-      expect(chrome.tabs.group).toHaveBeenCalledWith({ tabIds: [3], groupId: 5 })
-      // Destination expanded, source re-collapsed
-      expect(chrome.tabGroups.update).toHaveBeenCalledWith(5, { collapsed: false })
-      expect(chrome.tabGroups.update).toHaveBeenCalledWith(8, { collapsed: true })
-    })
-
-
-    it('does not re-collapse source group if it was originally expanded', async () => {
-      const activeTab = { ...defaultTab, id: 3, index: 3, groupId: 8 }
-      const destGroupedTab = { id: 2, index: 1, groupId: 5 }
-      mockTabsQuery
-        .mockResolvedValueOnce([activeTab])
-        .mockResolvedValueOnce([{ id: 1, index: 0 }, destGroupedTab, { id: 4, index: 2 }, activeTab])
-      vi.mocked(chrome.tabGroups.get)
-        .mockResolvedValueOnce({ collapsed: false } as any)  // source NOT collapsed
-        .mockResolvedValueOnce({ collapsed: true } as any)  // destination collapsed
-      await handleAction('movetableft')
-      // Only destination expand, no source collapse
-      expect(chrome.tabGroups.update).toHaveBeenCalledTimes(1)
-      expect(chrome.tabGroups.update).toHaveBeenCalledWith(5, { collapsed: false })
-    })
-
-
-    it('re-collapses source group when leaving via move left if it was collapsed', async () => {
-      const activeTab = { ...defaultTab, id: 3, index: 2, groupId: 5 }
-      const ungroupedTab = { id: 2, index: 0, groupId: -1 }
-      mockTabsQuery
-        .mockResolvedValueOnce([activeTab])
-        .mockResolvedValueOnce([ungroupedTab, { id: 1, index: 1, groupId: 5 }, activeTab])
-      vi.mocked(chrome.tabGroups.get).mockResolvedValueOnce({ collapsed: true } as any)
-      await handleAction('movetableft')
-      expect(chrome.tabs.ungroup).toHaveBeenCalledWith(3)
-      expect(chrome.tabGroups.update).toHaveBeenCalledWith(5, { collapsed: true })
-    })
-
-    it('does not re-collapse source group when leaving via move left if it was expanded', async () => {
-      const activeTab = { ...defaultTab, id: 3, index: 2, groupId: 5 }
-      const ungroupedTab = { id: 2, index: 0, groupId: -1 }
-      mockTabsQuery
-        .mockResolvedValueOnce([activeTab])
-        .mockResolvedValueOnce([ungroupedTab, { id: 1, index: 1, groupId: 5 }, activeTab])
-      vi.mocked(chrome.tabGroups.get).mockResolvedValueOnce({ collapsed: false } as any)
-      await handleAction('movetableft')
-      expect(chrome.tabs.ungroup).toHaveBeenCalledWith(3)
-      expect(chrome.tabGroups.update).not.toHaveBeenCalled()
-    })
-
-    it('re-collapses source group when leaving via move right if it was collapsed', async () => {
-      const activeTab = { ...defaultTab, id: 3, index: 1, groupId: 5 }
-      const ungroupedTab = { id: 4, index: 3, groupId: -1 }
-      mockTabsQuery
-        .mockResolvedValueOnce([activeTab])
-        .mockResolvedValueOnce([{ id: 1, index: 0, groupId: 5 }, activeTab, { id: 2, index: 2 }, ungroupedTab])
-      vi.mocked(chrome.tabGroups.get).mockResolvedValueOnce({ collapsed: true } as any)
-      await handleAction('movetabright')
-      expect(chrome.tabs.ungroup).toHaveBeenCalledWith(3)
-      expect(chrome.tabGroups.update).toHaveBeenCalledWith(5, { collapsed: true })
-    })
-
-    it('re-collapses group after multiple moves through it (enter collapsed, traverse, leave)', async () => {
-      // Move 1: ungrouped tab moves right into collapsed group 5 (3 tabs in group)
-      const tab1 = { ...defaultTab, id: 10, index: 0, groupId: -1 }
-      mockTabsQuery
-        .mockResolvedValueOnce([tab1])
-        .mockResolvedValueOnce([tab1, { id: 1, index: 1, groupId: 5 }, { id: 2, index: 2, groupId: 5 }, { id: 3, index: 3, groupId: 5 }])
-      vi.mocked(chrome.tabGroups.get).mockResolvedValueOnce({ collapsed: true } as any) // dest group 5 collapsed
-      await handleAction('movetabright')
-      expect(chrome.tabs.group).toHaveBeenCalledWith({ tabIds: [10], groupId: 5 })
-      expect(chrome.tabGroups.update).toHaveBeenCalledWith(5, { collapsed: false })
-      vi.clearAllMocks()
-
-      // Move 2: now tab is inside group 5 (which we expanded), move right again — stays in same group
-      const tab2 = { ...defaultTab, id: 10, index: 1, groupId: 5 }
-      mockTabsQuery
-        .mockResolvedValueOnce([tab2])
-        .mockResolvedValueOnce([{ id: 1, index: 0, groupId: 5 }, tab2, { id: 2, index: 2, groupId: 5 }, { id: 3, index: 3, groupId: 5 }])
-      // Group 5 is now expanded (collapsed: false) but expandedByMove remembers it
-      vi.mocked(chrome.tabGroups.get).mockResolvedValueOnce({ collapsed: false } as any)
-      await handleAction('movetabright')
-      // Same group, no group/ungroup calls
-      expect(chrome.tabs.group).not.toHaveBeenCalled()
-      expect(chrome.tabs.ungroup).not.toHaveBeenCalled()
-      vi.clearAllMocks()
-
-      // Move 3: tab moves right out of group 5 into ungrouped space
-      const tab3 = { ...defaultTab, id: 10, index: 2, groupId: 5 }
-      mockTabsQuery
-        .mockResolvedValueOnce([tab3])
-        .mockResolvedValueOnce([{ id: 1, index: 0, groupId: 5 }, { id: 2, index: 1, groupId: 5 }, tab3, { id: 3, index: 3, groupId: 5 }, { id: 4, index: 4, groupId: -1 }])
-      // Group 5 reports expanded, but expandedByMove remembers original collapsed state
-      vi.mocked(chrome.tabGroups.get).mockResolvedValueOnce({ collapsed: false } as any)
-      await handleAction('movetabright')
-      expect(chrome.tabs.ungroup).toHaveBeenCalledWith(10)
-      // Should re-collapse because expandedByMove tracked it
-      expect(chrome.tabGroups.update).toHaveBeenCalledWith(5, { collapsed: true })
     })
   })
 
