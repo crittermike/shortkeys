@@ -123,8 +123,6 @@ export default defineConfig({
       '86-togglegrouptab': { description: 'TABS: Toggle group/ungroup tab' },
       '87-namegroup': { description: 'TABS: Name current tab group' },
       '88-collapsegroup': { description: 'TABS: Collapse selected tab group' },
-      '89-expandgroup': { description: 'TABS: Deprecated removed expand group action' },
-      '90-togglecollapsegroup': { description: 'TABS: Deprecated removed toggle collapse group action' },
       '91-selecttableft': { description: 'TABS: Select tab to the left' },
       '92-selecttabright': { description: 'TABS: Select tab to the right' },
     },

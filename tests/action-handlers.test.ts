@@ -550,19 +550,6 @@ describe('handleAction', () => {
       expect(mockShowPageToast).toHaveBeenCalledWith('Tab is not in a group')
     })
 
-    it('expandgroup shows a removed-action toast', async () => {
-      await handleAction('expandgroup')
-      expect(chrome.tabGroups.update).not.toHaveBeenCalled()
-      expect(mockShowPageToast).toHaveBeenCalledWith('Expand group was removed because collapsed tab groups cannot be targeted reliably')
-    })
-
-    it('togglecollapsegroup shows a removed-action toast', async () => {
-      await handleAction('togglecollapsegroup')
-      expect(chrome.tabGroups.update).not.toHaveBeenCalled()
-      expect(chrome.tabGroups.get).not.toHaveBeenCalled()
-      expect(mockShowPageToast).toHaveBeenCalledWith('Toggle collapse group was removed because collapsed tab groups cannot be targeted reliably')
-    })
-
     it('selecttableft extends selection one tab to the left', async () => {
       mockTabsQuery
         .mockResolvedValueOnce([{ id: 1, index: 0 }, { id: 2, index: 1 }, { id: 3, index: 2 }]) // all tabs

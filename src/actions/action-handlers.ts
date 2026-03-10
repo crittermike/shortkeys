@@ -95,10 +95,6 @@ function showTabGroupCollapseError(result: 'saved' | 'failed', collapsed: boolea
   showPageToast(collapsed ? 'Chrome could not collapse this tab group' : 'Chrome could not expand this tab group')
 }
 
-function showRemovedTabGroupActionToast(actionLabel: string): void {
-  showPageToast(`${actionLabel} was removed because collapsed tab groups cannot be targeted reliably`)
-}
-
 /**
  * Map of action name → handler function.
  * Each handler receives the full request object and returns true if handled.
@@ -320,16 +316,6 @@ const actionHandlers: Record<string, ActionHandler> = {
     } else {
       showTabGroupCollapseError(result, true)
     }
-    return true
-  },
-
-  expandgroup: async () => {
-    showRemovedTabGroupActionToast('Expand group')
-    return true
-  },
-
-  togglecollapsegroup: async () => {
-    showRemovedTabGroupActionToast('Toggle collapse group')
     return true
   },
 
