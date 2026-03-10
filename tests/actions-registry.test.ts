@@ -76,6 +76,12 @@ describe('getAllActionValues', () => {
       expect(values).toContain(action)
     }
   })
+
+  it('does not include removed tab-group expand actions', () => {
+    const values = getAllActionValues()
+    expect(values).not.toContain('expandgroup')
+    expect(values).not.toContain('togglecollapsegroup')
+  })
 })
 
 describe('isBuiltInAction', () => {

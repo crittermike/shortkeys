@@ -95,6 +95,10 @@ function showTabGroupCollapseError(result: 'saved' | 'failed', collapsed: boolea
   showPageToast(collapsed ? 'Chrome could not collapse this tab group' : 'Chrome could not expand this tab group')
 }
 
+function showRemovedTabGroupActionToast(actionLabel: string): void {
+  showPageToast(`${actionLabel} was removed because collapsed tab groups cannot be targeted reliably`)
+}
+
 /**
  * Map of action name → handler function.
  * Each handler receives the full request object and returns true if handled.
@@ -320,43 +324,12 @@ const actionHandlers: Record<string, ActionHandler> = {
   },
 
   expandgroup: async () => {
-    if (!chrome.tabGroups?.update) return true
-    const groupId = await getCurrentTabGroupId()
-    if (groupId === null) {
-      showPageToast('Tab is not in a group')
-      return true
-    }
-    const result = await updateTabGroupCollapsed(groupId, false)
-    if (result === 'success') {
-      showPageToast('✓ Group expanded')
-    } else {
-      showTabGroupCollapseError(result, false)
-    }
+    showRemovedTabGroupActionToast('Expand group')
     return true
   },
 
   togglecollapsegroup: async () => {
-    if (!chrome.tabGroups?.get || !chrome.tabGroups?.update) return true
-    const groupId = await getCurrentTabGroupId()
-    if (groupId === null) {
-      showPageToast('Tab is not in a group')
-      return true
-    }
-    let group: { collapsed: boolean }
-    try {
-      group = await chrome.tabGroups.get(groupId)
-    } catch (error) {
-      showTabGroupCollapseError(isSavedTabGroupError(error) ? 'saved' : 'failed', true)
-      return true
-    }
-
-    const collapsed = !group.collapsed
-    const result = await updateTabGroupCollapsed(groupId, collapsed)
-    if (result === 'success') {
-      showPageToast(group.collapsed ? '✓ Group expanded' : '✓ Group collapsed')
-    } else {
-      showTabGroupCollapseError(result, collapsed)
-    }
+    showRemovedTabGroupActionToast('Toggle collapse group')
     return true
   },
 
