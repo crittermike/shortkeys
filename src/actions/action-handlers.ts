@@ -271,46 +271,6 @@ const actionHandlers: Record<string, ActionHandler> = {
     return true
   },
 
-  collapsegroup: async () => {
-    if (!chrome.tabGroups?.update) return true
-    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
-    const groupId = (tab as any).groupId ?? -1
-    if (groupId === -1) {
-      showPageToast('Tab is not in a group')
-      return true
-    }
-    await chrome.tabGroups.update(groupId, { collapsed: true })
-    showPageToast('✓ Group collapsed')
-    return true
-  },
-
-  expandgroup: async () => {
-    if (!chrome.tabGroups?.update) return true
-    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
-    const groupId = (tab as any).groupId ?? -1
-    if (groupId === -1) {
-      showPageToast('Tab is not in a group')
-      return true
-    }
-    await chrome.tabGroups.update(groupId, { collapsed: false })
-    showPageToast('✓ Group expanded')
-    return true
-  },
-
-  togglecollapsegroup: async () => {
-    if (!chrome.tabGroups?.get || !chrome.tabGroups?.update) return true
-    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
-    const groupId = (tab as any).groupId ?? -1
-    if (groupId === -1) {
-      showPageToast('Tab is not in a group')
-      return true
-    }
-    const group = await chrome.tabGroups.get(groupId)
-    await chrome.tabGroups.update(groupId, { collapsed: !group.collapsed })
-    showPageToast(group.collapsed ? '✓ Group expanded' : '✓ Group collapsed')
-    return true
-  },
-
   selecttableft: async () => {
     const tabs = await browser.tabs.query({ currentWindow: true })
     const highlighted = await browser.tabs.query({ currentWindow: true, highlighted: true })

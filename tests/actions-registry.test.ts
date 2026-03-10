@@ -76,6 +76,7 @@ describe('getAllActionValues', () => {
       expect(values).toContain(action)
     }
   })
+
 })
 
 describe('isBuiltInAction', () => {
