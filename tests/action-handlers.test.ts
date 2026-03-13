@@ -24,6 +24,7 @@ const mockBookmarksCreate = vi.fn()
 const mockBookmarksRemove = vi.fn()
 const mockManagementLaunchApp = vi.fn()
 const mockTabsSendMessage = vi.fn()
+const mockPermissionsRequest = vi.fn()
 
 // Mock executeScript and showPageToast globally
 vi.mock('../src/utils/execute-script', () => ({
@@ -62,7 +63,7 @@ const browserMock = {
   management: { launchApp: mockManagementLaunchApp },
   scripting: { executeScript: vi.fn() },
   debugger: { attach: vi.fn(), detach: vi.fn(), sendCommand: vi.fn() },
-  permissions: { request: vi.fn().mockResolvedValue(true) },
+  permissions: { request: mockPermissionsRequest },
 }
 
 // @ts-ignore
@@ -107,6 +108,7 @@ beforeEach(() => {
   mockBookmarksCreate.mockResolvedValue({ id: 'bm1' })
   mockBookmarksRemove.mockResolvedValue(undefined)
   mockManagementLaunchApp.mockResolvedValue(undefined)
+  mockPermissionsRequest.mockResolvedValue(true)
   vi.mocked(chrome.tabGroups.get).mockResolvedValue({ collapsed: false } as any)
   vi.mocked(chrome.tabGroups.update).mockImplementation(async (_groupId, changes: any) => ({
     collapsed: changes?.collapsed ?? false,
@@ -187,6 +189,7 @@ describe('handleAction', () => {
     it('moves tab left', async () => {
       await handleAction('movetableft')
       expect(mockTabsMove).toHaveBeenCalledWith(1, { index: 1 })
+      expect(mockPermissionsRequest).not.toHaveBeenCalled()
     })
 
     it('moves tab right', async () => {
@@ -219,6 +222,20 @@ describe('handleAction', () => {
       await handleAction('movetableft')
       expect(mockTabsMove).toHaveBeenCalledWith(3, { index: 2 })
       expect(chrome.tabs.group).toHaveBeenCalledWith({ tabIds: [3], groupId: 5 })
+    })
+
+    it('moves tab left without regrouping when tabGroups permission is denied', async () => {
+      const activeTab = { ...defaultTab, id: 3, index: 3, groupId: -1 }
+      const groupedTab = { id: 2, index: 1, groupId: 5 }
+      mockTabsQuery
+        .mockResolvedValueOnce([activeTab])
+        .mockResolvedValueOnce([{ id: 1, index: 0 }, groupedTab, { id: 4, index: 2 }, activeTab])
+      mockPermissionsRequest.mockResolvedValue(false)
+      await handleAction('movetableft')
+      expect(mockPermissionsRequest).toHaveBeenCalledWith({ permissions: ['tabGroups'] })
+      expect(mockTabsMove).toHaveBeenCalledWith(3, { index: 2 })
+      expect(chrome.tabs.group).not.toHaveBeenCalled()
+      expect(mockShowPageToast).toHaveBeenCalledWith('Tab group permission is required to move tabs between groups')
     })
 
     it('joins tab group when moving right next to a grouped tab', async () => {
@@ -454,6 +471,13 @@ describe('handleAction', () => {
       expect(chrome.tabs.group).toHaveBeenCalledWith({ tabIds: [1, 2] })
     })
 
+    it('grouptab requests tabGroups permission when needed', async () => {
+      mockTabsQuery.mockResolvedValue([{ id: 1, index: 0 }, { id: 2, index: 1 }])
+      await handleAction('grouptab')
+      expect(mockPermissionsRequest).toHaveBeenCalledWith({ permissions: ['tabGroups'] })
+      expect(chrome.tabs.group).toHaveBeenCalledWith({ tabIds: [1, 2] })
+    })
+
     it('grouptab sets group name when groupname is provided', async () => {
       mockTabsQuery.mockResolvedValue([{ id: 1, index: 0 }])
       await handleAction('grouptab', { groupname: 'Research' } as any)
@@ -465,6 +489,13 @@ describe('handleAction', () => {
       mockTabsQuery.mockResolvedValue([])
       await handleAction('grouptab')
       expect(chrome.tabs.group).not.toHaveBeenCalled()
+    })
+
+    it('grouptab shows toast when tabGroups permission is denied', async () => {
+      mockPermissionsRequest.mockResolvedValue(false)
+      await handleAction('grouptab')
+      expect(chrome.tabs.group).not.toHaveBeenCalled()
+      expect(mockShowPageToast).toHaveBeenCalledWith('Tab group permission is required for this action')
     })
 
     it('grouptab returns true when chrome.tabs.group is unavailable', async () => {
@@ -522,6 +553,13 @@ describe('handleAction', () => {
       expect(mockShowPageToast).toHaveBeenCalledWith('Tab is not in a group')
     })
 
+    it('namegroup shows toast when tabGroups permission is denied', async () => {
+      mockPermissionsRequest.mockResolvedValue(false)
+      await handleAction('namegroup', { groupname: 'My Group' } as any)
+      expect(chrome.tabGroups.update).not.toHaveBeenCalled()
+      expect(mockShowPageToast).toHaveBeenCalledWith('Tab group permission is required for this action')
+    })
+
     it('collapsegroup collapses current tab group', async () => {
       mockTabsQuery.mockResolvedValue([{ id: 1, index: 0, groupId: 3 }])
       await handleAction('collapsegroup')
@@ -548,6 +586,13 @@ describe('handleAction', () => {
       await handleAction('collapsegroup')
       expect(chrome.tabGroups.update).not.toHaveBeenCalled()
       expect(mockShowPageToast).toHaveBeenCalledWith('Tab is not in a group')
+    })
+
+    it('collapsegroup shows toast when tabGroups permission is denied', async () => {
+      mockPermissionsRequest.mockResolvedValue(false)
+      await handleAction('collapsegroup')
+      expect(chrome.tabGroups.update).not.toHaveBeenCalled()
+      expect(mockShowPageToast).toHaveBeenCalledWith('Tab group permission is required for this action')
     })
 
     it('selecttableft extends selection one tab to the left', async () => {
