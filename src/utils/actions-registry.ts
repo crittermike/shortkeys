@@ -86,6 +86,7 @@ export const ACTION_CATEGORIES: Record<string, ActionDefinition[]> = {
     { value: 'ungrouptab', label: 'Ungroup tab', description: 'Remove selected tabs (or current tab) from their tab group' },
     { value: 'togglegrouptab', label: 'Toggle group/ungroup', description: 'Group ungrouped tabs or ungroup grouped tabs (operates on selection)' },
     { value: 'namegroup', label: 'Name tab group', description: 'Set the title of the current tab\'s group' },
+    { value: 'collapsegroup', label: 'Collapse tab group', description: 'Collapse the selected tab\'s group to hide its tabs' },
     { value: 'selecttableft', label: 'Select tab to the left', description: 'Extend tab selection to include the tab on the left' },
     { value: 'selecttabright', label: 'Select tab to the right', description: 'Extend tab selection to include the tab on the right' },
   ],
