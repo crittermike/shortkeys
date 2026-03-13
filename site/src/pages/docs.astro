@@ -906,6 +906,35 @@ import BaseLayout from '../layouts/BaseLayout.astro'
           <h4>How do I back up my shortcuts?</h4>
           <p class="docs-text">Use the Export tab in settings to copy your JSON config. Cloud Sync also automatically backs them up to your Google account.</p>
         </div>
+
+        <div class="faq-item" id="faq-permissions">
+          <h4>Why does Shortkeys need so many permissions?</h4>
+          <p class="docs-text">Each permission corresponds to a specific feature. Shortkeys only requests what it needs:</p>
+          <ul class="docs-list">
+            <li><strong>tabs</strong> — Switch, move, close, pin, mute, sort, and query tabs</li>
+            <li><strong>tabGroups</strong> — Group, ungroup, name, and collapse tab groups (requested on first use, not at install)</li>
+            <li><strong>bookmarks</strong> — Open bookmarks via shortcut and toggle bookmarks</li>
+            <li><strong>storage</strong> — Save and sync your shortcut configuration</li>
+            <li><strong>sessions</strong> — Reopen recently closed tabs</li>
+            <li><strong>downloads</strong> — Show latest download and clear download history</li>
+            <li><strong>browsingData</strong> — Clear downloads action</li>
+            <li><strong>notifications</strong> — Notify when shortcuts need re-saving after an upgrade</li>
+            <li><strong>activeTab</strong> — Run scripts in the current tab (scrolling, dark mode, JavaScript actions)</li>
+            <li><strong>scripting</strong> — Inject content scripts and run custom JavaScript</li>
+            <li><strong>clipboardWrite</strong> — Copy URL, title, and text to clipboard</li>
+            <li><strong>clipboardRead</strong> — Open URL from clipboard (requested on first use, not at install)</li>
+            <li><strong>management</strong> — Launch installed web apps</li>
+            <li><strong>debugger</strong> — Test custom JavaScript on pages with strict Content Security Policy</li>
+            <li><strong>userScripts</strong> — Register custom JavaScript to run in the page context</li>
+            <li><strong>Host permissions (*://*/*)</strong> — Needed so content scripts can listen for keyboard shortcuts on any website</li>
+          </ul>
+          <p class="docs-text">Shortkeys is <a href="https://github.com/crittermike/shortkeys" target="_blank">open source</a> — you can verify exactly how each permission is used.</p>
+        </div>
+
+        <div class="faq-item" id="faq-browser-shortcuts-vs-options">
+          <h4>Do I use the browser's keyboard shortcuts settings or the Shortkeys options page?</h4>
+          <p class="docs-text">Use the <strong>Shortkeys options page</strong> for most shortcuts — it supports single keys, multi-key sequences, site filtering, macros, JavaScript, and more. Use the <strong>browser's keyboard shortcuts page</strong> (<code>chrome://extensions/shortcuts</code>) only when you need a shortcut to work on restricted pages like <code>chrome://</code> URLs, the New Tab page, or the Chrome Web Store. Browser shortcuts require a modifier key (Ctrl/Alt/Cmd) and don't support advanced features. See <a href="#browser-shortcuts">Browser Shortcuts</a> for details.</p>
+        </div>
       </section>
 
       <!-- 15. Browser Compatibility -->

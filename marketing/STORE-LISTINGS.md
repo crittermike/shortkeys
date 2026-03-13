@@ -22,7 +22,7 @@
 > Used in the manifest `description` field. Appears as the one-liner in search results across all stores. 132-character max.
 
 ```
-Custom keyboard shortcuts for your browser — 120+ actions, macros, shortcut packs, cloud sync, and more. Free and open source.
+Custom keyboard shortcuts for your browser — 125+ actions, macros, shortcut packs, cloud sync, and more. Free and open source.
 ```
 
 (125 characters)
@@ -36,11 +36,11 @@ Custom keyboard shortcuts for your browser — 120+ actions, macros, shortcut pa
 ### Description
 
 ```
-Shortkeys lets you create custom keyboard shortcuts for anything your browser can do. Choose from 120+ built-in actions, chain them into macros, or write your own JavaScript — all with a clean, modern interface.
+Shortkeys lets you create custom keyboard shortcuts for anything your browser can do. Choose from 125+ built-in actions, chain them into macros, or write your own JavaScript — all with a clean, modern interface.
 
 WHAT CAN IT DO?
 
-Shortkeys ships with 120+ built-in actions across 11 categories:
+Shortkeys ships with 125+ built-in actions across 11 categories:
 
 - Scrolling: scroll up/down/left/right, jump to top or bottom
 - Tabs: open, close, pin, mute, move, sort, duplicate, suspend, group, and switch tabs
@@ -101,13 +101,13 @@ Shortkeys is free, open source (MIT license), and has been trusted by 200,000+ C
 
 SUPPORT
 
-- Documentation: https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys
+- Documentation: https://www.shortkeys.app/docs/
 - Bug reports and feature requests: https://github.com/crittermike/shortkeys/issues
 - Website: https://shortkeys.app
 
 PERMISSIONS
 
-Shortkeys requests only the permissions it needs. For details on each permission and why it's required, see: https://github.com/mikecrittenden/shortkeys/wiki/FAQs-and-Troubleshooting#why-are-all-these-permissions-required
+Shortkeys requests only the permissions it needs. For details on each permission and why it's required, see: https://www.shortkeys.app/docs/#faq-permissions
 ```
 
 ---
@@ -120,7 +120,7 @@ Shortkeys requests only the permissions it needs. For details on each permission
 ### Summary
 
 ```
-Create custom keyboard shortcuts for your browser — 120+ built-in actions, macros, shortcut packs, command palette, cloud sync, and more.
+Create custom keyboard shortcuts for your browser — 125+ built-in actions, macros, shortcut packs, command palette, cloud sync, and more.
 ```
 
 (139 characters)
@@ -128,11 +128,11 @@ Create custom keyboard shortcuts for your browser — 120+ built-in actions, mac
 ### Description
 
 ```markdown
-Shortkeys lets you create custom keyboard shortcuts for anything your browser can do. Choose from **120+ built-in actions**, chain them into **macros**, or write your own JavaScript — all with a clean, modern interface.
+Shortkeys lets you create custom keyboard shortcuts for anything your browser can do. Choose from **125+ built-in actions**, chain them into **macros**, or write your own JavaScript — all with a clean, modern interface.
 
 ## What Can It Do?
 
-**120+ built-in actions** across 11 categories:
+**125+ built-in actions** across 11 categories:
 
 - **Scrolling** — scroll up/down/left/right, jump to top or bottom
 - **Tabs** — open, close, pin, mute, move, sort, duplicate, suspend, and switch tabs
@@ -177,7 +177,7 @@ Click the Shortkeys icon to open a **searchable command palette**. Search and tr
 Free and open source under the MIT license. Trusted by 200,000+ Chrome users.
 
 - [GitHub](https://github.com/crittermike/shortkeys)
-- [Documentation](https://github.com/mikecrittenden/shortkeys/wiki/How-To-Use-Shortkeys)
+- [Documentation](https://www.shortkeys.app/docs/)
 - [Bug reports](https://github.com/crittermike/shortkeys/issues)
 - [Website](https://shortkeys.app)
 ```
@@ -294,7 +294,7 @@ Layout:
 │   Custom keyboard shortcuts      │
 │   for your browser               │
 │                                  │
-│   120+ actions · Macros · Packs  │
+│   125+ actions · Macros · Packs  │
 │                                  │
 └──────────────────────────────────┘
 ```

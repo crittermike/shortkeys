@@ -98,7 +98,7 @@ npm run build:firefox  # Firefox → .output/firefox-mv2/
 ```bash
 npm run dev            # Chrome dev mode with hot reload
 npm run dev:firefox    # Firefox dev mode
-npm test               # Run all tests (626 tests across 23 files)
+npm test               # Run all tests (722 tests across 25 files)
 npm run test:watch     # Watch mode
 npm run test:coverage  # With coverage report
 ```
@@ -119,7 +119,7 @@ src/
 └── utils/                   # Storage, URL matching, conflict detection, JS snippets
 
 site/                        # shortkeys.app (Astro SSG, deployed to Netlify)
-tests/                       # 626 tests across 23 files
+tests/                       # 722 tests across 25 files
 marketing/                   # Store listing copy, screenshot plans, promo assets
 ```
 
@@ -128,7 +128,7 @@ marketing/                   # Store listing copy, screenshot plans, promo asset
 - **WXT** - Vite-based browser extension framework
 - **Vue 3** - Composition API with `<script setup>`
 - **TypeScript** throughout
-- **Vitest** - 626 tests across 23 files
+- **Vitest** - 722 tests across 25 files
 - **Mousetrap** - keyboard shortcut detection
 - **CodeMirror 6** - JavaScript editor with syntax highlighting
 - **Astro** - community website (shortkeys.app)
