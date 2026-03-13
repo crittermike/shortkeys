@@ -18,17 +18,24 @@ function startRecording() {
   recordedKeys.value = []
   emit('update:modelValue', '')
   window.addEventListener('keydown', captureKey, true)
+  window.addEventListener('mousedown', onClickOutside, true)
   resetAutoStop()
 }
 
 function stopRecording() {
   recording.value = false
   window.removeEventListener('keydown', captureKey, true)
+  window.removeEventListener('mousedown', onClickOutside, true)
   if (autoStopTimer) { clearTimeout(autoStopTimer); autoStopTimer = null }
   // Emit the final accumulated sequence (e.g. "j j" for Mousetrap sequence)
   if (recordedKeys.value.length > 0) {
     emit('update:modelValue', recordedKeys.value.join(' '))
   }
+}
+
+function onClickOutside(e: MouseEvent) {
+  const el = (e.target as HTMLElement).closest('.recorder-wrap')
+  if (!el) stopRecording()
 }
 
 function resetAutoStop() {
