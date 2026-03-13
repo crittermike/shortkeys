@@ -1,10 +1,5 @@
 import { executeScript, showPageToast } from '../utils/execute-script'
 import { JS_SNIPPETS } from '../utils/js-snippets'
-import {
-  TAB_GROUP_MOVE_PERMISSION_MESSAGE,
-  TAB_GROUP_PERMISSION_MESSAGE,
-  requestTabGroupsPermission,
-} from '../utils/tab-group-permissions'
 import type { KeySetting } from '../utils/url-matching'
 
 type ActionHandler = (request: KeySetting) => Promise<boolean> | boolean
@@ -97,14 +92,6 @@ function showTabGroupCollapseError(result: 'saved' | 'failed', collapsed: boolea
     return
   }
   showPageToast(collapsed ? 'Chrome could not collapse this tab group' : 'Chrome could not expand this tab group')
-}
-
-async function requireTabGroupsPermission(message: string = TAB_GROUP_PERMISSION_MESSAGE): Promise<boolean> {
-  const granted = await requestTabGroupsPermission()
-  if (!granted) {
-    showPageToast(message)
-  }
-  return granted
 }
 
 /**
@@ -258,7 +245,8 @@ const actionHandlers: Record<string, ActionHandler> = {
   },
 
   grouptab: async (request) => {
-    if (!(await requireTabGroupsPermission())) return true
+    const granted = await chrome.permissions.request({ permissions: ['tabGroups'] })
+    if (!granted) { showPageToast('Tab group permission is required for this action'); return true }
     if (!chrome.tabs.group) return true
     const tabs = await browser.tabs.query({ currentWindow: true, highlighted: true })
     const tabIds = tabs.map((t) => t.id!).filter(Boolean)
@@ -272,7 +260,8 @@ const actionHandlers: Record<string, ActionHandler> = {
   },
 
   ungrouptab: async () => {
-    if (!(await requireTabGroupsPermission())) return true
+    const granted = await chrome.permissions.request({ permissions: ['tabGroups'] })
+    if (!granted) { showPageToast('Tab group permission is required for this action'); return true }
     if (!chrome.tabs.ungroup) return true
     const tabs = await browser.tabs.query({ currentWindow: true, highlighted: true })
     const tabIds = tabs.map((t) => t.id!).filter(Boolean)
@@ -283,7 +272,8 @@ const actionHandlers: Record<string, ActionHandler> = {
   },
 
   togglegrouptab: async (request) => {
-    if (!(await requireTabGroupsPermission())) return true
+    const granted = await chrome.permissions.request({ permissions: ['tabGroups'] })
+    if (!granted) { showPageToast('Tab group permission is required for this action'); return true }
     if (!chrome.tabs.group || !chrome.tabs.ungroup) return true
     const tabs = await browser.tabs.query({ currentWindow: true, highlighted: true })
     if (tabs.length === 0) return true
@@ -305,7 +295,8 @@ const actionHandlers: Record<string, ActionHandler> = {
 
   namegroup: async (request) => {
     if (!request.groupname) return true
-    if (!(await requireTabGroupsPermission())) return true
+    const granted = await chrome.permissions.request({ permissions: ['tabGroups'] })
+    if (!granted) { showPageToast('Tab group permission is required for this action'); return true }
     if (!chrome.tabGroups?.update) return true
     const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
     const groupId = (tab as any).groupId ?? -1
@@ -319,7 +310,8 @@ const actionHandlers: Record<string, ActionHandler> = {
   },
 
   collapsegroup: async () => {
-    if (!(await requireTabGroupsPermission())) return true
+    const granted = await chrome.permissions.request({ permissions: ['tabGroups'] })
+    if (!granted) { showPageToast('Tab group permission is required for this action'); return true }
     if (!chrome.tabGroups?.update) return true
     const groupId = await getCurrentTabGroupId()
     if (groupId === null) {
@@ -470,11 +462,11 @@ const actionHandlers: Record<string, ActionHandler> = {
 
       let canAdjustGroups = true
       if (needsTabGroupsPermission) {
-        canAdjustGroups = await requestTabGroupsPermission()
+        canAdjustGroups = await chrome.permissions.request({ permissions: ['tabGroups'] })
       }
       await browser.tabs.move(tab.id!, { index: tab.index - 1 })
       if (needsTabGroupsPermission && !canAdjustGroups) {
-        showPageToast(TAB_GROUP_MOVE_PERMISSION_MESSAGE)
+        showPageToast('Tab group permission is required to move tabs between groups')
       }
       if (canAdjustGroups && chrome.tabs?.group && chrome.tabs?.ungroup) {
         if (neighborGroupId !== -1 && neighborGroupId !== tabGroupId) {
@@ -501,11 +493,11 @@ const actionHandlers: Record<string, ActionHandler> = {
 
     let canAdjustGroups = true
     if (needsTabGroupsPermission) {
-      canAdjustGroups = await requestTabGroupsPermission()
+      canAdjustGroups = await chrome.permissions.request({ permissions: ['tabGroups'] })
     }
     await browser.tabs.move(tab.id!, { index: tab.index + 1 })
     if (needsTabGroupsPermission && !canAdjustGroups) {
-      showPageToast(TAB_GROUP_MOVE_PERMISSION_MESSAGE)
+      showPageToast('Tab group permission is required to move tabs between groups')
     }
     if (canAdjustGroups && chrome.tabs?.group && chrome.tabs?.ungroup) {
       if (neighborGroupId !== -1 && neighborGroupId !== tabGroupId) {

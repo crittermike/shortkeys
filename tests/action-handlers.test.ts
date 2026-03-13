@@ -25,7 +25,6 @@ const mockBookmarksRemove = vi.fn()
 const mockManagementLaunchApp = vi.fn()
 const mockTabsSendMessage = vi.fn()
 const mockPermissionsRequest = vi.fn()
-const mockPermissionsContains = vi.fn()
 
 // Mock executeScript and showPageToast globally
 vi.mock('../src/utils/execute-script', () => ({
@@ -64,7 +63,7 @@ const browserMock = {
   management: { launchApp: mockManagementLaunchApp },
   scripting: { executeScript: vi.fn() },
   debugger: { attach: vi.fn(), detach: vi.fn(), sendCommand: vi.fn() },
-  permissions: { request: mockPermissionsRequest, contains: mockPermissionsContains },
+  permissions: { request: mockPermissionsRequest },
 }
 
 // @ts-ignore
@@ -110,7 +109,6 @@ beforeEach(() => {
   mockBookmarksRemove.mockResolvedValue(undefined)
   mockManagementLaunchApp.mockResolvedValue(undefined)
   mockPermissionsRequest.mockResolvedValue(true)
-  mockPermissionsContains.mockResolvedValue(true)
   vi.mocked(chrome.tabGroups.get).mockResolvedValue({ collapsed: false } as any)
   vi.mocked(chrome.tabGroups.update).mockImplementation(async (_groupId, changes: any) => ({
     collapsed: changes?.collapsed ?? false,
