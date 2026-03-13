@@ -1,5 +1,10 @@
 import { executeScript, showPageToast } from '../utils/execute-script'
 import { JS_SNIPPETS } from '../utils/js-snippets'
+import {
+  TAB_GROUP_MOVE_PERMISSION_MESSAGE,
+  TAB_GROUP_PERMISSION_MESSAGE,
+  requestTabGroupsPermission,
+} from '../utils/tab-group-permissions'
 import type { KeySetting } from '../utils/url-matching'
 
 type ActionHandler = (request: KeySetting) => Promise<boolean> | boolean
@@ -9,7 +14,6 @@ const CONTENT_SCRIPT_ACTIONS = ['javascript', 'showcheatsheet', 'toggledarkmode'
 
 /** Maximum number of steps allowed in a macro. */
 const MAX_MACRO_STEPS = 10
-
 
 /** Select a tab by direction or index. */
 async function selectTab(direction: string): Promise<void> {
@@ -93,6 +97,14 @@ function showTabGroupCollapseError(result: 'saved' | 'failed', collapsed: boolea
     return
   }
   showPageToast(collapsed ? 'Chrome could not collapse this tab group' : 'Chrome could not expand this tab group')
+}
+
+async function requireTabGroupsPermission(message: string = TAB_GROUP_PERMISSION_MESSAGE): Promise<boolean> {
+  const granted = await requestTabGroupsPermission()
+  if (!granted) {
+    showPageToast(message)
+  }
+  return granted
 }
 
 /**
@@ -246,6 +258,7 @@ const actionHandlers: Record<string, ActionHandler> = {
   },
 
   grouptab: async (request) => {
+    if (!(await requireTabGroupsPermission())) return true
     if (!chrome.tabs.group) return true
     const tabs = await browser.tabs.query({ currentWindow: true, highlighted: true })
     const tabIds = tabs.map((t) => t.id!).filter(Boolean)
@@ -259,6 +272,7 @@ const actionHandlers: Record<string, ActionHandler> = {
   },
 
   ungrouptab: async () => {
+    if (!(await requireTabGroupsPermission())) return true
     if (!chrome.tabs.ungroup) return true
     const tabs = await browser.tabs.query({ currentWindow: true, highlighted: true })
     const tabIds = tabs.map((t) => t.id!).filter(Boolean)
@@ -269,6 +283,7 @@ const actionHandlers: Record<string, ActionHandler> = {
   },
 
   togglegrouptab: async (request) => {
+    if (!(await requireTabGroupsPermission())) return true
     if (!chrome.tabs.group || !chrome.tabs.ungroup) return true
     const tabs = await browser.tabs.query({ currentWindow: true, highlighted: true })
     if (tabs.length === 0) return true
@@ -289,6 +304,8 @@ const actionHandlers: Record<string, ActionHandler> = {
   },
 
   namegroup: async (request) => {
+    if (!request.groupname) return true
+    if (!(await requireTabGroupsPermission())) return true
     if (!chrome.tabGroups?.update) return true
     const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
     const groupId = (tab as any).groupId ?? -1
@@ -296,14 +313,13 @@ const actionHandlers: Record<string, ActionHandler> = {
       showPageToast('Tab is not in a group')
       return true
     }
-    if (request.groupname) {
-      await chrome.tabGroups.update(groupId, { title: request.groupname })
-      showPageToast(`✓ Group named "${request.groupname}"`)
-    }
+    await chrome.tabGroups.update(groupId, { title: request.groupname })
+    showPageToast(`✓ Group named "${request.groupname}"`)
     return true
   },
 
   collapsegroup: async () => {
+    if (!(await requireTabGroupsPermission())) return true
     if (!chrome.tabGroups?.update) return true
     const groupId = await getCurrentTabGroupId()
     if (groupId === null) {
@@ -445,10 +461,22 @@ const actionHandlers: Record<string, ActionHandler> = {
       const allTabs = await browser.tabs.query({ currentWindow: true })
       // After moving left, the new left neighbor is at original index - 2
       const newLeftNeighbor = allTabs.find((t: any) => t.index === tab.index - 2)
+      const neighborGroupId = newLeftNeighbor ? ((newLeftNeighbor as any).groupId ?? -1) : -1
+      const tabGroupId = (tab as any).groupId ?? -1
+      const needsTabGroupsPermission =
+        !!chrome.tabs?.group && !!chrome.tabs?.ungroup &&
+        ((neighborGroupId !== -1 && neighborGroupId !== tabGroupId) ||
+        (tabGroupId !== -1 && neighborGroupId !== tabGroupId && !!newLeftNeighbor))
+
+      let canAdjustGroups = true
+      if (needsTabGroupsPermission) {
+        canAdjustGroups = await requestTabGroupsPermission()
+      }
       await browser.tabs.move(tab.id!, { index: tab.index - 1 })
-      if (chrome.tabs?.group && chrome.tabs?.ungroup) {
-        const neighborGroupId = newLeftNeighbor ? ((newLeftNeighbor as any).groupId ?? -1) : -1
-        const tabGroupId = (tab as any).groupId ?? -1
+      if (needsTabGroupsPermission && !canAdjustGroups) {
+        showPageToast(TAB_GROUP_MOVE_PERMISSION_MESSAGE)
+      }
+      if (canAdjustGroups && chrome.tabs?.group && chrome.tabs?.ungroup) {
         if (neighborGroupId !== -1 && neighborGroupId !== tabGroupId) {
           await chrome.tabs.group({ tabIds: [tab.id!], groupId: neighborGroupId })
         } else if (tabGroupId !== -1 && neighborGroupId !== tabGroupId && newLeftNeighbor) {
@@ -464,10 +492,22 @@ const actionHandlers: Record<string, ActionHandler> = {
     const allTabs = await browser.tabs.query({ currentWindow: true })
     // After moving right, the new right neighbor is at original index + 2
     const newRightNeighbor = allTabs.find((t: any) => t.index === tab.index + 2)
+    const neighborGroupId = newRightNeighbor ? ((newRightNeighbor as any).groupId ?? -1) : -1
+    const tabGroupId = (tab as any).groupId ?? -1
+    const needsTabGroupsPermission =
+      !!chrome.tabs?.group && !!chrome.tabs?.ungroup &&
+      ((neighborGroupId !== -1 && neighborGroupId !== tabGroupId) ||
+      (tabGroupId !== -1 && neighborGroupId !== tabGroupId && !!newRightNeighbor))
+
+    let canAdjustGroups = true
+    if (needsTabGroupsPermission) {
+      canAdjustGroups = await requestTabGroupsPermission()
+    }
     await browser.tabs.move(tab.id!, { index: tab.index + 1 })
-    if (chrome.tabs?.group && chrome.tabs?.ungroup) {
-      const neighborGroupId = newRightNeighbor ? ((newRightNeighbor as any).groupId ?? -1) : -1
-      const tabGroupId = (tab as any).groupId ?? -1
+    if (needsTabGroupsPermission && !canAdjustGroups) {
+      showPageToast(TAB_GROUP_MOVE_PERMISSION_MESSAGE)
+    }
+    if (canAdjustGroups && chrome.tabs?.group && chrome.tabs?.ungroup) {
       if (neighborGroupId !== -1 && neighborGroupId !== tabGroupId) {
         await chrome.tabs.group({ tabIds: [tab.id!], groupId: neighborGroupId })
       } else if (tabGroupId !== -1 && neighborGroupId !== tabGroupId && newRightNeighbor) {
