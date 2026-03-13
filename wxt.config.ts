@@ -10,7 +10,7 @@ export default defineConfig({
     default_locale: 'en',
     browser_specific_settings: {
       gecko: {
-        id: 'niceshortcuts@niceshortcuts.com',
+        id: 'Shortkeys@Shortkeys.com',
         strict_min_version: '109.0',
       },
     },
