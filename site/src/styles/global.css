@@ -594,9 +594,9 @@ kbd {
     top: 72px;
     left: 0;
     right: 0;
-    background: rgba(255, 255, 255, 0.97);
+    background: var(--white);
     backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(0,0,0,0.08);
+    border-bottom: 1px solid var(--border);
     padding: 12px 24px 20px;
     z-index: 99;
   }
@@ -614,5 +614,4 @@ kbd {
     justify-content: center;
   }
   .hamburger { display: flex; }
-  .header { position: sticky; }
 }
