@@ -40,6 +40,8 @@ export interface MacroStep {
   action: string
   delay?: number
   code?: string
+  openurl?: string
+  bookmark?: string
 }
 
 export interface GroupSettings {

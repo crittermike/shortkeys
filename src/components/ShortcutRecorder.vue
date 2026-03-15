@@ -103,98 +103,71 @@ function handleInputKeydown(e: KeyboardEvent) {
     emit('update:modelValue', combo)
   }
 }
+
+import { computed } from 'vue'
+
+const keyBadges = computed(() => {
+  if (!props.modelValue) return []
+  // Split sequences (space-separated combos like "j j") into groups,
+  // then split each combo on "+" into individual keys
+  return props.modelValue.split(' ').map(combo => combo.split('+'))
+})
+
+const showBadges = computed(() => {
+  return props.modelValue && !editingManually.value
+})
+
+const editingManually = ref(false)
+
+function startManualEdit() {
+  editingManually.value = true
+}
+
+function finishManualEdit() {
+  editingManually.value = false
+}
 </script>
 
 <template>
-  <div class="recorder-wrap">
+  <div class="flex gap-0 w-full">
+    <!-- Key badge display (when has value and not editing) -->
+    <div
+      v-if="showBadges && !recording"
+      class="flex-1 flex items-center gap-2 bg-surface border border-border-default rounded-l-xl px-4 py-2 shadow-inner cursor-text min-h-[42px]"
+      @click="startManualEdit"
+    >
+      <template v-for="(combo, ci) in keyBadges" :key="ci">
+        <span v-if="ci > 0" class="text-text-muted text-xs mx-0.5">then</span>
+        <template v-for="(key, ki) in combo" :key="`${ci}-${ki}`">
+          <span v-if="ki > 0" class="text-text-placeholder font-bold text-xs">+</span>
+          <kbd class="px-2.5 py-1 bg-surface-elevated border-b-2 border-border-default rounded-md text-xs font-mono text-text-primary shadow-sm capitalize">{{ key }}</kbd>
+        </template>
+      </template>
+    </div>
+    <!-- Text input (when empty, editing, or recording) -->
     <input
-      class="field-input shortcut-input"
+      v-else
+      ref="inputEl"
+      class="shortcut-input flex-1 bg-surface border border-border-default rounded-l-xl px-4 py-2.5 text-text-primary font-mono text-sm outline-none placeholder:text-text-muted focus:border-border-default peer !border-r-0"
       type="text"
-      placeholder="e.g. ctrl+shift+k"
+      :placeholder="recording ? 'Press keys…' : 'e.g. ctrl+shift+k'"
       :value="modelValue"
       @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
       @keydown="handleInputKeydown"
+      @blur="finishManualEdit"
       :readonly="recording"
     />
     <button
-      :class="['record-btn', { recording }]"
+      :class="[
+        'flex items-center gap-1 px-4 border border-border-default rounded-r-xl rounded-l-none bg-surface-elevated text-text-secondary text-[13px] font-semibold cursor-pointer transition-all duration-200 whitespace-nowrap hover:bg-surface-hover hover:text-text-primary',
+        { '!bg-red-500/10 !border-red-500/30 !text-red-400 animate-[pulse-recording_1.5s_infinite_cubic-bezier(0.16,1,0.3,1)] shadow-[0_0_12px_rgba(239,68,68,0.4)]': recording },
+      ]"
       @click="recording ? stopRecording() : startRecording()"
       type="button"
       :title="recording ? 'Click to stop recording' : 'Record shortcut'"
     >
-      <i :class="recording ? 'mdi mdi-stop-circle' : 'mdi mdi-record-circle-outline'"></i>
-      <span class="record-text">{{ recording ? 'Stop' : 'Record' }}</span>
+      <i :class="[recording ? 'mdi mdi-stop-circle' : 'mdi mdi-record-circle-outline', 'text-sm']"></i>
+      <span class="hidden sm:inline">{{ recording ? 'Stop' : 'Record' }}</span>
     </button>
   </div>
 </template>
-
-<style scoped>
-.recorder-wrap {
-  display: flex;
-  gap: 0;
-  width: 100%;
-}
-
-.recorder-wrap .field-input {
-  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
-  border-right: none;
-  flex: 1;
-}
-
-.recorder-wrap .field-input:focus + .record-btn {
-  border-color: var(--blue, #4361ee);
-}
-
-.record-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0 14px;
-  border: 1.5px solid var(--border, #e2e8f0);
-  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
-  background: var(--bg-elevated, #f8fafc);
-  color: var(--text-secondary, #64748b);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  white-space: nowrap;
-}
-
-.record-btn:hover {
-  background: var(--bg-hover, #f1f5f9);
-  color: var(--text, #1a1a2e);
-  border-color: var(--text-placeholder, #cbd5e1);
-  transform: translateY(-1px);
-}
-
-.record-btn.recording {
-  background: var(--danger-bg);
-  border-color: var(--danger-border);
-  color: var(--danger);
-  animation: pulse 1.5s infinite cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
-}
-
-.record-btn.recording:hover {
-  filter: brightness(0.95);
-}
-
-.record-btn .mdi {
-  font-size: 14px;
-}
-
-.record-btn.recording .mdi {
-  color: var(--danger);
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-  50% { transform: scale(0.95); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-}
-
-@media (max-width: 600px) {
-  .record-text { display: none; }
-}
-</style>
