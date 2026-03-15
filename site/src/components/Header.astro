@@ -12,7 +12,7 @@ const { currentPage = 'home' } = Astro.props
       <img src="/images/icon_48.png" alt="Shortkeys" />
       Shortkeys
     </a>
-    <nav class="header-nav">
+    <nav class="header-nav" id="header-nav">
       {currentPage === 'home' && (
         <>
           <a href="#features">Features</a>
@@ -30,5 +30,30 @@ const { currentPage = 'home' } = Astro.props
         </a>
       )}
     </nav>
+    <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="header-nav">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
   </div>
 </header>
+
+<script>
+  const hamburger = document.getElementById('hamburger')!
+  const nav = document.getElementById('header-nav')!
+
+  hamburger.addEventListener('click', () => {
+    const isOpen = nav.classList.toggle('open')
+    hamburger.classList.toggle('open', isOpen)
+    hamburger.setAttribute('aria-expanded', String(isOpen))
+  })
+
+  // Close menu when a nav link is clicked
+  nav.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      nav.classList.remove('open')
+      hamburger.classList.remove('open')
+      hamburger.setAttribute('aria-expanded', 'false')
+    })
+  })
+</script>

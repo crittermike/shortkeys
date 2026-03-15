@@ -550,9 +550,69 @@ kbd {
 .footer-copy a { color: var(--dark); font-weight: 600; text-decoration: none; }
 .footer-copy a:hover { color: var(--blue); }
 
+/* Hamburger button */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.hamburger:hover { background: var(--light); }
+.hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--dark);
+  border-radius: 2px;
+  transition: transform 0.25s, opacity 0.25s;
+  transform-origin: center;
+}
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
 /* Responsive */
 @media (max-width: 900px) {
   .bento-grid { grid-template-columns: 1fr; }
   .bento-large { grid-column: span 1; }
   .header-nav { display: none; }
+  .header-nav.open {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    position: absolute;
+    top: 72px;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    padding: 12px 24px 20px;
+    z-index: 99;
+  }
+  .header-nav.open a {
+    width: 100%;
+    padding: 12px 0;
+    font-size: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-nav.open a:last-child { border-bottom: none; }
+  .header-nav.open .btn-install-header {
+    margin-top: 8px;
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+  .hamburger { display: flex; }
+  .header { position: sticky; }
 }
