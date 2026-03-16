@@ -13,8 +13,7 @@ export default defineConfig({
         id: 'Shortkeys@Shortkeys.com',
         strict_min_version: '109.0',
         data_collection_permissions: {
-          private_browsing_allow: false,
-          data_collection: false,
+          required: false,
         },
       },
     },
