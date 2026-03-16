@@ -12,9 +12,6 @@ export default defineConfig({
       gecko: {
         id: 'Shortkeys@Shortkeys.com',
         strict_min_version: '109.0',
-        data_collection_permissions: {
-          required: false,
-        },
       },
     },
     icons: {
