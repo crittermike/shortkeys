@@ -107,7 +107,6 @@ const MAC_DEFAULTS: Record<string, string> = {
   'meta+-': 'Zoom out',
   'meta+0': 'Reset zoom',
   'meta+alt+i': 'Open developer tools',
-  'meta+shift+i': 'Open developer tools',
   'meta+alt+j': 'Open console',
   'meta+shift+c': 'Inspect element',
   'meta+a': 'Select all',
