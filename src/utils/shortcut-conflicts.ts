@@ -131,10 +131,16 @@ export function isMacOS(): boolean {
 
 /**
  * Get the browser defaults map for a given platform.
+ * Keys are normalized (sorted modifiers, canonical aliases) for consistent lookup.
  * Exported for testing.
  */
 export function getDefaultsForPlatform(mac: boolean): Record<string, string> {
-  return mac ? MAC_DEFAULTS : WINDOWS_LINUX_DEFAULTS
+  const raw = mac ? MAC_DEFAULTS : WINDOWS_LINUX_DEFAULTS
+  const normalized: Record<string, string> = {}
+  for (const [key, value] of Object.entries(raw)) {
+    normalized[normalizeKey(key)] = value
+  }
+  return normalized
 }
 
 export interface ShortcutConflict {
@@ -154,9 +160,11 @@ export interface ShortcutConflict {
 export function normalizeKey(key: string): string {
   if (!key) return ''
   const parts = key.toLowerCase().trim().split('+')
-  const modifiers = ['ctrl', 'alt', 'shift', 'meta', 'mod', 'command', 'option']
-  const mods = parts.filter((p) => modifiers.includes(p)).sort()
-  const rest = parts.filter((p) => !modifiers.includes(p))
+  const aliasMap: Record<string, string> = { command: 'meta', option: 'alt', mod: 'meta' }
+  const canonical = parts.map((p) => aliasMap[p] || p)
+  const modifiers = ['ctrl', 'alt', 'shift', 'meta']
+  const mods = canonical.filter((p) => modifiers.includes(p)).sort()
+  const rest = canonical.filter((p) => !modifiers.includes(p))
   return [...mods, ...rest].join('+')
 }
 

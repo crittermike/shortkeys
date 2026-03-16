@@ -30,7 +30,7 @@ describe('normalizeKey', () => {
 
   it('handles meta/command modifier', () => {
     expect(normalizeKey('meta+t')).toBe('meta+t')
-    expect(normalizeKey('command+shift+k')).toBe('command+shift+k')
+    expect(normalizeKey('command+shift+k')).toBe('meta+shift+k')
   })
 
   it('trims whitespace', () => {
