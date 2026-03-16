@@ -5,16 +5,16 @@ import { resolveUserscriptUrl, parseUserscript } from '@/utils/fetch-userscript'
 import { useShortcuts } from './useShortcuts'
 import { useToast } from './useToast'
 
+const openTabs = ref<{ id: number; title: string; url: string; favIconUrl?: string }[]>([])
+const selectedTabId = ref<number | null>(null)
+const bookmarks = ref<{ title: string; url: string }[]>([])
+const userscriptUrl = ref('')
+const userscriptLoading = ref(false)
+const userscriptMessage = ref('')
+
 export function useJsTools() {
   const { keys } = useShortcuts()
   const { showSnack } = useToast()
-
-  const openTabs = ref<{ id: number; title: string; url: string; favIconUrl?: string }[]>([])
-  const selectedTabId = ref<number | null>(null)
-  const bookmarks = ref<{ title: string; url: string }[]>([])
-  const userscriptUrl = ref('')
-  const userscriptLoading = ref(false)
-  const userscriptMessage = ref('')
 
   async function refreshTabs() {
     const tabs = await chrome.tabs.query({})
