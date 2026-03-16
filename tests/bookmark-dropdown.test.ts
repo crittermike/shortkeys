@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest'
 
 vi.mock('@/utils/storage', () => ({
   saveKeys: vi.fn().mockResolvedValue('sync'),
@@ -9,16 +9,26 @@ vi.mock('@/utils/storage', () => ({
 const mockGetTree = vi.fn()
 const mockTabsQuery = vi.fn().mockResolvedValue([])
 
+const originalChrome = globalThis.chrome
+const originalBrowser = globalThis.browser
+
 // @ts-ignore
 globalThis.chrome = {
-  bookmarks: { getTree: mockGetTree },
-  tabs: { query: mockTabsQuery },
+  ...(originalChrome ?? {}),
+  bookmarks: { ...(originalChrome?.bookmarks ?? {}), getTree: mockGetTree },
+  tabs: { ...(originalChrome?.tabs ?? {}), query: mockTabsQuery },
 }
 
 // @ts-ignore
 globalThis.browser = {
-  runtime: { sendMessage: vi.fn() },
+  ...(originalBrowser ?? {}),
+  runtime: { ...(originalBrowser?.runtime ?? {}), sendMessage: vi.fn() },
 }
+
+afterAll(() => {
+  globalThis.chrome = originalChrome
+  globalThis.browser = originalBrowser
+})
 
 import { useJsTools } from '../src/composables/useJsTools'
 
