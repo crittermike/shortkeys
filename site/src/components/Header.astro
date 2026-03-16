@@ -58,23 +58,21 @@ const { currentPage = 'home' } = Astro.props
   const hamburger = document.querySelector('.hamburger')
   const mobileNav = document.getElementById('mobile-nav')
 
-  hamburger?.addEventListener('click', () => {
-    const isOpen = hamburger.getAttribute('aria-expanded') === 'true'
-    hamburger.setAttribute('aria-expanded', String(!isOpen))
-    hamburger.classList.toggle('is-active')
-    if (mobileNav) {
+  if (hamburger && mobileNav) {
+    hamburger.addEventListener('click', () => {
+      const isOpen = hamburger.getAttribute('aria-expanded') === 'true'
+      hamburger.setAttribute('aria-expanded', String(!isOpen))
+      hamburger.classList.toggle('is-active')
       mobileNav.hidden = isOpen
-    }
-  })
-
-  // Close mobile nav when a link is clicked
-  mobileNav?.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-      hamburger?.setAttribute('aria-expanded', 'false')
-      hamburger?.classList.remove('is-active')
-      if (mobileNav) {
-        mobileNav.hidden = true
-      }
     })
-  })
+
+    // Close mobile nav when a link is clicked
+    mobileNav.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        hamburger.setAttribute('aria-expanded', 'false')
+        hamburger.classList.remove('is-active')
+        mobileNav.hidden = true
+      })
+    })
+  }
 </script>
