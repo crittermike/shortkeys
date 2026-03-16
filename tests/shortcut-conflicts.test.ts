@@ -30,7 +30,13 @@ describe('normalizeKey', () => {
 
   it('handles meta/command modifier', () => {
     expect(normalizeKey('meta+t')).toBe('meta+t')
-    expect(normalizeKey('command+shift+k')).toBe('command+shift+k')
+    expect(normalizeKey('command+shift+k')).toBe('meta+shift+k')
+  })
+
+  it('maps option → alt', () => {
+    expect(normalizeKey('option+t')).toBe('alt+t')
+    expect(normalizeKey('meta+option+i')).toBe('alt+meta+i')
+    expect(normalizeKey('command+option+i')).toBe('alt+meta+i')
   })
 
   it('trims whitespace', () => {
@@ -146,6 +152,24 @@ describe('getBrowserConflict', () => {
     expect(getBrowserConflict('CTRL+T', false)).toBe('Open new tab')
     expect(getBrowserConflict('META+T', true)).toBe('Open new tab')
   })
+
+  describe('all alias forms of meta+alt+i (Mac DevTools) are detected', () => {
+    const aliases = [
+      'command+option+i',
+      'meta+alt+i',
+      'command+alt+i',
+      'meta+option+i',
+      'option+meta+i',
+      'alt+command+i',
+      'alt+meta+i',
+      'option+command+i',
+    ]
+    for (const alias of aliases) {
+      it(`detects ${alias} as Mac DevTools conflict`, () => {
+        expect(getBrowserConflict(alias, true)).toBe('Open developer tools')
+      })
+    }
+  })
 })
 
 describe('detectConflicts', () => {
@@ -194,6 +218,22 @@ describe('detectConflicts', () => {
     const conflicts = detectConflicts(shortcuts, false)
     expect(conflicts.has(0)).toBe(true)
     expect(conflicts.get(0)!.some((c) => c.type === 'duplicate')).toBe(true)
+  })
+
+  it('detects duplicates across command/meta and option/alt aliases', () => {
+    const shortcuts: KeySetting[] = [
+      { key: 'command+option+i', action: 'newtab' },
+      { key: 'meta+alt+i', action: 'closetab' },
+      { key: 'alt+command+i', action: 'reload' },
+    ]
+    const conflicts = detectConflicts(shortcuts, true)
+    // All three are the same normalized key — each should flag as a duplicate
+    expect(conflicts.has(0)).toBe(true)
+    expect(conflicts.get(0)!.some((c) => c.type === 'duplicate')).toBe(true)
+    expect(conflicts.has(1)).toBe(true)
+    expect(conflicts.get(1)!.some((c) => c.type === 'duplicate')).toBe(true)
+    expect(conflicts.has(2)).toBe(true)
+    expect(conflicts.get(2)!.some((c) => c.type === 'duplicate')).toBe(true)
   })
 
   it('can have both browser and duplicate conflicts simultaneously', () => {
