@@ -30,5 +30,49 @@ const { currentPage = 'home' } = Astro.props
         </a>
       )}
     </nav>
+    <button class="hamburger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
   </div>
+  <nav class="mobile-nav" id="mobile-nav" hidden>
+    {currentPage === 'home' && (
+      <a href="#features">Features</a>
+    )}
+    {currentPage !== 'home' && (
+      <a href="/">Home</a>
+    )}
+    <a href="/packs">Packs</a>
+    <a href="https://github.com/crittermike/shortkeys" target="_blank">GitHub</a>
+    <a href="/docs">Docs</a>
+    {currentPage === 'home' && (
+      <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck" class="btn-install-header" target="_blank">
+        Install Extension
+      </a>
+    )}
+  </nav>
 </header>
+
+<script>
+  const hamburger = document.querySelector('.hamburger')
+  const mobileNav = document.getElementById('mobile-nav')
+
+  if (hamburger && mobileNav) {
+    hamburger.addEventListener('click', () => {
+      const isOpen = hamburger.getAttribute('aria-expanded') === 'true'
+      hamburger.setAttribute('aria-expanded', String(!isOpen))
+      hamburger.classList.toggle('is-active')
+      mobileNav.hidden = isOpen
+    })
+
+    // Close mobile nav when a link is clicked
+    mobileNav.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        hamburger.setAttribute('aria-expanded', 'false')
+        hamburger.classList.remove('is-active')
+        mobileNav.hidden = true
+      })
+    })
+  }
+</script>

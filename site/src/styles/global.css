@@ -84,6 +84,62 @@ a:hover { text-decoration: underline; }
   transform: translateY(-1px);
 }
 
+/* Hamburger button (hidden on desktop) */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  z-index: 101;
+}
+.hamburger-line {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--dark);
+  border-radius: 2px;
+  transition: transform 0.3s, opacity 0.3s;
+}
+.hamburger.is-active .hamburger-line:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.hamburger.is-active .hamburger-line:nth-child(2) {
+  opacity: 0;
+}
+.hamburger.is-active .hamburger-line:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Mobile nav (hidden on desktop) */
+.mobile-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 24px 20px;
+  background: rgba(255, 255, 255, 0.98);
+  border-bottom: 1px solid var(--border);
+}
+.mobile-nav a {
+  color: var(--gray);
+  font-size: 16px;
+  font-weight: 600;
+  padding: 10px 0;
+  transition: color 0.2s;
+  border-bottom: 1px solid var(--border);
+}
+.mobile-nav a:last-child { border-bottom: none; }
+.mobile-nav a:hover { color: var(--dark); text-decoration: none; }
+.mobile-nav .btn-install-header {
+  display: inline-block;
+  text-align: center;
+  margin-top: 8px;
+  border-bottom: none;
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;
@@ -555,4 +611,5 @@ kbd {
   .bento-grid { grid-template-columns: 1fr; }
   .bento-large { grid-column: span 1; }
   .header-nav { display: none; }
+  .hamburger { display: flex; }
 }
