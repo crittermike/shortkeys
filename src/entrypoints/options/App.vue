@@ -31,7 +31,7 @@ const { darkMode, initTheme, toggleTheme } = useTheme()
 const { snackMessage, snackType, snackAction, dismissSnack } = useToast()
 const {
   keys, expandedRow, dirty,
-  addShortcut, saveShortcuts, deleteShortcut, toggleDetails,
+  addShortcut, saveShortcuts, deleteShortcut, cloneShortcut, toggleDetails,
   onActionChange, toggleEnabled, needsUserScripts, loadSavedKeys,
 } = useShortcuts()
 const { getConflicts } = useConflicts()
@@ -413,6 +413,9 @@ onUnmounted(() => {
                   <div class="shortcut-actions">
                     <button class="btn-icon" @click="toggleDetails(index)" :title="expandedRow === index ? 'Collapse' : 'Settings'">
                       <i :class="expandedRow === index ? 'mdi mdi-chevron-up' : 'mdi mdi-cog-outline'"></i>
+                    </button>
+                    <button class="btn-icon" @click="cloneShortcut(index)" title="Clone shortcut">
+                      <i class="mdi mdi-content-copy"></i>
                     </button>
                     <button class="btn-icon btn-delete" @click="deleteShortcut(index)" title="Delete">
                       <i class="mdi mdi-close"></i>

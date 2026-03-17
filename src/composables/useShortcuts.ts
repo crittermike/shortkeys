@@ -61,6 +61,12 @@ async function deleteShortcut(index: number) {
   showSnack('Shortcut deleted', 'success', { label: 'Undo', handler: undo })
 }
 
+function cloneShortcut(index: number) {
+  const original = keys.value[index]
+  const clone = { ...JSON.parse(JSON.stringify(original)), id: uuid() }
+  keys.value.splice(index + 1, 0, clone)
+}
+
 function toggleDetails(index: number) {
   expandedRow.value = expandedRow.value === index ? null : index
 }
@@ -115,6 +121,7 @@ export function useShortcuts() {
     addShortcut,
     saveShortcuts,
     deleteShortcut,
+    cloneShortcut,
     toggleDetails,
     onActionChange,
     toggleEnabled,
