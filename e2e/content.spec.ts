@@ -27,8 +27,8 @@ test.describe('Content Script', () => {
     await page.locator('.shortcut-input').first().fill('j')
 
     // Select "Scroll down" action
-    await page.locator('.ss-trigger').first().click()
-    await page.locator('.ss-option', { hasText: 'Scroll down' }).first().click()
+    await page.locator('.search-select button').first().click()
+    await page.locator('.search-select button', { hasText: 'Scroll down' }).first().click()
 
     // Save
     await page.locator('.btn-primary', { hasText: 'Save shortcuts' }).click()

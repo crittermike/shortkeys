@@ -44,8 +44,8 @@ test.describe('Popup Command Palette', () => {
     await optionsPage.locator('.shortcut-input').first().fill('p')
 
     // Select action
-    await optionsPage.locator('.ss-trigger').first().click()
-    await optionsPage.locator('.ss-option', { hasText: 'New tab' }).first().click()
+    await optionsPage.locator('.search-select button').first().click()
+    await optionsPage.locator('.search-select button', { hasText: 'New tab' }).first().click()
 
     // Save and wait for storage to persist
     await optionsPage.locator('.btn-primary', { hasText: 'Save shortcuts' }).click()
@@ -72,15 +72,15 @@ test.describe('Popup Command Palette', () => {
     // Fill the first shortcut
     await optionsPage.locator('.shortcut-label-title').first().fill('Navigate Home')
     await optionsPage.locator('.shortcut-input').first().fill('h')
-    await optionsPage.locator('.ss-trigger').first().click()
-    await optionsPage.locator('.ss-option', { hasText: 'New tab' }).first().click()
+    await optionsPage.locator('.search-select button').first().click()
+    await optionsPage.locator('.search-select button', { hasText: 'New tab' }).first().click()
 
     // Add a second shortcut
-    await optionsPage.locator('.stats-actions .btn-sm', { hasText: 'Add shortcut' }).click()
+    await optionsPage.locator('.stats-bar .btn-sm', { hasText: 'Add shortcut' }).click()
     await optionsPage.locator('.shortcut-label-title').last().fill('Close Window')
     await optionsPage.locator('.shortcut-input').last().fill('w')
-    await optionsPage.locator('.ss-trigger').last().click()
-    await optionsPage.locator('.ss-option', { hasText: 'Close window' }).first().click()
+    await optionsPage.locator('.search-select button').last().click()
+    await optionsPage.locator('.search-select button', { hasText: 'Close window' }).first().click()
 
     // Save
     await optionsPage.locator('.btn-primary', { hasText: 'Save shortcuts' }).click()

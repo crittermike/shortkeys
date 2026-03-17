@@ -31,61 +31,61 @@ function timeAgo(ts: number): string {
 </script>
 
 <template>
-  <div v-if="!loaded" class="analytics-loading">
-    <i class="mdi mdi-loading mdi-spin"></i> Loading analytics...
+  <div v-if="!loaded" class="flex flex-col items-center justify-center py-12 px-6 text-center text-text-muted text-sm">
+    <i class="mdi mdi-loading mdi-spin mr-1.5"></i> Loading analytics...
   </div>
 
-  <div v-else class="analytics-tab">
+  <div v-else>
     <!-- Header -->
-    <div class="analytics-header">
-      <div class="analytics-summary">
-        <div class="summary-stat">
-          <span class="summary-number">{{ totalUsage }}</span>
-          <span class="summary-label">total triggers</span>
+    <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div class="flex gap-6">
+        <div class="flex flex-col gap-1 relative after:content-[''] after:absolute after:-right-3 after:top-[10%] after:h-[80%] after:w-px after:bg-border-default after:opacity-50 last:after:hidden">
+          <span class="text-4xl font-bold text-text-primary leading-none tracking-tight">{{ totalUsage }}</span>
+          <span class="text-[13px] text-text-muted font-medium">total triggers</span>
         </div>
-        <div class="summary-stat">
-          <span class="summary-number">{{ mostUsed.length }}</span>
-          <span class="summary-label">shortcuts used</span>
+        <div class="flex flex-col gap-1 relative after:content-[''] after:absolute after:-right-3 after:top-[10%] after:h-[80%] after:w-px after:bg-border-default after:opacity-50 last:after:hidden">
+          <span class="text-4xl font-bold text-text-primary leading-none tracking-tight">{{ mostUsed.length }}</span>
+          <span class="text-[13px] text-text-muted font-medium">shortcuts used</span>
         </div>
-        <div class="summary-stat">
-          <span class="summary-number">{{ unusedShortcuts.length }}</span>
-          <span class="summary-label">never used</span>
+        <div class="flex flex-col gap-1">
+          <span class="text-4xl font-bold text-text-primary leading-none tracking-tight">{{ unusedShortcuts.length }}</span>
+          <span class="text-[13px] text-text-muted font-medium">never used</span>
         </div>
       </div>
-      <div class="analytics-actions">
-        <label class="toggle-label">
-          <input type="checkbox" :checked="trackingEnabled" @change="toggleTracking" />
+      <div class="flex items-center gap-3">
+        <label class="flex items-center gap-1.5 text-sm text-text-secondary cursor-pointer select-none">
+          <input type="checkbox" class="w-4 h-4 accent-accent cursor-pointer" :checked="trackingEnabled" @change="toggleTracking" />
           <span>Track usage</span>
         </label>
-        <button class="btn-clear" @click="clearAnalytics" type="button">
-          <i class="mdi mdi-delete-outline"></i> Clear data
+        <button class="inline-flex items-center gap-1.5 px-3.5 py-1.5 border border-border-default rounded-lg bg-surface-elevated text-text-secondary text-[13px] cursor-pointer whitespace-nowrap transition-all duration-200 hover:bg-surface-hover hover:text-danger hover:border-danger" @click="clearAnalytics" type="button">
+          <i class="mdi mdi-delete-outline text-[15px]"></i> Clear data
         </button>
       </div>
     </div>
 
     <!-- Usage over time chart -->
-    <div class="analytics-section" v-if="totalUsage > 0 || mostUsed.length > 0">
-      <div class="section-header">
-        <h3 class="section-title">Usage over time</h3>
-        <div class="chart-period-toggle">
+    <div class="mb-8" v-if="totalUsage > 0 || mostUsed.length > 0">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-base font-bold text-text-primary mb-0">Usage over time</h3>
+        <div class="flex bg-surface-elevated rounded-lg p-0.5 gap-0.5 border border-border-light">
           <button
-            :class="['period-btn', { active: chartPeriod === 7 }]"
+            :class="['px-3 py-1 border-none rounded-md bg-transparent text-text-secondary text-xs font-medium cursor-pointer transition-all duration-200 hover:text-text-primary', chartPeriod === 7 && '!bg-accent !text-white !shadow-sm !font-semibold']"
             @click="chartPeriod = 7"
             type="button"
           >7 days</button>
           <button
-            :class="['period-btn', { active: chartPeriod === 30 }]"
+            :class="['px-3 py-1 border-none rounded-md bg-transparent text-text-secondary text-xs font-medium cursor-pointer transition-all duration-200 hover:text-text-primary', chartPeriod === 30 && '!bg-accent !text-white !shadow-sm !font-semibold']"
             @click="chartPeriod = 30"
             type="button"
           >30 days</button>
         </div>
       </div>
-      <div class="chart-container">
-        <svg class="usage-chart" viewBox="0 0 600 160" preserveAspectRatio="none">
+      <div class="relative bg-surface-elevated border border-border-light rounded-[14px] p-5 pb-6">
+        <svg class="w-full h-40" viewBox="0 0 600 160" preserveAspectRatio="none">
           <!-- Grid lines -->
-          <line x1="0" y1="40" x2="600" y2="40" class="chart-grid" />
-          <line x1="0" y1="80" x2="600" y2="80" class="chart-grid" />
-          <line x1="0" y1="120" x2="600" y2="120" class="chart-grid" />
+          <line x1="0" y1="40" x2="600" y2="40" class="stroke-border-light" stroke-width="1" stroke-dasharray="4 4" />
+          <line x1="0" y1="80" x2="600" y2="80" class="stroke-border-light" stroke-width="1" stroke-dasharray="4 4" />
+          <line x1="0" y1="120" x2="600" y2="120" class="stroke-border-light" stroke-width="1" stroke-dasharray="4 4" />
           <!-- Bars -->
           <g v-for="(bar, i) in chartData" :key="bar.date">
             <rect
@@ -93,16 +93,16 @@ function timeAgo(ts: number): string {
               :y="140 - (bar.total / chartMax * 120)"
               :width="Math.max(2, (600 / chartData.length) - 4)"
               :height="Math.max(bar.total > 0 ? 2 : 0, bar.total / chartMax * 120)"
-              class="chart-bar"
+              class="fill-accent opacity-85 transition-all duration-200 hover:opacity-100 hover:brightness-110"
               rx="2"
             />
             <title>{{ bar.label }}: {{ bar.total }} trigger{{ bar.total === 1 ? '' : 's' }}</title>
           </g>
         </svg>
-        <div class="chart-labels">
+        <div class="relative h-5 mt-1">
           <span v-for="(bar, i) in chartData" :key="bar.date"
             :style="{ left: ((i + 0.5) * (100 / chartData.length)) + '%' }"
-            class="chart-label"
+            class="absolute -translate-x-1/2 text-[11px] text-text-secondary whitespace-nowrap"
             v-show="chartPeriod === 7 || i % 5 === 0 || i === chartData.length - 1"
           >{{ bar.label }}</span>
         </div>
@@ -110,400 +110,73 @@ function timeAgo(ts: number): string {
     </div>
 
     <!-- Most used shortcuts -->
-    <div class="analytics-section" v-if="mostUsed.length > 0">
-      <h3 class="section-title">Most used shortcuts</h3>
-      <div class="analytics-table">
-        <div class="table-row table-header">
-          <span class="col-rank">#</span>
-          <span class="col-shortcut">Shortcut</span>
-          <span class="col-key">Key</span>
-          <span class="col-count">Uses</span>
-          <span class="col-last">Last used</span>
+    <div class="mb-8" v-if="mostUsed.length > 0">
+      <h3 class="text-base font-bold text-text-primary mb-3">Most used shortcuts</h3>
+      <div class="bg-surface-elevated border border-border-light rounded-[14px] overflow-hidden shadow-sm">
+        <div class="flex items-center px-4 py-2 bg-surface-elevated text-[11px] font-semibold uppercase tracking-wider text-text-muted">
+          <span class="w-8 text-center">#</span>
+          <span class="flex-1 min-w-0">Shortcut</span>
+          <span class="w-[140px] shrink-0">Key</span>
+          <span class="w-16 text-center shrink-0">Uses</span>
+          <span class="w-[100px] shrink-0 text-right">Last used</span>
         </div>
-        <div v-for="(item, i) in mostUsed" :key="item.id" class="table-row">
-          <span class="col-rank">{{ i + 1 }}</span>
-          <span class="col-shortcut">{{ item.label }}</span>
-          <span class="col-key">
-            <kbd v-for="part in item.key.split('+')" :key="part" class="key-badge">{{ part }}</kbd>
+        <div v-for="(item, i) in mostUsed" :key="item.id" class="flex items-center px-5 py-3 gap-3 border-t border-border-light transition-colors duration-150 hover:bg-surface-hover">
+          <span class="w-8 text-center text-text-muted font-semibold text-[13px]">{{ i + 1 }}</span>
+          <span class="flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[13px] text-text-primary">{{ item.label }}</span>
+          <span class="w-[140px] shrink-0 flex gap-0.5 flex-wrap">
+            <kbd v-for="part in item.key.split('+')" :key="part" class="inline-block px-2 py-0.5 bg-surface-hover border border-border-default rounded-md font-mono text-[11px] text-text-secondary capitalize">{{ part }}</kbd>
           </span>
-          <span class="col-count">
-            <span class="count-badge">{{ item.count }}</span>
+          <span class="w-16 text-center shrink-0">
+            <span class="inline-block px-3 py-0.5 bg-accent-bg text-accent rounded-full text-xs font-semibold">{{ item.count }}</span>
           </span>
-          <span class="col-last">{{ timeAgo(item.lastUsed) }}</span>
+          <span class="w-[100px] shrink-0 text-xs text-text-muted text-right">{{ timeAgo(item.lastUsed) }}</span>
         </div>
       </div>
     </div>
 
     <!-- Recently used -->
-    <div class="analytics-section" v-if="recentlyUsed.length > 0">
-      <h3 class="section-title">Recently used</h3>
-      <div class="analytics-table">
-        <div class="table-row table-header">
-          <span class="col-shortcut">Shortcut</span>
-          <span class="col-key">Key</span>
-          <span class="col-last">When</span>
+    <div class="mb-8" v-if="recentlyUsed.length > 0">
+      <h3 class="text-base font-bold text-text-primary mb-3">Recently used</h3>
+      <div class="bg-surface-elevated border border-border-light rounded-[14px] overflow-hidden shadow-sm">
+        <div class="flex items-center px-4 py-2 bg-surface-elevated text-[11px] font-semibold uppercase tracking-wider text-text-muted">
+          <span class="flex-1 min-w-0">Shortcut</span>
+          <span class="w-[140px] shrink-0">Key</span>
+          <span class="w-[100px] shrink-0 text-right">When</span>
         </div>
-        <div v-for="item in recentlyUsed" :key="item.id" class="table-row">
-          <span class="col-shortcut">{{ item.label }}</span>
-          <span class="col-key">
-            <kbd v-for="part in item.key.split('+')" :key="part" class="key-badge">{{ part }}</kbd>
+        <div v-for="item in recentlyUsed" :key="item.id" class="flex items-center px-5 py-3 gap-3 border-t border-border-light transition-colors duration-150 hover:bg-surface-hover">
+          <span class="flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[13px] text-text-primary">{{ item.label }}</span>
+          <span class="w-[140px] shrink-0 flex gap-0.5 flex-wrap">
+            <kbd v-for="part in item.key.split('+')" :key="part" class="inline-block px-2 py-0.5 bg-surface-hover border border-border-default rounded-md font-mono text-[11px] text-text-secondary capitalize">{{ part }}</kbd>
           </span>
-          <span class="col-last">{{ timeAgo(item.lastUsed) }}</span>
+          <span class="w-[100px] shrink-0 text-xs text-text-muted text-right">{{ timeAgo(item.lastUsed) }}</span>
         </div>
       </div>
     </div>
 
     <!-- Unused shortcuts -->
-    <div class="analytics-section" v-if="unusedShortcuts.length > 0">
-      <h3 class="section-title">Never used</h3>
-      <p class="tab-desc">These shortcuts have never been triggered. Consider removing them or adjusting their key bindings.</p>
-      <div class="unused-list">
-        <div v-for="item in unusedShortcuts" :key="item.id" class="unused-item">
-          <span class="unused-label">{{ item.label }}</span>
-          <span class="unused-key">
-            <kbd v-for="part in item.key.split('+')" :key="part" class="key-badge">{{ part }}</kbd>
+    <div class="mb-8" v-if="unusedShortcuts.length > 0">
+      <h3 class="text-base font-bold text-text-primary mb-3">Never used</h3>
+      <p class="text-text-secondary mb-3">These shortcuts have never been triggered. Consider removing them or adjusting their key bindings.</p>
+      <div class="flex flex-col gap-1">
+        <div v-for="item in unusedShortcuts" :key="item.id" class="flex justify-between items-center px-4 py-2 bg-surface-elevated border border-border-light rounded-xl gap-3">
+          <span class="text-[13px] text-text-secondary overflow-hidden text-ellipsis whitespace-nowrap flex-1 min-w-0">{{ item.label }}</span>
+          <span class="flex gap-0.5 shrink-0">
+            <kbd v-for="part in item.key.split('+')" :key="part" class="inline-block px-2 py-0.5 bg-surface-hover border border-border-default rounded-md font-mono text-[11px] text-text-secondary capitalize">{{ part }}</kbd>
           </span>
         </div>
       </div>
     </div>
 
     <!-- Empty state -->
-    <div v-if="totalUsage === 0 && unusedShortcuts.length === 0" class="analytics-empty">
+    <div v-if="totalUsage === 0 && unusedShortcuts.length === 0" class="text-center py-12 text-text-muted">
       <i class="mdi mdi-chart-line" style="font-size: 48px; color: var(--text-muted)"></i>
-      <p>No shortcuts configured yet.</p>
-      <p class="tab-desc">Add some shortcuts in the Shortcuts tab, then use them to see analytics here.</p>
+      <p class="mt-2 text-sm">No shortcuts configured yet.</p>
+      <p class="text-text-secondary text-sm">Add some shortcuts in the Shortcuts tab, then use them to see analytics here.</p>
     </div>
 
-    <p class="analytics-privacy">
-      <i class="mdi mdi-shield-check-outline"></i>
+    <p class="flex items-center gap-1.5 text-xs text-text-muted mt-4 px-4 py-3 bg-surface-elevated rounded-xl border border-border-light shadow-sm">
+      <i class="mdi mdi-shield-check-outline text-base text-success"></i>
       All analytics data is stored locally on this device and never sent anywhere.
     </p>
   </div>
 </template>
-
-<style scoped>
-.analytics-loading {
-  text-align: center;
-  padding: var(--space-3xl) 0;
-  color: var(--text-muted);
-  font-size: 14px;
-}
-
-.analytics-loading .mdi { margin-right: 6px; }
-
-.analytics-header {
-display: flex;
-justify-content: space-between;
-align-items: center;
-gap: var(--space-lg);
-margin-bottom: var(--space-xl);
-flex-wrap: wrap;
-}
-
-.analytics-summary {
-display: flex;
-gap: var(--space-2xl);
-}
-
-.summary-stat {
-display: flex;
-flex-direction: column;
-  gap: 4px;
-  position: relative;
-}
-
-.summary-stat:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  right: calc(var(--space-2xl) / -2);
-  top: 10%;
-  height: 80%;
-  width: 1px;
-  background: var(--border);
-  opacity: 0.5;
-}
-
-.summary-number {
-  font-size: 36px;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1;
-  letter-spacing: -0.02em;
-}
-
-.summary-label {
-  font-size: 13px;
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-.analytics-actions {
-display: flex;
-align-items: center;
-gap: var(--space-lg);
-}
-
-.toggle-label {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  font-size: 14px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  user-select: none;
-}
-
-.toggle-label input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--blue);
-  cursor: pointer;
-}
-
-.btn-clear {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 6px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--bg-elevated);
-  color: var(--text-secondary);
-  font-size: 13px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.btn-clear:hover {
-  background: var(--bg-hover);
-  color: var(--danger, #ef4444);
-  border-color: var(--danger, #ef4444);
-}
-
-.btn-clear .mdi {
-  font-size: 15px;
-}
-
-.analytics-section {
-margin-bottom: var(--space-xl);
-}
-
-.section-header {
-display: flex;
-justify-content: space-between;
-align-items: center;
-margin-bottom: var(--space-md);
-}
-
-.section-header .section-title {
-  margin-bottom: 0;
-}
-
-.section-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: var(--space-md);
-  letter-spacing: -0.01em;
-}
-
-.chart-period-toggle {
-  display: flex;
-  gap: 2px;
-  background: var(--bg-elevated);
-  border-radius: var(--radius-lg);
-  padding: 2px;
-  border: 1px solid var(--border-light);
-}
-
-.period-btn {
-  padding: 4px 12px;
-  border: none;
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.period-btn:hover { color: var(--text); }
-
-.period-btn.active {
-  background: var(--blue);
-  color: white;
-  box-shadow: var(--shadow-sm);
-}
-
-.chart-container {
-  position: relative;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-2xl);
-  padding: 20px 20px var(--space-xl);
-}
-
-.usage-chart {
-  width: 100%;
-  height: 160px;
-}
-
-.chart-grid {
-  stroke: var(--border-light);
-  stroke-width: 1;
-  stroke-dasharray: 4 4;
-}
-
-.chart-bar {
-  fill: var(--blue);
-  opacity: 0.85;
-  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.chart-bar:hover {
-  opacity: 1;
-  filter: brightness(1.1);
-}
-
-.chart-labels {
-  position: relative;
-  height: 20px;
-  margin-top: 4px;
-}
-
-.chart-label {
-  position: absolute;
-  transform: translateX(-50%);
-  font-size: 11px;
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
-
-
-.analytics-table {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-2xl);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.table-row {
-  display: flex;
-  align-items: center;
-  padding: 12px 20px;
-  gap: var(--space-md);
-  border-bottom: 1px solid var(--border-light);
-  transition: background 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.table-row:last-child { border-bottom: none; }
-
-.table-row:not(.table-header):hover {
-  background: var(--bg-hover);
-}
-
-.table-header {
-  background: var(--bg-elevated);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  padding: 8px 16px;
-}
-
-.col-rank { width: 32px; text-align: center; color: var(--text-muted); font-weight: 600; font-size: 13px; }
-.col-shortcut { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: var(--text); }
-.col-key { width: 140px; flex-shrink: 0; display: flex; gap: 3px; flex-wrap: wrap; }
-.col-count { width: 64px; text-align: center; flex-shrink: 0; }
-.col-last { width: 100px; flex-shrink: 0; font-size: 12px; color: var(--text-muted); text-align: right; }
-
-.key-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  background: var(--bg-hover);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  font-size: 11px;
-  font-family: 'SF Mono', Menlo, monospace;
-  color: var(--text-secondary);
-  text-transform: capitalize;
-}
-
-.count-badge {
-  display: inline-block;
-  padding: 3px 12px;
-  background: var(--blue-bg);
-  color: var(--blue);
-  border-radius: var(--radius-full);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.unused-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.unused-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 16px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-xl);
-  gap: var(--space-md);
-}
-
-.unused-label {
-  font-size: 13px;
-  color: var(--text-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex: 1;
-  min-width: 0;
-}
-
-.unused-key {
-  display: flex;
-  gap: 3px;
-  flex-shrink: 0;
-}
-
-.analytics-empty {
-  text-align: center;
-  padding: var(--space-3xl) 0;
-  color: var(--text-muted);
-}
-
-.analytics-empty p {
-  margin: 8px 0 0;
-  font-size: 14px;
-}
-
-.analytics-privacy {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 16px;
-  padding: 12px 16px;
-  background: var(--bg-elevated);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border-light);
-  box-shadow: var(--shadow-sm);
-}
-
-.analytics-privacy .mdi {
-font-size: 16px;
-color: var(--success);
-}
-</style>

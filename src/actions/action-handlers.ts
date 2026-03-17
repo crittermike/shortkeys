@@ -1053,7 +1053,9 @@ actionHandlers.macro = async (request) => {
         await browser.tabs.sendMessage(tab.id, { ...request, action: step.action }).catch(() => {})
       }
     } else {
-      await handleAction(step.action, request)
+      // Merge step-level fields (openurl, bookmark) into the request for this action
+      const stepRequest = { ...request, ...step }
+      await handleAction(step.action, stepRequest)
     }
   }
   return true
