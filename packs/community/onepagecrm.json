@@ -9,7 +9,7 @@
     { "key": "meta+enter", "action": "javascript", "label": "Mark action done", "code": "document.querySelector('.done-marker').click();" },
     { "key": "meta+shift+enter", "action": "javascript", "label": "Edit action", "code": "document.querySelector('.name.strong').click();\nsetTimeout(()=>{document.getSelection().modify('move', 'forward', 'lineboundary')},10);" },
     { "key": "meta+'", "action": "javascript", "label": "Edit action date", "code": "document.querySelector('.next-action-form .current_date .action_date').click();" },
-    { "key": "meta+shift+x", "action": "javascript", "label": "Close sales cycle", "code": "document.querySelector('.close-sales-link').click();\ndocument.querySelector('.submit_button').click();" },
+    { "key": "meta+shift+x", "action": "javascript", "label": "Action stream: Close selected contacts", "code": "document.querySelector('.delete.bulk_action_link').click();" },
     { "key": "meta+shift+o", "action": "javascript", "label": "View first contact", "code": "document.querySelector('.list-inside > div:first-of-type').click();\nlocation.reload();" },
     { "key": "meta+shift+c", "action": "javascript", "label": "Show calendar", "code": "document.querySelectorAll('.user-actions .next-action .action-flag-container')[0].click();" },
     { "key": "meta+alt+c", "action": "javascript", "label": "Close contact", "code": "document.querySelector('.close-sales-link').click();" },
