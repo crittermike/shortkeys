@@ -1,4 +1,4 @@
-import type { KeySetting } from '@/utils/url-matching'
+import type { KeySetting, GroupSettings } from '@/utils/url-matching'
 
 export interface ShortcutPack {
   id: string
@@ -7,6 +7,7 @@ export interface ShortcutPack {
   description: string
   color: string
   shortcuts: KeySetting[]
+  groupSettings?: GroupSettings
 }
 
 import vimPack from '../../packs/official/vim.json'
