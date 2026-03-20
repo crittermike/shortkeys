@@ -111,6 +111,29 @@ function handleBeforeUnload(e: BeforeUnloadEvent) {
   }
 }
 
+// --- Review prompt banner ---
+import { loadReviewPromptState, saveReviewPromptState, REVIEW_URL } from '@/utils/review-prompt'
+import { loadUsageData } from '@/utils/usage-tracking'
+
+const showReviewBanner = ref(false)
+
+async function checkReviewBanner() {
+  try {
+    const state = await loadReviewPromptState()
+    if (state.dismissed) return
+    const usageData = await loadUsageData()
+    const totalUses = Object.values(usageData).reduce((sum, e) => sum + e.count, 0)
+    if (totalUses >= 50) showReviewBanner.value = true
+  } catch { /* non-critical */ }
+}
+
+async function dismissReviewBanner() {
+  showReviewBanner.value = false
+  const state = await loadReviewPromptState()
+  state.dismissed = true
+  await saveReviewPromptState(state)
+}
+
 onMounted(async () => {
   await loadSavedKeys()
   await loadGroupSettingsFromStorage()
@@ -123,6 +146,8 @@ onMounted(async () => {
   if (localStorage.getItem('shortkeys-onboarding-done') !== 'true') {
     showOnboarding.value = true
   }
+
+  checkReviewBanner()
 })
 
 onUnmounted(() => {
@@ -166,6 +191,25 @@ onUnmounted(() => {
         <button v-if="snackAction" class="toast-action" @click.stop="snackAction.handler(); dismissSnack()" type="button">
           {{ snackAction.label }}
         </button>
+      </div>
+    </Transition>
+
+    <!-- Review prompt banner -->
+    <Transition name="review-banner">
+      <div v-if="showReviewBanner" class="review-banner">
+        <div class="review-banner-inner">
+          <i class="mdi mdi-star review-banner-icon"></i>
+          <div class="review-banner-text">
+            <strong>Enjoying Shortkeys?</strong>
+            Most of our reviews come from people reporting problems — if Shortkeys has been useful to you, a quick positive review would really help us out!
+          </div>
+          <a :href="REVIEW_URL" target="_blank" class="review-banner-btn" @click="dismissReviewBanner">
+            Leave a review
+          </a>
+          <button class="review-banner-close" @click="dismissReviewBanner" title="Dismiss" type="button">
+            <i class="mdi mdi-close"></i>
+          </button>
+        </div>
       </div>
     </Transition>
 
@@ -2323,5 +2367,116 @@ a:hover { text-decoration: underline; }
 [data-density="condensed"] .shortcut-actions .btn-icon {
   font-size: 14px;
   padding: 9px;
+}
+
+/* Review prompt banner */
+.review-banner {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border-bottom: 1px solid #f59e0b33;
+}
+
+[data-theme="dark"] .review-banner {
+  background: linear-gradient(135deg, #422006, #451a03);
+  border-bottom-color: #92400e;
+}
+
+.review-banner-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 12px var(--space-xl);
+}
+
+.review-banner-icon {
+  font-size: 22px;
+  color: #d97706;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .review-banner-icon {
+  color: #fbbf24;
+}
+
+.review-banner-text {
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #78350f;
+}
+
+[data-theme="dark"] .review-banner-text {
+  color: #fde68a;
+}
+
+.review-banner-text strong {
+  font-weight: 700;
+}
+
+.review-banner-btn {
+  flex-shrink: 0;
+  padding: 6px 16px;
+  border-radius: var(--radius-lg);
+  background: #d97706;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.review-banner-btn:hover {
+  background: #b45309;
+  color: #fff;
+  text-decoration: none;
+}
+
+.review-banner-close {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: #92400e;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.15s;
+}
+
+.review-banner-close:hover {
+  background: #fbbf2433;
+}
+
+[data-theme="dark"] .review-banner-close {
+  color: #fbbf24;
+}
+
+[data-theme="dark"] .review-banner-close:hover {
+  background: #fbbf2422;
+}
+
+.review-banner-enter-active,
+.review-banner-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.review-banner-enter-from,
+.review-banner-leave-to {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.review-banner-enter-to,
+.review-banner-leave-from {
+  max-height: 80px;
+  opacity: 1;
 }
 </style>
