@@ -52,7 +52,7 @@ export default defineBackground(() => {
           id: 'shortkeys-actions',
           matches: ['*://*/*'] as string[],
           world: 'MAIN' as const,
-          js: [{ code: `var handlers = ${handlersObj};\n(${registerHandlers.toString()})();` }],
+          js: [{ code: `(function(){var handlers = ${handlersObj};\n(${registerHandlers.toString()})();})();` }],
         },
       ]
 
