@@ -85,12 +85,13 @@ export function useImportExport() {
       icon: '📦',
       description: '',
       author: '',
-      shortcuts: groupShortcuts.map((s) => ({
-        key: s.key,
-        action: s.action,
-        label: s.label || s.action,
-        ...(s.code ? { code: s.code } : {}),
-      })),
+      shortcuts: groupShortcuts.map((s) => {
+        const { id, group: _g, enabled, ...rest } = s
+        return {
+          ...rest,
+          label: s.label || s.action,
+        }
+      }),
     }
 
     const json = JSON.stringify(packData, null, 2)
