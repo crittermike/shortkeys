@@ -181,6 +181,52 @@ import BaseLayout from '../layouts/BaseLayout.astro'
       font-size: 18px;
     }
 
+    /* Review CTA Section */
+    .review-section {
+      text-align: center;
+      padding: 80px 24px;
+      background: var(--white);
+      border-top: 1px solid var(--border);
+    }
+
+    .review-inner {
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    .review-stars {
+      font-size: 32px;
+      margin-bottom: 16px;
+      letter-spacing: 4px;
+    }
+
+    .review-section h2 {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      letter-spacing: -0.5px;
+    }
+
+    .review-section p {
+      font-size: 17px;
+      line-height: 1.7;
+      color: var(--gray);
+      margin-bottom: 32px;
+    }
+
+    .btn-review {
+      background: var(--accent);
+      color: var(--white);
+      box-shadow: 0 8px 16px rgba(245, 158, 11, 0.2);
+    }
+
+    .btn-review:hover {
+      background: #d97706;
+      transform: translateY(-2px);
+      color: var(--white);
+      text-decoration: none;
+    }
+
     /* CTA Section */
     .cta-section {
       text-align: center;
@@ -623,6 +669,18 @@ import BaseLayout from '../layouts/BaseLayout.astro'
       <div class="migration-icon"><i class="mdi mdi-check-decagram"></i></div>
       <h2>Your shortcuts are safe</h2>
       <p>All your existing shortcuts were automatically migrated. Everything works just like before — plus everything above.</p>
+    </div>
+  </section>
+
+  <!-- Review CTA -->
+  <section class="review-section">
+    <div class="review-inner">
+      <div class="review-stars">⭐⭐⭐⭐⭐</div>
+      <h2>Help us out?</h2>
+      <p>Most of our Chrome Web Store reviews come from people reporting problems. If Shortkeys has been useful to you, a quick positive review would really help balance things out and help other people discover the extension.</p>
+      <a href="https://chrome.google.com/webstore/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck/reviews" target="_blank" class="btn btn-review">
+        <i class="mdi mdi-star"></i> Leave a review
+      </a>
     </div>
   </section>
 

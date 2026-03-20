@@ -4,7 +4,14 @@ import { handleAction } from '@/actions/action-handlers'
 import { initLastUsedTabTracking, switchToLastUsedTab } from '@/actions/last-used-tab'
 import captureScreenshot from '@/actions/capture-screenshot'
 import { loadKeys, saveKeys, migrateLocalToSync, onKeysChanged, loadGroupSettings } from '@/utils/storage'
-import { trackUsage } from '@/utils/usage-tracking'
+import { trackUsage, loadUsageData } from '@/utils/usage-tracking'
+import {
+  initReviewPromptState,
+  loadReviewPromptState,
+  saveReviewPromptState,
+  daysSinceInstall,
+  REVIEW_URL,
+} from '@/utils/review-prompt'
 
 export default defineBackground(() => {
   initLastUsedTabTracking()
@@ -78,14 +85,45 @@ export default defineBackground(() => {
     })
   })
 
+  const USAGE_MILESTONE = 50
+
+  async function maybeShowReviewNotification(): Promise<void> {
+    try {
+      const state = await loadReviewPromptState()
+      if (state.dismissed || state.notificationShown) return
+      if (daysSinceInstall(state) < 7) return
+
+      const usageData = await loadUsageData()
+      const totalUses = Object.values(usageData).reduce((sum, entry) => sum + entry.count, 0)
+      if (totalUses < USAGE_MILESTONE) return
+
+      chrome.notifications.create('reviewPrompt', {
+        type: 'basic',
+        iconUrl: '/images/icon_128.png',
+        title: 'Enjoying Shortkeys?',
+        message:
+          'Most of our reviews come from people with problems. A positive review from a happy user like you would really help!',
+        requireInteraction: true,
+        buttons: [{ title: 'Leave a review ⭐' }],
+      })
+
+      state.notificationShown = true
+      await saveReviewPromptState(state)
+    } catch {
+      // Non-critical — silently ignore
+    }
+  }
+
   chrome.runtime.onInstalled.addListener(async (details) => {
     if (details.reason === 'update') {
       await migrateLocalToSync()
       await checkKeys()
+      await initReviewPromptState()
       registerUserScript()
       // Show what's new page
       chrome.tabs.create({ url: 'https://shortkeys.app/welcome' })
     } else if (details.reason === 'install') {
+      await initReviewPromptState()
       // Open welcome page and then options
       chrome.tabs.create({ url: 'https://shortkeys.app/welcome' })
       chrome.runtime.openOptionsPage()
@@ -162,13 +200,13 @@ export default defineBackground(() => {
 
     // Handle usage tracking messages from content scripts
     if (action === 'trackUsage') {
-      trackUsage(request.shortcutId)
+      trackUsage(request.shortcutId).then(() => maybeShowReviewNotification())
       return
     }
 
     // Track usage for all dispatched actions (if shortcut has an ID)
     if (request.id) {
-      trackUsage(request.id)
+      trackUsage(request.id).then(() => maybeShowReviewNotification())
     }
 
     // Handle special actions
@@ -204,6 +242,9 @@ export default defineBackground(() => {
   chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
     if (notificationId === 'settingsNotification' && buttonIndex === 0) {
       chrome.runtime.openOptionsPage()
+    }
+    if (notificationId === 'reviewPrompt' && buttonIndex === 0) {
+      chrome.tabs.create({ url: REVIEW_URL })
     }
   })
 
