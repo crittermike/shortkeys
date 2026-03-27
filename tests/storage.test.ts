@@ -33,14 +33,49 @@ beforeEach(() => {
 })
 
 describe('saveKeys', () => {
-  it('saves to sync when data fits', async () => {
+  it('saves to sync in chunked format when data fits', async () => {
     const keys = [{ key: 'ctrl+b', action: 'newtab' }]
     const result = await saveKeys(keys)
 
     expect(result).toBe('sync')
-    expect(mockSyncSet).toHaveBeenCalledWith({ keys: JSON.stringify(keys) })
+    // Should save chunked: keys_meta + keys_0
+    expect(mockSyncSet).toHaveBeenCalledWith(
+      expect.objectContaining({ keys_meta: 1, keys_0: JSON.stringify(keys) })
+    )
     // Also saves local backup
     expect(mockLocalSet).toHaveBeenCalledWith({ keys: JSON.stringify(keys) })
+  })
+
+  it('splits large data into multiple chunks', async () => {
+    // Create data larger than 7,000 chars but under 102KB
+    const keys = Array.from({ length: 50 }, (_, i) => ({
+      key: `ctrl+${i}`, action: 'javascript', code: 'x'.repeat(200), label: `Shortcut ${i}`
+    }))
+    const json = JSON.stringify(keys)
+    expect(json.length).toBeGreaterThan(7000)
+
+    const result = await saveKeys(keys)
+
+    expect(result).toBe('sync')
+    const setCall = mockSyncSet.mock.calls[0][0]
+    expect(setCall.keys_meta).toBeGreaterThan(1)
+    // Reassemble chunks should equal original JSON
+    let reassembled = ''
+    for (let i = 0; i < setCall.keys_meta; i++) {
+      expect(setCall[`keys_${i}`]).toBeDefined()
+      expect(setCall[`keys_${i}`].length).toBeLessThanOrEqual(7000)
+      reassembled += setCall[`keys_${i}`]
+    }
+    expect(reassembled).toBe(json)
+  })
+
+  it('cleans up legacy "keys" entry and excess chunks after saving', async () => {
+    const keys = [{ key: 'a', action: 'newtab' }]
+    await saveKeys(keys)
+
+    expect(mockSyncRemove).toHaveBeenCalledWith(
+      expect.arrayContaining(['keys'])
+    )
   })
 
   it('falls back to local when sync fails', async () => {
@@ -84,25 +119,30 @@ describe('saveKeys', () => {
     consoleSpy.mockRestore()
   })
 
-  it('clears stale sync data when falling back to local after sync failure', async () => {
+  it('clears all sync data when falling back to local', async () => {
     mockSyncSet.mockRejectedValue(new Error('quota exceeded'))
     const keys = [{ key: 'a', action: 'newtab' }]
     await saveKeys(keys)
 
-    expect(mockSyncRemove).toHaveBeenCalledWith('keys')
+    // Should clear legacy key, meta, and chunk keys
+    expect(mockSyncRemove).toHaveBeenCalledWith(
+      expect.arrayContaining(['keys', 'keys_meta', 'keys_0'])
+    )
     expect(mockLocalSet).toHaveBeenCalledWith({ keys: JSON.stringify(keys) })
   })
 
-  it('clears stale sync data when data is too large for sync', async () => {
+  it('clears all sync data when data is too large for sync', async () => {
     const bigCode = 'x'.repeat(110_000)
     const keys = [{ key: 'a', action: 'javascript', code: bigCode }]
     await saveKeys(keys)
 
-    expect(mockSyncRemove).toHaveBeenCalledWith('keys')
+    expect(mockSyncRemove).toHaveBeenCalledWith(
+      expect.arrayContaining(['keys', 'keys_meta'])
+    )
     expect(mockLocalSet).toHaveBeenCalled()
   })
 
-  it('still saves to local if sync.remove fails', async () => {
+  it('still saves to local if sync.remove fails during cleanup', async () => {
     mockSyncSet.mockRejectedValue(new Error('quota exceeded'))
     mockSyncRemove.mockRejectedValue(new Error('remove failed'))
     const keys = [{ key: 'a', action: 'newtab' }]
@@ -114,12 +154,40 @@ describe('saveKeys', () => {
 })
 
 describe('loadKeys', () => {
-  it('loads from sync first', async () => {
-    mockSyncGet.mockResolvedValue({ keys: '[{"key":"a"}]' })
+  it('loads from sync chunked format', async () => {
+    const json = '[{"key":"a"}]'
+    mockSyncGet.mockImplementation((keys: any) => {
+      if (keys === 'keys_meta') return Promise.resolve({ keys_meta: 1 })
+      if (Array.isArray(keys) && keys.includes('keys_0')) return Promise.resolve({ keys_0: json })
+      return Promise.resolve({})
+    })
     const result = await loadKeys()
 
-    expect(result).toBe('[{"key":"a"}]')
-    expect(mockSyncGet).toHaveBeenCalledWith('keys')
+    expect(result).toBe(json)
+  })
+
+  it('loads from sync chunked format with multiple chunks', async () => {
+    const chunk0 = '[{"key":"a"},'
+    const chunk1 = '{"key":"b"}]'
+    mockSyncGet.mockImplementation((keys: any) => {
+      if (keys === 'keys_meta') return Promise.resolve({ keys_meta: 2 })
+      if (Array.isArray(keys)) return Promise.resolve({ keys_0: chunk0, keys_1: chunk1 })
+      return Promise.resolve({})
+    })
+    const result = await loadKeys()
+
+    expect(result).toBe(chunk0 + chunk1)
+  })
+
+  it('falls back to legacy single "keys" format if no chunks', async () => {
+    mockSyncGet.mockImplementation((keys: any) => {
+      if (keys === 'keys_meta') return Promise.resolve({})
+      if (keys === 'keys') return Promise.resolve({ keys: '[{"key":"legacy"}]' })
+      return Promise.resolve({})
+    })
+    const result = await loadKeys()
+
+    expect(result).toBe('[{"key":"legacy"}]')
   })
 
   it('falls back to local if sync is empty', async () => {
@@ -160,9 +228,24 @@ describe('loadKeys', () => {
     consoleSpy.mockRestore()
   })
 
-  it('prefers local when local has more shortcuts than sync (stale sync)', async () => {
-    // Simulate stale sync: sync has 1 shortcut, local has 3 (user added more after exceeding sync quota)
-    mockSyncGet.mockResolvedValue({ keys: '[{"key":"a"}]' })
+  it('returns undefined if a chunk is missing (corrupted)', async () => {
+    mockSyncGet.mockImplementation((keys: any) => {
+      if (keys === 'keys_meta') return Promise.resolve({ keys_meta: 2 })
+      if (Array.isArray(keys)) return Promise.resolve({ keys_0: 'data' }) // keys_1 missing
+      return Promise.resolve({})
+    })
+    mockLocalGet.mockResolvedValue({})
+    const result = await loadKeys()
+
+    expect(result).toBeUndefined()
+  })
+
+  it('prefers local when local has more shortcuts than sync', async () => {
+    mockSyncGet.mockImplementation((keys: any) => {
+      if (keys === 'keys_meta') return Promise.resolve({ keys_meta: 1 })
+      if (Array.isArray(keys)) return Promise.resolve({ keys_0: '[{"key":"a"}]' })
+      return Promise.resolve({})
+    })
     mockLocalGet.mockResolvedValue({ keys: '[{"key":"a"},{"key":"b"},{"key":"c"}]' })
     const result = await loadKeys()
 
@@ -170,7 +253,11 @@ describe('loadKeys', () => {
   })
 
   it('prefers sync when sync has more shortcuts than local', async () => {
-    mockSyncGet.mockResolvedValue({ keys: '[{"key":"a"},{"key":"b"}]' })
+    mockSyncGet.mockImplementation((keys: any) => {
+      if (keys === 'keys_meta') return Promise.resolve({ keys_meta: 1 })
+      if (Array.isArray(keys)) return Promise.resolve({ keys_0: '[{"key":"a"},{"key":"b"}]' })
+      return Promise.resolve({})
+    })
     mockLocalGet.mockResolvedValue({ keys: '[{"key":"a"}]' })
     const result = await loadKeys()
 
@@ -178,8 +265,11 @@ describe('loadKeys', () => {
   })
 
   it('prefers local when both have equal number of shortcuts', async () => {
-    // When equal, prefer local (it was written more recently in the fallback path)
-    mockSyncGet.mockResolvedValue({ keys: '[{"key":"a"}]' })
+    mockSyncGet.mockImplementation((keys: any) => {
+      if (keys === 'keys_meta') return Promise.resolve({ keys_meta: 1 })
+      if (Array.isArray(keys)) return Promise.resolve({ keys_0: '[{"key":"a"}]' })
+      return Promise.resolve({})
+    })
     mockLocalGet.mockResolvedValue({ keys: '[{"key":"b"}]' })
     const result = await loadKeys()
 
@@ -188,23 +278,47 @@ describe('loadKeys', () => {
 })
 
 describe('migrateLocalToSync', () => {
-  it('copies local data to sync on first run', async () => {
+  it('copies local data to sync using chunked format on first run', async () => {
     mockLocalGet
       .mockResolvedValueOnce({ }) // no migration flag
       .mockResolvedValueOnce({ keys: '[{"key":"a"}]' }) // local data
-    mockSyncGet.mockResolvedValue({}) // sync is empty
+    mockSyncGet.mockResolvedValue({}) // sync is empty (no chunks, no legacy)
 
     await migrateLocalToSync()
 
-    expect(mockSyncSet).toHaveBeenCalledWith({ keys: '[{"key":"a"}]' })
+    // Should use chunked format
+    expect(mockSyncSet).toHaveBeenCalledWith(
+      expect.objectContaining({ keys_meta: 1, keys_0: '[{"key":"a"}]' })
+    )
     expect(mockLocalSet).toHaveBeenCalledWith({ __shortkeys_migrated_to_sync: true })
   })
 
-  it('does not overwrite existing sync data', async () => {
+  it('does not overwrite existing chunked sync data', async () => {
     mockLocalGet
       .mockResolvedValueOnce({}) // no migration flag
       .mockResolvedValueOnce({ keys: '[{"key":"local"}]' })
-    mockSyncGet.mockResolvedValue({ keys: '[{"key":"sync"}]' }) // sync already has data
+    // Sync has chunked data
+    mockSyncGet.mockImplementation((keys: any) => {
+      if (keys === 'keys_meta') return Promise.resolve({ keys_meta: 1 })
+      if (Array.isArray(keys)) return Promise.resolve({ keys_0: '[{"key":"sync"}]' })
+      return Promise.resolve({})
+    })
+
+    await migrateLocalToSync()
+
+    expect(mockSyncSet).not.toHaveBeenCalled()
+    expect(mockLocalSet).toHaveBeenCalledWith({ __shortkeys_migrated_to_sync: true })
+  })
+
+  it('does not overwrite existing legacy sync data', async () => {
+    mockLocalGet
+      .mockResolvedValueOnce({}) // no migration flag
+      .mockResolvedValueOnce({ keys: '[{"key":"local"}]' })
+    mockSyncGet.mockImplementation((keys: any) => {
+      if (keys === 'keys_meta') return Promise.resolve({}) // no chunks
+      if (keys === 'keys') return Promise.resolve({ keys: '[{"key":"sync"}]' }) // legacy
+      return Promise.resolve({})
+    })
 
     await migrateLocalToSync()
 
