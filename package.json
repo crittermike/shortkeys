@@ -27,7 +27,7 @@
     "@wxt-dev/module-vue": "^1.0.3",
     "astro": "^5.18.1",
     "jsdom": "^27.0.1",
-    "vitest": "^3.2.4",
+    "vitest": "^4.1.2",
     "wxt": "^0.20.17"
   },
   "dependencies": {
