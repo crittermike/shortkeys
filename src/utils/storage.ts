@@ -8,28 +8,35 @@
  *   - QUOTA_BYTES_PER_ITEM: 8,192 bytes per key
  *   - QUOTA_BYTES: 102,400 bytes total
  *   - MAX_ITEMS: 512
+ *
+ * To stay under the per-item limit, shortcuts are split into chunks
+ * (keys_0, keys_1, ...) with a keys_meta entry storing the chunk count.
+ * The legacy single "keys" entry is supported for backward compatibility on load.
  */
 
 import { browser } from 'wxt/browser'
 
 const SYNC_QUOTA = 102_400 // 100KB total
+const SYNC_CHUNK_SIZE = 7_000 // Max chars per chunk (well under 8,192 byte per-item limit)
+const SYNC_CHUNK_PREFIX = 'keys_'
+const SYNC_META_KEY = 'keys_meta'
+const MAX_CHUNKS = 15 // 15 × 7KB = 105KB, above SYNC_QUOTA so this is safe
 const MIGRATED_KEY = '__shortkeys_migrated_to_sync'
 
 
 /**
- * Save keys to synced storage. Falls back to local if too large.
- * When falling back to local, clears stale sync data so loadKeys()
- * doesn't return an outdated dataset.
+ * Save keys to synced storage using chunked format.
+ * Falls back to local if too large for sync or if sync fails.
  * Returns 'sync' or 'local' indicating where data was saved.
  */
 export async function saveKeys(keys: any[]): Promise<'sync' | 'local'> {
   const json = JSON.stringify(keys)
   const byteSize = new Blob([json]).size
 
-  // If data fits in sync, use sync
-  if (browser.storage.sync && byteSize < SYNC_QUOTA - 1024) {
+  // If data fits in sync, use chunked sync
+  if (browser.storage.sync && byteSize < SYNC_QUOTA - 2048) {
     try {
-      await browser.storage.sync.set({ keys: json })
+      await saveToSyncChunked(json)
       // Also keep a local copy as backup
       await browser.storage.local.set({ keys: json })
       return 'sync'
@@ -40,13 +47,7 @@ export async function saveKeys(keys: any[]): Promise<'sync' | 'local'> {
 
   // Fallback: local only. Remove stale sync data so loadKeys() won't
   // return an older dataset that was saved before the data grew too large.
-  if (browser.storage.sync) {
-    try {
-      await browser.storage.sync.remove('keys')
-    } catch {
-      // Best-effort cleanup -- if this fails, loadKeys() still handles it
-    }
-  }
+  await clearSyncData()
   try {
     await browser.storage.local.set({ keys: json })
     return 'local'
@@ -56,8 +57,60 @@ export async function saveKeys(keys: any[]): Promise<'sync' | 'local'> {
   }
 }
 
+/** Split JSON string into chunks and write to sync storage. */
+async function saveToSyncChunked(json: string): Promise<void> {
+  const chunks: string[] = []
+  for (let i = 0; i < json.length; i += SYNC_CHUNK_SIZE) {
+    chunks.push(json.slice(i, i + SYNC_CHUNK_SIZE))
+  }
+
+  const payload: Record<string, any> = { [SYNC_META_KEY]: chunks.length }
+  chunks.forEach((chunk, i) => { payload[`${SYNC_CHUNK_PREFIX}${i}`] = chunk })
+  await browser.storage.sync.set(payload)
+
+  // Clean up legacy single "keys" entry and any excess chunks from a previous save
+  const toRemove = ['keys']
+  for (let i = chunks.length; i < MAX_CHUNKS; i++) {
+    toRemove.push(`${SYNC_CHUNK_PREFIX}${i}`)
+  }
+  try { await browser.storage.sync.remove(toRemove) } catch { /* best-effort */ }
+}
+
+/** Load keys from chunked sync storage. Returns undefined if no chunked data. */
+async function loadFromSyncChunked(): Promise<string | undefined> {
+  const metaData = await browser.storage.sync.get(SYNC_META_KEY)
+  const chunkCount = metaData[SYNC_META_KEY] as number | undefined
+  if (!chunkCount || chunkCount < 1) return undefined
+
+  const chunkKeys = Array.from({ length: chunkCount }, (_, i) => `${SYNC_CHUNK_PREFIX}${i}`)
+  const chunkData = await browser.storage.sync.get(chunkKeys)
+
+  let json = ''
+  for (let i = 0; i < chunkCount; i++) {
+    const chunk = chunkData[`${SYNC_CHUNK_PREFIX}${i}`]
+    if (chunk === undefined) return undefined // Missing chunk — data is corrupted
+    json += chunk
+  }
+
+  return json
+}
+
+/** Remove all sync data (meta, chunks, and legacy "keys" entry). */
+async function clearSyncData(): Promise<void> {
+  if (!browser.storage.sync) return
+  try {
+    const toRemove = ['keys', SYNC_META_KEY]
+    for (let i = 0; i < MAX_CHUNKS; i++) {
+      toRemove.push(`${SYNC_CHUNK_PREFIX}${i}`)
+    }
+    await browser.storage.sync.remove(toRemove)
+  } catch {
+    // Best-effort cleanup
+  }
+}
+
 /**
- * Load keys from storage. Checks sync first, then local.
+ * Load keys from storage. Checks sync first (chunked, then legacy), then local.
  * If both exist, compares them and returns whichever has more shortcuts
  * (more data = more recent, since shortcuts only grow via import/add).
  */
@@ -65,11 +118,14 @@ export async function loadKeys(): Promise<string | undefined> {
   let syncKeys: string | undefined
   let localKeys: string | undefined
 
-  // Try sync first
+  // Try sync first: chunked format, then legacy single-key format
   if (browser.storage.sync) {
     try {
-      const syncData = await browser.storage.sync.get('keys')
-      syncKeys = syncData.keys as string | undefined
+      syncKeys = await loadFromSyncChunked()
+      if (!syncKeys) {
+        const syncData = await browser.storage.sync.get('keys')
+        syncKeys = syncData.keys as string | undefined
+      }
     } catch (e) {
       console.error('[Shortkeys] Failed to load from sync storage, trying local:', e)
     }
@@ -122,17 +178,23 @@ export async function migrateLocalToSync(): Promise<void> {
       return
     }
 
+    // Check if sync already has data (chunked or legacy)
+    const existingSync = await loadFromSyncChunked()
+    if (existingSync) {
+      await browser.storage.local.set({ [MIGRATED_KEY]: true })
+      return
+    }
     const syncData = await browser.storage.sync.get('keys')
     if (syncData.keys) {
-      // Sync already has data -- don't overwrite (user may have set up on another device)
       await browser.storage.local.set({ [MIGRATED_KEY]: true })
       return
     }
 
-    // Migrate local -> sync
-    const byteSize = new Blob([localData.keys as string]).size
-    if (byteSize < SYNC_QUOTA - 1024) {
-      await browser.storage.sync.set({ keys: localData.keys })
+    // Migrate local -> sync using chunked format
+    const json = localData.keys as string
+    const byteSize = new Blob([json]).size
+    if (byteSize < SYNC_QUOTA - 2048) {
+      await saveToSyncChunked(json)
     }
     await browser.storage.local.set({ [MIGRATED_KEY]: true })
   } catch (e) {
