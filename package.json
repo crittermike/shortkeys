@@ -21,7 +21,7 @@
     "dev:site": "cd site && npx astro dev"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.2",
+    "@playwright/test": "^1.59.1",
     "@types/chrome": "^0.1.38",
     "@vitest/coverage-v8": "^3.2.4",
     "@wxt-dev/module-vue": "^1.0.3",
