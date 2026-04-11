@@ -25,7 +25,7 @@
     "@types/chrome": "^0.1.40",
     "@vitest/coverage-v8": "^3.2.4",
     "@wxt-dev/module-vue": "^1.0.3",
-    "astro": "^5.18.1",
+    "astro": "^6.1.5",
     "jsdom": "^29.0.2",
     "vitest": "^3.2.4",
     "wxt": "^0.20.20"
