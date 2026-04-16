@@ -1,6 +1,19 @@
 import type { KeySetting } from './url-matching'
 
 /**
+ * Content-script actions that bypass the activeInInputs check.
+ * These show overlays or toggle CSS — they never insert text into
+ * the active element, so allowing them in inputs is safe.
+ */
+export const OVERLAY_ACTIONS = [
+  'linkhints',
+  'linkhintsnew',
+  'showcheatsheet',
+  'toggledarkmode',
+  'editurl',
+]
+
+/**
  * Fetch the full key shortcut config given a keyboard combo.
  */
 export function fetchConfig(keys: KeySetting[], keyCombo: string): KeySetting | false {
@@ -28,6 +41,8 @@ export function shouldStopCallback(
 
   if (element.classList && element.classList.contains('mousetrap')) {
     return true
+  } else if (keySetting && OVERLAY_ACTIONS.includes(keySetting.action)) {
+    return false
   } else if (!keySetting || !keySetting.activeInInputs) {
     const role = element.getAttribute?.('role')
     return (
