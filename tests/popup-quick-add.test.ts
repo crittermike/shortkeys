@@ -58,7 +58,11 @@ describe('popup quick-add shortcut flow', () => {
     const existing: KeySetting[] = [
       { key: 'ctrl+b', action: 'newtab', id: 'existing-1', enabled: true },
     ]
-    mockSyncGet.mockResolvedValue({ keys: JSON.stringify(existing) })
+    mockSyncGet.mockImplementation((keys: any) => {
+      if (keys === 'keys_meta') return Promise.resolve({})
+      if (keys === 'keys') return Promise.resolve({ keys: JSON.stringify(existing) })
+      return Promise.resolve({})
+    })
 
     // Simulate the quick-add save flow
     const saved = await loadKeys()
@@ -78,9 +82,9 @@ describe('popup quick-add shortcut flow', () => {
     expect(currentKeys[0].id).toBe('existing-1')
     expect(currentKeys[1].key).toBe('ctrl+shift+k')
     expect(currentKeys[1].action).toBe('closetab')
-    expect(mockSyncSet).toHaveBeenCalledWith({
-      keys: JSON.stringify(currentKeys),
-    })
+    expect(mockSyncSet).toHaveBeenCalledWith(
+      expect.objectContaining({ keys_meta: 1, keys_0: JSON.stringify(currentKeys) })
+    )
   })
 
   it('creates shortcut with empty storage (first shortcut)', async () => {
@@ -102,9 +106,9 @@ describe('popup quick-add shortcut flow', () => {
     await saveKeys(currentKeys)
 
     expect(currentKeys).toHaveLength(1)
-    expect(mockSyncSet).toHaveBeenCalledWith({
-      keys: JSON.stringify([newShortcut]),
-    })
+    expect(mockSyncSet).toHaveBeenCalledWith(
+      expect.objectContaining({ keys_meta: 1, keys_0: JSON.stringify([newShortcut]) })
+    )
   })
 
   it('does not save when key is empty', () => {
