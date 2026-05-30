@@ -23,7 +23,7 @@
   "devDependencies": {
     "@playwright/test": "^1.60.0",
     "@types/chrome": "^0.1.42",
-    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/coverage-v8": "^4.1.7",
     "@wxt-dev/module-vue": "^1.0.3",
     "astro": "^6.4.2",
     "jsdom": "^29.1.1",
