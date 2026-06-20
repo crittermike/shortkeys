@@ -23,11 +23,11 @@
   "devDependencies": {
     "@playwright/test": "^1.61.0",
     "@types/chrome": "^0.1.43",
-    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/coverage-v8": "^4.1.8",
     "@wxt-dev/module-vue": "^1.0.3",
     "astro": "^6.4.8",
     "jsdom": "^29.1.1",
-    "vitest": "^3.2.4",
+    "vitest": "^4.1.8",
     "wxt": "^0.20.26"
   },
   "dependencies": {
