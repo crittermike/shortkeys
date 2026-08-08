@@ -28,7 +28,7 @@
     "astro": "^6.4.8",
     "jsdom": "^29.1.1",
     "vitest": "^3.2.4",
-    "wxt": "^0.21.2"
+    "wxt": "^0.21.3"
   },
   "dependencies": {
     "@codemirror/lang-javascript": "^6.2.5",
