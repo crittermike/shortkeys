@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
-    "@types/chrome": "^0.2.5",
+    "@types/chrome": "^0.2.6",
     "@vitest/coverage-v8": "^3.2.4",
     "@wxt-dev/module-vue": "^1.0.3",
     "astro": "^6.4.8",
