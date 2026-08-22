@@ -36,7 +36,7 @@
     "codemirror": "^6.0.2",
     "monaco-editor": "^0.56.0",
     "mousetrap": "^1.6.3",
-    "uuid": "^14.0.1",
+    "uuid": "^14.0.2",
     "vue": "^3.5.41"
   }
 }
