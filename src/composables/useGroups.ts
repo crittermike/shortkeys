@@ -9,16 +9,16 @@ import { saveGroupSettings, loadGroupSettings } from '@/utils/storage'
 
 export const DEFAULT_GROUP = 'My Shortcuts'
 
+const collapsedGroups = ref<Set<string>>(new Set())
+const editingGroupName = ref<string | null>(null)
+const newGroupName = ref('')
+const groupMenuOpen = ref<string | null>(null)
+const groupSettings = reactive<Record<string, GroupSettings>>({})
+const expandedGroupSiteFilter = ref<string | null>(null)
+
 export function useGroups() {
   const { keys } = useShortcuts()
   const { filteredIndices } = useSearch()
-
-  const collapsedGroups = ref<Set<string>>(new Set())
-  const editingGroupName = ref<string | null>(null)
-  const newGroupName = ref('')
-  const groupMenuOpen = ref<string | null>(null)
-  const groupSettings = reactive<Record<string, GroupSettings>>({})
-  const expandedGroupSiteFilter = ref<string | null>(null)
 
   /** Get ordered list of unique group names */
   const groupNames = computed(() => {
