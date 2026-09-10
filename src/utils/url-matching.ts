@@ -68,6 +68,7 @@ export interface KeySetting {
   trigger?: string
   inserttext?: string
   smoothScrolling?: boolean
+  hintChars?: string
   currentWindow?: boolean
   enabled?: boolean
   group?: string

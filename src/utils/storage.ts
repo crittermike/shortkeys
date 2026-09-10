@@ -259,3 +259,50 @@ export async function loadGroupSettings(): Promise<Record<string, GroupSettings>
   }
   return {}
 }
+
+import { type VimSettings, normalizeVimSettings } from './vim-settings'
+
+/**
+ * Save the global Vim navigation settings. They are a handful of scalars, so
+ * they always fit in sync storage.
+ */
+export async function saveVimSettings(settings: VimSettings): Promise<void> {
+  const json = JSON.stringify(settings)
+  if (browser.storage.sync) {
+    try {
+      await browser.storage.sync.set({ vimSettings: json })
+      await browser.storage.local.set({ vimSettings: json })
+      return
+    } catch (e) {
+      console.error('[Shortkeys] Sync save failed for vim settings, falling back to local:', e)
+    }
+  }
+  try {
+    await browser.storage.local.set({ vimSettings: json })
+  } catch (e) {
+    console.error('[Shortkeys] Local save failed for vim settings:', e)
+  }
+}
+
+/**
+ * Load the global Vim navigation settings. Checks sync first, then local.
+ * Always resolves to a complete settings object — missing or corrupt data
+ * falls back to the defaults.
+ */
+export async function loadVimSettings(): Promise<VimSettings> {
+  if (browser.storage.sync) {
+    try {
+      const syncData = await browser.storage.sync.get('vimSettings')
+      if (syncData.vimSettings) return normalizeVimSettings(JSON.parse(syncData.vimSettings as string))
+    } catch (e) {
+      console.error('[Shortkeys] Failed to load vim settings from sync, trying local:', e)
+    }
+  }
+  try {
+    const localData = await browser.storage.local.get('vimSettings')
+    if (localData.vimSettings) return normalizeVimSettings(JSON.parse(localData.vimSettings as string))
+  } catch (e) {
+    console.error('[Shortkeys] Failed to load vim settings from local:', e)
+  }
+  return normalizeVimSettings(undefined)
+}
