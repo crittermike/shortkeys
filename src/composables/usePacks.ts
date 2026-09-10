@@ -2,6 +2,7 @@ import { ref, computed } from 'vue'
 import { v4 as uuid } from 'uuid'
 import type { ShortcutPack } from '@/packs'
 import { useShortcuts } from './useShortcuts'
+import { useGroups } from './useGroups'
 import { useToast } from './useToast'
 import { normalizeKey, couldSiteFiltersOverlap } from '@/utils/shortcut-conflicts'
 import type { KeySetting } from '@/utils/url-matching'
@@ -100,6 +101,13 @@ export function usePacks() {
     } else {
       // Keep both
       keys.value.push(...newShortcuts)
+    }
+
+    // Apply group-level site rules if the pack includes them
+    if (pack.groupSettings) {
+      const { groupSettings, persistGroupSettings } = useGroups()
+      groupSettings[groupName] = { ...pack.groupSettings }
+      await persistGroupSettings()
     }
 
     const droppedCount = pack.shortcuts.length - nonExactShortcuts.length
