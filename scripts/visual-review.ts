@@ -192,6 +192,23 @@ async function main() {
 
   await analyticsPage.close()
 
+  // 8d. Screenshot: Options page — Vim tab
+  console.log('Capturing options page (Vim tab)...')
+  const vimPage = await context.newPage()
+  await vimPage.setViewportSize({ width: 1280, height: 1000 })
+  await vimPage.goto(`chrome-extension://${extensionId}/options.html`)
+  await vimPage.waitForSelector('.app-main', { timeout: 5000 })
+  await vimPage.waitForTimeout(500)
+  // Click the Vim tab (6th tab button, index 5)
+  await vimPage.locator('.tab-btn').nth(5).click()
+  await vimPage.waitForTimeout(500)
+  await vimPage.screenshot({
+    path: path.join(SCREENSHOT_DIR, 'options-vim.png'),
+    fullPage: true,
+  })
+
+  await vimPage.close()
+
   // 9. Screenshot: Options page — Import tab
   console.log('Capturing options page (Import tab)...')
   const importPage = await context.newPage()

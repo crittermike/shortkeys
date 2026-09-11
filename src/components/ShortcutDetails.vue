@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { SCROLL_ACTIONS, isBuiltInAction } from '@/utils/actions-registry'
+import { computed } from 'vue'
+import { normalizeHintChars } from '@/utils/link-hints'
+import { useVimSettings } from '@/composables/useVimSettings'
 import SearchSelect from '@/components/SearchSelect.vue'
 import CodeEditor from '@/components/CodeEditor.vue'
 import { useShortcuts } from '@/composables/useShortcuts'
@@ -12,6 +15,10 @@ const props = defineProps<{
 }>()
 
 const { keys } = useShortcuts()
+const { vimSettings } = useVimSettings()
+
+/** The global alphabet a shortcut falls back to when it sets none. */
+const globalHintChars = computed(() => normalizeHintChars(vimSettings.value.hintChars).toLowerCase())
 const { macroActionOptions } = useSearch()
 const { MAX_MACRO_STEPS, addMacroStep, removeMacroStep, moveMacroStep, convertToSingleAction } = useMacros()
 const {
@@ -22,6 +29,10 @@ const {
 
 function isScrollAction(action: string): boolean {
   return (SCROLL_ACTIONS as readonly string[]).includes(action)
+}
+
+function isLinkHintAction(action: string): boolean {
+  return action === 'linkhints' || action === 'linkhintsnew'
 }
 
 function isBookmarkAction(action: string): boolean {
@@ -81,6 +92,27 @@ function isBookmarkAction(action: string): boolean {
         <button :class="['toggle', { on: keys[index].smoothScrolling }]" @click="keys[index].smoothScrolling = !keys[index].smoothScrolling" type="button">
           <span class="toggle-knob"></span>
         </button>
+      </div>
+
+      <div v-if="isLinkHintAction(keys[index].action)" class="detail-field" style="max-width: 460px">
+        <label>Hint keys <span class="hint">(this shortcut only)</span></label>
+        <input
+          class="field-input mono"
+          v-model="keys[index].hintChars"
+          :placeholder="globalHintChars"
+          spellcheck="false"
+          autocapitalize="off"
+          autocomplete="off"
+        />
+        <span class="field-hint">
+          <template v-if="keys[index].hintChars">
+            Using <strong class="mono">{{ normalizeHintChars(keys[index].hintChars).toLowerCase() }}</strong> —
+            letters and digits only, duplicates dropped.
+          </template>
+          <template v-else>
+            Using <strong class="mono">{{ globalHintChars }}</strong> from the Vim tab. Type here to override it for this shortcut.
+          </template>
+        </span>
       </div>
 
       <div v-if="isBookmarkAction(keys[index].action)" class="detail-field">

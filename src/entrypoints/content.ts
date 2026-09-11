@@ -1,7 +1,13 @@
 import Mousetrap from 'mousetrap'
 import { fetchConfig, shouldStopCallback } from '@/utils/content-logic'
 import { ACTION_CATEGORIES } from '@/utils/actions-registry'
-import { activateLinkHints, deactivateLinkHints, isLinkHintModeActive } from '@/utils/link-hints'
+import {
+  activateLinkHints, isLinkHintModeActive,
+  getPreferredScrollContainer, type LinkHintOptions,
+} from '@/utils/link-hints'
+import { scrollBy, scrollToEdge, pageAmount, stopScrolling, type ScrollAxis } from '@/utils/smooth-scroll'
+import { loadVimSettings } from '@/utils/storage'
+import { DEFAULT_VIM_SETTINGS, type VimSettings } from '@/utils/vim-settings'
 import type { KeySetting } from '@/utils/url-matching'
 
 export default defineContentScript({
@@ -11,6 +17,55 @@ export default defineContentScript({
 
   main() {
     let keys: KeySetting[] = []
+    let vimSettings: VimSettings = DEFAULT_VIM_SETTINGS
+
+    /** Hint options for a shortcut: its own hintChars win over the global set. */
+    function hintOptionsFor(keySetting?: KeySetting): LinkHintOptions {
+      return {
+        hintChars: keySetting?.hintChars || vimSettings.hintChars,
+        mode: vimSettings.hintMode,
+        waitForEnter: vimSettings.hintWaitForEnter,
+        thorough: vimSettings.hintDetection === 'thorough',
+        shadowDom: vimSettings.hintShadowDom,
+        scrollables: vimSettings.hintScrollables,
+        skipCovered: vimSettings.hintSkipCovered,
+      }
+    }
+
+    /**
+     * Scroll actions run here instead of in the background script: a message
+     * round trip plus a script injection per keypress is what made held keys
+     * feel laggy.
+     */
+    function runScrollAction(action: string, keySetting?: KeySetting): boolean {
+      // An explicit per-shortcut choice wins; otherwise use the global setting.
+      const smooth = keySetting?.smoothScrolling ?? vimSettings.smoothScroll
+      const opts = {
+        smooth,
+        duration: vimSettings.scrollDuration,
+        target: getPreferredScrollContainer(),
+      }
+      const step = vimSettings.scrollStepSize
+      const big = vimSettings.scrollBigStepSize
+
+      const move = (axis: ScrollAxis, amount: number) => { scrollBy(axis, amount, opts) }
+
+      switch (action) {
+        case 'scrolldown': move('y', step); return true
+        case 'scrollup': move('y', -step); return true
+        case 'scrolldownmore': move('y', big); return true
+        case 'scrollupmore': move('y', -big); return true
+        case 'pagedown': move('y', pageAmount('y', 1, opts.target)); return true
+        case 'pageup': move('y', -pageAmount('y', -1, opts.target)); return true
+        case 'scrollright': move('x', step); return true
+        case 'scrollleft': move('x', -step); return true
+        case 'scrollrightmore': move('x', big); return true
+        case 'scrollleftmore': move('x', -big); return true
+        case 'top': scrollToEdge('y', 'start', opts); return true
+        case 'bottom': scrollToEdge('y', 'end', opts); return true
+        default: return false
+      }
+    }
 
     // Build action → label lookup for cheat sheet
     const actionLabels: Record<string, string> = {}
@@ -54,12 +109,20 @@ export default defineContentScript({
         return
       }
       if (action === 'linkhints') {
-        activateLinkHints(false)
+        stopScrolling()
+        activateLinkHints(false, hintOptionsFor(keySetting))
         trackContentAction(keySetting)
         return
       }
       if (action === 'linkhintsnew') {
-        activateLinkHints(true)
+        stopScrolling()
+        activateLinkHints(true, hintOptionsFor(keySetting))
+        trackContentAction(keySetting)
+        return
+      }
+      if (runScrollAction(action, keySetting)) {
+        trackContentAction(keySetting)
+        return
       }
       if (action === 'editurl') {
         showEditUrlBar()
@@ -256,8 +319,14 @@ export default defineContentScript({
       keys.forEach(activateKey)
     }
 
+    /** Global Vim settings live in storage; reload them whenever keys change. */
+    function loadSettings() {
+      loadVimSettings().then((settings) => { vimSettings = settings }).catch(() => {})
+    }
+
     // Fetch keys from background and activate them
     function loadKeys() {
+      loadSettings()
       if (!isContextValid()) return
       browser.runtime.sendMessage({ action: 'getKeys', url: document.URL }).then((response) => {
         if (response) {
@@ -276,9 +345,11 @@ export default defineContentScript({
       } else if (message.action === 'toggledarkmode') {
         toggleDarkMode()
       } else if (message.action === 'linkhints') {
-        activateLinkHints(false)
+        activateLinkHints(false, hintOptionsFor(message as KeySetting))
       } else if (message.action === 'linkhintsnew') {
-        activateLinkHints(true)
+        activateLinkHints(true, hintOptionsFor(message as KeySetting))
+      } else if (runScrollAction(message.action, message as KeySetting)) {
+        // handled
       } else if (message.action === 'editurl') {
         showEditUrlBar()
       }
