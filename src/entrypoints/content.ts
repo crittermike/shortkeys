@@ -60,6 +60,8 @@ export default defineContentScript({
       }
       if (action === 'linkhintsnew') {
         activateLinkHints(true)
+        trackContentAction(keySetting)
+        return
       }
       if (action === 'editurl') {
         showEditUrlBar()
