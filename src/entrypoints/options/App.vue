@@ -11,6 +11,7 @@ import CommunityPackModal from '@/components/CommunityPackModal.vue'
 import JsWarningDialog from '@/components/JsWarningDialog.vue'
 import ExportTab from '@/components/ExportTab.vue'
 import AnalyticsTab from '@/components/AnalyticsTab.vue'
+import VimTab from '@/components/VimTab.vue'
 import OnboardingWizard from '@/components/OnboardingWizard.vue'
 import { useTheme } from '@/composables/useTheme'
 import { useToast } from '@/composables/useToast'
@@ -25,6 +26,7 @@ import { useJsTools } from '@/composables/useJsTools'
 import { useUndoRedo } from '@/composables/useUndoRedo'
 import { useViewDensity } from '@/composables/useViewDensity'
 import { usePacks } from '@/composables/usePacks'
+import { useVimSettings } from '@/composables/useVimSettings'
 
 // --- Composables ---
 const { darkMode, initTheme, toggleTheme } = useTheme()
@@ -52,11 +54,13 @@ const { refreshTabs, loadBookmarks } = useJsTools()
 const { init: initUndoRedo, undo, redo, canUndo, canRedo } = useUndoRedo()
 const { density, initDensity, toggleDensity } = useViewDensity()
 const { previewPack, installPack } = usePacks()
+const { initVimSettings } = useVimSettings()
 
 // --- Lifecycle ---
 initTheme()
 initUndoRedo(keys)
 initDensity()
+initVimSettings()
 
 const activeTab = ref(0)
 const showOnboarding = ref(false)
@@ -230,6 +234,9 @@ onUnmounted(() => {
         </button>
         <button :class="['tab-btn', { active: activeTab === 4 }]" @click="activeTab = 4">
           <i class="mdi mdi-chart-line"></i> Analytics
+        </button>
+        <button :class="['tab-btn', { active: activeTab === 5 }]" @click="activeTab = 5">
+          <i class="mdi mdi-tune-variant"></i> Vim
         </button>
       </div>
 
@@ -521,6 +528,11 @@ onUnmounted(() => {
       <!-- Analytics Tab -->
       <div v-show="activeTab === 4" class="tab-content">
         <AnalyticsTab />
+      </div>
+
+      <!-- Vim Tab -->
+      <div v-show="activeTab === 5" class="tab-content">
+        <VimTab />
       </div>
     </main>
 
@@ -1309,6 +1321,8 @@ a:hover { text-decoration: underline; }
 }
 
 .hint { font-weight: 400; color: var(--text-muted); }
+.field-hint { display: block; margin-top: 5px; font-size: 12px; line-height: 1.4; color: var(--text-muted); }
+.field-hint .mono { font-size: 12px; color: var(--text-secondary); }
 .hint-link { font-weight: 400; color: var(--blue); font-size: 12px; }
 
 /* ── Macro builder ── */

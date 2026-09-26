@@ -2,7 +2,14 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { activateLinkHints, deactivateLinkHints, isLinkHintModeActive, generateLabels } from '../src/utils/link-hints'
+import {
+  activateLinkHints,
+  deactivateLinkHints,
+  isLinkHintModeActive,
+  generateLabels,
+  normalizeHintChars,
+  DEFAULT_HINT_CHARS,
+} from '../src/utils/link-hints'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -16,7 +23,7 @@ function createClickableElement(tag: string, attrs: Record<string, string> = {})
   // Give it a visible size (jsdom doesn't do layout, so we mock getBoundingClientRect)
   Object.defineProperty(el, 'offsetWidth', { value: 100, configurable: true })
   Object.defineProperty(el, 'offsetHeight', { value: 30, configurable: true })
-  el.getBoundingClientRect = () => ({
+  const rect = {
     top: 10,
     left: 10,
     bottom: 40,
@@ -26,7 +33,10 @@ function createClickableElement(tag: string, attrs: Record<string, string> = {})
     x: 10,
     y: 10,
     toJSON: () => {},
-  })
+  } as DOMRect
+  el.getBoundingClientRect = () => rect
+  // Hint geometry reads getClientRects(), which jsdom leaves empty.
+  el.getClientRects = () => [rect] as unknown as DOMRectList
   document.body.appendChild(el)
   return el
 }
@@ -62,6 +72,89 @@ describe('link-hints', () => {
   afterEach(() => {
     deactivateLinkHints()
     vi.restoreAllMocks()
+  })
+
+  describe('normalizeHintChars', () => {
+    it('falls back to the default set when empty or missing', () => {
+      expect(normalizeHintChars(undefined)).toBe(DEFAULT_HINT_CHARS)
+      expect(normalizeHintChars('')).toBe(DEFAULT_HINT_CHARS)
+      expect(normalizeHintChars('   ')).toBe(DEFAULT_HINT_CHARS)
+    })
+
+    it('uppercases the user input', () => {
+      expect(normalizeHintChars('asdf')).toBe('ASDF')
+    })
+
+    it('drops duplicate characters', () => {
+      expect(normalizeHintChars('aabbcc')).toBe('ABC')
+      expect(normalizeHintChars('aAbB')).toBe('AB')
+    })
+
+    it('strips characters that are not letters or digits', () => {
+      expect(normalizeHintChars('a-s d,f!')).toBe('ASDF')
+      expect(normalizeHintChars('a1b2')).toBe('A1B2')
+    })
+
+    it('falls back to the default set when fewer than 2 usable characters remain', () => {
+      expect(normalizeHintChars('a')).toBe(DEFAULT_HINT_CHARS)
+      expect(normalizeHintChars('aaa')).toBe(DEFAULT_HINT_CHARS)
+      expect(normalizeHintChars('-,.')).toBe(DEFAULT_HINT_CHARS)
+    })
+
+    it('preserves the order the characters were typed in', () => {
+      expect(normalizeHintChars('jkl')).toBe('JKL')
+    })
+  })
+
+  describe('custom hint characters', () => {
+    it('builds labels from the supplied alphabet', () => {
+      const labels = generateLabels(3, 'jkl')
+      expect(labels).toEqual(['J', 'K', 'L'])
+    })
+
+    it('keeps labels unique with a small alphabet', () => {
+      const labels = generateLabels(9, 'jkl')
+      expect(new Set(labels).size).toBe(9)
+      expect(labels.every(l => l.length === 2)).toBe(true)
+      expect(labels.every(l => /^[JKL]+$/.test(l))).toBe(true)
+    })
+
+    it('falls back to the default alphabet for invalid input', () => {
+      expect(generateLabels(3, 'a')).toEqual(generateLabels(3))
+      expect(generateLabels(3, '')).toEqual(generateLabels(3))
+    })
+
+    it('labels the hint overlays with the custom alphabet', () => {
+      createClickableElement('a', { href: 'https://example.com' })
+
+      activateLinkHints(false, 'qw')
+
+      const container = document.getElementById('__shortkeys-hint-container')!
+      expect(container.querySelector('span')!.textContent).toBe('Q')
+    })
+
+    it('activates the target with a custom hint key', () => {
+      const link = createClickableElement('a', { href: 'https://example.com' })
+      const clickSpy = vi.spyOn(link, 'click')
+
+      activateLinkHints(false, 'qw')
+      pressKey('q')
+
+      expect(clickSpy).toHaveBeenCalled()
+      expect(isLinkHintModeActive()).toBe(false)
+    })
+
+    it('deactivates on a key outside the custom alphabet', () => {
+      const link = createClickableElement('a', { href: 'https://example.com' })
+      const clickSpy = vi.spyOn(link, 'click')
+
+      activateLinkHints(false, 'qw')
+      // 's' is in the default set but not in the custom one
+      pressKey('s')
+
+      expect(clickSpy).not.toHaveBeenCalled()
+      expect(isLinkHintModeActive()).toBe(false)
+    })
   })
 
   describe('generateLabels', () => {
