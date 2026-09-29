@@ -5,6 +5,7 @@ import { initLastUsedTabTracking, switchToLastUsedTab } from '@/actions/last-use
 import captureScreenshot from '@/actions/capture-screenshot'
 import { loadKeys, saveKeys, migrateLocalToSync, onKeysChanged, loadGroupSettings } from '@/utils/storage'
 import { trackUsage, loadUsageData } from '@/utils/usage-tracking'
+import { SCROLL_ACTIONS } from '@/utils/actions-registry'
 import {
   initReviewPromptState,
   loadReviewPromptState,
@@ -227,11 +228,21 @@ export default defineBackground(() => {
       return
     }
 
-    // Content-script-only actions — forward to active tab
-    const contentScriptActions = ['showcheatsheet', 'toggledarkmode', 'editurl', 'linkhints', 'linkhintsnew']
+    // Actions the content script handles itself — forward to the active tab.
+    // Scrolling is in this list because the smooth scroller lives in the page:
+    // messaging the background per keystroke is what made held keys stutter.
+    const contentScriptActions = [
+      'showcheatsheet', 'toggledarkmode', 'editurl', 'linkhints', 'linkhintsnew',
+      ...SCROLL_ACTIONS,
+    ]
     if (contentScriptActions.includes(action)) {
       chrome.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {
-        if (tab?.id) chrome.tabs.sendMessage(tab.id, request).catch(() => {})
+        if (!tab?.id) return
+        chrome.tabs.sendMessage(tab.id, request).catch(() => {
+          // No content script on this page (or it was just reloaded) — fall
+          // back to the injected implementation where one exists.
+          handleAction(action, request)
+        })
       })
       return
     }

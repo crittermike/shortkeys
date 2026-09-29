@@ -34,6 +34,7 @@ src/
 │   └── last-used-tab.ts       # Tab history tracking (two-element queue)
 ├── components/
 │   ├── CodeEditor.vue         # CodeMirror 6 wrapper with One Dark theme
+│   ├── VimTab.vue             # Global Vim navigation settings (hints + scrolling)
 │   ├── SearchSelect.vue       # Autocomplete dropdown with grouped options + sublabel support
 │   └── ShortcutRecorder.vue   # Keyboard recorder (captures combos via e.code, multi-key sequences)
 ├── packs/                     # 9 curated shortcut pack collections
@@ -42,6 +43,10 @@ src/
 │   │   reading.ts, tab-manager.ts, keyboard-power.ts, media-control.ts
 └── utils/
     ├── actions-registry.ts    # Action definitions, 11 categories, metadata (168 lines)
+    ├── hint-targets.ts        # Clickable-element discovery + client-rect geometry (Vimium-C derived)
+    ├── link-hints.ts          # Hint overlay, keystroke handling, target activation
+    ├── smooth-scroll.ts       # rAF scroll animation in the content script
+    ├── vim-settings.ts        # Global Vim settings type, defaults, normalization
     ├── content-logic.ts       # Pure functions: fetchConfig, shouldStopCallback
     ├── execute-script.ts      # chrome.scripting.executeScript wrapper + showPageToast
     ├── fetch-userscript.ts    # Greasyfork/OpenUserJS URL resolution + metadata parsing
@@ -91,6 +96,25 @@ Shortcuts have an optional `group` field. Ungrouped shortcuts show under "My Sho
 
 ### Shortcut packs
 Packs are TypeScript files in `src/packs/`. Each exports a `ShortcutPack` object. When imported, all shortcuts get the pack name as their `group` field. Don't create packs that duplicate shortcuts built into websites (e.g. Gmail, Reddit, GitHub already have their own shortcuts).
+
+### Vim navigation (link hints + scrolling)
+The link-hint and scrolling behaviour is a reimplementation of Vimium-C's approach --
+see `NOTICE.md` for the attribution and the file-by-file mapping. Three pieces:
+- `hint-targets.ts` finds targets. Geometry comes from `getClientRects()` (not the bounding
+  box) so wrapped links get a hint on their first line box, and a wrapper whose own boxes are
+  empty descends into floated/positioned children. Clickability is layered: known tags, then
+  attributes (`onclick`, ARIA role, `ng-click`, `jsaction`, `tabindex`), then fuzzy signals
+  (class-name regex, computed `cursor: pointer`, scrollable containers). Weak signals are
+  suppressed inside an already-hinted ancestor so a `cursor: pointer` card gets one hint.
+  Open shadow roots are traversed. Costly work is capped (`MAX_ELEMENTS`, `MAX_COMPUTED_STYLES`).
+- `link-hints.ts` owns the overlay and keys. Two modes: `chars` (type the label) and `filter`
+  (type the link text, pick a number, optional wait-for-Enter).
+- `smooth-scroll.ts` runs the scroll animation **in the content script**. Scroll actions no
+  longer round-trip to the background. A repeat keypress *adds* to the running animation
+  instead of restarting it, which is what makes a held key scroll continuously.
+
+Global settings live in the Vim tab (`vimSettings` in sync storage, `useVimSettings`).
+Per-shortcut `hintChars` and `smoothScrolling` override the global values.
 
 ### Share system
 - Export tab has a "Share Link" button that generates `shortkeys.app/share#<base64>`
@@ -147,6 +171,14 @@ v5 is fully backward-compatible with v4 data. Same storage key (`chrome.storage.
 - **Bookmark URLs with %**: `decodeURIComponent` throws on bare `%` signs. Wrap in try/catch with raw fallback
 - **Labels should be sentence case**: "Log all events" not "Log All Events"
 - **New windows open maximized**: All `browser.windows.create` calls include `state: 'maximized'`
+- **Hint geometry in tests**: jsdom has no layout. Mock `getClientRects()`, not just
+  `getBoundingClientRect()`, or detection finds nothing
+- **elementFromPoint in tests leaks**: it is assigned on the shared `document`; reset it in
+  `beforeEach` or later tests inherit the stub
+- **isReachable fails open**: when `elementFromPoint` returns null everywhere we keep the hint.
+  Losing every hint is far worse than keeping a covered one
+- **Scroll actions are content-script actions**: they are in `contentScriptActions` in
+  background.ts and fall back to `handleAction` only when no content script answers
 - **Firefox compatibility**: Settings pages use `about:` URIs not `chrome://`. Guard `chrome.tabs.group/ungroup`, `chrome.downloads.show`, `chrome.debugger` with existence checks. Firefox builds as MV2.
 
 ## Workflow rules
