@@ -5,6 +5,17 @@ import type { KeySetting } from '@/utils/url-matching'
 import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
 import SearchSelect from '@/components/SearchSelect.vue'
 
+interface PaletteItem {
+  id: string
+  kind: 'shortcut' | 'action'
+  action: string
+  label: string
+  description?: string
+  category?: string
+  key?: string
+  shortcut?: KeySetting
+}
+
 const query = ref('')
 const keys = ref<KeySetting[]>([])
 const selectedIndex = ref(0)
@@ -57,31 +68,69 @@ const actionLabels = computed(() => {
   return map
 })
 
-const filtered = computed(() => {
-  const q = query.value.toLowerCase().trim()
+const paletteItems = computed<PaletteItem[]>(() => {
   const active = keys.value.filter((k) => k.enabled !== false && k.key && k.action)
-  if (!q) return active
-  return active.filter((k) => {
-    const label = (k.label || '').toLowerCase()
-    const key = (k.key || '').toLowerCase()
-    const action = (actionLabels.value[k.action] || k.action || '').toLowerCase()
-    return label.includes(q) || key.includes(q) || action.includes(q)
-  })
+
+  const shortcutItems: PaletteItem[] = active.map((k) => ({
+    id: k.id,
+    kind: 'shortcut',
+    action: k.action,
+    label: k.label || actionLabels.value[k.action] || k.action,
+    key: k.key,
+    shortcut: k,
+  }))
+
+  // If a built-in action already has a configured shortcut, show the shortcut
+  // entry only. This keeps the palette action-centric instead of duplicating it.
+  const configuredActions = new Set(active.map((k) => k.action))
+  const builtinItems: PaletteItem[] = []
+
+  for (const [category, actions] of Object.entries(ACTION_CATEGORIES)) {
+    for (const action of actions) {
+      if (!action.builtin || configuredActions.has(action.value)) continue
+      builtinItems.push({
+        id: `action:${action.value}`,
+        kind: 'action',
+        action: action.value,
+        label: action.label,
+        description: action.description,
+        category,
+      })
+    }
+  }
+
+  return [...shortcutItems, ...builtinItems]
 })
 
-function getLabel(k: KeySetting): string {
-  return k.label || actionLabels.value[k.action] || k.action || ''
-}
+const filtered = computed(() => {
+  const q = query.value.toLowerCase().trim()
+  if (!q) return paletteItems.value
+
+  return paletteItems.value.filter((item) => {
+    const haystack = [
+      item.label,
+      item.key,
+      item.action,
+      item.description,
+      item.category,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+
+    return haystack.includes(q)
+  })
+})
 
 function formatKey(key: string): string[] {
   return key.split('+').map((p) => p.trim())
 }
 
-async function triggerShortcut(k: KeySetting) {
+async function triggerItem(item: PaletteItem) {
   // Send message to background to execute
   await chrome.runtime.sendMessage({
-    action: k.action,
-    ...k,
+    ...(item.shortcut || {}),
+    action: item.action,
   })
   window.close()
 }
@@ -99,7 +148,7 @@ function onKeydown(e: KeyboardEvent) {
   } else if (e.key === 'Enter') {
     e.preventDefault()
     if (filtered.value[selectedIndex.value]) {
-      triggerShortcut(filtered.value[selectedIndex.value])
+      triggerItem(filtered.value[selectedIndex.value])
     }
   }
 }
@@ -136,7 +185,7 @@ onMounted(async () => {
         ref="searchInput"
         v-model="query"
         @keydown="onKeydown"
-        placeholder="Search shortcuts…"
+        placeholder="Search shortcuts and actions…"
         autofocus
       />
     </div>
@@ -156,24 +205,25 @@ onMounted(async () => {
     </div>
     <div class="results" v-if="filtered.length > 0 && !creating">
       <button
-        v-for="(k, i) in filtered"
-        :key="k.id"
+        v-for="(item, i) in filtered"
+        :key="item.id"
         :class="['result-row', { selected: i === selectedIndex }]"
-        @click="triggerShortcut(k)"
+        @click="triggerItem(item)"
         @mouseenter="selectedIndex = i"
       >
         <div class="result-info">
-          <span class="result-label">{{ getLabel(k) }}</span>
-          <span class="result-action">{{ actionLabels[k.action] || k.action }}</span>
+          <span class="result-label">{{ item.label }}</span>
+          <span class="result-action">
+            {{ item.kind === 'shortcut' ? (actionLabels[item.action] || item.action) : item.category }}
+          </span>
         </div>
-        <div class="result-key">
-          <kbd v-for="(part, pi) in formatKey(k.key)" :key="pi">{{ part }}</kbd>
+        <div class="result-key" v-if="item.key">
+          <kbd v-for="(part, pi) in formatKey(item.key)" :key="pi">{{ part }}</kbd>
         </div>
       </button>
     </div>
     <div v-else-if="!creating" class="empty">
-      <span v-if="keys.length === 0">No shortcuts configured</span>
-      <span v-else>No matching shortcuts</span>
+      <span>No matching shortcuts or actions</span>
     </div>
     <div class="footer">
       <span class="hint"><kbd>↑↓</kbd> navigate <kbd>↵</kbd> trigger</span>
