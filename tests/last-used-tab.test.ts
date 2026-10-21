@@ -1,188 +1,120 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-// Mock browser APIs
-const mockTabsQuery = vi.fn()
-const mockTabsUpdate = vi.fn()
-const mockWindowsUpdate = vi.fn()
+const query = vi.fn()
+const updateTab = vi.fn()
+const updateWindow = vi.fn()
+let activate: (tab: { windowId: number; tabId: number }) => void
+let focus: (windowId: number) => Promise<void>
+let remove: (tabId: number) => void
+let switchToLastUsedTab: () => Promise<void>
 
-const onActivatedListeners: Function[] = []
-const onFocusChangedListeners: Function[] = []
-const onRemovedListeners: Function[] = []
-
-globalThis.browser = {
-  tabs: {
-    onActivated: {
-      addListener: (fn: Function) => onActivatedListeners.push(fn),
+beforeEach(async () => {
+  vi.resetModules()
+  vi.clearAllMocks()
+  query.mockResolvedValue([])
+  vi.stubGlobal('browser', {
+    tabs: {
+      onActivated: { addListener: vi.fn(fn => { activate = fn }) },
+      onRemoved: { addListener: vi.fn(fn => { remove = fn }) },
+      query, update: updateTab,
     },
-    onRemoved: {
-      addListener: (fn: Function) => onRemovedListeners.push(fn),
+    windows: {
+      onFocusChanged: { addListener: vi.fn(fn => { focus = fn }) },
+      update: updateWindow,
     },
-    query: mockTabsQuery,
-    update: mockTabsUpdate,
-  },
-  windows: {
-    onFocusChanged: {
-      addListener: (fn: Function) => onFocusChangedListeners.push(fn),
-    },
-    update: mockWindowsUpdate,
-  },
-} as any
-
-// Must import after mocking
-import { initLastUsedTabTracking, switchToLastUsedTab } from '../src/actions/last-used-tab'
-
-describe('last-used-tab tracking', () => {
-  beforeEach(() => {
-    onActivatedListeners.length = 0
-    onFocusChangedListeners.length = 0
-    onRemovedListeners.length = 0
-    mockTabsQuery.mockReset()
-    mockTabsUpdate.mockReset()
-    mockWindowsUpdate.mockReset()
   })
-
-  /**
-   * Since the module uses module-level state, we need to re-import for isolation.
-   * Instead, we'll test the logical behavior by simulating events in sequence.
-   */
-
-  it('registers all three event listeners', () => {
-    initLastUsedTabTracking()
-    expect(onActivatedListeners).toHaveLength(1)
-    expect(onFocusChangedListeners).toHaveLength(1)
-    expect(onRemovedListeners).toHaveLength(1)
-  })
+  const module = await import('../src/actions/last-used-tab')
+  module.initLastUsedTabTracking()
+  switchToLastUsedTab = module.switchToLastUsedTab
 })
 
-describe('last-used-tab queue logic', () => {
-  // Test the queue logic directly (same algorithm as the module)
-  type TabInfo = { windowId: number; tabId: number }
-  let queue: [TabInfo | undefined, TabInfo | undefined]
-
-  beforeEach(() => {
-    queue = [undefined, undefined]
+describe('last-used-tab listeners', () => {
+  it('registers all tracking listeners', () => {
+    expect(browser.tabs.onActivated.addListener).toHaveBeenCalledOnce()
+    expect(browser.tabs.onRemoved.addListener).toHaveBeenCalledOnce()
+    expect(browser.windows.onFocusChanged.addListener).toHaveBeenCalledOnce()
   })
 
-  function activateTab(windowId: number, tabId: number) {
-    queue = [queue[1], { windowId, tabId }]
-  }
-
-  function focusWindow(windowId: number, activeTabId: number) {
-    if (windowId === -1) return
-    queue = [queue[1], { windowId, tabId: activeTabId }]
-  }
-
-  function removeTab(tabId: number) {
-    queue = queue.map((tab) =>
-      tab && tab.tabId === tabId ? undefined : tab,
-    ) as typeof queue
-  }
-
-  it('tracks tab switches correctly', () => {
-    activateTab(1, 100)
-    expect(queue).toEqual([undefined, { windowId: 1, tabId: 100 }])
-
-    activateTab(1, 200)
-    expect(queue).toEqual([{ windowId: 1, tabId: 100 }, { windowId: 1, tabId: 200 }])
+  it('switches back and forth using real activation events', async () => {
+    activate({ windowId: 1, tabId: 100 })
+    activate({ windowId: 1, tabId: 200 })
+    await switchToLastUsedTab()
+    expect(updateTab).toHaveBeenLastCalledWith(100, { active: true })
+    activate({ windowId: 1, tabId: 100 })
+    await switchToLastUsedTab()
+    expect(updateTab).toHaveBeenLastCalledWith(200, { active: true })
   })
 
-  it('switchToLastUsedTab switches to previous tab in same window', () => {
-    activateTab(1, 100)
-    activateTab(1, 200)
-
-    const [lastTab, currentTab] = queue
-    expect(lastTab).toBeTruthy()
-    expect(currentTab).toBeTruthy()
-    expect(lastTab!.tabId).toBe(100)
-    expect(currentTab!.tabId).toBe(200)
-    // Same window: should update tab, not window
-    expect(lastTab!.windowId).toBe(currentTab!.windowId)
+  it('preserves the previous tab after deactivation and reactivation (#977)', async () => {
+    activate({ windowId: 1, tabId: 100 })
+    activate({ windowId: 1, tabId: 200 })
+    await focus(-1)
+    expect(query).not.toHaveBeenCalled()
+    query.mockResolvedValue([{ id: 200 }])
+    await focus(1)
+    activate({ windowId: 1, tabId: 200 })
+    await focus(1)
+    await switchToLastUsedTab()
+    expect(query).toHaveBeenCalledWith({ windowId: 1, active: true })
+    expect(updateTab).toHaveBeenCalledWith(100, { active: true })
+    expect(updateWindow).not.toHaveBeenCalled()
   })
 
-  it('switchToLastUsedTab switches window when tabs in different windows', () => {
-    activateTab(1, 100)
-    focusWindow(2, 200)
-
-    const [lastTab, currentTab] = queue
-    expect(lastTab!.windowId).toBe(1)
-    expect(currentTab!.windowId).toBe(2)
-    // Different windows: should focus window
-    expect(lastTab!.windowId).not.toBe(currentTab!.windowId)
+  it('focuses the previous window', async () => {
+    activate({ windowId: 1, tabId: 100 })
+    query.mockResolvedValue([{ id: 200 }])
+    await focus(2)
+    await switchToLastUsedTab()
+    expect(updateWindow).toHaveBeenCalledWith(1, { focused: true })
+    expect(updateTab).not.toHaveBeenCalled()
   })
 
-  it('handles tab removal - clears removed tab from queue', () => {
-    activateTab(1, 100)
-    activateTab(1, 200)
-    removeTab(100)
-
-    expect(queue[0]).toBeUndefined()
-    expect(queue[1]).toEqual({ windowId: 1, tabId: 200 })
+  it.each([100, 200])('does not switch after tracked tab %s is removed', async tabId => {
+    activate({ windowId: 1, tabId: 100 })
+    activate({ windowId: 1, tabId: 200 })
+    remove(tabId)
+    await switchToLastUsedTab()
+    expect(updateTab).not.toHaveBeenCalled()
+    expect(updateWindow).not.toHaveBeenCalled()
   })
 
-  it('handles current tab removal', () => {
-    activateTab(1, 100)
-    activateTab(1, 200)
-    removeTab(200)
-
-    expect(queue[0]).toEqual({ windowId: 1, tabId: 100 })
-    expect(queue[1]).toBeUndefined()
+  it('does nothing without a previous tab', async () => {
+    await switchToLastUsedTab()
+    activate({ windowId: 1, tabId: 100 })
+    await switchToLastUsedTab()
+    expect(updateTab).not.toHaveBeenCalled()
   })
 
-  it('does nothing when queue is empty', () => {
-    const [lastTab] = queue
-    expect(lastTab).toBeUndefined()
+  it('ignores focus events with no active tab', async () => {
+    activate({ windowId: 1, tabId: 100 })
+    activate({ windowId: 1, tabId: 200 })
+    await focus(2)
+    await switchToLastUsedTab()
+    expect(updateTab).toHaveBeenCalledWith(100, { active: true })
   })
 
-  it('does nothing when only one tab has been activated', () => {
-    activateTab(1, 100)
-    const [lastTab] = queue
-    expect(lastTab).toBeUndefined()
+  it('ignores stale focus query results after a newer activation', async () => {
+    activate({ windowId: 1, tabId: 100 })
+    let resolve!: (tabs: { id: number }[]) => void
+    query.mockReturnValueOnce(new Promise(r => { resolve = r }))
+    const pending = focus(2)
+    activate({ windowId: 3, tabId: 300 })
+    resolve([{ id: 200 }])
+    await pending
+    await switchToLastUsedTab()
+    expect(updateWindow).toHaveBeenCalledWith(1, { focused: true })
   })
 
-  it('issue #667: window focus changes update the queue correctly', () => {
-    // Simulate: user on tab 100, switches to tab 200, then enters fullscreen
-    // (which may trigger window focus events)
-    activateTab(1, 100)
-    activateTab(1, 200)
-
-    // Video fullscreen may trigger window focus with same window
-    focusWindow(1, 200)
-
-    // Queue should now be: [tab 200, tab 200] — last used IS current
-    // This means switchToLastUsedTab would try to switch to 200, which is already active
-    // This is the expected behavior — fullscreen doesn't create a new "last used" context
-    const [lastTab, currentTab] = queue
-    expect(lastTab!.tabId).toBe(200)
-    expect(currentTab!.tabId).toBe(200)
-  })
-
-  it('issue #667: ignores windowId -1 (all windows lost focus)', () => {
-    activateTab(1, 100)
-    activateTab(1, 200)
-
-    // windowId -1 = all windows lost focus (e.g., fullscreen video overlay)
-    focusWindow(-1, 0)
-
-    // Queue should be unchanged
-    expect(queue).toEqual([{ windowId: 1, tabId: 100 }, { windowId: 1, tabId: 200 }])
-  })
-
-  it('rapid tab switching maintains correct order', () => {
-    activateTab(1, 100)
-    activateTab(1, 200)
-    activateTab(1, 300)
-    activateTab(1, 400)
-
-    // Only last two are kept
-    expect(queue).toEqual([{ windowId: 1, tabId: 300 }, { windowId: 1, tabId: 400 }])
-  })
-
-  it('switching between windows multiple times tracks correctly', () => {
-    activateTab(1, 100)
-    focusWindow(2, 200)
-    focusWindow(1, 100)
-    focusWindow(2, 200)
-
-    expect(queue).toEqual([{ windowId: 1, tabId: 100 }, { windowId: 2, tabId: 200 }])
+  it('ignores out-of-order focus results', async () => {
+    activate({ windowId: 1, tabId: 100 })
+    let resolve!: (tabs: { id: number }[]) => void
+    query.mockReturnValueOnce(new Promise(r => { resolve = r }))
+    const pending = focus(2)
+    query.mockResolvedValueOnce([{ id: 300 }])
+    await focus(3)
+    resolve([{ id: 200 }])
+    await pending
+    await switchToLastUsedTab()
+    expect(updateWindow).toHaveBeenCalledWith(1, { focused: true })
   })
 })

@@ -5,6 +5,11 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+    groups:
+      vitest:
+        patterns:
+          - "vitest"
+          - "@vitest/coverage-v8"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

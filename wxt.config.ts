@@ -3,6 +3,7 @@ import { defineConfig } from 'wxt'
 export default defineConfig({
   modules: ['@wxt-dev/module-vue'],
   srcDir: 'src',
+  manifestVersion: 3,
   manifest: ({ browser }) => ({
     name: 'Shortkeys (Custom Keyboard Shortcuts)',
     short_name: 'Shortkeys',
@@ -11,7 +12,13 @@ export default defineConfig({
     browser_specific_settings: {
       gecko: {
         id: 'Shortkeys@Shortkeys.com',
-        strict_min_version: '109.0',
+        strict_min_version: '153.0',
+        ...(browser === 'firefox' ? {
+          data_collection_permissions: {
+            required: ['none'],
+            optional: ['browsingActivity', 'websiteContent', 'searchTerms', 'bookmarksInfo', 'technicalAndInteraction'],
+          },
+        } : {}),
       },
     },
     icons: {
@@ -143,12 +150,14 @@ export default defineConfig({
     ],
     optional_permissions: [
       'clipboardRead',
+      ...(browser === 'chrome' ? ['readingList'] : []),
+      ...(browser === 'firefox' ? ['userScripts'] : []),
       ...(browser !== 'firefox' ? ['tabGroups'] : []),
     ],
     host_permissions: ['*://*/*'],
-    externally_connectable: {
+    ...(browser !== 'firefox' ? { externally_connectable: {
       matches: ['https://shortkeys.app/*', 'http://localhost/*'],
-    },
+    } } : {}),
     content_security_policy: {
       extension_pages: "script-src 'self'; object-src 'self'; style-src 'self' 'unsafe-inline'; style-src-elem 'self' 'unsafe-inline' https://cdn.materialdesignicons.com https://cdn.jsdelivr.net;",
     },

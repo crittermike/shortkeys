@@ -25,6 +25,9 @@ const mockBookmarksRemove = vi.fn()
 const mockManagementLaunchApp = vi.fn()
 const mockTabsSendMessage = vi.fn()
 const mockPermissionsRequest = vi.fn()
+const mockPermissionsContains = vi.fn()
+const mockReadingListQuery = vi.fn()
+const mockReadingListAddEntry = vi.fn()
 
 // Mock executeScript and showPageToast globally
 vi.mock('../src/utils/execute-script', () => ({
@@ -63,7 +66,7 @@ const browserMock = {
   management: { launchApp: mockManagementLaunchApp },
   scripting: { executeScript: vi.fn() },
   debugger: { attach: vi.fn(), detach: vi.fn(), sendCommand: vi.fn() },
-  permissions: { request: mockPermissionsRequest },
+  permissions: { request: mockPermissionsRequest, contains: mockPermissionsContains },
 }
 
 // @ts-ignore
@@ -74,6 +77,7 @@ globalThis.chrome = {
   downloads: { search: vi.fn(), show: vi.fn() },
   tabs: { ...browserMock.tabs, group: vi.fn().mockResolvedValue(1), ungroup: vi.fn().mockResolvedValue(undefined), highlight: vi.fn().mockResolvedValue(undefined) },
   tabGroups: { update: vi.fn().mockResolvedValue(undefined), get: vi.fn().mockResolvedValue({ collapsed: false }), query: vi.fn().mockResolvedValue([]) },
+  readingList: { query: mockReadingListQuery, addEntry: mockReadingListAddEntry },
 }
 
 // Now import the module under test
@@ -101,7 +105,7 @@ beforeEach(() => {
   mockWindowsRemove.mockResolvedValue(undefined)
   mockWindowsUpdate.mockResolvedValue(undefined)
   mockWindowsGetCurrent.mockResolvedValue({ id: 1, state: 'normal' })
-  mockSessionsGetRecentlyClosed.mockResolvedValue([{ sessionId: 'sess1' }])
+  mockSessionsGetRecentlyClosed.mockResolvedValue([{ tab: { sessionId: 'sess1' } }])
   mockSessionsRestore.mockResolvedValue(undefined)
   mockBrowsingDataRemove.mockResolvedValue(undefined)
   mockBookmarksSearch.mockResolvedValue([])
@@ -109,6 +113,9 @@ beforeEach(() => {
   mockBookmarksRemove.mockResolvedValue(undefined)
   mockManagementLaunchApp.mockResolvedValue(undefined)
   mockPermissionsRequest.mockResolvedValue(true)
+  mockPermissionsContains.mockResolvedValue(true)
+  mockReadingListQuery.mockResolvedValue([])
+  mockReadingListAddEntry.mockResolvedValue(undefined)
   vi.mocked(chrome.tabGroups.get).mockResolvedValue({ collapsed: false } as any)
   vi.mocked(chrome.tabGroups.update).mockImplementation(async (_groupId, changes: any) => ({
     collapsed: changes?.collapsed ?? false,
@@ -123,8 +130,47 @@ describe('handleAction', () => {
 
   it('returns true for known actions', async () => {
     expect(await handleAction('newtab')).toBe(true)
+  })
+
+  it('adds the active page to Chrome Reading List', async () => {
+    mockTabsQuery.mockResolvedValueOnce([{ ...defaultTab, title: 'Example page' }])
+    await expect(handleAction('addtoreadinglist')).resolves.toBe(true)
+    expect(chrome.readingList.addEntry).toHaveBeenCalledWith({
+      title: 'Example page',
+      url: 'https://example.com',
+      hasBeenRead: false,
+    })
+    expect(chrome.readingList.query).toHaveBeenCalledWith({ url: 'https://example.com' })
     expect(await handleAction('closetab')).toBe(true)
     expect(await handleAction('disable')).toBe(true)
+  })
+
+  it('requests the optional Reading List permission on first use', async () => {
+    mockPermissionsContains.mockResolvedValueOnce(false)
+
+    await handleAction('addtoreadinglist')
+
+    expect(mockPermissionsRequest).toHaveBeenCalledWith({ permissions: ['readingList'] })
+    expect(chrome.readingList.addEntry).toHaveBeenCalledOnce()
+  })
+
+  it('shows a visible error when Reading List permission is denied', async () => {
+    mockPermissionsContains.mockResolvedValueOnce(false)
+    mockPermissionsRequest.mockResolvedValueOnce(false)
+
+    await handleAction('addtoreadinglist')
+
+    expect(mockShowPageToast).toHaveBeenCalledWith('Cannot add this page: Reading List permission was denied')
+    expect(chrome.readingList.addEntry).not.toHaveBeenCalled()
+  })
+
+  it('shows a visible error when the page is already in Reading List', async () => {
+    mockReadingListQuery.mockResolvedValueOnce([{ url: 'https://example.com' }])
+
+    await handleAction('addtoreadinglist')
+
+    expect(mockShowPageToast).toHaveBeenCalledWith('Cannot add this page: it is already in Chrome Reading List')
+    expect(chrome.readingList.addEntry).not.toHaveBeenCalled()
   })
 
   describe('tab management', () => {
@@ -739,6 +785,79 @@ describe('handleAction', () => {
   })
 
   describe('macro (chained actions)', () => {
+    it('uses each step URL rather than the parent or previous step URL (#919)', async () => {
+      await handleAction('macro', {
+        key: 'a', action: 'macro', openurl: 'https://parent.example',
+        macroSteps: [
+          { action: 'openurl', openurl: 'https://first.example' },
+          { action: 'openurl', openurl: 'https://second.example' },
+          { action: 'openurl' },
+        ],
+      })
+      expect(mockTabsUpdate.mock.calls).toEqual([
+        [undefined, { url: 'https://first.example' }],
+        [undefined, { url: 'https://second.example' }],
+      ])
+    })
+
+    it('passes each action its own parameters', async () => {
+      mockBookmarksSearch.mockResolvedValue([{ title: 'Step bookmark', url: 'https://bookmark.example' }])
+      await handleAction('macro', {
+        key: 'a', action: 'macro', inserttext: 'parent', openappid: 'parent',
+        macroSteps: [
+          { action: 'openapp', openappid: 'step-app' },
+          { action: 'inserttext', inserttext: 'step text' },
+          { action: 'openbookmarknewtab', bookmark: 'Step bookmark' },
+          { action: 'gototabbytitle', matchtitle: '*Step*', currentWindow: true },
+        ],
+      })
+      const { executeScript } = await import('../src/utils/execute-script')
+      expect(mockManagementLaunchApp).toHaveBeenCalledWith('step-app')
+      expect(executeScript).toHaveBeenCalledWith(expect.any(Function), ['step text'])
+      expect(mockBookmarksSearch).toHaveBeenCalledWith({ title: 'Step bookmark' })
+      expect(mockTabsQuery).toHaveBeenCalledWith({ title: '*Step*', currentWindow: true })
+    })
+
+    it('forwards trigger parameters without parent identity or macro data', async () => {
+      mockTabsSendMessage.mockResolvedValue(undefined)
+      await handleAction('macro', {
+        key: 'a', id: 'parent', action: 'macro', trigger: 'wrong',
+        macroSteps: [{ action: 'trigger', trigger: 'ctrl+b' }],
+      })
+      expect(mockTabsSendMessage).toHaveBeenCalledWith(1, {
+        key: 'a', action: 'trigger', trigger: 'ctrl+b',
+      })
+    })
+
+    it('clicks the step selector before switching tabs', async () => {
+      const order: string[] = []
+      const { executeScript } = await import('../src/utils/execute-script')
+      vi.mocked(executeScript).mockImplementationOnce(async () => { order.push('click'); return [] })
+      mockTabsQuery.mockResolvedValue([defaultTab, { ...defaultTab, id: 2 }])
+      mockTabsUpdate.mockImplementationOnce(async () => { order.push('switch') })
+      await handleAction('macro', {
+        key: 'a', action: 'macro', button: '#wrong',
+        macroSteps: [{ action: 'buttonnexttab', button: '#step-button' }],
+      })
+      expect(executeScript).toHaveBeenCalledWith(expect.any(Function), ['#step-button'])
+      expect(order).toEqual(['click', 'switch'])
+    })
+
+    it('does not recursively dispatch imported macro steps', async () => {
+      await handleAction('macro', {
+        key: 'a', action: 'macro',
+        macroSteps: [{ action: 'macro' }, { action: 'newtab' }],
+      })
+      expect(mockTabsCreate).toHaveBeenCalledOnce()
+    })
+
+    it('reports content step failures rather than silently skipping them', async () => {
+      mockTabsSendMessage.mockRejectedValueOnce(new Error('No receiver'))
+      await expect(handleAction('macro', {
+        key: 'a', action: 'macro', macroSteps: [{ action: 'trigger', trigger: 'a' }],
+      })).rejects.toThrow('No receiver')
+    })
+
     it('returns true with no macroSteps', async () => {
       const result = await handleAction('macro', { key: 'a', action: 'macro' })
       expect(result).toBe(true)

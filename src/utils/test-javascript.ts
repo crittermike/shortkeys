@@ -1,13 +1,17 @@
 /**
  * Execute JavaScript code on a target tab using Chrome DevTools Protocol.
  * This bypasses page CSP entirely since Runtime.evaluate is injected by the browser.
- * Falls back to chrome.scripting.executeScript on Firefox (no debugger API).
+ * Firefox uses its native userScripts API for explicitly installed scripts.
  *
  * Returns { success: true, hostname } on success, or { success: false, error } on failure.
  */
+import { executeFirefoxUserScript } from './firefox-user-scripts'
+import type { KeySetting } from './url-matching'
+
 export async function executeJavascriptOnTab(
   tabId: number,
   code: string,
+  shortcut?: KeySetting,
 ): Promise<{ success: true; hostname: string } | { success: false; error: string }> {
   try {
     const tabInfo = await chrome.tabs.get(tabId)
@@ -17,6 +21,12 @@ export async function executeJavascriptOnTab(
     }
 
     const hostname = tabInfo.url ? new URL(tabInfo.url).hostname : 'tab'
+
+    if (import.meta.env.BROWSER === 'firefox') {
+      if (!shortcut) throw new Error('Select an installed user script to test.')
+      await executeFirefoxUserScript(tabId, shortcut)
+      return { success: true, hostname }
+    }
 
     // Chrome: use DevTools Protocol (bypasses CSP)
     if (chrome.debugger) {
@@ -37,7 +47,7 @@ export async function executeJavascriptOnTab(
       }
     }
 
-    // Firefox fallback: use scripting.executeScript
+    // Fallback for Chromium builds without the debugger API.
     await chrome.scripting.executeScript({
       target: { tabId },
       func: (code: string) => { new Function(code)() },

@@ -36,27 +36,7 @@ export function normalizeUrlPattern(pattern: string): string {
   return `*${pattern}*`
 }
 
-export interface MacroStep {
-  action: string
-  delay?: number
-  code?: string
-}
-
-export interface GroupSettings {
-  activateOn?: string
-  deactivateOn?: string
-}
-
-
-export interface KeySetting {
-  key: string
-  action: string
-  blacklist?: boolean | string
-  sitesArray?: string[]
-  activeInInputs?: boolean
-  sites?: string
-  label?: string
-  id?: string
+export interface ActionParameters {
   code?: string
   bookmark?: string
   openurl?: string
@@ -69,10 +49,32 @@ export interface KeySetting {
   inserttext?: string
   smoothScrolling?: boolean
   currentWindow?: boolean
+  groupname?: string
+}
+
+export interface MacroStep extends ActionParameters {
+  action: string
+  delay?: number
+}
+
+export interface GroupSettings {
+  activateOn?: string
+  deactivateOn?: string
+}
+
+
+export interface KeySetting extends ActionParameters {
+  key: string
+  action: string
+  blacklist?: boolean | string
+  sitesArray?: string[]
+  activeInInputs?: boolean
+  sites?: string
+  label?: string
+  id?: string
   enabled?: boolean
   group?: string
   macroSteps?: MacroStep[]
-  groupname?: string
 }
 
 /**
@@ -85,14 +87,19 @@ export function isAllowedSite(keySetting: KeySetting, url: string): boolean {
   }
 
   let allowed = (keySetting.blacklist === true || keySetting.blacklist === 'true')
-  if (keySetting.sitesArray) {
-    keySetting.sitesArray.forEach((site) => {
+  const sites = keySetting.sitesArray ?? keySetting.sites?.split('\n')
+  if (sites) {
+    sites.forEach((site) => {
       if (site && url.match(globToRegex(site))) {
         allowed = !allowed
       }
     })
   }
   return allowed
+}
+
+export function isShortcutAvailable(key: KeySetting, url: string, groups: Record<string, GroupSettings>): boolean {
+  return key.enabled !== false && isAllowedSite(key, url) && isGroupAllowed(key.group, url, groups)
 }
 
 /**

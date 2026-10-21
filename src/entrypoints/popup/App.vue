@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue'
-import { ACTION_CATEGORIES, getActionOptionsForSelect } from '@/utils/actions-registry'
-import type { KeySetting } from '@/utils/url-matching'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { getActionLabel, getActionOptionsForSelect } from '@/utils/actions-registry'
+import type { KeySetting, GroupSettings } from '@/utils/url-matching'
+import { needsActionSettings } from '@/utils/action-parameters'
+import { getPaletteItems, type PaletteItem } from '@/utils/command-palette'
+import { loadKeys, saveKeys, loadGroupSettings } from '@/utils/storage'
 import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
 import SearchSelect from '@/components/SearchSelect.vue'
 
@@ -9,6 +12,9 @@ const query = ref('')
 const keys = ref<KeySetting[]>([])
 const selectedIndex = ref(0)
 const searchInput = ref<HTMLInputElement | null>(null)
+const currentUrl = ref('')
+const groupSettings = ref<Record<string, GroupSettings>>({})
+const error = ref('')
 
 const creating = ref(false)
 const newKey = ref('')
@@ -31,66 +37,54 @@ function cancelCreating() {
 
 async function saveNewShortcut() {
   if (!newKey.value || !newAction.value) return
-  
-  const saved = await loadKeys()
-  const currentKeys: KeySetting[] = saved ? JSON.parse(saved) : []
-  
-  const newShortcut: KeySetting = {
-    id: crypto.randomUUID(),
-    key: newKey.value,
-    action: newAction.value,
-    enabled: true
+  error.value = ''
+  try {
+    if (needsActionSettings(newAction.value)) {
+      const params = new URLSearchParams({ key: newKey.value, action: newAction.value })
+      await chrome.tabs.create({ url: chrome.runtime.getURL('/options.html') + '?' + params.toString() })
+      window.close()
+      return
+    }
+    const saved = await loadKeys()
+    const currentKeys: KeySetting[] = saved ? JSON.parse(saved) : []
+    currentKeys.push({
+      id: crypto.randomUUID(), key: newKey.value, action: newAction.value, enabled: true,
+    })
+    await saveKeys(currentKeys)
+    keys.value = currentKeys
+    cancelCreating()
+  } catch (cause) {
+    console.error('[Shortkeys] Could not create shortcut:', cause)
+    error.value = 'Could not create shortcut. Please try again.'
   }
-  
-  currentKeys.push(newShortcut)
-  await saveKeys(currentKeys)
-  
-  keys.value = currentKeys
-  cancelCreating()
 }
 
-const actionLabels = computed(() => {
-  const map: Record<string, string> = {}
-  for (const actions of Object.values(ACTION_CATEGORIES)) {
-    for (const a of actions) map[a.value] = a.label
-  }
-  return map
-})
-
-const filtered = computed(() => {
-  const q = query.value.toLowerCase().trim()
-  const active = keys.value.filter((k) => k.enabled !== false && k.key && k.action)
-  if (!q) return active
-  return active.filter((k) => {
-    const label = (k.label || '').toLowerCase()
-    const key = (k.key || '').toLowerCase()
-    const action = (actionLabels.value[k.action] || k.action || '').toLowerCase()
-    return label.includes(q) || key.includes(q) || action.includes(q)
-  })
-})
-
-function getLabel(k: KeySetting): string {
-  return k.label || actionLabels.value[k.action] || k.action || ''
-}
+const filtered = computed(() => getPaletteItems(keys.value, currentUrl.value, groupSettings.value, query.value))
+watch(filtered, () => { selectedIndex.value = 0 })
 
 function formatKey(key: string): string[] {
   return key.split('+').map((p) => p.trim())
 }
 
-async function triggerShortcut(k: KeySetting) {
-  // Send message to background to execute
-  await chrome.runtime.sendMessage({
-    action: k.action,
-    ...k,
-  })
-  window.close()
+async function triggerItem(item: PaletteItem) {
+  error.value = ''
+  try {
+    const response = await chrome.runtime.sendMessage({
+      action: 'runPaletteAction', shortcutId: item.shortcut?.id, builtinAction: item.shortcut ? undefined : item.action,
+    })
+    if (response?.error) throw new Error(response.error)
+    window.close()
+  } catch (cause) {
+    console.error('[Shortkeys] Could not run action:', cause)
+    error.value = cause instanceof Error ? cause.message : 'Could not run action.'
+  }
 }
 
 function onKeydown(e: KeyboardEvent) {
   if (creating.value) return
   if (e.key === 'ArrowDown') {
     e.preventDefault()
-    selectedIndex.value = Math.min(selectedIndex.value + 1, filtered.value.length - 1)
+    selectedIndex.value = Math.max(0, Math.min(selectedIndex.value + 1, filtered.value.length - 1))
     scrollToSelected()
   } else if (e.key === 'ArrowUp') {
     e.preventDefault()
@@ -99,7 +93,7 @@ function onKeydown(e: KeyboardEvent) {
   } else if (e.key === 'Enter') {
     e.preventDefault()
     if (filtered.value[selectedIndex.value]) {
-      triggerShortcut(filtered.value[selectedIndex.value])
+      triggerItem(filtered.value[selectedIndex.value])
     }
   }
 }
@@ -116,12 +110,17 @@ function openSettings() {
   window.close()
 }
 
-import { loadKeys, saveKeys } from '@/utils/storage'
-
 onMounted(async () => {
-  const saved = await loadKeys()
-  if (saved) {
-    keys.value = JSON.parse(saved)
+  try {
+    const [saved, groups, tabs] = await Promise.all([
+      loadKeys(), loadGroupSettings(), chrome.tabs.query({ active: true, currentWindow: true }),
+    ])
+    keys.value = JSON.parse(saved || '[]')
+    groupSettings.value = groups
+    currentUrl.value = tabs[0]?.url || ''
+  } catch (cause) {
+    console.error('[Shortkeys] Could not load palette:', cause)
+    error.value = 'Could not load actions. Please reopen the palette.'
   }
   await nextTick()
   searchInput.value?.focus()
@@ -136,7 +135,7 @@ onMounted(async () => {
         ref="searchInput"
         v-model="query"
         @keydown="onKeydown"
-        placeholder="Search shortcuts…"
+        placeholder="Search shortcuts and actions…"
         autofocus
       />
     </div>
@@ -151,30 +150,30 @@ onMounted(async () => {
       </div>
       <div class="quick-add-actions">
         <button class="quick-add-cancel" @click="cancelCreating" type="button">Cancel</button>
-        <button class="quick-add-save" @click="saveNewShortcut" type="button" :disabled="!newKey || !newAction">Save</button>
+        <button class="quick-add-save" @click="saveNewShortcut" type="button" :disabled="!newKey || !newAction">{{ needsActionSettings(newAction) ? 'Configure' : 'Save' }}</button>
       </div>
     </div>
     <div class="results" v-if="filtered.length > 0 && !creating">
       <button
-        v-for="(k, i) in filtered"
-        :key="k.id"
+        v-for="(item, i) in filtered"
+        :key="item.id"
         :class="['result-row', { selected: i === selectedIndex }]"
-        @click="triggerShortcut(k)"
+        @click="triggerItem(item)"
         @mouseenter="selectedIndex = i"
       >
         <div class="result-info">
-          <span class="result-label">{{ getLabel(k) }}</span>
-          <span class="result-action">{{ actionLabels[k.action] || k.action }}</span>
+          <span class="result-label">{{ item.label }}</span>
+          <span class="result-action">{{ item.shortcut ? getActionLabel(item.action) : item.category }}</span>
         </div>
-        <div class="result-key">
-          <kbd v-for="(part, pi) in formatKey(k.key)" :key="pi">{{ part }}</kbd>
+        <div class="result-key" v-if="item.key">
+          <kbd v-for="(part, pi) in formatKey(item.key)" :key="pi">{{ part }}</kbd>
         </div>
       </button>
     </div>
     <div v-else-if="!creating" class="empty">
-      <span v-if="keys.length === 0">No shortcuts configured</span>
-      <span v-else>No matching shortcuts</span>
+      <span>No matching shortcuts or actions</span>
     </div>
+    <p v-if="error" class="popup-error" role="alert">{{ error }}</p>
     <div class="footer">
       <span class="hint"><kbd>↑↓</kbd> navigate <kbd>↵</kbd> trigger</span>
       <div class="footer-links">
@@ -202,6 +201,7 @@ body {
 }
 
 .popup { display: flex; flex-direction: column; max-height: 480px; }
+.popup-error { padding: 8px 14px; color: #b91c1c; }
 
 .search-bar {
   display: flex;

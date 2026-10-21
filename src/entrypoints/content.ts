@@ -3,6 +3,7 @@ import { fetchConfig, shouldStopCallback } from '@/utils/content-logic'
 import { ACTION_CATEGORIES } from '@/utils/actions-registry'
 import { activateLinkHints, deactivateLinkHints, isLinkHintModeActive } from '@/utils/link-hints'
 import type { KeySetting } from '@/utils/url-matching'
+import { IS_FIREFOX } from '@/utils/firefox-consent'
 
 export default defineContentScript({
   matches: ['<all_urls>', 'file:///*'],
@@ -31,7 +32,7 @@ export default defineContentScript({
       const action = keySetting.action
 
       // Custom JS runs via event dispatch to MAIN world
-      if (action === 'javascript') {
+      if (action === 'javascript' && !IS_FIREFOX) {
         document.dispatchEvent(new CustomEvent('shortkeys_js_run', { detail: keySetting.id }))
         trackContentAction(keySetting)
         return
@@ -40,6 +41,7 @@ export default defineContentScript({
       if (action === 'trigger' && keySetting.trigger) {
         Mousetrap.trigger(keySetting.trigger)
         trackContentAction(keySetting)
+        return
       }
 
       // Content-script-only actions (need direct DOM access)
@@ -60,6 +62,8 @@ export default defineContentScript({
       }
       if (action === 'linkhintsnew') {
         activateLinkHints(true)
+        trackContentAction(keySetting)
+        return
       }
       if (action === 'editurl') {
         showEditUrlBar()
@@ -281,6 +285,10 @@ export default defineContentScript({
         activateLinkHints(true)
       } else if (message.action === 'editurl') {
         showEditUrlBar()
+      } else if (message.action === 'trigger' && message.trigger) {
+        Mousetrap.trigger(message.trigger)
+      } else if (message.action === 'javascript') {
+        document.dispatchEvent(new CustomEvent('shortkeys_js_run', { detail: message.id }))
       }
     })
 

@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue'
-import { ACTION_CATEGORIES } from '@/utils/actions-registry'
+import { getAvailableActionCategories } from '@/utils/actions-registry'
 import { useShortcuts } from './useShortcuts'
 import { useConflicts } from './useConflicts'
 
@@ -9,7 +9,7 @@ const searchQuery = ref('')
 /** Build a lookup from action value → label */
 const actionLabels = computed(() => {
   const map: Record<string, string> = {}
-  for (const actions of Object.values(ACTION_CATEGORIES)) {
+  for (const actions of Object.values(getAvailableActionCategories())) {
     for (const a of actions) map[a.value] = a.label
   }
   return map
@@ -18,7 +18,7 @@ const actionLabels = computed(() => {
 /** ACTION_CATEGORIES without 'macro' to prevent recursive macros, with descriptions as sublabels */
 const macroActionOptions = computed(() => {
   const filtered: Record<string, { value: string; label: string; sublabel?: string }[]> = {}
-  for (const [category, actions] of Object.entries(ACTION_CATEGORIES)) {
+  for (const [category, actions] of Object.entries(getAvailableActionCategories())) {
     const withoutMacro = actions.filter((a) => a.value !== 'macro')
     if (withoutMacro.length > 0) {
       filtered[category] = withoutMacro.map((a) => ({

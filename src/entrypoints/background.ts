@@ -1,10 +1,12 @@
 import { v4 as uuid } from 'uuid'
-import { isAllowedSite, isGroupAllowed } from '@/utils/url-matching'
+import { isShortcutAvailable, type KeySetting } from '@/utils/url-matching'
+import { isPaletteAction } from '@/utils/command-palette'
 import { handleAction } from '@/actions/action-handlers'
-import { initLastUsedTabTracking, switchToLastUsedTab } from '@/actions/last-used-tab'
-import captureScreenshot from '@/actions/capture-screenshot'
+import { showPageToast } from '@/utils/execute-script'
+import { initLastUsedTabTracking } from '@/actions/last-used-tab'
 import { loadKeys, saveKeys, migrateLocalToSync, onKeysChanged, loadGroupSettings } from '@/utils/storage'
 import { trackUsage, loadUsageData } from '@/utils/usage-tracking'
+import { IS_FIREFOX } from '@/utils/firefox-consent'
 import {
   initReviewPromptState,
   loadReviewPromptState,
@@ -13,8 +15,15 @@ import {
   REVIEW_URL,
 } from '@/utils/review-prompt'
 
+declare var handlers: Record<string, () => void>
+
 export default defineBackground(() => {
   initLastUsedTabTracking()
+
+  function reportActionError(error: unknown): void {
+    console.error('[Shortkeys] Action failed:', error)
+    void showPageToast(error instanceof Error ? error.message : 'Shortkeys could not run this action.')
+  }
 
   async function checkKeys(): Promise<void> {
     const raw = await loadKeys()
@@ -28,6 +37,7 @@ export default defineBackground(() => {
   }
 
   async function registerUserScript(): Promise<void> {
+    if (IS_FIREFOX) return
     // userScripts API requires "Allow User Scripts" to be enabled in extension details
     if (!chrome.userScripts) return
 
@@ -137,31 +147,43 @@ export default defineBackground(() => {
     // Commands don't carry the full KeySetting, so we can't track by ID here.
     // Usage tracking for these is handled when they route through the message listener instead.
 
-    // Handle special actions that need direct imports
-    if (action === 'lastusedtab') {
-      switchToLastUsedTab()
-      return
-    }
-    if (action === 'capturescreenshot') {
-      captureScreenshot()
-      return
-    }
-    if (action === 'capturefullsizescreenshot') {
-      captureScreenshot({ fullsize: true })
-      return
-    }
-    if (action === 'forcecapturefullsizescreenshot') {
-      captureScreenshot({ fullsize: true, force: true })
-      return
-    }
-
-    handleAction(action)
+    handleAction(action).catch(reportActionError)
   })
 
   browser.runtime.onMessage.addListener((request: any, _sender, sendResponse) => {
     const action = request.action
 
+    if (action === 'runPaletteAction') {
+      ;(async () => {
+        const [raw, groups, tabs] = await Promise.all([
+          loadKeys(), loadGroupSettings(), browser.tabs.query({ active: true, currentWindow: true }),
+        ])
+        const keys: KeySetting[] = JSON.parse(raw || '[]')
+        let shortcut: KeySetting | undefined
+        if (request.shortcutId) {
+          shortcut = keys.find(key => key.id === request.shortcutId)
+          if (!shortcut || !isShortcutAvailable(shortcut, tabs[0]?.url || '', groups)) {
+            throw new Error('This shortcut is not available on the current site.')
+          }
+        } else if (isPaletteAction(request.builtinAction) && !keys.some(key => key.action === request.builtinAction)) {
+          shortcut = { key: '', action: request.builtinAction }
+        }
+        if (!shortcut) throw new Error('This action is no longer available. Reopen the palette.')
+        if (!await handleAction(shortcut.action, shortcut)) throw new Error('This action is not supported.')
+        if (shortcut.id) await trackUsage(shortcut.id)
+        sendResponse({ success: true })
+      })().catch(error => {
+        console.error('[Shortkeys] Palette action failed:', error)
+        sendResponse({ error: error.message })
+      })
+      return true
+    }
+
     if (action === 'fetchUrl') {
+      if (IS_FIREFOX) {
+        sendResponse({ error: 'Remote userscript loading is unavailable in Firefox.' })
+        return false
+      }
       fetch(request.url)
         .then(r => r.text())
         .then(text => sendResponse({ text }))
@@ -189,9 +211,7 @@ export default defineBackground(() => {
         const keys = JSON.parse(raw)
         const groupSettingsData = await loadGroupSettings()
         const allowedKeys = keys.filter((key: any) =>
-          key.enabled !== false &&
-          isGroupAllowed(key.group, currentUrl, groupSettingsData) &&
-          isAllowedSite(key, currentUrl)
+          isShortcutAvailable(key, currentUrl, groupSettingsData)
         )
         sendResponse(allowedKeys)
       })()
@@ -209,34 +229,7 @@ export default defineBackground(() => {
       trackUsage(request.id).then(() => maybeShowReviewNotification())
     }
 
-    // Handle special actions
-    if (action === 'lastusedtab') {
-      switchToLastUsedTab()
-      return
-    }
-    if (action === 'capturescreenshot') {
-      captureScreenshot()
-      return
-    }
-    if (action === 'capturefullsizescreenshot') {
-      captureScreenshot({ fullsize: true })
-      return
-    }
-    if (action === 'forcecapturefullsizescreenshot') {
-      captureScreenshot({ fullsize: true, force: true })
-      return
-    }
-
-    // Content-script-only actions — forward to active tab
-    const contentScriptActions = ['showcheatsheet', 'toggledarkmode', 'editurl', 'linkhints', 'linkhintsnew']
-    if (contentScriptActions.includes(action)) {
-      chrome.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {
-        if (tab?.id) chrome.tabs.sendMessage(tab.id, request).catch(() => {})
-      })
-      return
-    }
-
-    handleAction(action, request)
+    handleAction(action, request).catch(reportActionError)
   })
 
   chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {

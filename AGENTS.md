@@ -1,7 +1,7 @@
 # Shortkeys
 
 ## What is this project?
-Shortkeys is a cross-browser extension that lets users define custom keyboard shortcuts for browser actions (scrolling, tab management, navigation, running custom JavaScript, video controls, page scripts, and more). It has 200K+ Chrome users. Available for Chrome, Firefox, Edge, and Opera. Licensed under MIT, currently at v5.0.0.
+Shortkeys is a cross-browser extension that lets users define custom keyboard shortcuts for browser actions (scrolling, tab management, navigation, running custom JavaScript, video controls, page scripts, and more). It has 200K+ Chrome users. Distributed for Chrome, Edge, and Opera; Firefox source builds target desktop 153+, but store distribution is blocked pending Mozilla signing/review. Licensed under MIT.
 
 ## Tech stack
 - **Build system**: WXT (Vite-based browser extension framework) -- `wxt.config.ts`
@@ -108,7 +108,7 @@ v5 is fully backward-compatible with v4 data. Same storage key (`chrome.storage.
 - `npm run dev` -- WXT dev mode with hot reload (Chrome)
 - `npm run dev:firefox` -- WXT dev mode (Firefox)
 - `npm run build` -- Production build -> `.output/chrome-mv3/`
-- `npm run build:firefox` -- Firefox build -> `.output/firefox-mv2/`
+- `npm run build:firefox` -- Firefox 153+ build -> `.output/firefox-mv3/`
 - `npm run build:site` -- Build community site (catalog.json + images)
 - `npm test` -- Run all Vitest tests
 - `npm run test:watch` -- Watch mode
@@ -137,7 +137,7 @@ v5 is fully backward-compatible with v4 data. Same storage key (`chrome.storage.
 - **e.code vs e.key**: ShortcutRecorder uses `e.code` (physical key) because `e.key` produces unicode chars with Alt on Mac (e.g., option+l -> `¬`)
 - **Meta vs Ctrl**: On Mac, meta (Cmd) and ctrl are separate modifiers. The recorder records both independently
 - **Platform-aware conflict detection**: Mac defaults use `meta+`, Windows/Linux use `ctrl+`. Separate default lists in shortcut-conflicts.ts. Never cross-map ctrl<->meta.
-- **chrome.debugger for JS testing**: The test button uses DevTools Protocol (Runtime.evaluate) to bypass page CSP. Falls back to executeScript on Firefox (no debugger API)
+- **JavaScript testing**: Chrome uses DevTools Protocol (Runtime.evaluate). Firefox uses native `userScripts.execute` after optional permission and explicit per-script installation; never add an eval fallback in Firefox.
 - **overflow:hidden on groups**: Don't use it -- clips the SearchSelect dropdown. Border-radius works without it
 - **position:sticky on group headers**: Don't use with `overflow:hidden` on parent -- the `top` value pushes content down. Currently removed.
 - **Content script orphaning**: After extension reload, old content scripts throw "Extension context invalidated". Guard all `browser.runtime.sendMessage` calls with `chrome.runtime?.id` check
@@ -147,7 +147,7 @@ v5 is fully backward-compatible with v4 data. Same storage key (`chrome.storage.
 - **Bookmark URLs with %**: `decodeURIComponent` throws on bare `%` signs. Wrap in try/catch with raw fallback
 - **Labels should be sentence case**: "Log all events" not "Log All Events"
 - **New windows open maximized**: All `browser.windows.create` calls include `state: 'maximized'`
-- **Firefox compatibility**: Settings pages use `about:` URIs not `chrome://`. Guard `chrome.tabs.group/ungroup`, `chrome.downloads.show`, `chrome.debugger` with existence checks. Firefox builds as MV2.
+- **Firefox compatibility**: Firefox targets desktop 153+ as MV3; store distribution remains blocked pending signing/review. Settings pages use `about:` URIs not `chrome://`. Guard `chrome.tabs.group/ungroup`, `chrome.downloads.show`, `chrome.debugger` with existence checks.
 
 ## Workflow rules
 - **Never push directly to master/main**. Always create a feature branch and open a PR.

@@ -4,6 +4,7 @@ import type { KeySetting } from '@/utils/url-matching'
 import { saveKeys, loadKeys } from '@/utils/storage'
 import { useToast } from './useToast'
 import { useUndoRedo } from './useUndoRedo'
+import { needsActionSettings } from '@/utils/action-parameters'
 
 const keys = ref<KeySetting[]>([])
 const expandedRow = ref<number | null>(null)
@@ -76,7 +77,7 @@ function onActionChange(row: KeySetting, index: number, action: string) {
   if (action === 'macro') {
     if (!row.macroSteps) row.macroSteps = []
   }
-  if (ACTIONS_NEEDING_EXPANSION.includes(action)) {
+  if (needsActionSettings(action)) {
     expandedRow.value = index
   }
 }
@@ -86,6 +87,7 @@ function toggleEnabled(row: KeySetting) {
 }
 
 function needsUserScripts(): boolean {
+  if (import.meta.env.BROWSER === 'firefox') return false
   const hasJs = keys.value.some((k) => k.action === 'javascript')
   if (!hasJs) return false
   try {

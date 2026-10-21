@@ -1,12 +1,13 @@
 {
   "name": "shortkeys",
-  "version": "5.0.1",
+  "version": "5.1.0",
   "description": "Custom keyboard shortcuts for your browser",
   "scripts": {
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",
     "build": "wxt build",
     "build:firefox": "wxt build -b firefox",
+    "typecheck": "wxt prepare && vue-tsc --noEmit",
     "zip": "wxt zip",
     "zip:firefox": "wxt zip -b firefox",
     "zip:edge": "wxt zip -b edge",
@@ -14,7 +15,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "postinstall": "wxt prepare || true",
+    "postinstall": "wxt prepare",
     "build:site": "npx tsx scripts/build-catalog.ts && cp -r public/images site/public/images && cd site && npx astro build",
     "test:e2e": "npx playwright test",
     "visual-review": "npx tsx scripts/visual-review.ts",
@@ -23,11 +24,15 @@
   "devDependencies": {
     "@playwright/test": "^1.64.0",
     "@types/chrome": "^0.3.5",
+    "@types/mousetrap": "^1.6.15",
+    "@types/node": "^22.0.0",
     "@vitest/coverage-v8": "^3.2.4",
     "@wxt-dev/module-vue": "^1.0.3",
     "astro": "^6.4.8",
     "jsdom": "^29.1.1",
+    "typescript": "^5.9.3",
     "vitest": "^3.2.4",
+    "vue-tsc": "^3.1.0",
     "wxt": "^0.21.4"
   },
   "dependencies": {
