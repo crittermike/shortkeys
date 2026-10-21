@@ -6,7 +6,10 @@ export async function getFirefoxScriptCode(action: string, parameters: ActionPar
   if (action !== 'openbookmark' || !parameters.bookmark) return ''
   const nodes = await browser.bookmarks.search({ title: parameters.bookmark })
   const url = nodes.reverse().find(node => node.url && node.title === parameters.bookmark)?.url
-  if (!url || new URL(url).protocol !== 'javascript:') return ''
+  if (!url) return ''
+  const normalizedUrl = url.trim().toLowerCase()
+  if (normalizedUrl.startsWith('data:') || normalizedUrl.startsWith('vbscript:')) return ''
+  if (!normalizedUrl.startsWith('javascript:')) return ''
   const code = url.slice(url.indexOf(':') + 1)
   try {
     return decodeURIComponent(code)
