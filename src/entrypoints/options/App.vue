@@ -879,6 +879,8 @@ a:hover { text-decoration: underline; }
   margin-left: auto;
 }
 
+.stat-chip, .stats-actions .btn, .search-input { height: 32px; box-sizing: border-box; }
+
 .stat-chip {
   display: flex;
   align-items: center;
@@ -963,7 +965,7 @@ a:hover { text-decoration: underline; }
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: 12px 16px;
+  padding: 12px;
   background: var(--bg-elevated);
   border-bottom: 1px solid var(--border-light);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
@@ -1122,17 +1124,21 @@ a:hover { text-decoration: underline; }
 .shortcut-card.expanded:hover { background: var(--bg-card); }
 
 .shortcut-header {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: var(--space-xs);
-  padding: 8px 14px 0 6px;
+  gap: var(--space-sm);
+  padding: 10px 12px 0;
 }
 
 .drag-handle {
+  position: absolute;
+  left: -2px;
+  top: 10px;
+  line-height: 22px;
   color: var(--text-placeholder);
   font-size: 16px;
   cursor: grab;
-  padding: 2px;
   flex-shrink: 0;
   transition: color 0.15s;
   opacity: 0;
@@ -1151,7 +1157,9 @@ a:hover { text-decoration: underline; }
   font-weight: 600;
   color: var(--text);
   outline: none;
-  padding: 2px 4px;
+  padding: 2px 6px;
+  margin-left: -6px;
+  line-height: 18px;
   border-radius: var(--radius-sm);
   transition: all 0.15s;
 }
@@ -1238,7 +1246,7 @@ a:hover { text-decoration: underline; }
 /* ── Details panel ── */
 .shortcut-details {
   border-top: 1px solid var(--border-light);
-  padding: 12px 16px;
+  padding: 12px;
   background: var(--bg-elevated);
 }
 
@@ -1247,7 +1255,7 @@ a:hover { text-decoration: underline; }
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  padding: 0 16px 10px;
+  padding: 0 12px 10px;
 }
 
 .conflict-pill {
@@ -1282,7 +1290,7 @@ a:hover { text-decoration: underline; }
 
 .details-section:empty { display: none; }
 .details-chain-link { margin-bottom: var(--space-md); }
-.script-install-row { flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: var(--space-md); }
+.script-install-row { flex-direction: row; align-items: center; justify-content: space-between; gap: var(--space-md); margin: var(--space-md) 0; font-size: 12px; color: var(--text-secondary); }
 
 .detail-row {
   display: flex;
@@ -2335,13 +2343,12 @@ a:hover { text-decoration: underline; }
 
 /* ── Condensed view ── */
 [data-density="condensed"] .shortcut-header {
-  padding: 2px 10px 0 6px;
-  gap: 2px;
+  padding: 4px 10px 0;
 }
 
 [data-density="condensed"] .shortcut-label-title {
   font-size: 12px;
-  padding: 1px 4px;
+  padding: 1px 6px;
 }
 
 [data-density="condensed"] .shortcut-row {
@@ -2387,15 +2394,17 @@ a:hover { text-decoration: underline; }
 
 [data-density="condensed"] .drag-handle {
   font-size: 14px;
-  padding: 0;
+  top: 4px;
+  left: -3px;
+  line-height: 20px;
 }
 
 [data-density="condensed"] .conflict-warnings {
-  padding: 0 10px 4px;
+  padding: 0 10px 6px;
 }
 
 [data-density="condensed"] .group-header {
-  padding: 5px 10px;
+  padding: 5px 6px;
 }
 
 [data-density="condensed"] .btn-add-to-group {
