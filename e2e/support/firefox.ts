@@ -4,12 +4,11 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { expect, type TestInfo } from '@playwright/test'
-import type { TestServer } from './server'
+import { FIREFOX_UUID, type TestServer } from './server'
 import type { KeySetting, GroupSettings } from '../../src/utils/url-matching'
 
 export const FIREFOX_BUILD = path.resolve('.output/firefox-mv3')
 export const FIREFOX_ID = 'Shortkeys@Shortkeys.com'
-export const FIREFOX_UUID = '5b0f2d4e-7a3c-4c1e-9f62-1d8a7e3b9c40'
 const MIN_FIREFOX = 153
 
 /**
@@ -58,8 +57,14 @@ export async function launchFirefox(testInfo: TestInfo): Promise<firefox.Driver>
 export async function installExtension(driver: firefox.Driver, dir: string) {
   const original = await driver.getWindowHandle()
   await driver.installAddon(dir, true)
-  // The extension opens its options page on install (the welcome page is blocked offline). Close it.
-  await driver.wait(async () => (await driver.getAllWindowHandles()).length >= 2, 10_000, 'options page did not open on install')
+  // Wait for options itself; Firefox may block the welcome tab before it is created.
+  await driver.wait(async () => {
+    for (const handle of await driver.getAllWindowHandles()) {
+      await driver.switchTo().window(handle)
+      if ((await driver.getCurrentUrl()) === `moz-extension://${FIREFOX_UUID}/options.html`) return true
+    }
+    return false
+  }, 10_000, 'options page did not open on install')
   for (const handle of await driver.getAllWindowHandles()) {
     if (handle === original) continue
     await driver.switchTo().window(handle)
@@ -72,7 +77,7 @@ export class FirefoxExtension {
   constructor(public driver: WebDriver, public server: TestServer) {}
 
   optionsUrl() {
-    return this.server.url(`/frame?src=${encodeURIComponent(`moz-extension://${FIREFOX_UUID}/options.html`)}`)
+    return this.server.url('/frame')
   }
 
   /** Load options in the iframe host and switch into it. */
