@@ -73,7 +73,10 @@ test('tab shortcuts open and close tabs', async ({ ff, server }) => {
 
   await ff.openPage(server.url('/b'))
   const b = await ff.driver.getWindowHandle()
-  await ff.press('x')
+  // The tab can close before keyup is delivered.
+  await ff.press('x').catch(async (error) => {
+    if ((await ff.driver.getAllWindowHandles()).includes(b)) throw error
+  })
   await ff.driver.wait(async () => !(await ff.driver.getAllWindowHandles()).includes(b), 10_000)
 })
 

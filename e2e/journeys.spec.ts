@@ -105,7 +105,10 @@ test('tab shortcuts open, switch and close tabs', async ({ context, extensionId,
   expect(await activeTabUrl(context)).toMatch(/^chrome:\/\/new/)
 
   await b.bringToFront()
-  await b.keyboard.press('x')
+  // The tab can close before keyup is delivered.
+  await b.keyboard.press('x').catch((error) => {
+    if (!b.isClosed()) throw error
+  })
   await expect.poll(() => tabUrls(context)).not.toContain(server.url('/b'))
   expect(await tabUrls(context)).toHaveLength(before.length)
 })
