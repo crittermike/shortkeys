@@ -17,7 +17,7 @@ const mockOnChanged = vi.fn()
 // @ts-ignore
 globalThis.chrome = {
   storage: {
-    sync: { get: mockSyncGet, set: mockSyncSet },
+    sync: { get: mockSyncGet, set: mockSyncSet, remove: vi.fn().mockResolvedValue(undefined) },
     local: { get: mockLocalGet, set: mockLocalSet },
     onChanged: { addListener: mockOnChanged },
   },
@@ -58,11 +58,7 @@ describe('popup quick-add shortcut flow', () => {
     const existing: KeySetting[] = [
       { key: 'ctrl+b', action: 'newtab', id: 'existing-1', enabled: true },
     ]
-    mockSyncGet.mockImplementation((keys: any) => {
-      if (keys === 'keys_meta') return Promise.resolve({})
-      if (keys === 'keys') return Promise.resolve({ keys: JSON.stringify(existing) })
-      return Promise.resolve({})
-    })
+    mockSyncGet.mockResolvedValue({ keys: JSON.stringify(existing) })
 
     // Simulate the quick-add save flow
     const saved = await loadKeys()
@@ -83,7 +79,10 @@ describe('popup quick-add shortcut flow', () => {
     expect(currentKeys[1].key).toBe('ctrl+shift+k')
     expect(currentKeys[1].action).toBe('closetab')
     expect(mockSyncSet).toHaveBeenCalledWith(
-      expect.objectContaining({ keys_meta: 1, keys_0: JSON.stringify(currentKeys) })
+      expect.objectContaining({
+        keys_meta: expect.objectContaining({ version: 1, count: 1 }),
+        keys_0: JSON.stringify(currentKeys),
+      })
     )
   })
 
@@ -107,7 +106,10 @@ describe('popup quick-add shortcut flow', () => {
 
     expect(currentKeys).toHaveLength(1)
     expect(mockSyncSet).toHaveBeenCalledWith(
-      expect.objectContaining({ keys_meta: 1, keys_0: JSON.stringify([newShortcut]) })
+      expect.objectContaining({
+        keys_meta: expect.objectContaining({ version: 1, count: 1 }),
+        keys_0: JSON.stringify([newShortcut]),
+      })
     )
   })
 
