@@ -3,6 +3,7 @@ import { fetchConfig, shouldStopCallback } from '@/utils/content-logic'
 import { ACTION_CATEGORIES } from '@/utils/actions-registry'
 import { activateLinkHints, deactivateLinkHints, isLinkHintModeActive } from '@/utils/link-hints'
 import type { KeySetting } from '@/utils/url-matching'
+import { IS_FIREFOX } from '@/utils/firefox-consent'
 
 export default defineContentScript({
   matches: ['<all_urls>', 'file:///*'],
@@ -31,7 +32,7 @@ export default defineContentScript({
       const action = keySetting.action
 
       // Custom JS runs via event dispatch to MAIN world
-      if (action === 'javascript') {
+      if (action === 'javascript' && !IS_FIREFOX) {
         document.dispatchEvent(new CustomEvent('shortkeys_js_run', { detail: keySetting.id }))
         trackContentAction(keySetting)
         return

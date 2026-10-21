@@ -434,7 +434,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
         
         <div class="stores-grid">
           <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck" class="btn btn-chrome" target="_blank"><i class="mdi mdi-google-chrome"></i> Chrome</a>
-          <a href="https://addons.mozilla.org/firefox/addon/shortkeys/" class="btn btn-firefox" target="_blank"><i class="mdi mdi-firefox"></i> Firefox</a>
+          <a href="#browser-compatibility" class="btn btn-firefox"><i class="mdi mdi-firefox"></i> Firefox status</a>
           <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck" class="btn btn-edge" target="_blank"><i class="mdi mdi-microsoft-edge"></i> Edge</a>
           <a href="https://addons.opera.com/extensions/details/shortkeys/" class="btn" style="background:#FF1B2D;color:#fff;" target="_blank"><i class="mdi mdi-opera"></i> Opera</a>
         </div>
@@ -812,7 +812,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
           <li>Shortkeys utilizes <code>chrome.storage.sync</code> to sync your configuration to your Google Account.</li>
           <li>No extra account or setup is needed. It works across all Chrome instances where you are signed in.</li>
           <li><strong>Fallback:</strong> Chrome limits sync storage to 100KB. If your data (like large custom JavaScript actions) exceeds this limit, Shortkeys automatically and transparently falls back to local storage so you never lose data.</li>
-          <li>On Firefox, it utilizes Firefox Sync.</li>
+          <li>The Firefox source build uses Firefox Sync. Current Firefox distribution is blocked; see <a href="#browser-compatibility">browser support</a>.</li>
         </ul>
       </section>
 
@@ -943,7 +943,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
         <p class="docs-text">Shortkeys is built to run on modern web browsers.</p>
         <ul class="docs-list">
           <li><strong>Chrome:</strong> Full support (Manifest V3). All features available.</li>
-          <li><strong>Firefox:</strong> Full support (Manifest V2). Built natively for Firefox. Note that some Chrome-specific APIs are unavailable (tab grouping, debugger API testing, showing specific downloads).</li>
+          <li><strong>Firefox:</strong> Distribution is currently blocked. Mozilla rejected v5.0.1 for remote code execution and missing data-transmission consent. AMO currently lists only v2.0.20 (2017), and users report installation failures. A source build is not a signed, approved release. Follow <a href="https://github.com/crittermike/shortkeys/issues/864">the Firefox status issue</a>.</li>
           <li><strong>Edge:</strong> Full support. Install directly from the Chrome Web Store.</li>
           <li><strong>Opera:</strong> Full support. Install directly from Opera Add-ons.</li>
         </ul>

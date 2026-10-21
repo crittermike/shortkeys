@@ -2,9 +2,11 @@ import { v4 as uuid } from 'uuid'
 import { isShortcutAvailable, type KeySetting } from '@/utils/url-matching'
 import { isPaletteAction } from '@/utils/command-palette'
 import { handleAction } from '@/actions/action-handlers'
+import { showPageToast } from '@/utils/execute-script'
 import { initLastUsedTabTracking } from '@/actions/last-used-tab'
 import { loadKeys, saveKeys, migrateLocalToSync, onKeysChanged, loadGroupSettings } from '@/utils/storage'
 import { trackUsage, loadUsageData } from '@/utils/usage-tracking'
+import { IS_FIREFOX } from '@/utils/firefox-consent'
 import {
   initReviewPromptState,
   loadReviewPromptState,
@@ -18,6 +20,11 @@ declare var handlers: Record<string, () => void>
 export default defineBackground(() => {
   initLastUsedTabTracking()
 
+  function reportActionError(error: unknown): void {
+    console.error('[Shortkeys] Action failed:', error)
+    void showPageToast(error instanceof Error ? error.message : 'Shortkeys could not run this action.')
+  }
+
   async function checkKeys(): Promise<void> {
     const raw = await loadKeys()
     const keys = JSON.parse(raw || '[]')
@@ -30,6 +37,7 @@ export default defineBackground(() => {
   }
 
   async function registerUserScript(): Promise<void> {
+    if (IS_FIREFOX) return
     // userScripts API requires "Allow User Scripts" to be enabled in extension details
     if (!chrome.userScripts) return
 
@@ -139,7 +147,7 @@ export default defineBackground(() => {
     // Commands don't carry the full KeySetting, so we can't track by ID here.
     // Usage tracking for these is handled when they route through the message listener instead.
 
-    handleAction(action).catch(error => console.error('[Shortkeys] Action failed:', error))
+    handleAction(action).catch(reportActionError)
   })
 
   browser.runtime.onMessage.addListener((request: any, _sender, sendResponse) => {
@@ -172,6 +180,10 @@ export default defineBackground(() => {
     }
 
     if (action === 'fetchUrl') {
+      if (IS_FIREFOX) {
+        sendResponse({ error: 'Remote userscript loading is unavailable in Firefox.' })
+        return false
+      }
       fetch(request.url)
         .then(r => r.text())
         .then(text => sendResponse({ text }))
@@ -217,7 +229,7 @@ export default defineBackground(() => {
       trackUsage(request.id).then(() => maybeShowReviewNotification())
     }
 
-    handleAction(action, request).catch(error => console.error('[Shortkeys] Action failed:', error))
+    handleAction(action, request).catch(reportActionError)
   })
 
   chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {

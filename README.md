@@ -6,11 +6,11 @@
 
 <p align="center">
   <strong>Custom keyboard shortcuts for your browser</strong><br>
-  A cross-browser extension for Chrome, Firefox, Edge, and Opera with 200,000+ Chrome users.
+  A browser extension for Chrome, Edge, and Opera with 200,000+ Chrome users. Firefox distribution is currently blocked.
 </p>
 
 <p align="center">
-  <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck">Chrome Web Store</a> · <a href="https://addons.mozilla.org/firefox/addon/shortkeys/">Firefox Add-ons</a> · <a href="https://shortkeys.app">Website</a> · <a href="https://github.com/crittermike/shortkeys/issues">Issues</a>
+  <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck">Chrome Web Store</a> · <a href="https://github.com/crittermike/shortkeys/issues/864">Firefox status</a> · <a href="https://shortkeys.app">Website</a> · <a href="https://github.com/crittermike/shortkeys/issues">Issues</a>
 </p>
 
 <br>
@@ -65,9 +65,9 @@
       </a>
     </td>
     <td align="center">
-      <a href="https://addons.mozilla.org/firefox/addon/shortkeys/">
+      <a href="https://github.com/crittermike/shortkeys/issues/864">
         <img src="public/images/browser-firefox.png" alt="Firefox" width="48" /><br>
-        <strong>Firefox</strong>
+        <strong>Firefox status</strong>
       </a>
     </td>
     <td align="center">
@@ -85,12 +85,16 @@
   </tr>
 </table>
 
-Or build from source:
+Firefox v5.0.1 was rejected by Mozilla for remote code execution and missing data-transmission consent. The AMO API currently lists only v2.0.20 (2017), and users report installation failures ([#864](https://github.com/crittermike/shortkeys/issues/864), [#982](https://github.com/crittermike/shortkeys/issues/982)). A successful source build is not a signed, approved Firefox release.
+
+The Firefox source build targets desktop Firefox 153+ using Manifest V3. Custom JavaScript, JavaScript macros, and bookmarklets use Firefox's native user-script API: enable the optional permission, review and install each script, and reinstall after editing its code or website scope. Removing a script disables execution without deleting its editable code. Remote userscript URL loading is unavailable in Firefox. Optional data transmission requires Firefox's built-in consent and stops when that consent is revoked.
+
+Or build from source for development:
 
 ```bash
 npm install
 npm run build          # Chrome → .output/chrome-mv3/
-npm run build:firefox  # Firefox → .output/firefox-mv2/
+npm run build:firefox  # Firefox 153+ → .output/firefox-mv3/
 ```
 
 ## Development
@@ -98,6 +102,7 @@ npm run build:firefox  # Firefox → .output/firefox-mv2/
 ```bash
 npm run dev            # Chrome dev mode with hot reload
 npm run dev:firefox    # Firefox dev mode
+npm run typecheck      # TypeScript and Vue checks
 npm test               # Run all tests (722 tests across 25 files)
 npm run test:watch     # Watch mode
 npm run test:coverage  # With coverage report
@@ -136,6 +141,8 @@ marketing/                   # Store listing copy, screenshot plans, promo asset
 ## Contributing
 
 Pull requests are welcome. Please ensure all tests pass (`npm test`) before submitting. For bugs and feature requests, open a [GitHub issue](https://github.com/crittermike/shortkeys/issues).
+
+Use Node 22, the version used in CI. Release preparation and browser signing requirements are documented in [RELEASING.md](RELEASING.md).
 
 ## Support
 

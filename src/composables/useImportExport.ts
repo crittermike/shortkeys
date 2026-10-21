@@ -4,6 +4,7 @@ import { useToast } from './useToast'
 import { useUndoRedo } from './useUndoRedo'
 import { DEFAULT_GROUP } from './useGroups'
 import { getActionLabel } from '../utils/actions-registry'
+import { FIREFOX_DATA_TYPES, hasFirefoxDataConsent } from '@/utils/firefox-consent'
 
 export function useImportExport() {
   const { keys, ensureIds, saveShortcuts } = useShortcuts()
@@ -73,10 +74,21 @@ export function useImportExport() {
     }
   }
 
-  function publishToCommunity(group: string) {
+  async function publishToCommunity(group: string) {
     const groupShortcuts = keys.value.filter((k) => (k.group || DEFAULT_GROUP) === group)
     if (groupShortcuts.length === 0) {
       showSnack('No shortcuts in this group to publish.', 'danger')
+      return
+    }
+
+    try {
+      if (!await hasFirefoxDataConsent(FIREFOX_DATA_TYPES)) {
+        showSnack('Allow data transmission in Shortkeys settings before publishing a community pack.', 'danger')
+        return
+      }
+    } catch (error) {
+      console.error('Failed to check Firefox data consent:', error)
+      showSnack('Could not check data consent. The community pack was not sent.', 'danger')
       return
     }
 

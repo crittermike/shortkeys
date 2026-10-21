@@ -4,6 +4,7 @@ import type { KeySetting } from '@/utils/url-matching'
 import { useShortcuts } from './useShortcuts'
 import { useToast } from './useToast'
 import { normalizeKey, couldSiteFiltersOverlap } from '@/utils/shortcut-conflicts'
+import { IS_FIREFOX, containsRemoteCode } from '@/utils/firefox-consent'
 
 export interface CommunityPack {
   id: string
@@ -60,7 +61,9 @@ export function useCommunityPacks() {
       const resp = await fetch(COMMUNITY_CATALOG_URL)
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
       const data: CommunityCatalog = await resp.json()
-      communityPacks.value = data.packs
+      communityPacks.value = IS_FIREFOX
+        ? data.packs.filter(pack => !containsRemoteCode(pack.fullShortcuts))
+        : data.packs
     } catch (e) {
       communityError.value = 'Failed to load community packs. Check your internet connection.'
       console.error('Failed to fetch community packs:', e)
@@ -129,6 +132,10 @@ export function useCommunityPacks() {
 
   /** Actually install a community pack */
   async function installCommunityPack(pack: CommunityPack) {
+    if (IS_FIREFOX && containsRemoteCode(pack.fullShortcuts)) {
+      showSnack('Remote JavaScript packs are unavailable in Firefox.', 'danger')
+      return
+    }
     const mode = communityConflictMode.value
     const groupName = pack.name
     const conflicts = getCommunityPackConflicts(pack)

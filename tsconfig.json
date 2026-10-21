@@ -1,0 +1,9 @@
+{
+  "extends": "./.wxt/tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": false
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue", "wxt.config.ts", ".wxt/wxt.d.ts"],
+  "exclude": ["node_modules", ".output", "site"]
+}

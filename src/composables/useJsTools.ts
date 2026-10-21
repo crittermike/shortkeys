@@ -4,6 +4,7 @@ import { executeJavascriptOnTab } from '@/utils/test-javascript'
 import { resolveUserscriptUrl, parseUserscript } from '@/utils/fetch-userscript'
 import { useShortcuts } from './useShortcuts'
 import { useToast } from './useToast'
+import { IS_FIREFOX } from '@/utils/firefox-consent'
 
 const openTabs = ref<{ id: number; title: string; url: string; favIconUrl?: string }[]>([])
 const selectedTabId = ref<number | null>(null)
@@ -31,7 +32,7 @@ export function useJsTools() {
       showSnack('Select a tab to test on', 'danger')
       return
     }
-    const result = await executeJavascriptOnTab(selectedTabId.value, row.code || '')
+    const result = await executeJavascriptOnTab(selectedTabId.value, row.code || '', row)
     if (result.success) {
       showSnack(`✓ Ran on ${result.hostname}`)
     } else {
@@ -40,6 +41,10 @@ export function useJsTools() {
   }
 
   async function importUserscript(index: number) {
+    if (IS_FIREFOX) {
+      userscriptMessage.value = 'Remote userscript loading is unavailable in Firefox.'
+      return
+    }
     const url = userscriptUrl.value.trim()
     if (!url) return
     userscriptLoading.value = true

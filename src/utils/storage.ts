@@ -16,10 +16,10 @@ const MIGRATED_KEY = '__shortkeys_migrated_to_sync'
 const encoder = new TextEncoder()
 let pendingStorage: Promise<unknown> = Promise.resolve()
 
-function withStorageLock<T>(operation: () => Promise<T>): Promise<T> {
+async function withStorageLock<T>(operation: () => Promise<T>): Promise<T> {
   // Options, popup, and background share the extension origin and its Web Lock.
   // This prevents backup refresh/recovery from overwriting an in-flight save.
-  if (globalThis.navigator?.locks) return navigator.locks.request('shortkeys-keys', operation)
+  if (globalThis.navigator?.locks) return await navigator.locks.request('shortkeys-keys', operation)
   const result = pendingStorage.then(operation)
   pendingStorage = result.catch(() => {})
   return result
@@ -33,6 +33,20 @@ interface Revision {
 interface Snapshot {
   json: string
   revision?: Revision
+}
+
+interface SyncMetadata {
+  version: 1
+  count: number
+  revision: Revision
+  hash: string
+}
+
+function isSyncMetadata(value: unknown): value is SyncMetadata {
+  if (!value || typeof value !== 'object') return false
+  const meta = value as Partial<SyncMetadata>
+  return meta.version === 1 && typeof meta.count === 'number' &&
+    isRevision(meta.revision) && typeof meta.hash === 'string'
 }
 
 function isRevision(value: unknown): value is Revision {
@@ -101,10 +115,11 @@ async function readSync(): Promise<Snapshot | undefined> {
   const data = await browser.storage.sync.get(null)
   const meta = data[SYNC_META_KEY]
   if (meta !== undefined) {
-    const legacy = typeof meta === 'number'
-    const count = legacy ? meta : meta?.count
-    if (!Number.isInteger(count) || count < 1 || count > 512 ||
-      (!legacy && (meta?.version !== 1 || !isRevision(meta.revision)))) {
+    if (typeof meta !== 'number' && !isSyncMetadata(meta)) {
+      throw new Error('Invalid shortcut sync metadata')
+    }
+    const count = typeof meta === 'number' ? meta : meta.count
+    if (!Number.isInteger(count) || count < 1 || count > 512) {
       throw new Error('Invalid shortcut sync metadata')
     }
     let json = ''
@@ -112,8 +127,8 @@ async function readSync(): Promise<Snapshot | undefined> {
       if (typeof data[`keys_${i}`] !== 'string') throw new Error('Missing shortcut sync chunk')
       json += data[`keys_${i}`]
     }
-    if (!legacy && await hash(json) !== meta.hash) throw new Error('Incomplete shortcut sync snapshot')
-    return { json: parseKeys(json)!, revision: legacy ? undefined : meta.revision }
+    if (typeof meta !== 'number' && await hash(json) !== meta.hash) throw new Error('Incomplete shortcut sync snapshot')
+    return { json: parseKeys(json)!, revision: typeof meta === 'number' ? undefined : meta.revision }
   }
   const json = parseKeys(data.keys)
   return json === undefined ? undefined : { json }
@@ -290,4 +305,24 @@ export async function loadGroupSettings(): Promise<Record<string, GroupSettings>
     console.error('[Shortkeys] Failed to load group settings from local:', e)
   }
   return {}
+}
+
+export async function loadUserScriptApprovals(): Promise<Record<string, string>> {
+  const data = await browser.storage.local.get('userScriptApprovals')
+  const value = data.userScriptApprovals
+  if (value === undefined) return {}
+  if (!value || typeof value !== 'object' || Array.isArray(value) ||
+    Object.values(value).some(digest => typeof digest !== 'string')) {
+    throw new Error('Invalid installed user-script approvals')
+  }
+  return value as Record<string, string>
+}
+
+export function updateUserScriptApproval(id: string, digest?: string): Promise<void> {
+  return withStorageLock(async () => {
+    const approvals = await loadUserScriptApprovals()
+    if (digest) approvals[id] = digest
+    else delete approvals[id]
+    await browser.storage.local.set({ userScriptApprovals: approvals })
+  })
 }

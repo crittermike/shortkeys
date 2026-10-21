@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import { isBuiltInAction } from '@/utils/actions-registry'
 import ActionParameters from '@/components/ActionParameters.vue'
 import SearchSelect from '@/components/SearchSelect.vue'
@@ -7,12 +8,58 @@ import { useShortcuts } from '@/composables/useShortcuts'
 import { useSearch } from '@/composables/useSearch'
 import { useMacros } from '@/composables/useMacros'
 import { useJsTools } from '@/composables/useJsTools'
+import { IS_FIREFOX } from '@/utils/firefox-consent'
+import { hasCustomScripts, installFirefoxScript, removeFirefoxScript, isFirefoxScriptInstalled } from '@/utils/firefox-user-scripts'
+import { useToast } from '@/composables/useToast'
 
 const props = defineProps<{
   index: number
 }>()
 
-const { keys } = useShortcuts()
+const { keys, saveShortcuts } = useShortcuts()
+const { showSnack } = useToast()
+const scriptInstalled = ref(false)
+const scriptPresent = ref(false)
+watch(() => JSON.stringify(keys.value[props.index]), async (_, __, onCleanup) => {
+  if (!IS_FIREFOX) return
+  let stale = false
+  onCleanup(() => { stale = true })
+  try {
+    const shortcut = keys.value[props.index]
+    const [present, installed] = await Promise.all([
+      hasCustomScripts(shortcut), isFirefoxScriptInstalled(shortcut),
+    ])
+    if (stale) return
+    scriptPresent.value = present
+    scriptInstalled.value = installed
+  } catch (error) {
+    console.error('Failed to check installed user script:', error)
+    showSnack('Could not check installed user scripts.', 'danger')
+  }
+}, { immediate: true })
+
+async function installScript() {
+  try {
+    await saveShortcuts()
+    await installFirefoxScript(keys.value[props.index])
+    scriptInstalled.value = true
+    showSnack('User script installed.')
+  } catch (error) {
+    console.error('Failed to install user script:', error)
+    showSnack(error instanceof Error ? error.message : 'Could not install user script.', 'danger')
+  }
+}
+
+async function removeScript() {
+  try {
+    await removeFirefoxScript(keys.value[props.index])
+    scriptInstalled.value = false
+    showSnack('User script removed. Your code is kept for editing.')
+  } catch (error) {
+    console.error('Failed to remove user script:', error)
+    showSnack('Could not remove user script.', 'danger')
+  }
+}
 const { macroActionOptions } = useSearch()
 const { MAX_MACRO_STEPS, addMacroStep, removeMacroStep, moveMacroStep, convertToSingleAction } = useMacros()
 const {
@@ -52,7 +99,7 @@ const {
       </div>
       <CodeEditor :modelValue="keys[index].code || ''" @update:modelValue="keys[index].code = $event" />
     </div>
-    <div v-if="keys[index].action === 'javascript'" class="import-userscript">
+    <div v-if="keys[index].action === 'javascript' && !IS_FIREFOX" class="import-userscript">
       <div class="import-userscript-row">
         <i class="mdi mdi-link-variant import-icon"></i>
         <input
@@ -66,6 +113,12 @@ const {
         </button>
       </div>
       <span v-if="userscriptMessage" class="import-userscript-msg">{{ userscriptMessage }}</span>
+    </div>
+
+    <div v-if="IS_FIREFOX && scriptPresent" class="details-section">
+      <span>{{ scriptInstalled ? 'User script installed' : 'Install after reviewing the code and website filter. Editing code or scope requires reinstalling.' }}</span>
+      <button v-if="!scriptInstalled" class="btn btn-secondary btn-sm" @click="installScript" type="button">Install this user script</button>
+      <button v-if="scriptInstalled" class="btn btn-secondary btn-sm" @click="removeScript" type="button">Remove user script</button>
     </div>
 
     <!-- Action-specific settings -->

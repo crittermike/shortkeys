@@ -87,6 +87,7 @@ function toggleEnabled(row: KeySetting) {
 }
 
 function needsUserScripts(): boolean {
+  if (import.meta.env.BROWSER === 'firefox') return false
   const hasJs = keys.value.some((k) => k.action === 'javascript')
   if (!hasJs) return false
   try {

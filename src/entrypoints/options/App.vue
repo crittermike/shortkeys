@@ -25,10 +25,12 @@ import { useJsTools } from '@/composables/useJsTools'
 import { useUndoRedo } from '@/composables/useUndoRedo'
 import { useViewDensity } from '@/composables/useViewDensity'
 import { usePacks } from '@/composables/usePacks'
+import { IS_FIREFOX, requestFirefoxDataConsent } from '@/utils/firefox-consent'
+import { requestFirefoxUserScripts } from '@/utils/firefox-user-scripts'
 
 // --- Composables ---
 const { darkMode, initTheme, toggleTheme } = useTheme()
-const { snackMessage, snackType, snackAction, dismissSnack } = useToast()
+const { snackMessage, snackType, snackAction, dismissSnack, showSnack } = useToast()
 const {
   keys, expandedRow, dirty,
   addShortcut, saveShortcuts, deleteShortcut, cloneShortcut, toggleDetails,
@@ -60,6 +62,24 @@ initDensity()
 
 const activeTab = ref(0)
 const showOnboarding = ref(false)
+
+function enableFirefoxScripts() {
+  requestFirefoxUserScripts().then(granted => {
+    showSnack(granted ? 'Custom JavaScript enabled. Install each script after reviewing its code.' : 'Custom JavaScript permission was not granted.', granted ? 'success' : 'danger')
+  }).catch(error => {
+    console.error('Failed to request user-script permission:', error)
+    showSnack('Could not request custom JavaScript permission.', 'danger')
+  })
+}
+
+function enableFirefoxData() {
+  requestFirefoxDataConsent().then(granted => {
+    showSnack(granted ? 'Optional data transmission allowed.' : 'Data transmission was not allowed. Local shortcuts still work.', granted ? 'success' : 'danger')
+  }).catch(error => {
+    console.error('Failed to request data consent:', error)
+    showSnack('Could not request data transmission consent.', 'danger')
+  })
+}
 
 const handleWizardFinish = async ({ shortcuts, packs }: {
   shortcuts: Array<{ key: string; action: string; code?: string; blacklist?: boolean | string; activeInInputs?: boolean; sites?: string }>
@@ -246,7 +266,15 @@ onUnmounted(() => {
 
       <!-- Shortcuts Tab -->
       <div v-show="activeTab === 0" class="tab-content">
-        <article v-if="needsUserScripts()" class="alert alert-warning">
+        <article v-if="IS_FIREFOX" class="alert alert-info">
+          <div>
+            <p>Custom JavaScript runs through Firefox's user-script API. Enable it, then review and install scripts in each shortcut's settings. Remove installed scripts there; revoke permissions in <code>about:addons</code>.</p>
+            <button class="btn btn-secondary btn-sm" @click="enableFirefoxScripts" type="button">Enable custom JavaScript</button>
+            <p>QR codes send the current URL to qrserver.com. Search actions send selected text to the chosen search provider. Publishing a community pack sends its shortcut settings to GitHub. These features need optional data consent.</p>
+            <button class="btn btn-secondary btn-sm" @click="enableFirefoxData" type="button">Allow data transmission</button>
+          </div>
+        </article>
+        <article v-if="!IS_FIREFOX && needsUserScripts()" class="alert alert-warning">
           <i class="mdi mdi-alert-circle-outline"></i>
           <div>
             <strong>Allow User Scripts</strong> — In order for JavaScript actions to work, you must first allow User Scripts in your <a href="#" @click.prevent="openExtensionDetails">extension settings page</a>. Then come back and save your shortcuts.

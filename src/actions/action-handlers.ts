@@ -1,5 +1,7 @@
 import { executeScript, showPageToast } from '../utils/execute-script'
 import { JS_SNIPPETS } from '../utils/js-snippets'
+import { IS_FIREFOX, getActionDataTypes, hasFirefoxDataConsent } from '../utils/firefox-consent'
+import { executeFirefoxUserScript, getFirefoxScriptCode } from '../utils/firefox-user-scripts'
 import type { KeySetting } from '../utils/url-matching'
 import { copyActionParameters } from '../utils/action-parameters'
 import type { Browser } from 'wxt/browser'
@@ -847,6 +849,12 @@ const actionHandlers: Record<string, ActionHandler> = {
     const openNode = nodes.reverse().find((n) => n.url && n.title === request.bookmark)
     if (openNode?.url) {
       if (openNode.url.startsWith('javascript:')) {
+        if (IS_FIREFOX) {
+          const [tab] = await browser.tabs.query({ active: true, currentWindow: true })
+          if (tab?.id === undefined) throw new Error('No active tab is available for this script.')
+          await executeFirefoxUserScript(tab.id, request)
+          return true
+        }
         // Use try/catch for decodeURIComponent — bare % signs cause URIError (#628)
         let code: string
         try {
@@ -1055,18 +1063,25 @@ actionHandlers.macro = async (request) => {
   if (!steps || steps.length === 0) return true
 
   const capped = steps.slice(0, MAX_MACRO_STEPS)
-  for (const step of capped) {
+  for (const [stepIndex, step] of capped.entries()) {
     if (!step.action || step.action === 'macro') continue
     const stepRequest: KeySetting = { key: request.key, action: step.action, ...copyActionParameters(step.action, step) }
     if (step.delay && step.delay > 0) {
       await new Promise((resolve) => setTimeout(resolve, step.delay))
     }
 
-    if (step.action === 'javascript') {
+    if (step.action === 'javascript' ||
+      (IS_FIREFOX && step.action === 'openbookmark' && await getFirefoxScriptCode(step.action, step))) {
       // Run JS macro step directly via executeScript (step carries its own code)
-      const code = step.code || ''
+      const code = IS_FIREFOX ? await getFirefoxScriptCode(step.action, step) : step.code || ''
       if (code) {
-        await executeScript((c: string) => new Function(c)(), [code])
+        if (IS_FIREFOX) {
+          const [tab] = await browser.tabs.query({ active: true, currentWindow: true })
+          if (tab?.id === undefined) throw new Error('No active tab is available for this script.')
+          await executeFirefoxUserScript(tab.id, request, stepIndex)
+        } else {
+          await executeScript((c: string) => new Function(c)(), [code])
+        }
       }
     } else {
       await handleAction(step.action, stepRequest)
@@ -1078,9 +1093,8 @@ actionHandlers.macro = async (request) => {
 
 // Register snippet-based actions
 for (const snippet of JS_SNIPPETS) {
-  const code = snippet.code
   actionHandlers['script-' + snippet.id] = async () => {
-    await executeScript((c: string) => new Function(c)(), [code])
+    await executeScript(snippet.run)
     return true
   }
 }
@@ -1090,6 +1104,15 @@ for (const snippet of JS_SNIPPETS) {
  * Returns true if the action was handled, false otherwise.
  */
 export async function handleAction(action: string, request: KeySetting = {} as KeySetting): Promise<boolean> {
+  if (!await hasFirefoxDataConsent(getActionDataTypes(action))) {
+    throw new Error('Allow data transmission in Shortkeys settings before running this action.')
+  }
+  if (IS_FIREFOX && action === 'javascript') {
+    const [tab] = await browser.tabs.query({ active: true, currentWindow: true })
+    if (tab?.id === undefined) throw new Error('No active tab is available for this script.')
+    await executeFirefoxUserScript(tab.id, request)
+    return true
+  }
   if (CONTENT_SCRIPT_ACTIONS.includes(action)) {
     const [tab] = await browser.tabs.query({ active: true, currentWindow: true })
     if (tab?.id === undefined) throw new Error('No active tab is available for this action.')
