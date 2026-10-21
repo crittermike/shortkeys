@@ -207,9 +207,13 @@ const snippets: Omit<JsSnippet, 'code'>[] = [
     run: () => {
       (function() {
         const bar = document.createElement('div');
-        bar.style.cssText = 'position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#4361ee,#7c3aed);z-index:999999;transition:width 0.1s';
+        bar.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,#4361ee,#7c3aed);z-index:999999;transform:scaleX(0);transform-origin:left center;transition:transform 0.1s';
         document.body.appendChild(bar);
-        function update() { bar.style.width = (window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100) + '%'; }
+        function update() {
+          const scrollableHeight = document.body.scrollHeight - window.innerHeight;
+          const progress = scrollableHeight > 0 ? window.scrollY / scrollableHeight : 0;
+          bar.style.transform = 'scaleX(' + Math.min(1, Math.max(0, progress)) + ')';
+        }
         window.addEventListener('scroll', update);
         update();
       })();
@@ -275,7 +279,10 @@ const snippets: Omit<JsSnippet, 'code'>[] = [
     run: () => {
       try {
         const json = JSON.parse(document.body.innerText);
-        document.body.innerHTML = '<pre style="padding:20px;font-size:14px;background:#1e293b;color:#e2e8f0;margin:0;min-height:100vh;tab-size:2">' + JSON.stringify(json, null, 2) + '</pre>';
+        const pre = document.createElement('pre');
+        pre.style.cssText = 'padding:20px;font-size:14px;background:#1e293b;color:#e2e8f0;margin:0;min-height:100vh;tab-size:2';
+        pre.textContent = JSON.stringify(json, null, 2);
+        document.body.replaceChildren(pre);
       } catch { alert('No valid JSON found on this page.'); }
     },
   },

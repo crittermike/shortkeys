@@ -27,4 +27,11 @@ describe('packaged snippet functions', () => {
     image.click()
     expect(document.querySelector('img')).toBeNull()
   })
+
+  it('renders JSON as text rather than interpreting page content as HTML', () => {
+    document.body.innerText = JSON.stringify({ payload: '<img src=x onerror=alert(1)>' })
+    JS_SNIPPETS.find(snippet => snippet.id === 'json-viewer')!.run()
+    expect(document.querySelector('img')).toBeNull()
+    expect(document.querySelector('pre')?.textContent).toContain('<img src=x onerror=alert(1)>')
+  })
 })

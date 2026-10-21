@@ -121,6 +121,16 @@ describe('Firefox native user scripts', () => {
     await expect(executeFirefoxUserScript(7, bookmarklet)).rejects.toThrow('Install this user script')
   })
 
+  it('only treats JavaScript bookmark URLs as executable user scripts', async () => {
+    const bookmarklet = { ...shortcut, action: 'openbookmark', code: undefined, bookmark: 'Page action' }
+    for (const url of ['data:text/html,<script>alert(1)</script>', 'vbscript:msgbox(1)', 'https://example.com']) {
+      bookmarks.mockResolvedValue([{ title: 'Page action', url }])
+      expect(await hasCustomScripts(bookmarklet)).toBe(false)
+    }
+    bookmarks.mockResolvedValue([{ title: 'Page action', url: 'JAVASCRIPT:document.title = "Allowed"' }])
+    expect(await hasCustomScripts(bookmarklet)).toBe(true)
+  })
+
   it('does not offer user-script installation for ordinary bookmark shortcuts', async () => {
     bookmarks.mockResolvedValue([{ title: 'Docs', url: 'https://example.com' }])
     expect(await hasCustomScripts({ ...shortcut, action: 'openbookmark', bookmark: 'Docs' })).toBe(false)
