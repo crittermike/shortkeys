@@ -18,7 +18,6 @@ import { useShortcuts } from '@/composables/useShortcuts'
 import { useConflicts } from '@/composables/useConflicts'
 import { useSearch } from '@/composables/useSearch'
 import { useGroups } from '@/composables/useGroups'
-import { useMacros } from '@/composables/useMacros'
 import { useDragDrop } from '@/composables/useDragDrop'
 import { useImportExport } from '@/composables/useImportExport'
 import { useJsTools } from '@/composables/useJsTools'
@@ -47,7 +46,6 @@ const {
   toggleGroupSiteFilter, hasGroupSiteRules,
   loadGroupSettingsFromStorage, persistGroupSettings,
 } = useGroups()
-const { convertToMacro } = useMacros()
 const { dragIndex, handleActive, onHandleMouseDown, onDragStart, onDragOver, onDragOverGroup, onDragEnd } = useDragDrop()
 const { shareGroup, publishToCommunity } = useImportExport()
 const { refreshTabs, loadBookmarks } = useJsTools()
@@ -266,10 +264,12 @@ onUnmounted(() => {
 
       <!-- Shortcuts Tab -->
       <div v-show="activeTab === 0" class="tab-content">
-        <article v-if="IS_FIREFOX" class="alert alert-info">
-          <div>
+        <article v-if="IS_FIREFOX" class="alert alert-info firefox-notice">
+          <div class="firefox-notice-row">
             <p>Custom JavaScript runs through Firefox's user-script API. Enable it, then review and install scripts in each shortcut's settings. Remove installed scripts there; revoke permissions in <code>about:addons</code>.</p>
             <button class="btn btn-secondary btn-sm" @click="enableFirefoxScripts" type="button">Enable custom JavaScript</button>
+          </div>
+          <div class="firefox-notice-row">
             <p>QR codes send the current URL to qrserver.com. Search actions send selected text to the chosen search provider. Publishing a community pack sends its shortcut settings to GitHub. These features need optional data consent.</p>
             <button class="btn btn-secondary btn-sm" @click="enableFirefoxData" type="button">Allow data transmission</button>
           </div>
@@ -296,7 +296,7 @@ onUnmounted(() => {
               </span>
             </div>
             <div class="stats-actions">
-              <button class="btn btn-secondary btn-sm" @click="addShortcut">
+              <button class="btn btn-primary btn-sm" @click="addShortcut">
                 <i class="mdi mdi-plus"></i> Add shortcut
               </button>
               <button class="btn btn-secondary btn-sm" @click="createNewGroup">
@@ -468,24 +468,12 @@ onUnmounted(() => {
                 </div>
                 <div class="shortcut-row">
                   <div class="field-group shortcut-col">
-                    <label class="field-label">Shortcut</label>
                     <ShortcutRecorder
                       :modelValue="keys[index].key"
                       @update:modelValue="keys[index].key = $event"
                     />
                   </div>
                   <div class="field-group behavior-col">
-                    <div class="field-label-row">
-                      <label class="field-label">Behavior</label>
-                      <button
-                        v-if="keys[index].action && keys[index].action !== 'macro'"
-                        class="btn-chain-link"
-                        @click="convertToMacro(keys[index], index)"
-                        type="button"
-                      >
-                        <i class="mdi mdi-link-variant"></i> Chain multiple actions
-                      </button>
-                    </div>
                     <SearchSelect
                       :modelValue="keys[index].action"
                       @update:modelValue="onActionChange(keys[index], index, $event)"
@@ -501,7 +489,7 @@ onUnmounted(() => {
                       <i class="mdi mdi-content-copy"></i>
                     </button>
                     <button class="btn-icon btn-delete" @click="deleteShortcut(index)" title="Delete">
-                      <i class="mdi mdi-close"></i>
+                      <i class="mdi mdi-trash-can-outline"></i>
                     </button>
                   </div>
                 </div>
@@ -888,6 +876,7 @@ a:hover { text-decoration: underline; }
   display: flex;
   align-items: center;
   gap: var(--space-sm);
+  margin-left: auto;
 }
 
 .stat-chip {
@@ -1077,10 +1066,7 @@ a:hover { text-decoration: underline; }
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.group-menu-item:hover { 
-  background: var(--bg-hover); 
-  transform: translateX(2px);
-}
+.group-menu-item:hover { background: var(--bg-hover); }
 .group-menu-item .mdi { font-size: 16px; color: var(--text-secondary); }
 .group-menu-danger { color: var(--danger); }
 .group-menu-danger .mdi { color: var(--danger); }
@@ -1124,13 +1110,13 @@ a:hover { text-decoration: underline; }
 
 .shortcut-card:last-child { margin-bottom: 0; }
 .shortcut-card:hover { background: var(--bg-elevated); }
-.shortcut-card.disabled { opacity: 0.45; }
-.shortcut-card.dragging { opacity: 0.4; box-shadow: var(--shadow-lg); outline: 2px solid var(--blue); outline-offset: -2px; }
+.shortcut-card.disabled > :not(.shortcut-header),
+.shortcut-card.disabled .shortcut-label-title { opacity: 0.45; }
+.shortcut-card.dragging { opacity: 0.4; box-shadow: var(--shadow-lg); }
 .shortcut-card.expanded {
-  border-left: 3px solid var(--blue);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  margin: 4px 0;
+  box-shadow: var(--shadow-md);
+  margin: 6px 0;
   background: var(--bg-card);
 }
 .shortcut-card.expanded:hover { background: var(--bg-card); }
@@ -1139,7 +1125,7 @@ a:hover { text-decoration: underline; }
   display: flex;
   align-items: center;
   gap: var(--space-xs);
-  padding: 6px 12px 0 6px;
+  padding: 8px 14px 0 6px;
 }
 
 .drag-handle {
@@ -1161,9 +1147,9 @@ a:hover { text-decoration: underline; }
   min-width: 0;
   border: none;
   background: transparent;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
   outline: none;
   padding: 2px 4px;
   border-radius: var(--radius-sm);
@@ -1175,9 +1161,9 @@ a:hover { text-decoration: underline; }
 
 .shortcut-row {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: var(--space-sm);
-  padding: 6px 12px 10px;
+  padding: 6px 12px 12px;
 }
 
 .field-group {
@@ -1295,6 +1281,8 @@ a:hover { text-decoration: underline; }
 }
 
 .details-section:empty { display: none; }
+.details-chain-link { margin-bottom: var(--space-md); }
+.script-install-row { flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: var(--space-md); }
 
 .detail-row {
   display: flex;
@@ -1723,9 +1711,13 @@ a:hover { text-decoration: underline; }
   box-shadow: var(--shadow-sm);
 }
 
-.alert-warning { background: var(--warning-bg); border: none; border-left: 3px solid var(--warning-text); color: var(--warning-text); }
-.alert-info { background: var(--info-bg); border: none; border-left: 3px solid var(--info-text); color: var(--info-text); }
+.alert-warning { background: var(--warning-bg); border: 1px solid var(--warning-border); color: var(--warning-text); }
+.alert-info { background: var(--info-bg); border: 1px solid var(--info-border); color: var(--info-text); }
 .alert a { color: inherit; text-decoration: underline; cursor: pointer; }
+.firefox-notice { flex-direction: column; align-items: stretch; gap: var(--space-md); }
+.firefox-notice-row { display: flex; align-items: center; gap: var(--space-lg); }
+.firefox-notice-row p { margin: 0; flex: 1; }
+.firefox-notice-row .btn { flex-shrink: 0; }
 .alert a:hover { opacity: 0.8; }
 .alert-info .mdi, .alert-warning .mdi {
   margin-right: 0;
@@ -2348,7 +2340,7 @@ a:hover { text-decoration: underline; }
 }
 
 [data-density="condensed"] .shortcut-label-title {
-  font-size: 11px;
+  font-size: 12px;
   padding: 1px 4px;
 }
 
