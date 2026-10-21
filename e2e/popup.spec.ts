@@ -21,12 +21,14 @@ test.describe('Popup Command Palette', () => {
     await expect(page.locator('.search-bar input')).toBeVisible({ timeout: 5000 })
   })
 
-  test('popup shows empty state when no shortcuts configured', async ({ context, extensionId }) => {
+  test('popup exposes built-in actions without configured shortcuts', async ({ context, extensionId }) => {
     const page = await context.newPage()
     await page.goto(`chrome-extension://${extensionId}/popup.html`)
 
-    // With no saved shortcuts in storage, the empty message should show
-    await expect(page.locator('.empty')).toContainText('No shortcuts configured')
+    await expect(page.locator('.result-row').first()).toBeVisible()
+    await page.locator('.search-bar input').fill('Close other tabs')
+    await expect(page.locator('.result-row')).toHaveCount(1)
+    await expect(page.locator('.result-label')).toHaveText('Close other tabs')
   })
 
   test('popup lists saved shortcuts', async ({ context, extensionId }) => {
@@ -57,7 +59,7 @@ test.describe('Popup Command Palette', () => {
     await popupPage.goto(`chrome-extension://${extensionId}/popup.html`)
 
     // The shortcut should appear in the popup list
-    await expect(popupPage.locator('.result-row')).toHaveCount(1, { timeout: 10000 })
+    await expect(popupPage.locator('.result-row').first()).toBeVisible({ timeout: 10000 })
     await expect(popupPage.locator('.result-label').first()).toContainText('Popup Test Action')
   })
 
@@ -91,10 +93,10 @@ test.describe('Popup Command Palette', () => {
     await popupPage.goto(`chrome-extension://${extensionId}/popup.html`)
 
     // Should see both
-    await expect(popupPage.locator('.result-row')).toHaveCount(2, { timeout: 5000 })
+    await expect(popupPage.locator('.result-row').first()).toBeVisible({ timeout: 5000 })
 
-    // Search for "Navigate"
-    await popupPage.locator('.search-bar input').fill('Navigate')
+    // Search a custom label (built-in descriptions also contain "Navigate").
+    await popupPage.locator('.search-bar input').fill('Navigate Home')
     await expect(popupPage.locator('.result-row')).toHaveCount(1)
     await expect(popupPage.locator('.result-label').first()).toContainText('Navigate Home')
   })

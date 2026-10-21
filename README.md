@@ -22,11 +22,11 @@
 ## Features
 
 - ⚡ **125+ built-in actions** across 11 categories: scrolling, tabs, navigation, video controls, search, bookmarks, windows, zooming, page tools, page scripts, and more
-- 🔍 **Command palette** - click the icon or set a shortcut to search and trigger any action
+- 🔍 **Command palette** - search saved shortcuts and run unassigned, zero-config actions without creating shortcuts. Quick-add opens settings when an action needs parameters.
 - 📦 **9 curated shortcut packs** - one-click install for Vim, Emacs, YouTube, Productivity, Developer, Reading, Tab Manager, Keyboard Power, and Media Control
 - ☁️ **Cloud sync** with automatic local fallback when data exceeds sync quota
 - 📁 **Groups** - organize shortcuts into collapsible, renamable sections with bulk enable/disable
-- 🔗 **Macro chaining** - chain multiple actions into a single shortcut
+- 🔗 **Macro chaining** - chain multiple actions into a single shortcut, with separate URLs, text, and other settings for each step
 - 🌐 **Site filtering** - all sites, blocklist, or allowlist per shortcut
 - 🎬 **Live reload** - shortcuts update in all tabs instantly, no page refresh needed
 - 🔗 **Shareable links** - generate a URL to share shortcuts or groups with anyone

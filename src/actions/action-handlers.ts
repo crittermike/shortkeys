@@ -1,6 +1,10 @@
 import { executeScript, showPageToast } from '../utils/execute-script'
 import { JS_SNIPPETS } from '../utils/js-snippets'
 import type { KeySetting } from '../utils/url-matching'
+import { copyActionParameters } from '../utils/action-parameters'
+import type { Browser } from 'wxt/browser'
+import { switchToLastUsedTab } from './last-used-tab'
+import captureScreenshot from './capture-screenshot'
 
 type ActionHandler = (request: KeySetting) => Promise<boolean> | boolean
 
@@ -17,7 +21,7 @@ async function selectTab(direction: string): Promise<void> {
 
   const [currentTab] = await browser.tabs.query({ currentWindow: true, active: true })
   const currentIndex = tabs.findIndex((t) => t.id === currentTab.id)
-  let target: browser.Tabs.Tab | undefined
+  let target: Browser.tabs.Tab | undefined
 
   switch (direction) {
     case 'next':
@@ -149,7 +153,7 @@ const actionHandlers: Record<string, ActionHandler> = {
   reopentab: async () => {
     const sessions = await browser.sessions.getRecentlyClosed({ maxResults: 1 })
     if (sessions[0]) {
-      await browser.sessions.restore(sessions[0].sessionId)
+      await browser.sessions.restore(sessions[0].tab?.sessionId || sessions[0].window?.sessionId)
     }
     return true
   },
@@ -249,8 +253,9 @@ const actionHandlers: Record<string, ActionHandler> = {
     if (!granted) { showPageToast('Tab group permission is required for this action'); return true }
     if (!chrome.tabs.group) return true
     const tabs = await browser.tabs.query({ currentWindow: true, highlighted: true })
-    const tabIds = tabs.map((t) => t.id!).filter(Boolean)
-    if (tabIds.length === 0) return true
+    const [firstId, ...otherIds] = tabs.flatMap(t => t.id === undefined ? [] : [t.id])
+    if (firstId === undefined) return true
+    const tabIds: [number, ...number[]] = [firstId, ...otherIds]
     const groupId = await chrome.tabs.group({ tabIds })
     if (request.groupname && chrome.tabGroups?.update) {
       await chrome.tabGroups.update(groupId, { title: request.groupname })
@@ -264,8 +269,9 @@ const actionHandlers: Record<string, ActionHandler> = {
     if (!granted) { showPageToast('Tab group permission is required for this action'); return true }
     if (!chrome.tabs.ungroup) return true
     const tabs = await browser.tabs.query({ currentWindow: true, highlighted: true })
-    const tabIds = tabs.map((t) => t.id!).filter(Boolean)
-    if (tabIds.length === 0) return true
+    const [firstId, ...otherIds] = tabs.flatMap(t => t.id === undefined ? [] : [t.id])
+    if (firstId === undefined) return true
+    const tabIds: [number, ...number[]] = [firstId, ...otherIds]
     await chrome.tabs.ungroup(tabIds)
     showPageToast(`✓ ${tabIds.length === 1 ? 'Tab' : tabIds.length + ' tabs'} removed from group`)
     return true
@@ -278,12 +284,14 @@ const actionHandlers: Record<string, ActionHandler> = {
     const tabs = await browser.tabs.query({ currentWindow: true, highlighted: true })
     if (tabs.length === 0) return true
     // If any selected tab is grouped, ungroup all; otherwise group all
-    const grouped = tabs.filter((t) => (t as any).groupId !== undefined && (t as any).groupId !== -1)
+    const grouped = tabs.filter((t) => t.groupId !== undefined && t.groupId !== -1)
+    const [firstId, ...otherIds] = tabs.flatMap(t => t.id === undefined ? [] : [t.id])
+    if (firstId === undefined) return true
+    const tabIds: [number, ...number[]] = [firstId, ...otherIds]
     if (grouped.length > 0) {
-      await chrome.tabs.ungroup(tabs.map((t) => t.id!).filter(Boolean))
+      await chrome.tabs.ungroup(tabIds)
       showPageToast(`✓ ${tabs.length === 1 ? 'Tab' : tabs.length + ' tabs'} ungrouped`)
     } else {
-      const tabIds = tabs.map((t) => t.id!).filter(Boolean)
       const groupId = await chrome.tabs.group({ tabIds })
       if (request.groupname && chrome.tabGroups?.update) {
         await chrome.tabGroups.update(groupId, { title: request.groupname })
@@ -527,7 +535,7 @@ const actionHandlers: Record<string, ActionHandler> = {
   gototab: async (request) => {
     const createNewTab = () => browser.tabs.create({ url: request.openurl })
     if (request.matchurl) {
-      const queryOption: browser.Tabs.QueryQueryInfoType = { url: request.matchurl }
+      const queryOption: Browser.tabs.QueryInfo = { url: request.matchurl }
       if (request.currentWindow) queryOption.currentWindow = true
       const tabs = await browser.tabs.query(queryOption)
       if (tabs.length > 0) {
@@ -544,7 +552,7 @@ const actionHandlers: Record<string, ActionHandler> = {
 
   gototabbytitle: async (request) => {
     if (request.matchtitle) {
-      const queryOption: browser.Tabs.QueryQueryInfoType = { title: request.matchtitle }
+      const queryOption: Browser.tabs.QueryInfo = { title: request.matchtitle }
       if (request.currentWindow) queryOption.currentWindow = true
       const tabs = await browser.tabs.query(queryOption)
       if (tabs.length > 0) {
@@ -881,7 +889,7 @@ const actionHandlers: Record<string, ActionHandler> = {
     const openNode = nodes.reverse().find((n) => n.url && n.title === request.bookmark)
     if (openNode?.url && isSafeUrl(openNode.url)) {
       const createdTab = await browser.tabs.create({ url: openNode.url, active: false })
-      const closeListener = (tabId: number, changeInfo: browser.Tabs.OnUpdatedChangeInfoType) => {
+      const closeListener = (tabId: number, changeInfo: Browser.tabs.OnUpdatedInfo) => {
         if (tabId === createdTab.id && changeInfo.status === 'complete') {
           browser.tabs.remove(createdTab.id!)
           browser.tabs.onUpdated.removeListener(closeListener)
@@ -931,7 +939,7 @@ const actionHandlers: Record<string, ActionHandler> = {
           el.value = el.value.slice(0, start) + text + el.value.slice(end)
           el.selectionStart = el.selectionEnd = start + text.length
           el.dispatchEvent(new Event('input', { bubbles: true }))
-        } else if (document.activeElement?.isContentEditable) {
+        } else if (document.activeElement instanceof HTMLElement && document.activeElement.isContentEditable) {
           document.execCommand('insertText', false, text)
         }
       }, [request.inserttext])
@@ -1029,6 +1037,18 @@ const actionHandlers: Record<string, ActionHandler> = {
   },
 }
 
+actionHandlers.lastusedtab = async () => { await switchToLastUsedTab(); return true }
+actionHandlers.capturescreenshot = async () => { await captureScreenshot(); return true }
+actionHandlers.capturefullsizescreenshot = async () => { await captureScreenshot({ fullsize: true }); return true }
+actionHandlers.forcecapturefullsizescreenshot = async () => { await captureScreenshot({ fullsize: true, force: true }); return true }
+actionHandlers.buttonnexttab = async request => {
+  if (request.button) {
+    await executeScript((selector: string) => document.querySelector<HTMLElement>(selector)?.click(), [request.button])
+  }
+  await selectTab('next')
+  return true
+}
+
 // -- Macro (chained actions) --
 actionHandlers.macro = async (request) => {
   const steps = request.macroSteps
@@ -1036,6 +1056,8 @@ actionHandlers.macro = async (request) => {
 
   const capped = steps.slice(0, MAX_MACRO_STEPS)
   for (const step of capped) {
+    if (!step.action || step.action === 'macro') continue
+    const stepRequest: KeySetting = { key: request.key, action: step.action, ...copyActionParameters(step.action, step) }
     if (step.delay && step.delay > 0) {
       await new Promise((resolve) => setTimeout(resolve, step.delay))
     }
@@ -1046,14 +1068,8 @@ actionHandlers.macro = async (request) => {
       if (code) {
         await executeScript((c: string) => new Function(c)(), [code])
       }
-    } else if (CONTENT_SCRIPT_ACTIONS.includes(step.action)) {
-      // Forward content-script-only actions to the active tab
-      const [tab] = await browser.tabs.query({ active: true, currentWindow: true })
-      if (tab?.id) {
-        await browser.tabs.sendMessage(tab.id, { ...request, action: step.action }).catch(() => {})
-      }
     } else {
-      await handleAction(step.action, request)
+      await handleAction(step.action, stepRequest)
     }
   }
   return true
@@ -1074,6 +1090,12 @@ for (const snippet of JS_SNIPPETS) {
  * Returns true if the action was handled, false otherwise.
  */
 export async function handleAction(action: string, request: KeySetting = {} as KeySetting): Promise<boolean> {
+  if (CONTENT_SCRIPT_ACTIONS.includes(action)) {
+    const [tab] = await browser.tabs.query({ active: true, currentWindow: true })
+    if (tab?.id === undefined) throw new Error('No active tab is available for this action.')
+    await browser.tabs.sendMessage(tab.id, { ...request, action })
+    return true
+  }
   const handler = actionHandlers[action]
   if (handler) {
     return handler(request)
