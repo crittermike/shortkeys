@@ -114,6 +114,11 @@ v5 is fully backward-compatible with v4 data. Same storage key (`chrome.storage.
 - `npm run test:watch` -- Watch mode
 - `npm run test:coverage` -- Coverage report
 - `npm run zip` / `npm run zip:firefox` -- Create distributable zip files
+- `npm run test:e2e:chromium` -- End-to-end journeys in Chromium (build first)
+- `npm run test:e2e:firefox` -- End-to-end journeys in real Firefox 153+ via Selenium (run `npm run build:firefox` first)
+- `npm run test:e2e:upgrade` -- Upgrade from the latest GitHub release and browser restart tests (needs `gh` auth)
+- `npm run test:e2e:visual` -- Layout assertions everywhere; pixel comparisons only on Linux
+- `npm run test:e2e:visual:update` -- Regenerate pixel baselines in Docker. Review the PNG diffs before committing
 
 ## Testing conventions
 - Tests live in `tests/` as `*.test.ts` files
@@ -125,6 +130,11 @@ v5 is fully backward-compatible with v4 data. Same storage key (`chrome.storage.
 - Injected function tests use `@vitest-environment jsdom` to test actual DOM behavior
 - Pack tests validate metadata, action names, labels, unique IDs, and JS syntax
 - Coverage excludes entrypoints and `capture-screenshot.ts`
+- E2E tests live in `e2e/` and use shared helpers in `e2e/support/`. Each test should drive the real UI or a real key press and assert the effect (scroll moved, tab opened, DOM changed), not just that a toast appeared
+- E2E tests never touch the external network: `isolateNetwork` aborts non-local requests and pages come from the local test server
+- Wait on conditions, not sleeps. To prove a key did nothing, press the `CONTROL` shortcut afterwards with `flush()`; once it fires, earlier keys were processed
+- Firefox E2E loads options in an iframe on a test page (Selenium can't drive moz-extension tabs), so only extension APIs available to web-accessible pages work there
+- CI runs each suite as a separate job; the `CI passed` job aggregates them and is the merge check
 
 ## Important gotchas
 - **Vue v-for keys**: Use `row.id` (stable UUID), NEVER `row.key` (changes as user types)

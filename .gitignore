@@ -25,3 +25,4 @@ test-results/
 site/public/images/images/
 .opencode/
 OpenCode.md
+.e2e-cache/

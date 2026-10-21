@@ -41,7 +41,7 @@ npm run zip:opera
 
 WXT writes browser builds and versioned ZIPs to `.output/`. Inspect each generated manifest for the intended version, browser, permissions, and unchanged command IDs. `zip:firefox` produces a ZIP, not a signed XPI.
 
-Check new install and upgrade from `v5.0.1`, existing local and synced shortcuts, large configurations and fallback, macro parameters, shortcut refresh without reloading, and popup execution. Inspect the visual-review screenshots in `screenshots/`.
+CI covers new install, upgrade from the latest GitHub release with typical, multi-chunk sync and local-only data, browser restart, shortcut refresh without reloading, core journeys in Chromium and Firefox, macro URLs, palette execution, and visual baselines. Still check by hand: the store build (not the GitHub release) upgrading, and real sync between two signed-in browsers. Inspect the visual-review screenshots in `screenshots/`.
 
 For Firefox, use a clean desktop Firefox 153+ profile and `about:debugging` > This Firefox > Load Temporary Add-on > `.output/firefox-mv3/manifest.json`. Temporary installation ends when Firefox restarts. Test optional data consent both denied and granted, revoke it in `about:addons`, then confirm transmitting actions stop again. Enable the native user-script permission, explicitly install a custom script and a JavaScript macro, and verify shortcut and test-button execution on an existing tab. Check removal, changed code/bookmarklets/website scope, and permission revocation all prevent execution until explicitly enabled/installed again. Verify that remote userscript loading is unavailable and that Chrome behavior is unchanged. A local build or temporary installation is not evidence of AMO acceptance.
 
