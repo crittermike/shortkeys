@@ -22,7 +22,7 @@
     "dev:site": "cd site && npx astro dev"
   },
   "devDependencies": {
-    "@playwright/test": "^1.64.0",
+    "@playwright/test": "^1.64.1",
     "@types/chrome": "^0.3.5",
     "@types/mousetrap": "^1.6.15",
     "@types/node": "^22.0.0",
