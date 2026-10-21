@@ -1,7 +1,11 @@
 import http from 'node:http'
 import type { AddressInfo } from 'node:net'
 
+export const FIREFOX_UUID = '5b0f2d4e-7a3c-4c1e-9f62-1d8a7e3b9c40'
+
 const PAGES: Record<string, string> = {
+  // Hosts only the fixed options page so WebDriver can drive it (see support/firefox.ts).
+  '/frame': `<body style="margin:0"><iframe id="frame" src="moz-extension://${FIREFOX_UUID}/options.html" style="border:0;width:100vw;height:100vh"></iframe></body>`,
   '/scroll': '<title>Scroll</title><body>Large page</body>',
   '/a': '<title>Page A</title><body><h1>A</h1><a id="to-b" href="/b">to b</a></body>',
   '/b': '<title>Page B</title><body><h1>B</h1></body>',
@@ -23,10 +27,7 @@ export interface TestServer {
 export async function startServer(): Promise<TestServer> {
   const server = http.createServer((req, res) => {
     const url = new URL(req.url || '/', 'http://localhost')
-    // Hosts an extension page in an iframe so WebDriver can drive it (see support/firefox.ts).
-    const body = url.pathname === '/frame'
-      ? `<body style="margin:0"><iframe id="frame" src="${url.searchParams.get('src')}" style="border:0;width:100vw;height:100vh"></iframe></body>`
-      : PAGES[url.pathname]
+    const body = PAGES[url.pathname]
     res.writeHead(body ? 200 : 404, { 'content-type': 'text/html; charset=utf-8' })
     res.end(body ? `<!doctype html><meta charset="utf-8">${url.pathname === '/frame' ? '' : '<style>html{width:8000px;height:8000px}</style>'}${body}` : 'not found')
   })

@@ -24,6 +24,7 @@ async function openStyledOptions(page: Page, extensionId: string, theme: string,
   }, [theme, density])
   await page.goto(`chrome-extension://${extensionId}/options.html`)
   await expect(page.locator('.shortcut-card')).toHaveCount(SHORTCUTS.length)
+  await expect(page.locator('html')).toHaveAttribute('data-density', density)
   await page.evaluate(() => document.fonts.ready)
 }
 
@@ -71,11 +72,15 @@ test.beforeEach(async ({ context }) => {
 
 for (const width of [1280, 900, 600]) {
   test(`options layout stays aligned at ${width}px`, async ({ context, extensionId }) => {
-    const page = await context.newPage()
-    await page.setViewportSize({ width, height: 900 })
     for (const density of ['comfortable', 'condensed']) {
-      await openStyledOptions(page, extensionId, 'light', density)
-      await expectCleanLayout(page)
+      const page = await context.newPage()
+      try {
+        await page.setViewportSize({ width, height: 900 })
+        await openStyledOptions(page, extensionId, 'light', density)
+        await expectCleanLayout(page)
+      } finally {
+        await page.close()
+      }
     }
   })
 }

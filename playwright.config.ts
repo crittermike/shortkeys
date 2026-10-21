@@ -8,6 +8,7 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['list'], ['html', { open: 'never' }]] : 'html',
   timeout: 30_000,
   snapshotPathTemplate: '{testDir}/__screenshots__/{arg}{ext}',
+  updateSnapshots: 'none',
   expect: {
     toHaveScreenshot: { animations: 'disabled', caret: 'hide', maxDiffPixelRatio: 0.002 },
   },

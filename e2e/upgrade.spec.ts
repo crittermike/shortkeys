@@ -89,7 +89,7 @@ async function expectOptionsShow(context: BrowserContext, keys: KeySetting[]) {
 
 function sameShortcuts(json: string | undefined, keys: KeySetting[]) {
   const saved = JSON.parse(json || '[]') as KeySetting[]
-  const pick = (k: KeySetting) => ({ id: k.id, key: k.key, action: k.action, label: k.label, group: k.group, code: k.code, sites: k.sites || '', blacklist: k.blacklist || false, macroSteps: k.macroSteps })
+  const pick = (k: KeySetting) => ({ id: k.id, key: k.key, action: k.action, label: k.label, group: k.group, code: k.code, sites: k.sites || '', blacklist: k.blacklist || false, macroSteps: k.macroSteps, enabled: k.enabled !== false })
   expect(saved.map(pick)).toEqual(keys.map(pick))
 }
 
@@ -134,6 +134,10 @@ for (const { name, count, toast, syncChunks } of SIZES) {
 
       await expectShortcutsFire(context, server)
       if (count > 6) await expectOptionsShow(context, keys)
+
+      const beforeSave = await storedShortcuts(context)
+      sameShortcuts(beforeSave.local, keys)
+      if (beforeSave.sync) sameShortcuts(beforeSave.sync, keys)
 
       // The first save after upgrading writes the new storage format.
       const options = await openOptions(context, previousId)
