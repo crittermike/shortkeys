@@ -151,17 +151,34 @@ const actionHandlers: Record<string, ActionHandler> = {
       showPageToast('Add to reading list is available in Chrome only')
       return true
     }
+    if (!await chrome.permissions.contains({ permissions: ['readingList'] })) {
+      const granted = await chrome.permissions.request({ permissions: ['readingList'] })
+      if (!granted) {
+        showPageToast('Cannot add this page: Reading List permission was denied')
+        return true
+      }
+    }
     const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
     if (!tab?.url) {
       showPageToast('This tab cannot be added to the reading list')
       return true
     }
-    await chrome.readingList.addEntry({
-      title: tab.title || tab.url,
-      url: tab.url,
-      hasBeenRead: false,
-    })
-    showPageToast('Added to Chrome Reading List')
+    try {
+      const existingEntries = await chrome.readingList.query({ url: tab.url })
+      if (existingEntries.length > 0) {
+        showPageToast('Cannot add this page: it is already in Chrome Reading List')
+        return true
+      }
+      await chrome.readingList.addEntry({
+        title: tab.title || tab.url,
+        url: tab.url,
+        hasBeenRead: false,
+      })
+      showPageToast('Added to Chrome Reading List')
+    } catch (error) {
+      console.error('Could not add page to Chrome Reading List:', error)
+      showPageToast('Could not add this page to Chrome Reading List')
+    }
     return true
   },
 

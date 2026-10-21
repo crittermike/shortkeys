@@ -159,6 +159,20 @@ export function getAllActionValues(): string[] {
   return values
 }
 
+/** Get actions available for selection in the current browser. */
+export function getAvailableActionCategories(
+  browser: string = import.meta.env.BROWSER,
+): Record<string, ActionDefinition[]> {
+  if (browser === 'chrome') return ACTION_CATEGORIES
+
+  return Object.fromEntries(
+    Object.entries(ACTION_CATEGORIES).map(([category, actions]) => [
+      category,
+      actions.filter(action => action.value !== 'addtoreadinglist'),
+    ]),
+  )
+}
+
 /** Get the human-readable label for an action value. */
 export function getActionLabel(actionValue: string): string | undefined {
   for (const category of Object.values(ACTION_CATEGORIES)) {
@@ -201,7 +215,7 @@ export function isBuiltInAction(actionValue: string): boolean {
  */
 export function getActionOptionsForSelect(): Record<string, { value: string; label: string; sublabel?: string }[]> {
   const result: Record<string, { value: string; label: string; sublabel?: string }[]> = {}
-  for (const [category, actions] of Object.entries(ACTION_CATEGORIES)) {
+  for (const [category, actions] of Object.entries(getAvailableActionCategories())) {
     result[category] = actions.map((a) => ({
       value: a.value,
       label: a.label,

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   ACTION_CATEGORIES,
   getAllActionValues,
+  getAvailableActionCategories,
   isBuiltInAction,
   SCROLL_ACTIONS,
   WEBSITE_OPTIONS,
@@ -59,6 +60,18 @@ describe('getAllActionValues', () => {
     expect(values).toContain('bottom')
     expect(values).toContain('capturescreenshot')
     expect(values).toContain('macro')
+  })
+
+  describe('browser-specific action choices', () => {
+    it('offers the Reading List action only in Chrome', () => {
+      const chromeActions = Object.values(getAvailableActionCategories('chrome')).flat().map(action => action.value)
+      const firefoxActions = Object.values(getAvailableActionCategories('firefox')).flat().map(action => action.value)
+      const edgeActions = Object.values(getAvailableActionCategories('edge')).flat().map(action => action.value)
+
+      expect(chromeActions).toContain('addtoreadinglist')
+      expect(firefoxActions).not.toContain('addtoreadinglist')
+      expect(edgeActions).not.toContain('addtoreadinglist')
+    })
   })
 
   it('includes all core tab actions', () => {

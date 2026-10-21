@@ -1,4 +1,4 @@
-import { ACTION_CATEGORIES, getActionLabel } from './actions-registry'
+import { getAvailableActionCategories, getActionLabel } from './actions-registry'
 import { needsActionSettings } from './action-parameters'
 import { isShortcutAvailable, type GroupSettings, type KeySetting } from './url-matching'
 
@@ -30,7 +30,7 @@ export function getPaletteItems(keys: KeySetting[], url: string, groups: Record<
 
   // Suppress even disabled or restricted assignments, so built-ins cannot bypass their rules.
   const assigned = new Set(keys.map(key => key.action))
-  for (const [category, actions] of Object.entries(ACTION_CATEGORIES)) {
+  for (const [category, actions] of Object.entries(getAvailableActionCategories())) {
     for (const action of actions) {
       if (!isPaletteAction(action.value) || assigned.has(action.value)) continue
       items.push({ id: `action:${action.value}`, action: action.value, label: action.label, category, description: action.description })
