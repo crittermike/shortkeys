@@ -61,7 +61,7 @@ async function removeScript() {
   }
 }
 const { macroActionOptions } = useSearch()
-const { MAX_MACRO_STEPS, addMacroStep, removeMacroStep, moveMacroStep, convertToSingleAction } = useMacros()
+const { MAX_MACRO_STEPS, addMacroStep, removeMacroStep, moveMacroStep, convertToMacro, convertToSingleAction } = useMacros()
 const {
   openTabs, selectedTabId, bookmarks,
   userscriptUrl, userscriptLoading, userscriptMessage,
@@ -72,6 +72,14 @@ const {
 
 <template>
   <div class="shortcut-details">
+    <button
+      v-if="keys[index].action && keys[index].action !== 'macro'"
+      class="btn-chain-link details-chain-link"
+      @click="convertToMacro(keys[index], index)"
+      type="button"
+    >
+      <i class="mdi mdi-link-variant"></i> Chain multiple actions
+    </button>
 
     <article v-if="isBuiltInAction(keys[index].action)" class="alert alert-info">
       <i class="mdi mdi-information-outline"></i>
@@ -115,7 +123,7 @@ const {
       <span v-if="userscriptMessage" class="import-userscript-msg">{{ userscriptMessage }}</span>
     </div>
 
-    <div v-if="IS_FIREFOX && scriptPresent" class="details-section">
+    <div v-if="IS_FIREFOX && scriptPresent" class="details-section script-install-row">
       <span>{{ scriptInstalled ? 'User script installed' : 'Install after reviewing the code and website filter. Editing code or scope requires reinstalling.' }}</span>
       <button v-if="!scriptInstalled" class="btn btn-secondary btn-sm" @click="installScript" type="button">Install this user script</button>
       <button v-if="scriptInstalled" class="btn btn-secondary btn-sm" @click="removeScript" type="button">Remove user script</button>
