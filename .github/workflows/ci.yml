@@ -7,61 +7,139 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  NODE_VERSION: 22.x
 
 jobs:
-  test:
+  unit:
+    name: Unit tests, typecheck and builds
     runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        node-version: [22.x]
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm run build:firefox
 
-    - name: Set up Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v6
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Run tests
-      run: npm test
-
-    - name: Check TypeScript and Vue
-      run: npm run typecheck
-
-    - name: Build Chrome extension
-      run: npm run build
-
-    - name: Build Firefox extension
-      run: npm run build:firefox
-
-  e2e:
+  e2e-chromium:
+    name: E2E (Chromium)
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - run: npm run test:e2e:chromium
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: e2e-chromium-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
 
-    - name: Set up Node.js 22.x
-      uses: actions/setup-node@v6
-      with:
-        node-version: 22.x
-        cache: 'npm'
+  e2e-firefox:
+    name: E2E (Firefox)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      # Selenium Manager downloads Firefox stable and geckodriver; the tests fail if Firefox is older than 153.
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/selenium
+          key: selenium-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: selenium-${{ runner.os }}-
+      - run: npm run build:firefox
+      - run: npm run test:e2e:firefox
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: e2e-firefox-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
 
-    - name: Install dependencies
-      run: npm ci
+  e2e-upgrade:
+    name: Upgrade and restart (Chromium)
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - run: npm run test:e2e:upgrade
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: e2e-upgrade-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
 
-    - name: Install Playwright browsers
-      run: npx playwright install chromium
+  visual:
+    name: Visual regression
+    runs-on: ubuntu-latest
+    # Baselines in e2e/__screenshots__ are rendered in this image. Keep the tag in sync with @playwright/test
+    # and regenerate them deliberately with `npm run test:e2e:visual:update`.
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: Check the image matches the installed Playwright
+        run: test "$(node -p "require('@playwright/test/package.json').version")" = "1.64.1"
+      - run: npm run build
+      - run: npm run test:e2e:visual
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: visual-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
 
-    - name: Build extension
-      run: npm run build
-
-    - name: Run E2E tests
-      run: npm run test:e2e
+  ci-passed:
+    name: CI passed
+    if: always()
+    needs: [unit, e2e-chromium, e2e-firefox, e2e-upgrade, visual]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail unless every job succeeded
+        run: |
+          echo '${{ toJSON(needs) }}'
+          test "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}" = "false"
