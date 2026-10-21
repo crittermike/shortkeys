@@ -101,7 +101,7 @@ beforeEach(() => {
   mockWindowsRemove.mockResolvedValue(undefined)
   mockWindowsUpdate.mockResolvedValue(undefined)
   mockWindowsGetCurrent.mockResolvedValue({ id: 1, state: 'normal' })
-  mockSessionsGetRecentlyClosed.mockResolvedValue([{ sessionId: 'sess1' }])
+  mockSessionsGetRecentlyClosed.mockResolvedValue([{ tab: { sessionId: 'sess1' } }])
   mockSessionsRestore.mockResolvedValue(undefined)
   mockBrowsingDataRemove.mockResolvedValue(undefined)
   mockBookmarksSearch.mockResolvedValue([])
@@ -739,6 +739,79 @@ describe('handleAction', () => {
   })
 
   describe('macro (chained actions)', () => {
+    it('uses each step URL rather than the parent or previous step URL (#919)', async () => {
+      await handleAction('macro', {
+        key: 'a', action: 'macro', openurl: 'https://parent.example',
+        macroSteps: [
+          { action: 'openurl', openurl: 'https://first.example' },
+          { action: 'openurl', openurl: 'https://second.example' },
+          { action: 'openurl' },
+        ],
+      })
+      expect(mockTabsUpdate.mock.calls).toEqual([
+        [undefined, { url: 'https://first.example' }],
+        [undefined, { url: 'https://second.example' }],
+      ])
+    })
+
+    it('passes each action its own parameters', async () => {
+      mockBookmarksSearch.mockResolvedValue([{ title: 'Step bookmark', url: 'https://bookmark.example' }])
+      await handleAction('macro', {
+        key: 'a', action: 'macro', inserttext: 'parent', openappid: 'parent',
+        macroSteps: [
+          { action: 'openapp', openappid: 'step-app' },
+          { action: 'inserttext', inserttext: 'step text' },
+          { action: 'openbookmarknewtab', bookmark: 'Step bookmark' },
+          { action: 'gototabbytitle', matchtitle: '*Step*', currentWindow: true },
+        ],
+      })
+      const { executeScript } = await import('../src/utils/execute-script')
+      expect(mockManagementLaunchApp).toHaveBeenCalledWith('step-app')
+      expect(executeScript).toHaveBeenCalledWith(expect.any(Function), ['step text'])
+      expect(mockBookmarksSearch).toHaveBeenCalledWith({ title: 'Step bookmark' })
+      expect(mockTabsQuery).toHaveBeenCalledWith({ title: '*Step*', currentWindow: true })
+    })
+
+    it('forwards trigger parameters without parent identity or macro data', async () => {
+      mockTabsSendMessage.mockResolvedValue(undefined)
+      await handleAction('macro', {
+        key: 'a', id: 'parent', action: 'macro', trigger: 'wrong',
+        macroSteps: [{ action: 'trigger', trigger: 'ctrl+b' }],
+      })
+      expect(mockTabsSendMessage).toHaveBeenCalledWith(1, {
+        key: 'a', action: 'trigger', trigger: 'ctrl+b',
+      })
+    })
+
+    it('clicks the step selector before switching tabs', async () => {
+      const order: string[] = []
+      const { executeScript } = await import('../src/utils/execute-script')
+      vi.mocked(executeScript).mockImplementationOnce(async () => { order.push('click'); return [] })
+      mockTabsQuery.mockResolvedValue([defaultTab, { ...defaultTab, id: 2 }])
+      mockTabsUpdate.mockImplementationOnce(async () => { order.push('switch') })
+      await handleAction('macro', {
+        key: 'a', action: 'macro', button: '#wrong',
+        macroSteps: [{ action: 'buttonnexttab', button: '#step-button' }],
+      })
+      expect(executeScript).toHaveBeenCalledWith(expect.any(Function), ['#step-button'])
+      expect(order).toEqual(['click', 'switch'])
+    })
+
+    it('does not recursively dispatch imported macro steps', async () => {
+      await handleAction('macro', {
+        key: 'a', action: 'macro',
+        macroSteps: [{ action: 'macro' }, { action: 'newtab' }],
+      })
+      expect(mockTabsCreate).toHaveBeenCalledOnce()
+    })
+
+    it('reports content step failures rather than silently skipping them', async () => {
+      mockTabsSendMessage.mockRejectedValueOnce(new Error('No receiver'))
+      await expect(handleAction('macro', {
+        key: 'a', action: 'macro', macroSteps: [{ action: 'trigger', trigger: 'a' }],
+      })).rejects.toThrow('No receiver')
+    })
+
     it('returns true with no macroSteps', async () => {
       const result = await handleAction('macro', { key: 'a', action: 'macro' })
       expect(result).toBe(true)

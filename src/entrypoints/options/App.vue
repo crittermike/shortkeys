@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { ACTION_CATEGORIES, getActionOptionsForSelect } from '@/utils/actions-registry'
+import { ACTION_CATEGORIES, getActionOptionsForSelect, getAllActionValues } from '@/utils/actions-registry'
 import SearchSelect from '@/components/SearchSelect.vue'
 import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
 import ShortcutDetails from '@/components/ShortcutDetails.vue'
@@ -137,13 +137,24 @@ async function dismissReviewBanner() {
 onMounted(async () => {
   await loadSavedKeys()
   await loadGroupSettingsFromStorage()
+  const params = new URLSearchParams(window.location.search)
+  const action = params.get('action')
+  const key = params.get('key')
+  const configuringShortcut = !!key && !!action && getAllActionValues().includes(action)
+  if (configuringShortcut) {
+    addShortcut()
+    const index = keys.value.length - 1
+    Object.assign(keys.value[index], { key, action })
+    expandedRow.value = index
+    history.replaceState(null, '', window.location.pathname)
+  }
   refreshTabs()
   document.addEventListener('click', () => { groupMenuOpen.value = null })
   document.addEventListener('keydown', handleKeydown)
   window.addEventListener('beforeunload', handleBeforeUnload)
   loadBookmarks()
   
-  if (localStorage.getItem('shortkeys-onboarding-done') !== 'true') {
+  if (!configuringShortcut && localStorage.getItem('shortkeys-onboarding-done') !== 'true') {
     showOnboarding.value = true
   }
 
@@ -1392,6 +1403,14 @@ a:hover { text-decoration: underline; }
 .macro-step-code {
   width: 100%;
   margin-top: var(--space-xs);
+}
+
+.macro-step-parameters {
+  width: 100%;
+}
+
+.macro-step-parameters:empty {
+  display: none;
 }
 
 .btn-add-step {

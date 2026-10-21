@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { SCROLL_ACTIONS, isBuiltInAction } from '@/utils/actions-registry'
+import { isBuiltInAction } from '@/utils/actions-registry'
+import ActionParameters from '@/components/ActionParameters.vue'
 import SearchSelect from '@/components/SearchSelect.vue'
 import CodeEditor from '@/components/CodeEditor.vue'
 import { useShortcuts } from '@/composables/useShortcuts'
@@ -20,13 +21,6 @@ const {
   refreshTabs, testJavascript, importUserscript, loadBookmarks,
 } = useJsTools()
 
-function isScrollAction(action: string): boolean {
-  return (SCROLL_ACTIONS as readonly string[]).includes(action)
-}
-
-function isBookmarkAction(action: string): boolean {
-  return ['openbookmark', 'openbookmarknewtab', 'openbookmarkbackgroundtab', 'openbookmarkbackgroundtabandclose'].includes(action)
-}
 </script>
 
 <template>
@@ -76,89 +70,7 @@ function isBookmarkAction(action: string): boolean {
 
     <!-- Action-specific settings -->
     <div class="details-section">
-      <div v-if="isScrollAction(keys[index].action)" class="toggle-row-inline">
-        <span class="toggle-label-sm">Smooth scrolling</span>
-        <button :class="['toggle', { on: keys[index].smoothScrolling }]" @click="keys[index].smoothScrolling = !keys[index].smoothScrolling" type="button">
-          <span class="toggle-knob"></span>
-        </button>
-      </div>
-
-      <div v-if="isBookmarkAction(keys[index].action)" class="detail-field">
-        <label>Bookmark</label>
-        <SearchSelect
-          :modelValue="keys[index].bookmark || ''"
-          @update:modelValue="keys[index].bookmark = $event"
-          :options="{ Bookmarks: bookmarks.map(bm => ({ value: bm.title, label: bm.title || bm.url, sublabel: bm.url })) }"
-          placeholder="Search bookmarks…"
-        />
-      </div>
-
-      <div v-if="keys[index].action === 'gototabbytitle'" class="detail-row">
-        <div class="detail-field flex-1">
-          <label>Title to match <span class="hint">(wildcards)</span></label>
-          <input class="field-input" v-model="keys[index].matchtitle" placeholder="*Gmail*" />
-        </div>
-        <div class="toggle-row-inline">
-          <span class="toggle-label-sm">Current window only</span>
-          <button :class="['toggle', { on: keys[index].currentWindow }]" @click="keys[index].currentWindow = !keys[index].currentWindow" type="button">
-            <span class="toggle-knob"></span>
-          </button>
-        </div>
-      </div>
-
-      <div v-if="keys[index].action === 'gototab'" class="detail-row">
-        <div class="detail-field flex-1">
-          <label>URL to match <a class="hint-link" target="_blank" href="https://developer.chrome.com/extensions/match_patterns">pattern help →</a></label>
-          <input class="field-input" v-model="keys[index].matchurl" placeholder="*://mail.google.com/*" />
-        </div>
-        <div class="detail-field flex-1">
-          <label>Fallback URL <span class="hint">(if no match)</span></label>
-          <input class="field-input" v-model="keys[index].openurl" placeholder="https://mail.google.com" />
-        </div>
-        <div class="toggle-row-inline">
-          <span class="toggle-label-sm">Current window</span>
-          <button :class="['toggle', { on: keys[index].currentWindow }]" @click="keys[index].currentWindow = !keys[index].currentWindow" type="button">
-            <span class="toggle-knob"></span>
-          </button>
-        </div>
-      </div>
-
-      <div v-if="keys[index].action === 'gototabbyindex'" class="detail-row">
-        <div class="detail-field" style="max-width: 160px">
-          <label>Tab index <span class="hint">(from 1)</span></label>
-          <input class="field-input" type="number" v-model="keys[index].matchindex" min="1" />
-        </div>
-      </div>
-
-      <div v-if="keys[index].action === 'buttonnexttab'" class="detail-field">
-        <label>Button CSS selector</label>
-        <input class="field-input mono" v-model="keys[index].button" placeholder="#submit-btn" />
-      </div>
-
-      <div v-if="keys[index].action === 'openurl'" class="detail-field">
-        <label>URL to open</label>
-        <input class="field-input mono" v-model="keys[index].openurl" placeholder="https://example.com" />
-      </div>
-
-      <div v-if="['grouptab', 'togglegrouptab', 'namegroup'].includes(keys[index].action)" class="detail-field">
-        <label>Group name</label>
-        <input class="field-input" v-model="keys[index].groupname" placeholder="e.g. Research" />
-      </div>
-
-      <div v-if="keys[index].action === 'openapp'" class="detail-field">
-        <label>App ID <span class="hint">(from extensions page)</span></label>
-        <input class="field-input mono" v-model="keys[index].openappid" />
-      </div>
-
-      <div v-if="keys[index].action === 'trigger'" class="detail-field" style="max-width: 250px">
-        <label>Shortcut to trigger</label>
-        <input class="field-input shortcut-input" v-model="keys[index].trigger" placeholder="e.g. ctrl+b" />
-      </div>
-
-      <div v-if="keys[index].action === 'inserttext'" class="detail-field">
-        <label>Text to insert</label>
-        <textarea class="field-textarea mono" v-model="keys[index].inserttext" rows="2" placeholder="Text to type into the focused field…"></textarea>
-      </div>
+      <ActionParameters :action="keys[index].action" :parameters="keys[index]" :bookmarks="bookmarks" />
       <div v-if="keys[index].action === 'macro'" class="macro-builder">
         <div class="field-label-row">
           <label class="macro-label"><i class="mdi mdi-playlist-play"></i> Macro steps <span class="hint">(max {{ MAX_MACRO_STEPS }})</span></label>
@@ -203,6 +115,9 @@ function isBookmarkAction(action: string): boolean {
             <!-- Code editor for JS macro step -->
             <div v-if="step.action === 'javascript'" class="macro-step-code">
               <CodeEditor :modelValue="step.code || ''" @update:modelValue="step.code = $event" />
+            </div>
+            <div class="macro-step-parameters">
+              <ActionParameters :action="step.action" :parameters="step" :bookmarks="bookmarks" />
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import type { KeySetting } from '@/utils/url-matching'
 import { MAX_MACRO_STEPS } from '@/actions/action-handlers'
 import { useShortcuts } from './useShortcuts'
+import { copyActionParameters } from '@/utils/action-parameters'
 
 export function useMacros() {
   const { expandedRow } = useShortcuts()
@@ -31,7 +32,7 @@ export function useMacros() {
   function convertToMacro(row: KeySetting, index: number) {
     const previousAction = row.action
     row.action = 'macro'
-    row.macroSteps = previousAction ? [{ action: previousAction, code: previousAction === 'javascript' ? row.code : undefined }] : []
+    row.macroSteps = previousAction ? [{ action: previousAction, ...copyActionParameters(previousAction, row) }] : []
     expandedRow.value = index
   }
 
@@ -39,9 +40,7 @@ export function useMacros() {
     const firstStep = row.macroSteps?.[0]
     const firstAction = firstStep?.action || ''
     row.action = firstAction
-    if (firstAction === 'javascript' && firstStep?.code) {
-      row.code = firstStep.code
-    }
+    Object.assign(row, copyActionParameters(firstAction, firstStep || {}))
     row.macroSteps = undefined
   }
 
