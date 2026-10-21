@@ -1,221 +1,255 @@
 /**
- * Storage abstraction that uses browser.storage.sync (cloud-synced across devices)
- * with automatic fallback to browser.storage.local if data exceeds sync limits.
- *
- * Uses `browser` from wxt/browser for cross-browser compatibility (Chrome + Firefox).
- *
- * browser.storage.sync limits:
- *   - QUOTA_BYTES_PER_ITEM: 8,192 bytes per key
- *   - QUOTA_BYTES: 102,400 bytes total
- *   - MAX_ITEMS: 512
- *
- * To stay under the per-item limit, shortcuts are split into chunks
- * (keys_0, keys_1, ...) with a keys_meta entry storing the chunk count.
- * The legacy single "keys" entry is supported for backward compatibility on load.
+ * Whole-snapshot sync with a local backup. Revisions are logical counters with
+ * random tie-breakers: concurrent edits choose one snapshot, not a shortcut merge.
+ * Legacy sync wins over unversioned local backups; shortcut counts never imply age.
  */
-
 import { browser } from 'wxt/browser'
+import { v4 as uuid } from 'uuid'
+import type { GroupSettings } from './url-matching'
 
-const SYNC_QUOTA = 102_400 // 100KB total
-const SYNC_CHUNK_SIZE = 7_000 // Max chars per chunk (well under 8,192 byte per-item limit)
-const SYNC_CHUNK_PREFIX = 'keys_'
+const SYNC_QUOTA = 102_400
+const SYNC_ITEM_QUOTA = 8_192
+const MAX_CHUNKS = Math.ceil(SYNC_QUOTA / SYNC_ITEM_QUOTA)
 const SYNC_META_KEY = 'keys_meta'
-const MAX_CHUNKS = 15 // 15 × 7KB = 105KB, above SYNC_QUOTA so this is safe
+const LOCAL_REVISION_KEY = 'keys_revision'
 const MIGRATED_KEY = '__shortkeys_migrated_to_sync'
+const encoder = new TextEncoder()
+let pendingStorage: Promise<unknown> = Promise.resolve()
 
-
-/**
- * Save keys to synced storage using chunked format.
- * Falls back to local if too large for sync or if sync fails.
- * Returns 'sync' or 'local' indicating where data was saved.
- */
-export async function saveKeys(keys: any[]): Promise<'sync' | 'local'> {
-  const json = JSON.stringify(keys)
-  const byteSize = new Blob([json]).size
-
-  // If data fits in sync, use chunked sync
-  if (browser.storage.sync && byteSize < SYNC_QUOTA - 2048) {
-    try {
-      await saveToSyncChunked(json)
-      // Also keep a local copy as backup
-      await browser.storage.local.set({ keys: json })
-      return 'sync'
-    } catch (e) {
-      console.error('[Shortkeys] Sync save failed, falling back to local:', e)
-    }
-  }
-
-  // Fallback: local only. Remove stale sync data so loadKeys() won't
-  // return an older dataset that was saved before the data grew too large.
-  await clearSyncData()
-  try {
-    await browser.storage.local.set({ keys: json })
-    return 'local'
-  } catch (e) {
-    console.error('[Shortkeys] Local save failed:', e)
-    throw new Error('Failed to save shortcuts to any storage area')
-  }
+function withStorageLock<T>(operation: () => Promise<T>): Promise<T> {
+  // Options, popup, and background share the extension origin and its Web Lock.
+  // This prevents backup refresh/recovery from overwriting an in-flight save.
+  if (globalThis.navigator?.locks) return navigator.locks.request('shortkeys-keys', operation)
+  const result = pendingStorage.then(operation)
+  pendingStorage = result.catch(() => {})
+  return result
 }
 
-/** Split JSON string into chunks and write to sync storage. */
-async function saveToSyncChunked(json: string): Promise<void> {
+interface Revision {
+  counter: number
+  id: string
+}
+
+interface Snapshot {
+  json: string
+  revision?: Revision
+}
+
+function isRevision(value: unknown): value is Revision {
+  if (!value || typeof value !== 'object') return false
+  const revision = value as Partial<Revision>
+  return Number.isSafeInteger(revision.counter) && revision.counter! > 0 &&
+    typeof revision.id === 'string' && revision.id.length > 0
+}
+
+function compare(a?: Revision, b?: Revision): number {
+  if (!a) return b ? -1 : 0
+  if (!b) return 1
+  return a.counter - b.counter || (a.id > b.id ? 1 : a.id < b.id ? -1 : 0)
+}
+
+function parseKeys(value: unknown): string | undefined {
+  if (value === undefined) return undefined
+  if (typeof value !== 'string' || !Array.isArray(JSON.parse(value))) {
+    throw new Error('Invalid stored shortcuts')
+  }
+  return value
+}
+
+async function hash(json: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', encoder.encode(json))
+  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('')
+}
+
+function itemBytes(key: string, value: unknown): number {
+  return encoder.encode(key).length + encoder.encode(JSON.stringify(value)).length
+}
+
+/** Account for both JSON string escaping and UTF-8 bytes, including each key. */
+async function syncPayload(snapshot: Snapshot): Promise<Record<string, unknown> | undefined> {
   const chunks: string[] = []
-  for (let i = 0; i < json.length; i += SYNC_CHUNK_SIZE) {
-    chunks.push(json.slice(i, i + SYNC_CHUNK_SIZE))
+  let chunk = ''
+  let bytes = itemBytes('keys_0', '')
+  for (const char of snapshot.json) {
+    const size = encoder.encode(JSON.stringify(char)).length - 2
+    if (bytes + size > SYNC_ITEM_QUOTA) {
+      chunks.push(chunk)
+      chunk = ''
+      bytes = itemBytes(`keys_${chunks.length}`, '')
+    }
+    chunk += char
+    bytes += size
+    // No need to split arbitrarily large local-only scripts.
+    if (chunks.length * SYNC_ITEM_QUOTA > SYNC_QUOTA) return undefined
   }
+  chunks.push(chunk)
+  const payload: Record<string, unknown> = {
+    [SYNC_META_KEY]: {
+      version: 1, count: chunks.length, revision: snapshot.revision, hash: await hash(snapshot.json),
+    },
+  }
+  chunks.forEach((value, index) => { payload[`keys_${index}`] = value })
+  // Replace old chunks in the same write as metadata, rather than racing a newer
+  // snapshot by deleting its chunks during asynchronous cleanup.
+  for (let i = chunks.length; i < MAX_CHUNKS; i++) payload[`keys_${i}`] = ''
+  const total = Object.entries(payload).reduce((sum, [key, value]) => sum + itemBytes(key, value), 0)
+  return total <= SYNC_QUOTA - 2048 ? payload : undefined
+}
 
-  const payload: Record<string, any> = { [SYNC_META_KEY]: chunks.length }
-  chunks.forEach((chunk, i) => { payload[`${SYNC_CHUNK_PREFIX}${i}`] = chunk })
+async function readSync(): Promise<Snapshot | undefined> {
+  if (!browser.storage.sync) return undefined
+  const data = await browser.storage.sync.get(null)
+  const meta = data[SYNC_META_KEY]
+  if (meta !== undefined) {
+    const legacy = typeof meta === 'number'
+    const count = legacy ? meta : meta?.count
+    if (!Number.isInteger(count) || count < 1 || count > 512 ||
+      (!legacy && (meta?.version !== 1 || !isRevision(meta.revision)))) {
+      throw new Error('Invalid shortcut sync metadata')
+    }
+    let json = ''
+    for (let i = 0; i < count; i++) {
+      if (typeof data[`keys_${i}`] !== 'string') throw new Error('Missing shortcut sync chunk')
+      json += data[`keys_${i}`]
+    }
+    if (!legacy && await hash(json) !== meta.hash) throw new Error('Incomplete shortcut sync snapshot')
+    return { json: parseKeys(json)!, revision: legacy ? undefined : meta.revision }
+  }
+  const json = parseKeys(data.keys)
+  return json === undefined ? undefined : { json }
+}
+
+async function readLocal(): Promise<Snapshot | undefined> {
+  const data = await browser.storage.local.get(['keys', LOCAL_REVISION_KEY])
+  const json = parseKeys(data.keys)
+  if (json === undefined) return undefined
+  const revision = data[LOCAL_REVISION_KEY]
+  if (revision !== undefined && !isRevision(revision)) throw new Error('Invalid local shortcut revision')
+  return { json, revision }
+}
+
+async function readSnapshots(): Promise<{ sync?: Snapshot; local?: Snapshot; syncReadFailed: boolean }> {
+  let syncReadFailed = false
+  const [sync, local] = await Promise.all([
+    readSync().catch(error => {
+      syncReadFailed = true
+      console.error('[Shortkeys] Failed to load from sync storage, trying local:', error)
+      return undefined
+    }),
+    readLocal().catch(error => {
+      console.error('[Shortkeys] Failed to load from local storage:', error)
+      return undefined
+    }),
+  ])
+  return { sync, local, syncReadFailed }
+}
+
+async function writeLocal(snapshot: Snapshot): Promise<void> {
+  await browser.storage.local.set({ keys: snapshot.json, [LOCAL_REVISION_KEY]: snapshot.revision })
+}
+
+async function writeSync(snapshot: Snapshot): Promise<boolean> {
+  if (!browser.storage.sync) return false
+  const payload = await syncPayload(snapshot)
+  if (!payload) return false
   await browser.storage.sync.set(payload)
-
-  // Clean up legacy single "keys" entry and any excess chunks from a previous save
-  const toRemove = ['keys']
-  for (let i = chunks.length; i < MAX_CHUNKS; i++) {
-    toRemove.push(`${SYNC_CHUNK_PREFIX}${i}`)
-  }
-  try { await browser.storage.sync.remove(toRemove) } catch { /* best-effort */ }
-}
-
-/** Load keys from chunked sync storage. Returns undefined if no chunked data. */
-async function loadFromSyncChunked(): Promise<string | undefined> {
-  const metaData = await browser.storage.sync.get(SYNC_META_KEY)
-  const chunkCount = metaData[SYNC_META_KEY] as number | undefined
-  if (!chunkCount || chunkCount < 1) return undefined
-
-  const chunkKeys = Array.from({ length: chunkCount }, (_, i) => `${SYNC_CHUNK_PREFIX}${i}`)
-  const chunkData = await browser.storage.sync.get(chunkKeys)
-
-  let json = ''
-  for (let i = 0; i < chunkCount; i++) {
-    const chunk = chunkData[`${SYNC_CHUNK_PREFIX}${i}`]
-    if (chunk === undefined) return undefined // Missing chunk — data is corrupted
-    json += chunk
-  }
-
-  return json
-}
-
-/** Remove all sync data (meta, chunks, and legacy "keys" entry). */
-async function clearSyncData(): Promise<void> {
-  if (!browser.storage.sync) return
+  // Never delete the cloud copy on local fallback: other devices still need it.
   try {
-    const toRemove = ['keys', SYNC_META_KEY]
-    for (let i = 0; i < MAX_CHUNKS; i++) {
-      toRemove.push(`${SYNC_CHUNK_PREFIX}${i}`)
-    }
-    await browser.storage.sync.remove(toRemove)
-  } catch {
-    // Best-effort cleanup
+    const data = await browser.storage.sync.get(null)
+    const obsolete = Object.keys(data).filter(key =>
+      key === 'keys' || (/^keys_\d+$/.test(key) && Number(key.slice(5)) >= MAX_CHUNKS))
+    if (obsolete.length) await browser.storage.sync.remove(obsolete)
+  } catch (error) {
+    console.error('[Shortkeys] Failed to clean up old sync chunks:', error)
   }
+  return true
+}
+
+export function saveKeys(keys: unknown[]): Promise<'sync' | 'local'> {
+  return withStorageLock(() => saveKeysUnlocked(keys))
+}
+
+async function saveKeysUnlocked(keys: unknown[]): Promise<'sync' | 'local'> {
+  const { sync, local } = await readSnapshots()
+  const snapshot: Snapshot = {
+    json: JSON.stringify(keys),
+    revision: { counter: Math.max(sync?.revision?.counter ?? 0, local?.revision?.counter ?? 0) + 1, id: uuid() },
+  }
+  let localSaved = false
+  try {
+    await writeLocal(snapshot)
+    localSaved = true
+  } catch (error) {
+    console.error('[Shortkeys] Local save failed:', error)
+  }
+  try {
+    if (await writeSync(snapshot)) return 'sync'
+  } catch (error) {
+    console.error('[Shortkeys] Sync save failed, falling back to local:', error)
+  }
+  if (localSaved) return 'local'
+  throw new Error('Failed to save shortcuts to any storage area')
 }
 
 /**
- * Load keys from storage. Checks sync first (chunked, then legacy), then local.
- * If both exist, compares them and returns whichever has more shortcuts
- * (more data = more recent, since shortcuts only grow via import/add).
+ * Newest revision wins, including empty arrays and deletions. A pending local
+ * revision retries sync without creating another revision. Remote winners refresh
+ * the offline backup. Hash validation rejects partially delivered sync chunks.
  */
-export async function loadKeys(): Promise<string | undefined> {
-  let syncKeys: string | undefined
-  let localKeys: string | undefined
+export function loadKeys(): Promise<string | undefined> {
+  return withStorageLock(loadKeysUnlocked)
+}
 
-  // Try sync first: chunked format, then legacy single-key format
-  if (browser.storage.sync) {
-    try {
-      syncKeys = await loadFromSyncChunked()
-      if (!syncKeys) {
-        const syncData = await browser.storage.sync.get('keys')
-        syncKeys = syncData.keys as string | undefined
+async function loadKeysUnlocked(): Promise<string | undefined> {
+  const { sync, local, syncReadFailed } = await readSnapshots()
+  if (sync && (!local || compare(sync.revision, local.revision) >= 0)) {
+    if (sync.revision && (!local || compare(sync.revision, local.revision) > 0)) {
+      try { await writeLocal(sync) } catch (error) {
+        console.error('[Shortkeys] Failed to update local shortcut backup:', error)
       }
-    } catch (e) {
-      console.error('[Shortkeys] Failed to load from sync storage, trying local:', e)
+    }
+    return sync.json
+  }
+  // A failed read may be a newer snapshot still arriving from another device.
+  // Keep the backup, but do not replace cloud data until it can be read safely.
+  if (local?.revision && !syncReadFailed) {
+    try { await writeSync(local) } catch (error) {
+      console.error('[Shortkeys] Sync recovery failed, keeping local shortcuts:', error)
     }
   }
-
-  // Also load local
-  try {
-    const localData = await browser.storage.local.get('keys')
-    localKeys = localData.keys as string | undefined
-  } catch (e) {
-    console.error('[Shortkeys] Failed to load from local storage:', e)
-  }
-
-  // If only one source has data, use it
-  if (syncKeys && !localKeys) return syncKeys
-  if (!syncKeys && localKeys) return localKeys
-  if (!syncKeys && !localKeys) return undefined
-
-  // Both exist -- prefer whichever has more shortcuts.
-  // This handles the edge case where sync has stale data that wasn't cleaned up.
-  try {
-    const syncArr = JSON.parse(syncKeys!)
-    const localArr = JSON.parse(localKeys!)
-    if (Array.isArray(syncArr) && Array.isArray(localArr)) {
-      return localArr.length >= syncArr.length ? localKeys : syncKeys
-    }
-  } catch {
-    // Parse failed -- fall through to sync preference
-  }
-
-  return syncKeys
+  return local?.json
 }
 
-/**
- * One-time migration: copy existing local data to sync.
- * Called on extension update/install. Safe to call multiple times.
- */
-export async function migrateLocalToSync(): Promise<void> {
+/** Migrate only when sync is absent; a failed attempt remains retryable. */
+export function migrateLocalToSync(): Promise<void> {
+  return withStorageLock(migrateUnlocked)
+}
+
+async function migrateUnlocked(): Promise<void> {
   if (!browser.storage.sync) return
-
   try {
-    // Check if already migrated
-    const { [MIGRATED_KEY]: migrated } = await browser.storage.local.get(MIGRATED_KEY)
-    if (migrated) return
-
-    // Check if there's local data that isn't in sync yet
-    const localData = await browser.storage.local.get('keys')
-    if (!localData.keys) {
+    const flags = await browser.storage.local.get(MIGRATED_KEY)
+    if (flags[MIGRATED_KEY]) return
+    if (await readSync()) {
       await browser.storage.local.set({ [MIGRATED_KEY]: true })
       return
     }
-
-    // Check if sync already has data (chunked or legacy)
-    const existingSync = await loadFromSyncChunked()
-    if (existingSync) {
-      await browser.storage.local.set({ [MIGRATED_KEY]: true })
-      return
-    }
-    const syncData = await browser.storage.sync.get('keys')
-    if (syncData.keys) {
-      await browser.storage.local.set({ [MIGRATED_KEY]: true })
-      return
-    }
-
-    // Migrate local -> sync using chunked format
-    const json = localData.keys as string
-    const byteSize = new Blob([json]).size
-    if (byteSize < SYNC_QUOTA - 2048) {
-      await saveToSyncChunked(json)
-    }
+    const local = await readLocal()
+    if (local && await saveKeysUnlocked(JSON.parse(local.json)) !== 'sync') return
     await browser.storage.local.set({ [MIGRATED_KEY]: true })
-  } catch (e) {
-    console.error('[Shortkeys] Migration from local to sync failed (non-critical):', e)
+  } catch (error) {
+    console.error('[Shortkeys] Migration from local to sync failed (non-critical):', error)
   }
 }
 
-/**
- * Listen for storage changes from any area (sync or local).
- * Calls the callback whenever keys change, regardless of which storage area triggered it.
- */
 export function onKeysChanged(callback: () => void): void {
-  // Listen on both storage areas
-  browser.storage.onChanged.addListener((_changes, areaName) => {
-    if (areaName === 'sync' || areaName === 'local') {
-      callback()
-    }
+  browser.storage.onChanged.addListener((changes, areaName) => {
+    if ((areaName === 'sync' || areaName === 'local') &&
+      Object.keys(changes).some(key =>
+        key === 'keys' || key === SYNC_META_KEY || key === LOCAL_REVISION_KEY ||
+        key === 'groupSettings' || /^keys_\d+$/.test(key))) callback()
   })
 }
-
-import type { GroupSettings } from './url-matching'
 
 /**
  * Save group settings to synced storage alongside keys.
@@ -239,9 +273,7 @@ export async function saveGroupSettings(settings: Record<string, GroupSettings>)
   }
 }
 
-/**
- * Load group settings from storage. Checks sync first, then local.
- */
+/** Load group settings from storage. Checks sync first, then local. */
 export async function loadGroupSettings(): Promise<Record<string, GroupSettings>> {
   if (browser.storage.sync) {
     try {
