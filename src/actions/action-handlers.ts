@@ -146,6 +146,25 @@ const actionHandlers: Record<string, ActionHandler> = {
   // -- Tab management --
   newtab: async () => { await browser.tabs.create({}); return true },
 
+  addtoreadinglist: async () => {
+    if (IS_FIREFOX || !chrome.readingList?.addEntry) {
+      showPageToast('Add to reading list is available in Chrome only')
+      return true
+    }
+    const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
+    if (!tab?.url) {
+      showPageToast('This tab cannot be added to the reading list')
+      return true
+    }
+    await chrome.readingList.addEntry({
+      title: tab.title || tab.url,
+      url: tab.url,
+      hasBeenRead: false,
+    })
+    showPageToast('Added to Chrome Reading List')
+    return true
+  },
+
   newtabright: async () => {
     const [tab] = await browser.tabs.query({ currentWindow: true, active: true })
     await browser.tabs.create({ index: tab.index + 1 })

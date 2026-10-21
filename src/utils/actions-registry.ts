@@ -55,6 +55,7 @@ export const ACTION_CATEGORIES: Record<string, ActionDefinition[]> = {
     { value: 'openbookmarkbackgroundtabandclose', label: 'Open bookmark in background tab and close', description: 'Open a bookmark in a background tab that auto-closes after loading' },
   ],
   Tabs: [
+    { value: 'addtoreadinglist', label: 'Add tab to reading list (Chrome only)', description: 'Save the current page to Chrome Reading List; unavailable in Firefox' },
     { value: 'gototab', label: 'Jump to tab by URL', description: 'Switch to an open tab matching a URL pattern, or open it if not found' },
     { value: 'gototabbytitle', label: 'Jump to tab by title', description: 'Switch to an open tab matching a title pattern' },
     { value: 'gototabbyindex', label: 'Jump to tab by position', description: 'Switch to a tab at a specific position number' },

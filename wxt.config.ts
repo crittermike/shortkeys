@@ -146,6 +146,7 @@ export default defineConfig({
       'scripting',
       'notifications',
       'activeTab',
+      ...(browser === 'chrome' ? ['readingList'] : []),
       ...(browser !== 'firefox' ? ['userScripts'] : []),
     ],
     optional_permissions: [

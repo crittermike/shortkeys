@@ -74,6 +74,7 @@ globalThis.chrome = {
   downloads: { search: vi.fn(), show: vi.fn() },
   tabs: { ...browserMock.tabs, group: vi.fn().mockResolvedValue(1), ungroup: vi.fn().mockResolvedValue(undefined), highlight: vi.fn().mockResolvedValue(undefined) },
   tabGroups: { update: vi.fn().mockResolvedValue(undefined), get: vi.fn().mockResolvedValue({ collapsed: false }), query: vi.fn().mockResolvedValue([]) },
+  readingList: { addEntry: vi.fn().mockResolvedValue(undefined) },
 }
 
 // Now import the module under test
@@ -123,6 +124,16 @@ describe('handleAction', () => {
 
   it('returns true for known actions', async () => {
     expect(await handleAction('newtab')).toBe(true)
+  })
+
+  it('adds the active page to Chrome Reading List', async () => {
+    mockTabsQuery.mockResolvedValueOnce([{ ...defaultTab, title: 'Example page' }])
+    await expect(handleAction('addtoreadinglist')).resolves.toBe(true)
+    expect(chrome.readingList.addEntry).toHaveBeenCalledWith({
+      title: 'Example page',
+      url: 'https://example.com',
+      hasBeenRead: false,
+    })
     expect(await handleAction('closetab')).toBe(true)
     expect(await handleAction('disable')).toBe(true)
   })
