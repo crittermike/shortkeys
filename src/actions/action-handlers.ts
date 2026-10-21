@@ -53,8 +53,8 @@ async function selectTab(direction: string): Promise<void> {
 
 /** Check if a URL is safe to navigate to (block data: and vbscript: schemes). */
 function isSafeUrl(url: string): boolean {
-  const lower = url.toLowerCase().trim()
-  return !lower.startsWith('data:') && !lower.startsWith('vbscript:')
+  const { protocol } = new URL(url)
+  return protocol !== 'data:' && protocol !== 'vbscript:'
 }
 
 function copyToClipboard(text: string): void {
@@ -884,7 +884,7 @@ const actionHandlers: Record<string, ActionHandler> = {
     const nodes = await browser.bookmarks.search({ title: request.bookmark! })
     const openNode = nodes.reverse().find((n) => n.url && n.title === request.bookmark)
     if (openNode?.url) {
-      if (openNode.url.startsWith('javascript:')) {
+      if (new URL(openNode.url).protocol === 'javascript:') {
         if (IS_FIREFOX) {
           const [tab] = await browser.tabs.query({ active: true, currentWindow: true })
           if (tab?.id === undefined) throw new Error('No active tab is available for this script.')
@@ -892,11 +892,12 @@ const actionHandlers: Record<string, ActionHandler> = {
           return true
         }
         // Use try/catch for decodeURIComponent — bare % signs cause URIError (#628)
+        const body = openNode.url.slice(openNode.url.indexOf(':') + 1)
         let code: string
         try {
-          code = decodeURIComponent(openNode.url.replace('javascript:', ''))
+          code = decodeURIComponent(body)
         } catch {
-          code = openNode.url.replace('javascript:', '')
+          code = body
         }
         await executeScript(
           (code: string) =>

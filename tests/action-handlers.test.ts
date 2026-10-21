@@ -82,7 +82,7 @@ globalThis.chrome = {
 
 // Now import the module under test
 const { handleAction } = await import('../src/actions/action-handlers')
-const { showPageToast } = await import('../src/utils/execute-script')
+const { executeScript, showPageToast } = await import('../src/utils/execute-script')
 const mockShowPageToast = vi.mocked(showPageToast)
 
 const defaultTab = { id: 1, url: 'https://example.com', index: 2, windowId: 1, pinned: false, mutedInfo: { muted: false } }
@@ -430,6 +430,41 @@ describe('handleAction', () => {
   })
 
   describe('bookmarks', () => {
+    it.each([
+      ['javascript:document.title%20%3D%20%22Done%22', 'document.title = "Done"'],
+      [' \tJaVaScRiPt:document.title = "100%"', 'document.title = "100%"'],
+      ['java\nscript:document.title = "Done"', 'document.title = "Done"'],
+    ])('executes the bookmarklet body from %j without navigating', async (url, code) => {
+      mockBookmarksSearch.mockResolvedValue([{ title: 'Script', url }])
+
+      await handleAction('openbookmark', { key: 'a', action: 'openbookmark', bookmark: 'Script' })
+
+      expect(executeScript).toHaveBeenCalledWith(expect.any(Function), [code])
+      expect(mockTabsUpdate).not.toHaveBeenCalled()
+      expect(mockTabsCreate).not.toHaveBeenCalled()
+    })
+
+    describe.each([
+      'openbookmark', 'openbookmarknewtab',
+      'openbookmarkbackgroundtab', 'openbookmarkbackgroundtabandclose',
+    ])('%s scheme checks', (action) => {
+      it.each([
+        'data:text/html,<script>alert(1)</script>',
+        ' \tDaTa:text/html,test',
+        'da\nta:text/html,test',
+        'vbscript:msgbox(1)',
+        'Vb\tScript:msgbox(1)',
+      ])('does not navigate to or execute %j', async (url) => {
+        mockBookmarksSearch.mockResolvedValue([{ title: 'Blocked', url }])
+
+        await handleAction(action, { key: 'a', action, bookmark: 'Blocked' })
+
+        expect(mockTabsUpdate).not.toHaveBeenCalled()
+        expect(mockTabsCreate).not.toHaveBeenCalled()
+        expect(executeScript).not.toHaveBeenCalled()
+      })
+    })
+
     it('opens a bookmark in current tab', async () => {
       mockBookmarksSearch.mockResolvedValue([
         { title: 'My Bookmark', url: 'https://bookmark.com' },

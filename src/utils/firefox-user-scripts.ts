@@ -7,9 +7,7 @@ export async function getFirefoxScriptCode(action: string, parameters: ActionPar
   const nodes = await browser.bookmarks.search({ title: parameters.bookmark })
   const url = nodes.reverse().find(node => node.url && node.title === parameters.bookmark)?.url
   if (!url) return ''
-  const normalizedUrl = url.trim().toLowerCase()
-  if (normalizedUrl.startsWith('data:') || normalizedUrl.startsWith('vbscript:')) return ''
-  if (!normalizedUrl.startsWith('javascript:')) return ''
+  if (new URL(url).protocol !== 'javascript:') return ''
   const code = url.slice(url.indexOf(':') + 1)
   try {
     return decodeURIComponent(code)
