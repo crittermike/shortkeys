@@ -41,13 +41,6 @@ import BaseLayout from '../layouts/BaseLayout.astro'
       line-height: 1.6;
     }
 
-    .hero-downloads {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
     /* Stats */
     .stats-section {
       padding: 64px 24px;
@@ -252,22 +245,6 @@ import BaseLayout from '../layouts/BaseLayout.astro'
       margin-bottom: 40px;
     }
 
-    .cta-hint {
-      margin-top: 24px !important;
-      font-size: 14px !important;
-      color: var(--gray-light) !important;
-    }
-
-    .cta-hint code {
-      background: var(--light);
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-family: 'SF Mono', monospace;
-      font-size: 13px;
-      color: var(--dark);
-      border: 1px solid var(--border);
-    }
-
     /* Hero Screenshot */
     .hero-screenshot {
       max-width: 960px;
@@ -365,11 +342,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
       <h1>The <span class="text-blue">biggest update</span> ever.</h1>
       <p class="hero-subtitle">Shortkeys v5 is a complete rewrite — faster, more powerful, and packed with features you've been asking for.</p>
 
-      <div class="hero-downloads">
-        <a href="chrome-extension://logpjaacgmcbpdkdchjiaagddngobkck/options.html" class="btn btn-primary">
-          <i class="mdi mdi-cog"></i> Open Shortkeys Settings
-        </a>
-      </div>
+      <p>To open settings, click the Shortkeys icon in your browser's extensions menu, then <strong>Settings</strong>.</p>
 
       <div class="hero-screenshot">
         <div class="browser-bar">
@@ -689,10 +662,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
     <div class="cta-inner">
       <h2>Ready to explore?</h2>
       <p>Open settings to browse packs, try the new features, and customize your shortcuts.</p>
-      <a href="chrome-extension://logpjaacgmcbpdkdchjiaagddngobkck/options.html" class="btn btn-primary">
-        <i class="mdi mdi-cog"></i> Open Shortkeys Settings
-      </a>
-      <p class="cta-hint">Or right-click the Shortkeys icon &rarr; <code>Options</code></p>
+      <p>Click the Shortkeys icon in your browser's extensions menu, then <strong>Settings</strong>.</p>
     </div>
   </section>
 
