@@ -366,9 +366,10 @@ import BaseLayout from '../layouts/BaseLayout.astro'
       <p class="hero-subtitle">Shortkeys v5 is a complete rewrite — faster, more powerful, and packed with features you've been asking for.</p>
 
       <div class="hero-downloads">
-        <a href="chrome-extension://logpjaacgmcbpdkdchjiaagddngobkck/options.html" class="btn btn-primary">
+        <a data-settings-link href="chrome-extension://logpjaacgmcbpdkdchjiaagddngobkck/options.html" class="btn btn-primary">
           <i class="mdi mdi-cog"></i> Open Shortkeys Settings
         </a>
+        <p data-firefox-settings hidden>Open <code>about:addons</code>, select <strong>Shortkeys</strong>, then <strong>Preferences</strong>.</p>
       </div>
 
       <div class="hero-screenshot">
@@ -689,14 +690,21 @@ import BaseLayout from '../layouts/BaseLayout.astro'
     <div class="cta-inner">
       <h2>Ready to explore?</h2>
       <p>Open settings to browse packs, try the new features, and customize your shortcuts.</p>
-      <a href="chrome-extension://logpjaacgmcbpdkdchjiaagddngobkck/options.html" class="btn btn-primary">
+      <a data-settings-link href="chrome-extension://logpjaacgmcbpdkdchjiaagddngobkck/options.html" class="btn btn-primary">
         <i class="mdi mdi-cog"></i> Open Shortkeys Settings
       </a>
+      <p data-firefox-settings hidden>Open <code>about:addons</code>, select <strong>Shortkeys</strong>, then <strong>Preferences</strong>.</p>
       <p class="cta-hint">Or right-click the Shortkeys icon &rarr; <code>Options</code></p>
     </div>
   </section>
 
   <script is:inline>
+    if (/Firefox\//i.test(navigator.userAgent)) {
+      document.querySelectorAll('[data-settings-link]').forEach(link => link.remove());
+      document.querySelectorAll('[data-firefox-settings]').forEach(hint => { hint.hidden = false; });
+      document.querySelector('.cta-hint').remove();
+    }
+
     const actionData = {
       'Scrolling': ['Scroll to top','Scroll to bottom','Scroll down','Scroll down more','Page down','Scroll up','Scroll up more','Page up','Scroll right','Scroll right more','Scroll left','Scroll left more'],
       'Navigation': ['Go back','Go forward','Reload page','Hard reload','Copy URL','Copy page title','Copy title and URL','Copy as markdown link','Open URL from clipboard','Open clipboard URL in new tab','Navigate to specific URL','Open settings','Open extensions','Open keyboard shortcuts','Search Google','Search YouTube','Search Wikipedia','Search GitHub'],
