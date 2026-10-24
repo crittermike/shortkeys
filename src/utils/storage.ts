@@ -137,7 +137,14 @@ async function readSync(): Promise<Snapshot | undefined> {
 async function readLocal(): Promise<Snapshot | undefined> {
   const data = await browser.storage.local.get(['keys', LOCAL_REVISION_KEY])
   const json = parseKeys(data.keys)
-  if (json === undefined) return undefined
+  if (json === undefined) {
+    // Firefox v4.0.2 used DOM storage; never resurrect it over saved v5 deletions.
+    const legacy = globalThis.localStorage?.getItem('shortkeys')
+    if (legacy == null) return undefined
+    const keys: unknown = JSON.parse(legacy).keys
+    if (!Array.isArray(keys)) throw new Error('Invalid legacy shortcuts')
+    return { json: JSON.stringify(keys) }
+  }
   const revision = data[LOCAL_REVISION_KEY]
   if (revision !== undefined && !isRevision(revision)) throw new Error('Invalid local shortcut revision')
   return { json, revision }

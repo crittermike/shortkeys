@@ -53,7 +53,10 @@ beforeEach(() => {
   vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
-afterEach(() => { vi.restoreAllMocks() })
+afterEach(() => {
+  vi.restoreAllMocks()
+  vi.unstubAllGlobals()
+})
 
 describe('revisioned snapshots', () => {
   it.each([
@@ -242,6 +245,41 @@ describe('fallback and recovery', () => {
 })
 
 describe('legacy data and migration', () => {
+  it('loads and migrates Firefox v4.0.2 localStorage without losing scripts or site rules', async () => {
+    const shortcuts = [{
+      key: 'j', action: 'javascript', code: "document.title = 'legacy'",
+      blacklist: 'whitelist', sites: '*example.com*', sitesArray: ['*example.com*'],
+    }]
+    const legacy = JSON.stringify({ keys: shortcuts })
+    const getItem = vi.fn().mockReturnValue(legacy)
+    vi.stubGlobal('localStorage', { getItem })
+
+    expect(await loadKeys()).toBe(JSON.stringify(shortcuts))
+    expect(getItem).toHaveBeenCalledWith('shortkeys')
+    await migrateLocalToSync()
+    expect(local.keys).toBe(JSON.stringify(shortcuts))
+    expect(sync.keys_meta).toMatchObject({ version: 1 })
+    expect(await loadKeys()).toBe(JSON.stringify(shortcuts))
+    expect(local.userScriptApprovals).toBeUndefined()
+  })
+
+  it.each(['local', 'sync'])('does not resurrect legacy localStorage after a %s deletion', async area => {
+    vi.stubGlobal('localStorage', { getItem: vi.fn().mockReturnValue(JSON.stringify({ keys: keys('old') })) })
+    if (area === 'local') local.keys = '[]'
+    else sync.keys = '[]'
+
+    await migrateLocalToSync()
+    expect(await loadKeys()).toBe('[]')
+  })
+
+  it('logs malformed legacy localStorage instead of treating it as shortcuts', async () => {
+    vi.stubGlobal('localStorage', { getItem: vi.fn().mockReturnValue('{"keys":{}}') })
+    expect(await loadKeys()).toBeUndefined()
+    expect(console.error).toHaveBeenCalledWith(
+      '[Shortkeys] Failed to load from local storage:', expect.any(Error),
+    )
+  })
+
   it('loads v4 local data without changing its format', async () => {
     local = { keys: JSON.stringify([{ key: 'ctrl+b', action: 'newtab' }]) }
     expect(await loadKeys()).toBe(local.keys)
