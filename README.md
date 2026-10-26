@@ -89,6 +89,10 @@ Firefox v5.0.1 was rejected by Mozilla for remote code execution and missing dat
 
 The Firefox source build targets desktop Firefox 153+ using Manifest V3. Custom JavaScript, JavaScript macros, and bookmarklets use Firefox's native user-script API: enable the optional permission, review and install each script, and reinstall after editing its code or website scope. Removing a script disables execution without deleting its editable code. Remote userscript URL loading is unavailable in Firefox. Optional data transmission requires Firefox's built-in consent and stops when that consent is revoked.
 
+Firefox upgrades from v4.0.2 also read the legacy `localStorage.shortkeys` format when no newer shortcuts are saved. The original data is kept, and scripts still require explicit installation. If an earlier v5 upgrade already saved an empty list, existing v5 settings take precedence; recover the legacy JSON through the extension's developer tools rather than uninstalling the extension (which removes its data).
+
+For an affected profile, open `about:debugging#/runtime/this-firefox`, find Shortkeys, click **Inspect**, and use the **Console** to run `copy(JSON.stringify(JSON.parse(localStorage.getItem('shortkeys')).keys, null, 2))`. Save the copied JSON as a backup, then paste it into Shortkeys' **Import** tab. If the command reports an error, stop rather than clearing any data. After importing, enable custom JavaScript and review and install each script in its shortcut settings.
+
 Or build from source for development:
 
 ```bash
