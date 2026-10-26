@@ -10,6 +10,11 @@ updates:
         patterns:
           - "vitest"
           - "@vitest/coverage-v8"
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
