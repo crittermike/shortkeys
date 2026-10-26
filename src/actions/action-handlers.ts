@@ -766,12 +766,13 @@ const actionHandlers: Record<string, ActionHandler> = {
   },
 
   // -- Scrolling --
-  // Uses focused scrollable element if available, otherwise window (#300)
+  // Uses focused scrollable element if available, otherwise window (#300).
+  // clientHeight/Width > 0 skips inline elements like links, which Firefox reports as overflowing (#1037).
   top: async (r) => {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
     await executeScript((s: string) => {
       const el = document.activeElement
-      const t = el && el !== document.body && el.scrollHeight > el.clientHeight ? el : window
+      const t = el && el !== document.body && el.clientHeight > 0 && el.scrollHeight > el.clientHeight ? el : window
       t.scrollTo({ left: 0, top: 0, behavior: s as ScrollBehavior })
     }, [s])
     return true
@@ -780,7 +781,7 @@ const actionHandlers: Record<string, ActionHandler> = {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
     await executeScript((s: string) => {
       const el = document.activeElement
-      if (el && el !== document.body && el.scrollHeight > el.clientHeight) {
+      if (el && el !== document.body && el.clientHeight > 0 && el.scrollHeight > el.clientHeight) {
         el.scrollTo({ left: 0, top: el.scrollHeight, behavior: s as ScrollBehavior })
       } else {
         window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: s as ScrollBehavior })
@@ -792,7 +793,7 @@ const actionHandlers: Record<string, ActionHandler> = {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
     await executeScript((s: string) => {
       const el = document.activeElement
-      const t = el && el !== document.body && el.scrollHeight > el.clientHeight ? el : window
+      const t = el && el !== document.body && el.clientHeight > 0 && el.scrollHeight > el.clientHeight ? el : window
       t.scrollBy({ left: 0, top: -50, behavior: s as ScrollBehavior })
     }, [s])
     return true
@@ -801,7 +802,7 @@ const actionHandlers: Record<string, ActionHandler> = {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
     await executeScript((s: string) => {
       const el = document.activeElement
-      const t = el && el !== document.body && el.scrollHeight > el.clientHeight ? el : window
+      const t = el && el !== document.body && el.clientHeight > 0 && el.scrollHeight > el.clientHeight ? el : window
       t.scrollBy({ left: 0, top: -500, behavior: s as ScrollBehavior })
     }, [s])
     return true
@@ -810,7 +811,7 @@ const actionHandlers: Record<string, ActionHandler> = {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
     await executeScript((s: string) => {
       const el = document.activeElement
-      const t = el && el !== document.body && el.scrollHeight > el.clientHeight ? el : window
+      const t = el && el !== document.body && el.clientHeight > 0 && el.scrollHeight > el.clientHeight ? el : window
       t.scrollBy({ left: 0, top: -window.innerHeight, behavior: s as ScrollBehavior })
     }, [s])
     return true
@@ -819,7 +820,7 @@ const actionHandlers: Record<string, ActionHandler> = {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
     await executeScript((s: string) => {
       const el = document.activeElement
-      const t = el && el !== document.body && el.scrollHeight > el.clientHeight ? el : window
+      const t = el && el !== document.body && el.clientHeight > 0 && el.scrollHeight > el.clientHeight ? el : window
       t.scrollBy({ left: 0, top: 50, behavior: s as ScrollBehavior })
     }, [s])
     return true
@@ -828,7 +829,7 @@ const actionHandlers: Record<string, ActionHandler> = {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
     await executeScript((s: string) => {
       const el = document.activeElement
-      const t = el && el !== document.body && el.scrollHeight > el.clientHeight ? el : window
+      const t = el && el !== document.body && el.clientHeight > 0 && el.scrollHeight > el.clientHeight ? el : window
       t.scrollBy({ left: 0, top: 500, behavior: s as ScrollBehavior })
     }, [s])
     return true
@@ -837,7 +838,7 @@ const actionHandlers: Record<string, ActionHandler> = {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
     await executeScript((s: string) => {
       const el = document.activeElement
-      const t = el && el !== document.body && el.scrollHeight > el.clientHeight ? el : window
+      const t = el && el !== document.body && el.clientHeight > 0 && el.scrollHeight > el.clientHeight ? el : window
       t.scrollBy({ left: 0, top: window.innerHeight, behavior: s as ScrollBehavior })
     }, [s])
     return true
@@ -846,7 +847,7 @@ const actionHandlers: Record<string, ActionHandler> = {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
     await executeScript((s: string) => {
       const el = document.activeElement
-      const t = el && el !== document.body && el.scrollWidth > el.clientWidth ? el : window
+      const t = el && el !== document.body && el.clientWidth > 0 && el.scrollWidth > el.clientWidth ? el : window
       t.scrollBy({ left: -50, top: 0, behavior: s as ScrollBehavior })
     }, [s])
     return true
@@ -855,7 +856,7 @@ const actionHandlers: Record<string, ActionHandler> = {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
     await executeScript((s: string) => {
       const el = document.activeElement
-      const t = el && el !== document.body && el.scrollWidth > el.clientWidth ? el : window
+      const t = el && el !== document.body && el.clientWidth > 0 && el.scrollWidth > el.clientWidth ? el : window
       t.scrollBy({ left: -500, top: 0, behavior: s as ScrollBehavior })
     }, [s])
     return true
@@ -864,7 +865,7 @@ const actionHandlers: Record<string, ActionHandler> = {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
     await executeScript((s: string) => {
       const el = document.activeElement
-      const t = el && el !== document.body && el.scrollWidth > el.clientWidth ? el : window
+      const t = el && el !== document.body && el.clientWidth > 0 && el.scrollWidth > el.clientWidth ? el : window
       t.scrollBy({ left: 50, top: 0, behavior: s as ScrollBehavior })
     }, [s])
     return true
@@ -873,7 +874,7 @@ const actionHandlers: Record<string, ActionHandler> = {
     const s = r.smoothScrolling ? 'smooth' : 'auto'
     await executeScript((s: string) => {
       const el = document.activeElement
-      const t = el && el !== document.body && el.scrollWidth > el.clientWidth ? el : window
+      const t = el && el !== document.body && el.clientWidth > 0 && el.scrollWidth > el.clientWidth ? el : window
       t.scrollBy({ left: 500, top: 0, behavior: s as ScrollBehavior })
     }, [s])
     return true
