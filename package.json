@@ -29,7 +29,7 @@
   "devDependencies": {
     "@mdi/font": "^7.4.47",
     "@playwright/test": "^1.64.1",
-    "@types/chrome": "^0.3.5",
+    "@types/chrome": "^0.3.6",
     "@types/mousetrap": "^1.6.15",
     "@types/node": "^22.0.0",
     "@types/selenium-webdriver": "^4.35.7",
