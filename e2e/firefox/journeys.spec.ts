@@ -17,6 +17,16 @@ test('a shortcut created in options fires on a page and persists', async ({ ff, 
   await expect.poll(async () => (await ff.scroll()).y).toBeGreaterThan(0)
 })
 
+test('scrolling works while a link has focus (#1037)', async ({ ff, server }) => {
+  await ff.addShortcut('j', 'Scroll down')
+  await ff.save()
+
+  await ff.openPage(server.url('/scroll'))
+  await ff.driver.executeScript("const a = document.createElement('a'); a.href = '#'; a.textContent = 'link'; document.body.prepend(a); a.focus()")
+  await ff.press('j')
+  await expect.poll(async () => (await ff.scroll()).y).toBeGreaterThan(0)
+})
+
 test('saving updates open tabs without a reload, and disabled shortcuts stop firing', async ({ ff, server }) => {
   const optionsTab = await ff.driver.getWindowHandle()
   await ff.openPage(server.url('/scroll'))
