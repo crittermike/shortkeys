@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Custom keyboard shortcuts for your browser</strong><br>
-  A browser extension for Chrome, Edge, and Opera with 200,000+ Chrome users. Firefox distribution is currently blocked.
+  A browser extension for Chrome, Edge, and Opera with 200,000+ Chrome users. Firefox is available on Mozilla Add-ons (AMO).
 </p>
 
 <p align="center">
@@ -71,7 +71,7 @@
       </a>
     </td>
     <td align="center">
-      <a href="https://microsoftedge.microsoft.com/addons/detail/shortkeys/">
+      <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck">
         <img src="public/images/browser-edge.png" alt="Edge" width="48" /><br>
         <strong>Edge</strong>
       </a>
@@ -84,6 +84,8 @@
     </td>
   </tr>
 </table>
+
+Edge users can install Shortkeys from the Chrome Web Store; it isn't listed on Edge Add-ons.
 
 Firefox v5.0.1 was rejected by Mozilla for remote code execution and missing data-transmission consent. The AMO API currently lists only v2.0.20 (2017), and users report installation failures ([#864](https://github.com/crittermike/shortkeys/issues/864), [#982](https://github.com/crittermike/shortkeys/issues/982)). A successful source build is not a signed, approved Firefox release.
 
