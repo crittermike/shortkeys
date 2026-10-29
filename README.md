@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Custom keyboard shortcuts for your browser</strong><br>
-  A browser extension for Chrome, Edge, and Opera with 200,000+ Chrome users. Firefox distribution is currently blocked.
+  A browser extension for Chrome, Edge, and Opera with 200,000+ Chrome users. Firefox is available on Mozilla Add-ons (AMO).
 </p>
 
 <p align="center">
