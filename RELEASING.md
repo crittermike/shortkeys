@@ -2,22 +2,22 @@
 
 Preparation does not publish a release, submit a store update, or restore Firefox availability. Do not tag, push, upload, sign, or publish until the maintainer explicitly approves that action.
 
-## Proposed 5.1.0 release notes
+## 5.1.1 release notes
 
-This is a minor release because the Firefox source build moves to Manifest V3 and requires desktop Firefox 153+. It is not an announcement of restored Firefox store availability.
+This patch release includes compatible fixes since 5.1.0. The Firefox source build still requires desktop Firefox 153+. It is not an announcement of restored Firefox store availability or an Edge Add-ons listing.
 
-- Improve sync reliability for large shortcut collections, concurrent updates, and local fallback.
-- Fix shortcut recording, macro parameters, popup execution, and link hints; make actions easier to find.
-- Preserve Firefox custom JavaScript, macros, and bookmarklets through native user scripts with explicit installation/removal controls. Remote userscript URL loading is no longer available in Firefox.
-- Require native optional consent before Firefox's built-in transmitting actions run, including after revocation.
-- Check TypeScript/Vue and both browser builds in CI; keep matching Vitest dependencies updated together.
+- Recover legacy Firefox v4 settings when no newer settings are saved, without deleting the original data.
+- Fix scrolling shortcuts when a link has focus in Firefox.
+- Fix bookmark URL scheme parsing and Firefox welcome-page settings guidance.
+- Improve shortcut cards and alerts in the settings page.
+- Expand browser journey, upgrade, restart, and visual regression coverage; update dependencies.
 
-Version 5.1.0 is prepared in the package manifests. The final version, notes, and publication still require maintainer approval.
+The browser ZIPs are unsigned development packages, not store-signed releases. The Firefox ZIP is not a signed XPI.
 
 ## Integrate and choose a version
 
 1. Integrate the tested sync-storage and shortcut-reliability changes before choosing the release version. Do not copy uncommitted work without coordinating its exact patch and base.
-2. Review the combined changes since `v5.0.1`. Use a patch version for compatible fixes only; use a minor version when the approved Firefox minimum-version or supported-feature changes are included. Keep the final version identical in `package.json`, `package-lock.json`, release notes, and browser manifests.
+2. Review the combined changes since the previous release tag. Use a patch version for compatible fixes only; use a minor version when approved minimum-version or supported-feature changes are included. Keep the final version identical in `package.json`, `package-lock.json`, release notes, and browser manifests.
 3. Let the maintainer test the extension using `npm run dev` before committing or pushing. Do not rename existing manifest command IDs: browser-assigned shortcuts depend on them.
 4. If opening a PR is requested, use a draft PR with a short explanation of why the release is needed. Do not merge it automatically.
 

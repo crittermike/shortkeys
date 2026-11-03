@@ -9,18 +9,18 @@ export default defineConfig({
     short_name: 'Shortkeys',
     description: 'Custom keyboard shortcuts for your browser',
     default_locale: 'en',
-    browser_specific_settings: {
-      gecko: {
-        id: 'Shortkeys@Shortkeys.com',
-        strict_min_version: '153.0',
-        ...(browser === 'firefox' ? {
+    ...(browser === 'firefox' ? {
+      browser_specific_settings: {
+        gecko: {
+          id: 'Shortkeys@Shortkeys.com',
+          strict_min_version: '153.0',
           data_collection_permissions: {
             required: ['none'],
             optional: ['browsingActivity', 'websiteContent', 'searchTerms', 'bookmarksInfo', 'technicalAndInteraction'],
           },
-        } : {}),
+        },
       },
-    },
+    } : {}),
     icons: {
       16: '/images/icon_16.png',
       48: '/images/icon_48.png',
