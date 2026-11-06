@@ -8,7 +8,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
  */
 
 import { ACTION_CATEGORIES, getAllActionValues } from '../src/utils/actions-registry'
-import { getBrowserConflict } from '../src/utils/shortcut-conflicts'
+import { formatBrowserConflictMessage, getBrowserConflict } from '../src/utils/shortcut-conflicts'
 
 // The initial actions shown in the wizard's step 1
 const INITIAL_ACTIONS = [
@@ -35,7 +35,7 @@ const MORE_ACTIONS = [
   { id: 'togglebookmark', label: 'Bookmark/unbookmark page', icon: 'mdi-bookmark-outline' },
   { id: 'editurl', label: 'Edit URL in address bar', icon: 'mdi-pencil-outline' },
   { id: 'urlup', label: 'Go up one URL level', icon: 'mdi-arrow-up-bold' },
-  { id: 'disable', label: 'Do nothing (block shortcut)', icon: 'mdi-cancel' },
+  { id: 'disable', label: 'Do nothing (if received)', icon: 'mdi-cancel' },
 ]
 
 const POPULAR_ACTIONS = [...INITIAL_ACTIONS, ...MORE_ACTIONS]
@@ -88,6 +88,16 @@ describe('OnboardingWizard', () => {
         expect(allActionValues).toContain(action.id)
       }
     })
+
+    it('describes the no-op action without promising to block browser shortcuts', () => {
+      const disableAction = Object.values(ACTION_CATEGORIES)
+        .flat()
+        .find(action => action.value === 'disable')
+      expect(disableAction).toMatchObject({
+        label: 'Do nothing (if received)',
+        description: 'Run no action if Shortkeys receives this shortcut',
+      })
+    })
   })
 
   describe('conflict detection in step 2', () => {
@@ -109,8 +119,9 @@ describe('OnboardingWizard', () => {
     it('conflict warning message format matches wizard display', () => {
       const conflict = getBrowserConflict('ctrl+w', false)
       expect(conflict).toBeTruthy()
-      const message = `Overrides browser shortcut: ${conflict}`
-      expect(message).toContain('Overrides browser shortcut:')
+      expect(formatBrowserConflictMessage(conflict!)).toBe(
+        'Browser shortcut conflict: Close current tab. The browser may handle this shortcut before Shortkeys can receive it.',
+      )
     })
   })
 
