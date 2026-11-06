@@ -152,6 +152,10 @@ export interface ShortcutConflict {
   exact?: boolean
 }
 
+export function formatBrowserConflictMessage(browserAction: string): string {
+  return `Browser shortcut conflict: ${browserAction}. The browser may handle this shortcut before Shortkeys can receive it.`
+}
+
 /**
  * Normalize a shortcut key string for comparison.
  * Sorts modifier keys so "shift+ctrl+a" === "ctrl+shift+a".
@@ -336,7 +340,7 @@ export function detectConflicts(shortcuts: KeySetting[], mac?: boolean): Map<num
       shortcutConflicts.push({
         type: 'browser',
         key: norm,
-        message: `Overrides browser shortcut: ${browserAction}`,
+        message: formatBrowserConflictMessage(browserAction),
         browserAction,
       })
     }

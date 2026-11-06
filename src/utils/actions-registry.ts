@@ -107,7 +107,7 @@ export const ACTION_CATEGORIES: Record<string, ActionDefinition[]> = {
     { value: 'showlatestdownload', label: 'Show latest download', description: 'Reveal the most recent download in your file manager', builtin: true },
     { value: 'cleardownloads', label: 'Clear downloads', description: 'Clear the browser\'s download history list', builtin: true },
     { value: 'viewsource', label: 'View page source', description: 'Open the HTML source code of the current page', builtin: true },
-    { value: 'disable', label: 'Do nothing (block shortcut)', description: 'Prevent a browser shortcut from doing anything' },
+    { value: 'disable', label: 'Do nothing (if received)', description: 'Run no action if Shortkeys receives this shortcut' },
     { value: 'trigger', label: 'Trigger another shortcut', description: 'Simulate pressing a different keyboard shortcut' },
     { value: 'inserttext', label: 'Type text into field', description: 'Insert pre-configured text into the currently focused input' },
     { value: 'print', label: 'Print page', description: 'Open the print dialog for the current page', builtin: true },

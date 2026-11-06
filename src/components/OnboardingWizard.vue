@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import ShortcutRecorder from '@/components/ShortcutRecorder.vue'
 import CodeEditor from '@/components/CodeEditor.vue'
 import { ACTION_CATEGORIES, getActionDescription, getActionLabel } from '@/utils/actions-registry'
-import { getBrowserConflict } from '@/utils/shortcut-conflicts'
+import { formatBrowserConflictMessage, getBrowserConflict } from '@/utils/shortcut-conflicts'
 import { ALL_PACKS } from '@/packs'
 import type { ShortcutPack } from '@/packs'
 
@@ -117,7 +117,7 @@ const recordedShortcuts = computed(() => {
 const conflictWarning = computed(() => {
   if (!shortcutKey.value) return null
   const conflict = getBrowserConflict(shortcutKey.value)
-  return conflict ? `Overrides browser shortcut: ${conflict}` : null
+  return conflict ? formatBrowserConflictMessage(conflict) : null
 })
 
 const toggleAction = (actionId: string) => {

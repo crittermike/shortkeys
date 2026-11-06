@@ -3,6 +3,7 @@ import {
   normalizeKey,
   getBrowserConflict,
   detectConflicts,
+  formatBrowserConflictMessage,
   getDefaultsForPlatform,
   getSitePatterns,
   couldSiteFiltersOverlap,
@@ -181,6 +182,9 @@ describe('detectConflicts', () => {
     const conflicts = detectConflicts(shortcuts, false)
     expect(conflicts.has(0)).toBe(true)
     expect(conflicts.get(0)![0].browserAction).toBe('Open new tab')
+    expect(conflicts.get(0)![0].message).toBe(
+      'Browser shortcut conflict: Open new tab. The browser may handle this shortcut before Shortkeys can receive it.',
+    )
     expect(conflicts.has(1)).toBe(false)
   })
 
