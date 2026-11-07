@@ -40,7 +40,7 @@
     "selenium-webdriver": "^4.52.0",
     "typescript": "^5.9.3",
     "vitest": "^5.0.5",
-    "vue-tsc": "^3.1.0",
+    "vue-tsc": "^3.3.14",
     "wxt": "^0.21.5"
   },
   "dependencies": {
