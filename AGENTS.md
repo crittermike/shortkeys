@@ -1,7 +1,7 @@
 # Shortkeys
 
 ## What is this project?
-Shortkeys is a cross-browser extension that lets users define custom keyboard shortcuts for browser actions (scrolling, tab management, navigation, running custom JavaScript, video controls, page scripts, and more). It has 200K+ Chrome users. Distributed for Chrome, Edge, and Opera; Firefox source builds target desktop 153+, but store distribution is blocked pending Mozilla signing/review. Licensed under MIT.
+Shortkeys is a cross-browser extension that lets users define custom keyboard shortcuts for browser actions (scrolling, tab management, navigation, running custom JavaScript, video controls, page scripts, and more). It has 200K+ Chrome users. Distributed for Chrome, Edge, Opera, and Firefox (AMO, desktop 153+). Licensed under MIT.
 
 ## Tech stack
 - **Build system**: WXT (Vite-based browser extension framework) -- `wxt.config.ts`
@@ -157,7 +157,7 @@ v5 is fully backward-compatible with v4 data. Same storage key (`chrome.storage.
 - **Bookmark URLs with %**: `decodeURIComponent` throws on bare `%` signs. Wrap in try/catch with raw fallback
 - **Labels should be sentence case**: "Log all events" not "Log All Events"
 - **New windows open maximized**: All `browser.windows.create` calls include `state: 'maximized'`
-- **Firefox compatibility**: Firefox targets desktop 153+ as MV3; store distribution remains blocked pending signing/review. Settings pages use `about:` URIs not `chrome://`. Guard `chrome.tabs.group/ungroup`, `chrome.downloads.show`, `chrome.debugger` with existence checks.
+- **Firefox compatibility**: Firefox targets desktop 153+ as MV3 and is listed on AMO. Users can revoke MV3 site access, which stops the content script; options shows a notice to re-grant it. Settings pages use `about:` URIs not `chrome://`. Guard `chrome.tabs.group/ungroup`, `chrome.downloads.show`, `chrome.debugger` with existence checks.
 
 ## Workflow rules
 - **Never push directly to master/main**. Always create a feature branch and open a PR.

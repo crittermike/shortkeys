@@ -6,11 +6,11 @@
 
 <p align="center">
   <strong>Custom keyboard shortcuts for your browser</strong><br>
-  A browser extension for Chrome, Edge, and Opera with 200,000+ Chrome users. Firefox is available on Mozilla Add-ons (AMO).
+  A browser extension for Chrome, Edge, Opera, and Firefox with 200,000+ Chrome users.
 </p>
 
 <p align="center">
-  <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck">Chrome Web Store</a> · <a href="https://github.com/crittermike/shortkeys/issues/864">Firefox status</a> · <a href="https://shortkeys.app">Website</a> · <a href="https://github.com/crittermike/shortkeys/issues">Issues</a>
+  <a href="https://chromewebstore.google.com/detail/shortkeys-custom-keyboard/logpjaacgmcbpdkdchjiaagddngobkck">Chrome Web Store</a> · <a href="https://addons.mozilla.org/firefox/addon/shortkeys/">Firefox Add-ons</a> · <a href="https://shortkeys.app">Website</a> · <a href="https://github.com/crittermike/shortkeys/issues">Issues</a>
 </p>
 
 <br>
@@ -65,9 +65,9 @@
       </a>
     </td>
     <td align="center">
-      <a href="https://github.com/crittermike/shortkeys/issues/864">
+      <a href="https://addons.mozilla.org/firefox/addon/shortkeys/">
         <img src="public/images/browser-firefox.png" alt="Firefox" width="48" /><br>
-        <strong>Firefox status</strong>
+        <strong>Firefox</strong>
       </a>
     </td>
     <td align="center">
@@ -87,9 +87,19 @@
 
 Edge users can install Shortkeys from the Chrome Web Store; it isn't listed on Edge Add-ons.
 
-Firefox v5.0.1 was rejected by Mozilla for remote code execution and missing data-transmission consent. The AMO API currently lists only v2.0.20 (2017), and users report installation failures ([#864](https://github.com/crittermike/shortkeys/issues/864), [#982](https://github.com/crittermike/shortkeys/issues/982)). A successful source build is not a signed, approved Firefox release.
+Shortkeys 5.1.0 and later is available from [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/shortkeys/) for desktop Firefox 153 or later.
 
-The Firefox source build targets desktop Firefox 153+ using Manifest V3. Custom JavaScript, JavaScript macros, and bookmarklets use Firefox's native user-script API: enable the optional permission, review and install each script, and reinstall after editing its code or website scope. Removing a script disables execution without deleting its editable code. Remote userscript URL loading is unavailable in Firefox. Optional data transmission requires Firefox's built-in consent and stops when that consent is revoked.
+### Firefox permissions
+
+Firefox lists some permissions as optional. You only need the ones for the features you use:
+
+- **Access your data for all websites** is required. Without it, shortcuts do nothing on websites, and the Shortkeys settings page shows an **Allow site access** button.
+- **Allow unverified third-party scripts to access your data** is only for custom JavaScript. Every other shortcut works without it. It lets scripts you write or import yourself run on the current page when you press the shortcut. Those scripts can read and change that page, so only grant it if you use custom JavaScript and trust the code.
+- **Optional data sharing** is only for QR codes, search actions, and publishing community packs, which send data to qrserver.com, the search provider, or GitHub.
+
+To revoke a permission, open `about:addons`, choose Shortkeys, open **Permissions**, and turn it off. See the [Firefox permissions docs](https://shortkeys.app/docs#firefox-permissions) for details.
+
+Firefox builds use Manifest V3. Custom JavaScript, JavaScript macros, and bookmarklets use Firefox's native user-script API: enable the optional permission, review and install each script, and reinstall after editing its code or website scope. Removing a script disables execution without deleting its editable code. Remote userscript URL loading is unavailable in Firefox. Optional data transmission requires Firefox's built-in consent and stops when that consent is revoked.
 
 Firefox upgrades from v4.0.2 also read the legacy `localStorage.shortkeys` format when no newer shortcuts are saved. The original data is kept, and scripts still require explicit installation. If an earlier v5 upgrade already saved an empty list, existing v5 settings take precedence; recover the legacy JSON through the extension's developer tools rather than uninstalling the extension (which removes its data).
 

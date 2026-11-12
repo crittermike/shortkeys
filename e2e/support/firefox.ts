@@ -43,7 +43,9 @@ export async function launchFirefox(testInfo: TestInfo): Promise<firefox.Driver>
   options.setPreference('network.proxy.ssl_port', 9)
   options.setPreference('network.proxy.no_proxies_on', 'localhost,127.0.0.1')
   options.setPreference('network.proxy.allow_hijacking_localhost', false)
+  // Lets tests change permissions the way the about:addons toggles do.
   const service = new firefox.ServiceBuilder().setStdio(['ignore', 'pipe', 'pipe'])
+    .setEnvironment({ ...process.env, MOZ_REMOTE_ALLOW_SYSTEM_ACCESS: '1' })
   const driver = (await new Builder().forBrowser('firefox').setFirefoxOptions(options).setFirefoxService(service).build()) as firefox.Driver
   const version = Number(String((await driver.getCapabilities()).get('browserVersion')).split('.')[0])
   testInfo.annotations.push({ type: 'firefox', description: String(version) })
@@ -109,6 +111,25 @@ export class FirefoxExtension {
       keys, groups,
     )
     await this.openOptions()
+  }
+
+  /** Grant or revoke optional permissions from Firefox's privileged side, as about:addons does. */
+  async setPermissions(op: 'add' | 'remove', perms: { permissions?: string[]; origins?: string[] }) {
+    const driver = this.driver as firefox.Driver
+    await driver.setContext(firefox.Context.CHROME)
+    try {
+      return await driver.executeAsyncScript<{ permissions: string[]; origins: string[]; data_collection: string[] }>(
+        `const done = arguments[arguments.length - 1];
+         (async ([op, id, perms]) => {
+           const { ExtensionPermissions } = ChromeUtils.importESModule('resource://gre/modules/ExtensionPermissions.sys.mjs');
+           await ExtensionPermissions[op](id, { permissions: [], origins: [], ...perms }, WebExtensionPolicy.getByID(id).extension);
+           return ExtensionPermissions.get(id);
+         })(Array.from(arguments)).then(done, (e) => done({ error: String(e) }))`,
+        op, FIREFOX_ID, perms,
+      )
+    } finally {
+      await driver.setContext(firefox.Context.CONTENT)
+    }
   }
 
   async css(selector: string, root?: WebElement) {

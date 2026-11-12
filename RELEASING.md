@@ -43,11 +43,11 @@ WXT writes browser builds and versioned ZIPs to `.output/`. Inspect each generat
 
 CI covers new install, upgrade from the latest GitHub release with typical, multi-chunk sync and local-only data, browser restart, shortcut refresh without reloading, core journeys in Chromium and Firefox, macro URLs, palette execution, and visual baselines. Still check by hand: the store build (not the GitHub release) upgrading, and real sync between two signed-in browsers. Inspect the visual-review screenshots in `screenshots/`.
 
-For Firefox, use a clean desktop Firefox 153+ profile and `about:debugging` > This Firefox > Load Temporary Add-on > `.output/firefox-mv3/manifest.json`. Temporary installation ends when Firefox restarts. Test optional data consent both denied and granted, revoke it in `about:addons`, then confirm transmitting actions stop again. Enable the native user-script permission, explicitly install a custom script and a JavaScript macro, and verify shortcut and test-button execution on an existing tab. Check removal, changed code/bookmarklets/website scope, and permission revocation all prevent execution until explicitly enabled/installed again. Verify that remote userscript loading is unavailable and that Chrome behavior is unchanged. A local build or temporary installation is not evidence of AMO acceptance.
+For Firefox, use a clean desktop Firefox 153+ profile and `about:debugging` > This Firefox > Load Temporary Add-on > `.output/firefox-mv3/manifest.json`. Temporary installation ends when Firefox restarts. Test optional data consent both denied and granted, revoke it in `about:addons`, then confirm transmitting actions stop again. Turn off site access in `about:addons` and confirm the options page offers to allow it again. Enable the native user-script permission, explicitly install a custom script and a JavaScript macro, and verify shortcut and test-button execution on an existing tab. Check removal, changed code/bookmarklets/website scope, and permission revocation all prevent execution until explicitly enabled/installed again. Verify that remote userscript loading is unavailable and that Chrome behavior is unchanged. A local build or temporary installation is not evidence of AMO acceptance.
 
 ## Firefox submission gate
 
-Current distribution is blocked: Mozilla rejected `5.0.1` for remote code execution and missing data-transmission consent ([#864](https://github.com/crittermike/shortkeys/issues/864)); installation failures continue in [#982](https://github.com/crittermike/shortkeys/issues/982). On October 20, 2026, the public AMO API listed only `2.0.20`, dated September 2017, with `is_mozilla_signed_extension: false`.
+`5.1.0` is available on AMO. Mozilla rejected `5.0.1` for remote code execution and missing data-transmission consent ([#864](https://github.com/crittermike/shortkeys/issues/864)); every later submission must keep those fixes.
 
 Before any submission:
 
@@ -65,7 +65,7 @@ Both listed and unlisted/self-distributed extensions require Mozilla signing and
 
 1. Obtain approval for the final version, release notes, artifacts, target stores, and submission timing.
 2. With approved store credentials, upload each browser's matching ZIP to its store. Keep signing/API secrets outside the repo and out of logs. A signed Chrome CRX is produced by its store; Firefox requires Mozilla signing.
-3. Verify the live store version, successful installation, and upgrade behavior before announcing availability. Keep the Firefox status notice until the signed version is actually available and verified.
+3. Verify the live store version, successful installation, and upgrade behavior before announcing availability.
 4. Only with release approval, tag the approved commit and create the GitHub release with matching browser artifacts and concise release notes. Identify unsigned development packages explicitly; never imply they replace a signed store release.
 
 ## Mozilla references
