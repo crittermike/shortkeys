@@ -118,7 +118,7 @@ export class FirefoxExtension {
     const driver = this.driver as firefox.Driver
     await driver.setContext(firefox.Context.CHROME)
     try {
-      return await driver.executeAsyncScript<{ permissions: string[]; origins: string[]; data_collection: string[] }>(
+      const result = await driver.executeAsyncScript<{ permissions: string[]; origins: string[]; data_collection: string[] } | { error: string }>(
         `const done = arguments[arguments.length - 1];
          (async ([op, id, perms]) => {
            const { ExtensionPermissions } = ChromeUtils.importESModule('resource://gre/modules/ExtensionPermissions.sys.mjs');
@@ -127,6 +127,8 @@ export class FirefoxExtension {
          })(Array.from(arguments)).then(done, (e) => done({ error: String(e) }))`,
         op, FIREFOX_ID, perms,
       )
+      if ('error' in result) throw new Error(`Could not ${op} Firefox permissions: ${result.error}`)
+      return result
     } finally {
       await driver.setContext(firefox.Context.CONTENT)
     }

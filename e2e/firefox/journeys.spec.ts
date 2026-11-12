@@ -140,10 +140,12 @@ test('page shortcuts need only site access, not custom JavaScript or data consen
   await ff.setPermissions('remove', { origins: ['*://*/*', '<all_urls>', 'file:///*'] })
   await ff.driver.switchTo().newWindow('tab')
   await ff.driver.get(server.url('/scroll'))
-  await ff.press('j', 'l')
-  // No content script means nothing can flush; give a stray handler time to fire.
-  await new Promise(resolve => setTimeout(resolve, 1000))
-  expect(await ff.scroll()).toEqual({ x: 0, y: 0 })
+  // No content script means nothing can flush, so keep pressing through the time bindings normally take.
+  const deadline = Date.now() + 3000
+  while (Date.now() < deadline) {
+    await ff.press('j', 'l')
+    expect(await ff.scroll()).toEqual({ x: 0, y: 0 })
+  }
 
   // The options notice requests exactly this origin.
   await ff.setPermissions('add', { origins: ['*://*/*'] })

@@ -32,9 +32,7 @@ export function requestFirefoxDataConsent(): Promise<boolean> {
 // never loads, so page shortcuts silently do nothing.
 const SITE_ACCESS = { origins: ['*://*/*'] }
 
-export async function hasFirefoxSiteAccess(): Promise<boolean> {
-  // The permissions API is missing in web-accessible frames, such as the E2E options host.
-  if (!IS_FIREFOX || !browser.permissions) return true
+export function hasFirefoxSiteAccess(): Promise<boolean> {
   return browser.permissions.contains(SITE_ACCESS)
 }
 

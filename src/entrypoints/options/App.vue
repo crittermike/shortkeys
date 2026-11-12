@@ -195,6 +195,7 @@ onMounted(async () => {
 
   checkReviewBanner()
 
+  // The permissions API is missing in web-accessible frames, such as the E2E options host.
   if (IS_FIREFOX && browser.permissions) {
     checkFirefoxSiteAccess()
     browser.permissions.onAdded.addListener(checkFirefoxSiteAccess)
@@ -289,7 +290,7 @@ onUnmounted(() => {
       <div v-show="activeTab === 0" class="tab-content">
         <article v-if="IS_FIREFOX && !hasSiteAccess" class="alert alert-warning firefox-notice">
           <div class="firefox-notice-row">
-            <p><strong>Shortcuts can't run on websites.</strong> Firefox site access is off for Shortkeys, so page shortcuts do nothing.</p>
+            <p><strong>Shortcuts need site access.</strong> Firefox hasn't given Shortkeys access to all websites, so page shortcuts only work on sites you've allowed.</p>
             <button class="btn btn-primary btn-sm" @click="enableFirefoxSiteAccess" type="button">Allow site access</button>
           </div>
         </article>

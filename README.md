@@ -93,11 +93,13 @@ Shortkeys 5.1.0 and later is available from [Firefox Add-ons](https://addons.moz
 
 Firefox lists some permissions as optional. You only need the ones for the features you use:
 
-- **Access your data for all websites** is required. Without it, shortcuts do nothing on websites, and the Shortkeys settings page shows an **Allow site access** button.
+- **Access your data for all websites** is required. Without it, shortcuts only work on sites you've allowed, and the Shortkeys settings page shows an **Allow site access** button.
 - **Allow unverified third-party scripts to access your data** is only for custom JavaScript. Every other shortcut works without it. It lets scripts you write or import yourself run on the current page when you press the shortcut, or on a tab you pick when you click **Test**. Those scripts can read and change that page, so only grant it if you use custom JavaScript and trust the code.
 - **Optional data sharing** is only for QR codes, search actions, and publishing community packs, which send data to qrserver.com, the search provider, or GitHub.
 
 To revoke a permission, open `about:addons`, choose Shortkeys, open **Permissions**, and turn it off. See the [Firefox permissions docs](https://shortkeys.app/docs#firefox-permissions) for details.
+
+### Firefox technical notes
 
 Firefox builds use Manifest V3. Custom JavaScript, JavaScript macros, and bookmarklets use Firefox's native user-script API: enable the optional permission, review and install each script, and reinstall after editing its code or website scope. Removing a script disables execution without deleting its editable code. Remote userscript URL loading is unavailable in Firefox. Optional data transmission requires Firefox's built-in consent and stops when that consent is revoked.
 
@@ -105,7 +107,9 @@ Firefox upgrades from v4.0.2 also read the legacy `localStorage.shortkeys` forma
 
 For an affected profile, open `about:debugging#/runtime/this-firefox`, find Shortkeys, click **Inspect**, and use the **Console** to run `copy(JSON.stringify(JSON.parse(localStorage.getItem('shortkeys')).keys, null, 2))`. Save the copied JSON as a backup, then paste it into Shortkeys' **Import** tab. If the command reports an error, stop rather than clearing any data. After importing, enable custom JavaScript and review and install each script in its shortcut settings.
 
-Or build from source for development:
+### Build from source
+
+To build from source for development:
 
 ```bash
 npm install
