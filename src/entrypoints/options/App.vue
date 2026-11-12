@@ -80,7 +80,7 @@ function checkFirefoxSiteAccess() {
 
 function enableFirefoxSiteAccess() {
   requestFirefoxSiteAccess().then(granted => {
-    showSnack(granted ? 'Site access allowed. Reload open tabs to use shortcuts there.' : 'Site access was not allowed. Shortcuts won\'t run on websites.', granted ? 'success' : 'danger')
+    showSnack(granted ? 'Site access allowed. Reload open tabs to use shortcuts there.' : 'Site access was not allowed. Shortcuts only work on sites you\'ve allowed.', granted ? 'success' : 'danger')
   }).catch(error => {
     console.error('Failed to request site access:', error)
     showSnack('Could not request site access.', 'danger')

@@ -94,7 +94,7 @@ Shortkeys 5.1.0 and later is available from [Firefox Add-ons](https://addons.moz
 Firefox lists some permissions as optional. You only need the ones for the features you use:
 
 - **Access your data for all websites** is required. Without it, shortcuts only work on sites you've allowed, and the Shortkeys settings page shows an **Allow site access** button.
-- **Allow unverified third-party scripts to access your data** is only for custom JavaScript. Every other shortcut works without it. It lets scripts you write or import yourself run on the current page when you press the shortcut, or on a tab you pick when you click **Test**. Those scripts can read and change that page, so only grant it if you use custom JavaScript and trust the code.
+- **Allow unverified third-party scripts to access your data** is only for custom JavaScript, including JavaScript steps in macros and `javascript:` bookmarklets. Every other shortcut works without it. It lets scripts you write or import yourself run on the current page when you press the shortcut, or on a tab you pick when you click **Test**. Those scripts can read and change that page, so only grant it if you use custom JavaScript and trust the code.
 - **Optional data sharing** is only for QR codes, search actions, and publishing community packs, which send data to qrserver.com, the search provider, or GitHub.
 
 To revoke a permission, open `about:addons`, choose Shortkeys, open **Permissions**, and turn it off. See the [Firefox permissions docs](https://shortkeys.app/docs#firefox-permissions) for details.
