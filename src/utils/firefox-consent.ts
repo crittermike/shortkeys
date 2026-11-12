@@ -28,6 +28,18 @@ export function requestFirefoxDataConsent(): Promise<boolean> {
   return browser.permissions.request(permissions)
 }
 
+// Firefox lets users turn off MV3 host access. Without it the content script
+// never loads, so page shortcuts silently do nothing.
+const SITE_ACCESS = { origins: ['*://*/*'] }
+
+export function hasFirefoxSiteAccess(): Promise<boolean> {
+  return browser.permissions.contains(SITE_ACCESS)
+}
+
+export function requestFirefoxSiteAccess(): Promise<boolean> {
+  return browser.permissions.request(SITE_ACCESS)
+}
+
 export function containsRemoteCode(shortcuts: readonly { action: string; code?: string; openurl?: string; macroSteps?: readonly { action: string; code?: string; openurl?: string }[] }[]): boolean {
   return shortcuts.some(shortcut =>
     shortcut.action === 'javascript'

@@ -24,7 +24,7 @@ import { useJsTools } from '@/composables/useJsTools'
 import { useUndoRedo } from '@/composables/useUndoRedo'
 import { useViewDensity } from '@/composables/useViewDensity'
 import { usePacks } from '@/composables/usePacks'
-import { IS_FIREFOX, requestFirefoxDataConsent } from '@/utils/firefox-consent'
+import { IS_FIREFOX, requestFirefoxDataConsent, hasFirefoxSiteAccess, requestFirefoxSiteAccess } from '@/utils/firefox-consent'
 import { requestFirefoxUserScripts } from '@/utils/firefox-user-scripts'
 
 // --- Composables ---
@@ -67,6 +67,23 @@ function enableFirefoxScripts() {
   }).catch(error => {
     console.error('Failed to request user-script permission:', error)
     showSnack('Could not request custom JavaScript permission.', 'danger')
+  })
+}
+
+const hasSiteAccess = ref(true)
+
+function checkFirefoxSiteAccess() {
+  hasFirefoxSiteAccess().then(granted => { hasSiteAccess.value = granted }).catch(error => {
+    console.error('Failed to check site access:', error)
+  })
+}
+
+function enableFirefoxSiteAccess() {
+  requestFirefoxSiteAccess().then(granted => {
+    showSnack(granted ? 'Site access allowed. Reload open tabs to use shortcuts there.' : 'Site access was not allowed. Shortcuts only work on sites you\'ve allowed.', granted ? 'success' : 'danger')
+  }).catch(error => {
+    console.error('Failed to request site access:', error)
+    showSnack('Could not request site access.', 'danger')
   })
 }
 
@@ -177,6 +194,13 @@ onMounted(async () => {
   }
 
   checkReviewBanner()
+
+  // The permissions API is missing in web-accessible frames, such as the E2E options host.
+  if (IS_FIREFOX && browser.permissions) {
+    checkFirefoxSiteAccess()
+    browser.permissions.onAdded.addListener(checkFirefoxSiteAccess)
+    browser.permissions.onRemoved.addListener(checkFirefoxSiteAccess)
+  }
 })
 
 onUnmounted(() => {
@@ -264,13 +288,19 @@ onUnmounted(() => {
 
       <!-- Shortcuts Tab -->
       <div v-show="activeTab === 0" class="tab-content">
+        <article v-if="IS_FIREFOX && !hasSiteAccess" class="alert alert-warning firefox-notice">
+          <div class="firefox-notice-row">
+            <p><strong>Shortcuts need site access.</strong> Firefox hasn't given Shortkeys access to all websites, so page shortcuts only work on sites you've allowed.</p>
+            <button class="btn btn-primary btn-sm" @click="enableFirefoxSiteAccess" type="button">Allow site access</button>
+          </div>
+        </article>
         <article v-if="IS_FIREFOX" class="alert alert-info firefox-notice">
           <div class="firefox-notice-row">
-            <p>Custom JavaScript runs through Firefox's user-script API. Enable it, then review and install scripts in each shortcut's settings. Remove installed scripts there; revoke permissions in <code>about:addons</code>.</p>
+            <p>Only custom JavaScript needs Firefox's user-script permission; other shortcuts work without it. Enable it, then review and install scripts in each shortcut's settings. Remove installed scripts there; revoke permissions in <code>about:addons</code>.</p>
             <button class="btn btn-secondary btn-sm" @click="enableFirefoxScripts" type="button">Enable custom JavaScript</button>
           </div>
           <div class="firefox-notice-row">
-            <p>QR codes send the current URL to qrserver.com. Search actions send selected text to the chosen search provider. Publishing a community pack sends its shortcut settings to GitHub. These features need optional data consent.</p>
+            <p>QR codes send the current URL to qrserver.com. Search actions send selected text to the chosen search provider. Publishing a community pack sends its shortcut settings to GitHub. Only these features need optional data consent.</p>
             <button class="btn btn-secondary btn-sm" @click="enableFirefoxData" type="button">Allow data transmission</button>
           </div>
         </article>

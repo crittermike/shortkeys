@@ -126,3 +126,30 @@ test('shortcuts are ignored while typing unless enabled for inputs', async ({ ff
   await ff.chord(Key.ALT, 'd')
   await ff.driver.wait(async () => (await ff.driver.findElements(By.id('__shortkeys-darkmode'))).length > 0, 10_000)
 })
+
+test('page shortcuts need only site access, not custom JavaScript or data consent (#864)', async ({ ff, server }) => {
+  await ff.addShortcut('j', 'Scroll down')
+  await ff.save()
+  const initial = await ff.setPermissions('remove', {})
+  expect(initial.permissions).not.toContain('userScripts')
+  expect(initial.data_collection).toEqual([])
+  await ff.openPage(server.url('/scroll'))
+  await ff.press('j')
+  await expect.poll(async () => (await ff.scroll()).y).toBeGreaterThan(0)
+
+  await ff.setPermissions('remove', { origins: ['*://*/*', '<all_urls>', 'file:///*'] })
+  await ff.driver.switchTo().newWindow('tab')
+  await ff.driver.get(server.url('/scroll'))
+  // No content script means nothing can flush, so keep pressing through the time bindings normally take.
+  const deadline = Date.now() + 3000
+  while (Date.now() < deadline) {
+    await ff.press('j', 'l')
+    expect(await ff.scroll()).toEqual({ x: 0, y: 0 })
+  }
+
+  // The options notice requests exactly this origin.
+  await ff.setPermissions('add', { origins: ['*://*/*'] })
+  await ff.openPage(server.url('/scroll'))
+  await ff.press('j')
+  await expect.poll(async () => (await ff.scroll()).y).toBeGreaterThan(0)
+})
