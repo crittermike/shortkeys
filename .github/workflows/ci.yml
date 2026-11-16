@@ -111,7 +111,7 @@ jobs:
     # Baselines in e2e/__screenshots__ are rendered in this image. Keep the tag in sync with @playwright/test
     # and regenerate them deliberately with `npm run test:e2e:visual:update`.
     container:
-      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      image: mcr.microsoft.com/playwright:v1.65.0-noble
       options: --ipc=host
     steps:
       - uses: actions/checkout@v7
@@ -121,7 +121,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Check the image matches the installed Playwright
-        run: test "$(node -p "require('@playwright/test/package.json').version")" = "1.64.1"
+        run: test "$(node -p "require('@playwright/test/package.json').version")" = "1.65.0"
       - run: npm run build
       - run: npm run test:e2e:visual
       - uses: actions/upload-artifact@v7
