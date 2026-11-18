@@ -50,6 +50,16 @@ export function useSearch() {
       .filter((i: number) => i >= 0)
   })
 
+  /** Actions matching the search query, so a filter with no matching shortcuts can offer to add one */
+  const matchingActions = computed(() => {
+    const q = searchQuery.value.toLowerCase().trim()
+    if (!q) return []
+    return Object.values(getAvailableActionCategories())
+      .flat()
+      .filter((a) => a.label.toLowerCase().includes(q) || a.description?.toLowerCase().includes(q))
+      .slice(0, 5)
+  })
+
   const stats = computed(() => {
     const total = keys.value.length
     const enabled = keys.value.filter((k: any) => k.enabled !== false).length
@@ -58,5 +68,5 @@ export function useSearch() {
     return { total, enabled, disabled, withConflicts }
   })
 
-  return { searchQuery, actionLabels, macroActionOptions, filteredIndices, stats }
+  return { searchQuery, actionLabels, macroActionOptions, filteredIndices, matchingActions, stats }
 }
