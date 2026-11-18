@@ -36,7 +36,14 @@ const {
   onActionChange, toggleEnabled, needsUserScripts, loadSavedKeys,
 } = useShortcuts()
 const { getConflicts } = useConflicts()
-const { searchQuery, filteredIndices, stats } = useSearch()
+const { searchQuery, filteredIndices, matchingActions, stats } = useSearch()
+
+function addShortcutForAction(action: string) {
+  searchQuery.value = ''
+  addShortcut()
+  const index = keys.value.length - 1
+  onActionChange(keys.value[index], index, action)
+}
 const {
   collapsedGroups, editingGroupName, newGroupName, groupMenuOpen,
   groupNames, groupedIndices, groupSettings, expandedGroupSiteFilter,
@@ -543,6 +550,16 @@ onUnmounted(() => {
               <i class="mdi mdi-plus"></i> Add shortcut
             </button>
           </div>
+          </template>
+        </div>
+
+        <div v-if="keys.length > 0 && !showOnboarding && searchQuery.trim() && filteredIndices.length === 0" class="filter-empty">
+          <p>No shortcuts match "{{ searchQuery.trim() }}"</p>
+          <template v-if="matchingActions.length">
+            <p class="filter-empty-hint">Add a shortcut for:</p>
+            <button v-for="action in matchingActions" :key="action.value" class="btn btn-secondary btn-sm" @click="addShortcutForAction(action.value)" type="button">
+              <i class="mdi mdi-plus"></i> {{ action.label }}
+            </button>
           </template>
         </div>
 
@@ -2296,6 +2313,17 @@ a:hover { text-decoration: underline; }
   border-radius: 3px;
   font-size: 11px;
 }
+
+.filter-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 48px 24px;
+  color: var(--text-secondary);
+}
+.filter-empty p { margin: 0; }
+.filter-empty-hint { margin-top: 8px !important; font-size: 13px; }
 
 /* ── Empty state ── */
 .empty-state {
