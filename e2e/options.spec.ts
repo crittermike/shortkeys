@@ -263,11 +263,13 @@ test.describe('Options Page', () => {
   test('filter with no matching shortcuts offers to add a matching action', async ({ context, extensionId }) => {
     const page = await openOptionsPage(context, extensionId)
     await createFirstShortcut(page)
+    await page.locator('.group-collapse').click()
     await page.locator('.search-input').fill('reading list')
     await expect(page.locator('.shortcut-card')).toHaveCount(0)
     await page.locator('.filter-empty button', { hasText: 'Add tab to reading list' }).click()
     await expect(page.locator('.search-input')).toHaveValue('')
     await expect(page.locator('.shortcut-card')).toHaveCount(2)
     await expect(page.locator('.shortcut-card').last().locator('.ss-trigger-text')).toHaveText('Add tab to reading list (Chrome only)')
+    await expect(page.locator('.shortcut-card').last()).toBeVisible()
   })
 })

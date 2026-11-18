@@ -17,7 +17,7 @@ import { useToast } from '@/composables/useToast'
 import { useShortcuts } from '@/composables/useShortcuts'
 import { useConflicts } from '@/composables/useConflicts'
 import { useSearch } from '@/composables/useSearch'
-import { useGroups } from '@/composables/useGroups'
+import { useGroups, DEFAULT_GROUP } from '@/composables/useGroups'
 import { useDragDrop } from '@/composables/useDragDrop'
 import { useImportExport } from '@/composables/useImportExport'
 import { useJsTools } from '@/composables/useJsTools'
@@ -40,6 +40,7 @@ const { searchQuery, filteredIndices, matchingActions, stats } = useSearch()
 
 function addShortcutForAction(action: string) {
   searchQuery.value = ''
+  collapsedGroups.value.delete(DEFAULT_GROUP)
   addShortcut()
   const index = keys.value.length - 1
   onActionChange(keys.value[index], index, action)
