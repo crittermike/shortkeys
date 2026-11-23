@@ -105,13 +105,26 @@ jobs:
             test-results/
           retention-days: 14
 
+  playwright-version:
+    name: Playwright version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: version
+        run: |
+          version=$(jq -er '.packages["node_modules/@playwright/test"].version' package-lock.json)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
   visual:
     name: Visual regression
+    needs: playwright-version
     runs-on: ubuntu-latest
-    # Baselines in e2e/__screenshots__ are rendered in this image. Keep the tag in sync with @playwright/test
-    # and regenerate them deliberately with `npm run test:e2e:visual:update`.
+    # Baselines in e2e/__screenshots__ are rendered in the image matching the locked @playwright/test.
+    # Regenerate them deliberately with `npm run test:e2e:visual:update`.
     container:
-      image: mcr.microsoft.com/playwright:v1.65.0-noble
+      image: mcr.microsoft.com/playwright:v${{ needs.playwright-version.outputs.version }}-noble
       options: --ipc=host
     steps:
       - uses: actions/checkout@v7
@@ -120,8 +133,6 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
-      - name: Check the image matches the installed Playwright
-        run: test "$(node -p "require('@playwright/test/package.json').version")" = "1.65.0"
       - run: npm run build
       - run: npm run test:e2e:visual
       - uses: actions/upload-artifact@v7
