@@ -35,7 +35,7 @@
     "@types/selenium-webdriver": "^4.35.7",
     "@vitest/coverage-v8": "^5.1.0",
     "@wxt-dev/module-vue": "^1.0.3",
-    "astro": "^7.4.12",
+    "astro": "^7.4.13",
     "jsdom": "^31.0.1",
     "selenium-webdriver": "^4.53.0",
     "typescript": "^5.9.3",
