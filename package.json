@@ -37,7 +37,7 @@
     "@wxt-dev/module-vue": "^1.0.3",
     "astro": "^7.4.12",
     "jsdom": "^31.0.1",
-    "selenium-webdriver": "^4.53.0",
+    "selenium-webdriver": "^4.54.0",
     "typescript": "^5.9.3",
     "vitest": "^5.0.5",
     "vue-tsc": "^3.3.14",
